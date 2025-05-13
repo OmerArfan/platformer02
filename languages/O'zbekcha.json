@@ -1,0 +1,47 @@
+{
+    "main_menu": {
+      "start": "Boshlash",
+      "achievements": "Yutuqlar",
+      "settings": "Sozlamalar",
+      "quit": "Chiqish",
+      "language": "Tilni o'zgartirish"
+    }
+  ,"language_select": {
+    "back": "qaytish"
+}
+  ,"levels": {
+  "level_display": "DARAJANI TANLANG",
+  "lvl1": "Daraja 1",
+  "lvl2": "Daraja 2",
+  "lvl3": "Daraja 3",
+  "lvl4": "Daraja 4",
+  "lvl5": "Daraja 5",
+  "lvl6": "Daraja 6",
+  "lvl7": "Daraja 7",
+  "back": "qaytish"
+   }
+  ,"messages": {  
+  "you_are_in": "Siz {level}dasiz",
+  "loading": "Yuklanmoqda..."
+  ,"confirm_quit": "Chiqmoqchimisiz?",
+  "yes": "Ha",
+  "no": "Yo'q"
+  }
+  ,"in_game": {
+  "dead_message": "Siz o'ldingiz!",
+  "fall_message": "Juda pastga tushdingiz!",
+  "deaths_no": "O'limlar: {deathcount}",
+  "warning_message": "Tikanlardan ehtiyot bo'ling!",
+  "up_message": "Sakrab o'tish uchun UP tugmasini bosing!",
+  "stamina_message": "Charchoq: ",
+  "exit_message": "Chiqish portali! G'alaba qozonish uchun bu erga keling!",
+  "moving_message": "Barcha bloklar harakatda emas...",
+  "mock_message": "Noto'g'ri yo'l, do'stim, bu erda hech narsa yo'q..."
+  ,"jump_message": "Katta masofalarni sakrash uchun to'q sariq bloklardan foydalaning!"
+  ,"saws_message": "Sawlar ham xavfli!"
+  ,"sawed_message": "Bo'laklarga kesilgan!"
+  ,"key_message": "Tanga oling va blokni oching!"
+  ,"laser_message": "Lazer bilan o'ldirilgan!"
+  ,"invisible_message": "Bu arra sizga zarar bermaydi... va'da beraman!"
+  }
+}

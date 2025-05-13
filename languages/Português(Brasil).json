@@ -1,0 +1,47 @@
+{
+    "main_menu": {
+        "start": "Iniciar",
+        "achievements": "Conquistas",
+        "settings": "Configurações",
+        "quit": "Sair",
+        "language": "Alterar Idioma"
+    },
+    "language_select": {
+        "back": "Voltar"
+    },  
+    "levels": {
+        "level_display": "SELECIONE UM NÍVEL",
+        "lvl1": "Nível 1",
+        "lvl2": "Nível 2",
+        "lvl3": "Nível 3",
+        "lvl4": "Nível 4",
+        "lvl5": "Nível 5",
+        "lvl6": "Nível 6",
+        "lvl7": "Nível 7",
+        "back": "Voltar"
+    },
+    "messages": {
+        "you_are_in": "Você está no {level}",
+        "loading": "Carregando...",
+        "confirm_quit": "Você tem certeza que deseja sair?",
+        "yes": "Sim",
+        "no": "Não"
+    }
+    ,"in_game": {
+        "dead_message": "Você está morto!",
+        "fall_message": "Caiu muito longe!",
+        "deaths_no": "Mortes: {deathcount}"
+        ,"warning_message": "Cuidado com os espinhos!",
+        "up_message": "Pressione CIMA para pular!",
+        "stamina_message": "Resistência: ",
+        "exit_message": "Portal de saída! Venha aqui para ganhar!",
+        "moving_message": "Nem todos os blocos ficam parados..."
+        ,"mock_message": "Caminho errado, meu amigo, nada de especial aqui..."
+        ,"jump_message": "Use blocos laranja para pular grandes distâncias!"
+        ,"saws_message": "Serra também é perigoso!"
+        ,"sawed_message": "Cortado em pedaços!"
+        ,"key_message": "Pegue a moeda e abra o bloco!"
+        ,"laser_message": "Laserizado!"
+        ,"invisible_message": "Essas serras não vão te machucar... prometo!"
+    }
+}

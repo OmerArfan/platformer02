@@ -1,0 +1,47 @@
+{
+    "main_menu": {
+      "start": "Iniciar",
+      "achievements": "Logros",
+      "settings": "Configuración",
+      "quit": "Salir",
+      "language": "Idioma"
+    }
+  ,"language_select": {
+    "back": "volver"
+}
+  ,"levels": {
+  "level_display": "SELECCIONA UN NIVEL",
+  "lvl1": "Nivel 1", 
+  "lvl2": "Nivel 2",
+  "lvl3": "Nivel 3",
+  "lvl4": "Nivel 4",
+  "lvl5": "Nivel 5",  
+  "lvl6": "Nivel 6",
+  "lvl7": "Nivel 7",
+  "back": "volver"
+   }
+  ,"messages": {
+  "you_are_in": "Estás en {level}"
+  ,"loading": "Cargando..."
+  ,"confirm_quit": "¿Estás seguro de que quieres salir?",
+  "yes": "Sí",
+  "no": "No"
+  }
+  ,"in_game": {
+  "dead_message": "¡Has muerto!", 
+  "fall_message": "¡Caíste demasiado lejos!",
+  "deaths_no": "Muertes: {deathcount}"
+  ,"warning_message": "¡Cuidado con las espinas!",
+  "up_message": "¡Presiona ARRIBA para saltar!", 
+  "stamina_message": "Resistencia: ",
+  "exit_message": "¡Portal de salida! ¡Ven aquí para ganar!",
+  "moving_message": "No todos los bloques permanecen quietos..."
+  ,"mock_message": "Camino equivocado, amigo, no hay nada especial aquí..."
+  ,"jump_message": "¡Usa bloques naranjas para saltar grandes distancias!"
+  ,"saws_message": "¡Las sierras también son peligrosas!"
+  ,"sawed_message": "¡Despedazado!"
+  ,"key_message": "¡Agarrar la moneda y abrir el bloque!"
+  ,"laser_message": "¡Grabado con láser!"
+  ,"invisible_message": "Estas sierras no te harán daño... ¡prometido!"
+}
+}

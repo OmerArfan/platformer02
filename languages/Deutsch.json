@@ -1,0 +1,47 @@
+{
+    "main_menu": {
+      "start": "starten",
+      "achievements": "Erfolge",
+      "settings": "Einstellungen",
+      "quit": "aufhören",
+      "language": "Sprache ändern"
+    }
+    ,"language_select": {
+      "back": "zurückkehren"
+  }
+  ,"levels": {
+  "level_display": "WÄHLE EINEN LEVEL",
+  "lvl1": "Stufe 1",    
+  "lvl2": "Stufe 2",
+  "lvl3": "Stufe 3",
+  "lvl4": "Stufe 4",
+  "lvl5": "Stufe 5",  
+  "lvl6": "Stufe 6",
+  "lvl7": "Stufe 7",
+  "back": "zurückkehren"
+   }
+  ,"messages": {
+  "you_are_in": "Du bist in {level}"
+  ,"loading": "Laden..."
+  ,"confirm_quit": "Bist du sicher, dass du aufhören möchtest?",
+  "yes": "Ja",
+  "no": "Nein"
+  }
+  ,"in_game": {
+  "dead_message": "Du bist tot!",
+  "fall_message": "Zu weit gefallen!",
+  "deaths_no": "Tode: {deathcount}",
+  "warning_message": "Achte auf die Stacheln!",
+  "up_message": "Drücke OBEN, um zu springen!",
+  "stamina_message": "Ausdauer: ",
+  "exit_message": "Ausgangsportal! Komm hierher, um zu gewinnen!"
+  ,"moving_message": "Nicht alle Blöcke bleiben stehen...",
+  "mock_message": "Falscher Weg, mein Freund, hier ist nichts Besonderes...",
+  "jump_message": "Verwende orangefarbene Blöcke, um große Entfernungen zu springen!",
+  "saws_message": "Sägen sind auch gefährlich!"
+  ,"sawed_message": "In Stücke gesägt!"
+  ,"key_message": "Nimm die Münze und öffne den Block!"
+  ,"laser_message": "Gelasrat!"
+  ,"invisible_message": "Diese Sägen verletzen dich nicht... versprochen!"
+  }
+}

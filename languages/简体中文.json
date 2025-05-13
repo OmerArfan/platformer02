@@ -1,0 +1,47 @@
+{
+    "main_menu": {
+      "start": "开始",
+      "achievements": "成就",
+      "settings": "设置",
+      "quit": "辞职",
+      "language": "更改语言"
+    }
+    ,"language_select": {
+          "back": "返回"
+      }
+  ,"levels": {
+    "level_display": "选择一个级别",
+    "lvl1": "1级",
+    "lvl2": "2级",
+    "lvl3": "3级",
+    "lvl4": "4级",
+    "lvl5": "5级",
+    "lvl6": "6级",
+    "lvl7": "7级",
+    "back": "返回"
+     }
+  ,"messages": {    
+    "you_are_in": "你在{level}"
+  ,"loading": "加载中..."
+  ,"confirm_quit": "你确定要退出吗？",
+  "yes": "是",
+  "no": "否"
+    }
+  ,"in_game": {
+    "dead_message": "你死了！",
+    "fall_message": "掉得太远了！",
+    "deaths_no": "死亡：{deathcount}"
+    ,"warning_message": "小心尖刺！",
+    "up_message": "按上键跳跃！",
+    "stamina_message": "耐力：",
+    "exit_message": "出口传送门！来这里赢得胜利！",
+    "moving_message": "并非所有方块都保持静止...",
+    "mock_message": "路线错误，这里没什么特别的，我的朋友……"
+    ,"jump_message": "使用橙色方块跳跃！"
+    ,"saws_message": "小心锯子！"
+    ,"sawed_message": "锯成碎片！"
+    ,"key_message": "抓住硬币，打开方块！"
+    ,"laser_message": "激光处理！"
+    ,"invisible_message": "这些锯子不会伤害你……我保证！"  
+  }
+}
