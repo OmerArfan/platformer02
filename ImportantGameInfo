@@ -1,0 +1,18 @@
+Controls:
+
+Use D or right arrowkey to go right.
+Use A or left arrowkey to go left.
+Use W or up arrowkey to jump.
+
+Return to Levels screen while in-game:
+
+Use Alt+F4, or press the "close" button to exit the level and return to the Level selection screen.
+
+Functioning Buttons:
+  Start
+  Quit(As a proper exit screen, still WIP)
+  Change Language
+
+Not functioning:
+  Achievements
+  Settings
