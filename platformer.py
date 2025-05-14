@@ -28,7 +28,7 @@ font = pygame.font.Font(font_path, 25)
 
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 265, SCREEN_HEIGHT - 54)
-ver_text = font.render("Version 1.0.0", True, (255, 255, 255))
+ver_text = font.render("Version 1.0.1", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 84)
 
 # Load language function and rendering part remain the same
@@ -2864,7 +2864,7 @@ def create_lvl7_screen():
     # Camera settings
     camera_x = 300
     camera_y = 0
-    spawn_x, spawn_y = 3000, 400
+    spawn_x, spawn_y = 100, -1500
     player_x, player_y = spawn_x, spawn_y
     normal_speed = 50
     sprint_speed = 10
@@ -2872,16 +2872,11 @@ def create_lvl7_screen():
     gravity = 1
     jump_strength = 21
     move_speed = 8
-    stamina_depletion = 1
-    stamina_recovery = 0.5
     max_stamina = 100
     stamina = max_stamina
     on_ground = False
     velocity_y = 0
     camera_speed = 0.5
-    fade_duration = 6
-    fade_counter = 0
-    game_over = False
     deathcount = 0
 
     # Load player image
@@ -2889,9 +2884,9 @@ def create_lvl7_screen():
     img_width, img_height = player_img.get_size()
 
     # Draw flag
-    flag = pygame.Rect(2400, 450, 80, 50)  # x, y, width, height
+    flag = pygame.Rect(2600, 300, 80, 50)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(3200, 470, 80, 50)  # x, y, width, height
+    flag2 = pygame.Rect(240, -1420, 80, 50)  # x, y, width, height
     checkpoint_reached2 = False
 
     key_block_pairs = [
@@ -2903,9 +2898,9 @@ def create_lvl7_screen():
     ]
 
     invisible_blocks = [
-        pygame.Rect(1400, 400, 100, 100),
-        pygame.Rect(1700, 400, 100, 100),
-        pygame.Rect(2000, 400, 100, 100),
+        pygame.Rect(14000, 400, 100, 100),
+        pygame.Rect(17000, 400, 100, 100),
+        pygame.Rect(20000, 400, 100, 100),
     ]
 
     lasers = [
@@ -2913,21 +2908,23 @@ def create_lvl7_screen():
     ]
 
     blocks = [
-        pygame.Rect(-200, 700, 1200, 100),
-        pygame.Rect(800, 400, 100, 100),
-        pygame.Rect(2300, 500, 450, 50),
-        pygame.Rect(2900, 10, 50, 540),
-        pygame.Rect(3150, 10, 50, 120),
-        pygame.Rect(2900, 530, 3000, 50),
-        pygame.Rect(3150, 130, 2750, 50)
+        pygame.Rect(0, 400, 3000, 50),
+        pygame.Rect(3200, 500, 500, 50),
+        pygame.Rect(3900, 500, 500, 50),
+        pygame.Rect(4600, 500, 700, 50),
+        pygame.Rect(100, -1250, 300, 50),
+        pygame.Rect(600, -1000, 700, 50),
+        pygame.Rect(1450, -1125, 650, 50)
     ]
     
     moving_saws = [ 
-        {'r': 100, 'speed': 20, 'cx': 3800, 'cy': -400, 'max': 600, 'min': -400},
+        {'r': 100, 'speed': 9, 'cx': 3800, 'cy': 200, 'max': 700, 'min': 200},
+        {'r': 100, 'speed': 9, 'cx': 4500, 'cy': 600, 'max': 700, 'min': 200},
     ]
 
     moving_saws_x = [
-        {'r': 100, 'speed':16, 'cx': 4900, 'cy': 165, 'max': 5800, 'min': 4900}
+        {'r': 100, 'speed':11, 'cx': 700, 'cy': -975, 'max': 1200, 'min': 700},
+        {'r': 100, 'speed': 7, 'cx': 1550, 'cy': -1100, 'max': 2000, 'min': 1550}
     ]
 
     saws = [
@@ -2935,37 +2932,40 @@ def create_lvl7_screen():
         (1750, 450, 28, (255, 0, 127)),
         (2050, 450, 28, (255, 0, 127)),  # (x, y, radius, color)
         (5000, 550, 100, (255, 0, 0)),
-        (5400, 550, 100, (255, 0, 0)),
-
     ]
 
     rotating_saws = [
-        {'r': 40, 'orbit_radius': 230, 'angle': 0, 'speed': 2},
-        {'r': 40, 'orbit_radius': 230, 'angle': 120, 'speed': 2},
-        {'r': 40, 'orbit_radius': 230, 'angle': 240, 'speed': 2},
+        {'r': 40, 'orbit_radius': 230, 'angle': 0, 'speed': 3},
+        {'r': 40, 'orbit_radius': 230, 'angle': 120, 'speed': 3},
+        {'r': 40, 'orbit_radius': 230, 'angle': 240, 'speed': 3},
+        {'r': 60, 'orbit_radius': 500, 'angle': 60, 'speed': 2},
+        {'r': 60, 'orbit_radius': 500, 'angle': 180, 'speed': 2},
+        {'r': 60, 'orbit_radius': 500, 'angle': 300, 'speed': 2},
+        {'r': 80, 'orbit_radius': 900, 'angle': 0, 'speed': 1},
+        {'r': 80, 'orbit_radius': 900, 'angle': 120, 'speed': 1},
+        {'r': 80, 'orbit_radius': 900, 'angle': 240, 'speed': 1},
     ]
-
 
     jump_blocks = [
         pygame.Rect(1000, 600, 100, 50),
         pygame.Rect(400, 650, 100, 50),
-        pygame.Rect(2650, 400, 100, 100),
     ]
 
     spikes = [
-    [(500, 700), (545, 600), (590, 700)],
-    [(600,700), (645, 600), (690, 700)],
-    [(700, 700), (745, 600), (790, 700)],
-    [(4100, 130), (4150, 80), (4200, 130)],
-    [(4210, 130), (4260, 80), (4310, 130)],
-    [(4500, 130), (4550, 80), (4600, 130)],
-    [(4610, 130),(4660, 80),(4710, 130)],
-    [(4300, 530),(4345, 480), (4390, 530)],
-    [(4400, 530), (4445, 480), (4490, 530)],
+    [(3400, 500), (3450, 450), (3500, 500)],
+    [(4100, 500), (4150, 450), (4200, 500)],
     ]
 
-    exit_portal = pygame.Rect(5700, 430, 50, 100)
+    exit_portal = pygame.Rect(2050, -1225, 50, 100)
     clock = pygame.time.Clock()
+
+    teleporters = [
+        {
+            "entry": pygame.Rect(5200, 400, 50, 100),
+            "exit": pygame.Rect(100, -1400, 50, 100),
+            "color": (0, 196, 255)
+        }
+    ]
 
     def point_in_triangle(px, py, a, b, c):
         def sign(p1, p2, p3):
@@ -2992,7 +2992,7 @@ def create_lvl7_screen():
                 pair["collected"] = False  # Reset the collected status for all keys
             checkpoint_reached = False  # Reset checkpoint status
             checkpoint_reached2 = False  # Reset checkpoint status
-            spawn_x, spawn_y = 220, 400
+            spawn_x, spawn_y = 100, 200
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount = 0
@@ -3016,12 +3016,6 @@ def create_lvl7_screen():
         if not on_ground:
             velocity_y += gravity
         player_y += velocity_y
-
-        if stamina < max_stamina and on_ground:
-            stamina += stamina_recovery
-        stamina = max(0, min(max_stamina, stamina))
-
-        # Moving blocks
 
         # Collisions and Ground Detection
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
@@ -3157,7 +3151,7 @@ def create_lvl7_screen():
 
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
             checkpoint_reached = True
-            spawn_x, spawn_y = 2670, 15  # Store checkpoint position
+            spawn_x, spawn_y = 2600, 250  # Store checkpoint position
             print("Checkpoint reached!")
             pygame.draw.rect(screen, (0, 255, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
         if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
@@ -3165,7 +3159,7 @@ def create_lvl7_screen():
             checkpoint_reached2 = True
             pygame.draw.rect(screen, (0, 255, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
-            spawn_x, spawn_y = 3150, 100  # Checkpoint position
+            spawn_x, spawn_y = 150, -1500  # Checkpoint position
             print("Checkpoint reached!")
 
         for laser in lasers:
@@ -3274,8 +3268,8 @@ def create_lvl7_screen():
             rad = math.radians(rotating_saw['angle'])
 
     # Orbit around block center
-            orbit_center_x = blocks[1].centerx
-            orbit_center_y = blocks[1].centery
+            orbit_center_x = blocks[0].centerx
+            orbit_center_y = blocks[0].centery
             x = orbit_center_x + rotating_saw['orbit_radius'] * math.cos(rad)
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
@@ -3358,7 +3352,18 @@ def create_lvl7_screen():
                 deathcount += 1
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
-
+        for teleporter in teleporters:
+            # Draw the entry rectangle
+            pygame.draw.rect(screen, teleporter["color"], teleporter["entry"].move(-camera_x, -camera_y))
+    
+            # Draw the exit rectangle
+            pygame.draw.rect(screen, teleporter["color"], teleporter["exit"].move(-camera_x, -camera_y))
+    
+           # Check if the player collides with the entry rectangle
+            if player_rect.colliderect(teleporter["entry"]):
+                # Teleport the player to the exit rectangle
+                player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
+        
         for x, y, r, color in saws:
             # Draw the saw as a circle
             pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
@@ -3404,8 +3409,8 @@ def create_lvl7_screen():
         lvl7_text = levels.get("lvl7", "Level 7")  # Render the level text
         screen.blit(font.render(lvl7_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
-        placeholder = font.render("This is just a placeholder! Level 7 is coming soon!", True, (255, 255, 255))
-        screen.blit(placeholder, (400, 350))
+        portal_text = levels.get("portal_message", "These blue portals teleport you! But to good places... mostly!")
+        screen.blit(font.render(portal_text, True, (0, 196, 255)), (5000 - camera_x, 300 - camera_y))
 
         pygame.display.update()   
 
