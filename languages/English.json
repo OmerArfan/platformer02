@@ -42,6 +42,7 @@
   "sawed_message": "Sawed to bits!",
   "key_message": "Grab the coin and open the block!",
   "laser_message": "Lasered!",
-  "invisible_message": "These saws won't hurt you... promise!"
+  "invisible_message": "These saws won't hurt you... promise!",
+  "portal_message": "These blue portals teleport you! But to good places... mostly!"
 }
 }

@@ -42,6 +42,7 @@
   ,"sawed_message": "In Stücke gesägt!"
   ,"key_message": "Nimm die Münze und öffne den Block!"
   ,"laser_message": "Gelasrat!"
-  ,"invisible_message": "Diese Sägen verletzen dich nicht... versprochen!"
+  ,"invisible_message": "Diese Sägen verletzen dich nicht... versprochen!",
+  "portal_message": "Diese blauen Portale teleportieren dich! Aber an gute Orte ... meistens!"
   }
 }
