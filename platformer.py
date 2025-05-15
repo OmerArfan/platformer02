@@ -12,7 +12,7 @@ icon = pygame.image.load("roboticon.ico")
 pygame.display.set_icon(icon)
 
 complete_levels = 0  # Keep track of how many levels have been completed
-locked_levels = [] # Keep track of how many levels are locked
+locked_levels = ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9"] # Keep track of how many levels are locked
 
 pygame.init()
 SCREEN_WIDTH = 1530
@@ -28,8 +28,8 @@ font = pygame.font.Font(font_path, 25)
 
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 265, SCREEN_HEIGHT - 54)
-ver_text = font.render("Version 1.0.5", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 84)
+ver_text = font.render("Version 1.0.5.1", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 187, SCREEN_HEIGHT - 84)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -2197,7 +2197,6 @@ def create_lvl5_screen():
                     if point_in_triangle(point[0], point[1], *spike):
                         # Trigger death logic
                         player_x, player_y = spawn_x, spawn_y  # Reset player position
-                        screen.fill((255, 255, 255))
                         death_text = in_game.get("dead_message", "You Died")
                         screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
                         pygame.display.update()
@@ -2436,7 +2435,6 @@ def create_lvl6_screen():
             for point in bottom_points:
                 if point_in_triangle(point[0], point[1], *spike):
                     player_x, player_y = spawn_x, spawn_y  # Reset player position
-                    screen.fill((255, 255, 255))
                     death_text = in_game.get("dead_message", "You Died")
                     screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
                     pygame.display.update()
@@ -2662,9 +2660,8 @@ def create_lvl6_screen():
             distance = (dx**2 + dy**2)**0.5
             if distance < saw['r']:
         # Trigger death logic
-                screen.fill((255, 255, 255))
                 sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (0, 0, 0)), (500, 400))
+                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
                 pygame.display.update()
                 pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
@@ -2758,14 +2755,10 @@ def create_lvl7_screen():
     camera_y = 0
     spawn_x, spawn_y = 100, 200
     player_x, player_y = spawn_x, spawn_y
-    normal_speed = 50
-    sprint_speed = 10
     running = True
     gravity = 1
     jump_strength = 21
     move_speed = 8
-    max_stamina = 100
-    stamina = max_stamina
     on_ground = False
     velocity_y = 0
     camera_speed = 0.5
