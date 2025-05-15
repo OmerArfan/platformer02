@@ -28,7 +28,7 @@ font = pygame.font.Font(font_path, 25)
 
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 265, SCREEN_HEIGHT - 54)
-ver_text = font.render("Version 1.0.3", True, (255, 255, 255))
+ver_text = font.render("Version 1.0.4", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 84)
 
 # Load language function and rendering part remain the same
@@ -224,20 +224,22 @@ def go_back():
 def update_locked_levels():
     global locked_levels
     if complete_levels == 0:
-        locked_levels = ["lvl2","lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8"]  # Example of locked levels
+        locked_levels = ["lvl2","lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9"]  # Example of locked levels
     elif complete_levels == 1:
-        locked_levels = ["lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8"]
+        locked_levels = ["lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9"]
     elif complete_levels == 2:
-        locked_levels = ["lvl4", "lvl5", "lvl6", "lvl7", "lvl8"]
+        locked_levels = ["lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9"]
     elif complete_levels == 3:
-        locked_levels = ["lvl5", "lvl6", "lvl7", "lvl8"]
+        locked_levels = ["lvl5", "lvl6", "lvl7", "lvl8", "lvl9"]
     elif complete_levels == 4:
-        locked_levels = ["lvl6", "lvl7", "lvl8"]
+        locked_levels = ["lvl6", "lvl7", "lvl8", "lvl9"]
     elif complete_levels == 5:
-        locked_levels = ["lvl7", "lvl8"]
+        locked_levels = ["lvl7", "lvl8", "lvl9"]
     elif complete_levels == 6:
-        locked_levels = ["lvl8"]
+        locked_levels = ["lvl8", "lvl9"]
     elif complete_levels == 7:
+        locked_levels = ["lvl9"]
+    elif complete_levels == 8:
         locked_levels = []
 
 # Central page switcher
@@ -1743,12 +1745,12 @@ def create_lvl5_screen():
     # Draw flag
     flag = pygame.Rect(2100, -150, 80, 50)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(3550, -450, 80, 50)  # x, y, width, height
+    flag2 = pygame.Rect(3450, -450, 80, 50)  # x, y, width, height
     checkpoint_reached2 = False
 
     key_block_pairs = [
         {
-            "key": (4000, -800, 30, (255, 255, 0)),
+            "key": (4050, -800, 30, (255, 255, 0)),
             "block": pygame.Rect(1300, -250, 200, 200),
             "collected": False
         },
@@ -1784,7 +1786,7 @@ def create_lvl5_screen():
     ]
 
     moving_saws_x = [
-        {'r': 100, 'speed': 8, 'cx': 2400, 'cy': -500, 'max': 3400, 'min': 2400},
+        {'r': 100, 'speed': 8, 'cx': 2400, 'cy': -500, 'max': 3300, 'min': 2400},
     ]
 
     saws = [
@@ -1809,7 +1811,6 @@ def create_lvl5_screen():
         [(1660, 650), (1710, 600), (1760, 650)],
         [(2000, 650), (2050, 600), (2100, 650)],
         [(3300,-350), (3350, -400), (3400, -350)],
-        [(3410, -350), (3460, -400), (3510, -350)],
         [(3700, -50), (3750, -100), (3800, -50)],
         [(3700, -650), (3750, -700), (3800, -650)],
         [(4000, -450), (4050, -500), (4100, -450)],
@@ -2017,7 +2018,7 @@ def create_lvl5_screen():
             checkpoint_reached2 = True
             pygame.draw.rect(screen, (0, 255, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
-            spawn_x, spawn_y = 3550, -550  # Checkpoint position
+            spawn_x, spawn_y = 3450, -550  # Checkpoint position
             print("Checkpoint reached!")
 
         for saw in saws:
@@ -3026,8 +3027,8 @@ def create_lvl7_screen():
         # Exit portal
         if player_rect.colliderect(exit_portal):
             running = False
-            if complete_levels < 6:
-                complete_levels = 7
+            if complete_levels < 7:
+                complete_levels = 8
                 update_locked_levels()
             set_page('lvl8_screen')
 
