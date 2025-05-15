@@ -12,10 +12,10 @@ icon = pygame.image.load("roboticon.ico")
 pygame.display.set_icon(icon)
 
 complete_levels = 0  # Keep track of how many levels have been completed
-locked_levels = ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7"] # Keep track of how many levels are locked
+locked_levels = ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9"] # Keep track of how many levels are locked
 
 pygame.init()
-SCREEN_WIDTH = 1200
+SCREEN_WIDTH = 1530
 SCREEN_HEIGHT = 800
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Platformer 02!")
@@ -28,7 +28,7 @@ font = pygame.font.Font(font_path, 25)
 
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 265, SCREEN_HEIGHT - 54)
-ver_text = font.render("Version 1.0.2", True, (255, 255, 255))
+ver_text = font.render("Version 1.0.3", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 84)
 
 # Load language function and rendering part remain the same
@@ -125,7 +125,7 @@ def create_levels_buttons():
     select_level_text = rendered_select_text
     select_level_rect = select_text_rect
 
-    level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7"]
+    level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9"]
     buttons_per_row = 3
     spacing_x = 180
     spacing_y = 70
@@ -224,20 +224,21 @@ def go_back():
 def update_locked_levels():
     global locked_levels
     if complete_levels == 0:
-        locked_levels = ["lvl2","lvl3", "lvl4", "lvl5", "lvl6", "lvl7"]  # Example of locked levels
+        locked_levels = ["lvl2","lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8"]  # Example of locked levels
     elif complete_levels == 1:
-        locked_levels = ["lvl3", "lvl4", "lvl5", "lvl6", "lvl7"]
+        locked_levels = ["lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8"]
     elif complete_levels == 2:
-        locked_levels = ["lvl4", "lvl5", "lvl6", "lvl7"]
+        locked_levels = ["lvl4", "lvl5", "lvl6", "lvl7", "lvl8"]
     elif complete_levels == 3:
-        locked_levels = ["lvl5", "lvl6", "lvl7"]
+        locked_levels = ["lvl5", "lvl6", "lvl7", "lvl8"]
     elif complete_levels == 4:
-        locked_levels = ["lvl6", "lvl7"]
+        locked_levels = ["lvl6", "lvl7", "lvl8"]
     elif complete_levels == 5:
-        locked_levels = ["lvl7"]
+        locked_levels = ["lvl7", "lvl8"]
     elif complete_levels == 6:
+        locked_levels = ["lvl8"]
+    elif complete_levels == 7:
         locked_levels = []
-
 
 # Central page switcher
 def set_page(page):
@@ -278,6 +279,9 @@ def set_page(page):
     elif page == 'lvl7_screen':
         current_lang = load_language(lang_code).get('in_game', {})
         create_lvl7_screen()
+    elif page == 'lvl8_screen':
+        current_lang = load_language(lang_code).get('in_game', {})
+        create_lvl8_screen()
 
 def create_quit_confirm_buttons():
     global current_lang, buttons, quit_text, quit_text_rect
@@ -319,9 +323,6 @@ def create_lvl1_screen():
     on_ground = False
     velocity_y = 0
     camera_speed = 0.05
-    fade_duration = 60
-    fade_counter = 0
-    game_over = False
     deathcount = 0
 
     # Load player image
@@ -561,9 +562,6 @@ def create_lvl2_screen():
     on_ground = False
     velocity_y = 0
     camera_speed = 0.05
-    fade_duration = 60
-    fade_counter = 0
-    game_over = False
     deathcount = 0
 
     # Load player image
@@ -831,14 +829,9 @@ def create_lvl3_screen():
     gravity = 1
     jump_strength = 21
     move_speed = 8
-    max_stamina = 100
-    stamina = max_stamina
     on_ground = False
     velocity_y = 0
     camera_speed = 0.5
-    fade_duration = 6
-    fade_counter = 0
-    game_over = False
     deathcount = 0
 
     # Load player image
@@ -1175,7 +1168,7 @@ def create_lvl3_screen():
 
             # Draw block only if key is not collected
             if not pair["collected"]:
-                pygame.draw.rect(screen, (0, 0, 17), (block.x - camera_x, block.y - camera_y, block.width, block.height))
+                pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
         pygame.draw.rect(screen, (0, 205, 0), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
         screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
@@ -1203,22 +1196,13 @@ def create_lvl4_screen():
     camera_y = 0
     spawn_x, spawn_y = 250, 450
     player_x, player_y = spawn_x, spawn_y
-    normal_speed = 50
-    sprint_speed = 10
     running = True
     gravity = 1
     jump_strength = 21
     move_speed = 8
-    stamina_depletion = 1
-    stamina_recovery = 0.5
-    max_stamina = 100
-    stamina = max_stamina
     on_ground = False
     velocity_y = 0
     camera_speed = 0.5
-    fade_duration = 6
-    fade_counter = 0
-    game_over = False
     deathcount = 0
 
     # Load player image
@@ -1256,7 +1240,6 @@ def create_lvl4_screen():
         },
     ]
 
-
     lasers = [
         pygame.Rect(3000, -50, 1000, 15),
     ]
@@ -1272,8 +1255,6 @@ def create_lvl4_screen():
         pygame.Rect(3700, -100, 200, 100),
         pygame.Rect(4000, -370, 200, 400),
     ]
-    
-    center_x, center_y = blocks[1].center  # This is your orbit center
 
     moving_saws = [ 
         {'r': 100, 'speed': 5, 'cx': 3800, 'cy': -300, 'max': -50, 'min': -700},
@@ -1318,14 +1299,6 @@ def create_lvl4_screen():
         b2 = sign((px, py), b, c) < 0.0
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
-    
-    # Render the texts
-
-    saw_text = in_game.get("saws_message", "Saws are also dangerous!")
-    rendered_saw_text = font.render(saw_text, True, (255, 0, 0))  # Render the saw text
-
-    key_text = in_game.get("key_message", "Grab the coin and open the block!")
-    rendered_key_text = font.render(key_text, True, (255, 255, 0))  # Render the key text
 
     while running:
         clock.tick(60)
@@ -1360,12 +1333,6 @@ def create_lvl4_screen():
         if not on_ground:
             velocity_y += gravity
         player_y += velocity_y
-
-        if stamina < max_stamina and on_ground:
-            stamina += stamina_recovery
-        stamina = max(0, min(max_stamina, stamina))
-
-        # Moving blocks
 
         # Collisions and Ground Detection
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
@@ -1588,9 +1555,7 @@ def create_lvl4_screen():
                 complete_levels = 4
                 update_locked_levels()
             running = False
-            set_page('lvl5_screen')
-            
-            
+            set_page('lvl5_screen') 
 
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
@@ -1642,9 +1607,6 @@ def create_lvl4_screen():
             dx = closest_x - x
             dy = closest_y - y
             distance = (dx**2 + dy**2)**0.5
-
-            if not any(distance < rotating_saw['r'] for rotating_saw in rotating_saws):
-                recently_died = False  # Reset the flag when the player is no longer colliding
 
             if distance < rotating_saw['r'] and not collision_detected:
             # Trigger death logic                
@@ -1765,22 +1727,13 @@ def create_lvl5_screen():
     camera_y = 0
     spawn_x, spawn_y = 220, 400
     player_x, player_y = spawn_x, spawn_y
-    normal_speed = 50
-    sprint_speed = 10
     running = True
     gravity = 1
     jump_strength = 21
     move_speed = 8
-    stamina_depletion = 1
-    stamina_recovery = 0.5
-    max_stamina = 100
-    stamina = max_stamina
     on_ground = False
     velocity_y = 0
     camera_speed = 0.5
-    fade_duration = 6
-    fade_counter = 0
-    game_over = False
     deathcount = 0
 
     # Load player image
@@ -1827,7 +1780,7 @@ def create_lvl5_screen():
     ]
     
     moving_saws = [ 
-        {'r': 100, 'speed': 7, 'cx': 1200, 'cy': 200, 'max': 700, 'min': 200},
+        {'r': 100, 'speed': 6, 'cx': 1200, 'cy': 200, 'max': 700, 'min': 200},
     ]
 
     moving_saws_x = [
@@ -1842,8 +1795,8 @@ def create_lvl5_screen():
     ]
 
     rotating_saws = [
-        {'r': 40, 'orbit_radius': 230, 'angle': 0, 'speed': 3},
-        {'r': 40, 'orbit_radius': 230, 'angle': 180, 'speed': 3},
+        {'r': 40, 'orbit_radius': 230, 'angle': 0, 'speed': 2},
+        {'r': 40, 'orbit_radius': 230, 'angle': 180, 'speed': 2},
     ]
 
 
@@ -1853,7 +1806,6 @@ def create_lvl5_screen():
     ]
 
     spikes = [
-        [(1550, 650), (1600, 600), (1650, 650)],
         [(1660, 650), (1710, 600), (1760, 650)],
         [(2000, 650), (2050, 600), (2100, 650)],
         [(3300,-350), (3350, -400), (3400, -350)],
@@ -1920,12 +1872,6 @@ def create_lvl5_screen():
         if not on_ground:
             velocity_y += gravity
         player_y += velocity_y
-
-        if stamina < max_stamina and on_ground:
-            stamina += stamina_recovery
-        stamina = max(0, min(max_stamina, stamina))
-
-        # Moving blocks
 
         # Collisions and Ground Detection
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
@@ -2037,7 +1983,6 @@ def create_lvl5_screen():
 
         # Saw collision detection
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
-        player_center = player_rect.center
 
         for pair in key_block_pairs:
             if not pair["collected"]:  # Only active locked blocks
@@ -2313,22 +2258,13 @@ def create_lvl6_screen():
     camera_y = 0
     spawn_x, spawn_y = 220, 500
     player_x, player_y = spawn_x, spawn_y
-    normal_speed = 50
-    sprint_speed = 10
     running = True
     gravity = 1
     jump_strength = 21
     move_speed = 8
-    stamina_depletion = 1
-    stamina_recovery = 0.5
-    max_stamina = 100
-    stamina = max_stamina
     on_ground = False
     velocity_y = 0
     camera_speed = 0.5
-    fade_duration = 6
-    fade_counter = 0
-    game_over = False
     deathcount = 0
 
     # Load player image
@@ -2421,14 +2357,6 @@ def create_lvl6_screen():
         b2 = sign((px, py), b, c) < 0.0
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
-    
-    # Render the texts
-
-    saw_text = in_game.get("saws_message", "Saws are also dangerous!")
-    rendered_saw_text = font.render(saw_text, True, (255, 0, 0))  # Render the saw text
-
-    key_text = in_game.get("key_message", "Grab the coin and open the block!")
-    rendered_key_text = font.render(key_text, True, (255, 255, 0))  # Render the key text
 
     while running:
         clock.tick(60)
@@ -2463,12 +2391,6 @@ def create_lvl6_screen():
         if not on_ground:
             velocity_y += gravity
         player_y += velocity_y
-
-        if stamina < max_stamina and on_ground:
-            stamina += stamina_recovery
-        stamina = max(0, min(max_stamina, stamina))
-
-        # Moving blocks
 
         # Collisions and Ground Detection
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
@@ -2948,14 +2870,6 @@ def create_lvl7_screen():
         b2 = sign((px, py), b, c) < 0.0
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
-    
-    # Render the texts
-
-    saw_text = in_game.get("saws_message", "Saws are also dangerous!")
-    rendered_saw_text = font.render(saw_text, True, (255, 0, 0))  # Render the saw text
-
-    key_text = in_game.get("key_message", "Grab the coin and open the block!")
-    rendered_key_text = font.render(key_text, True, (255, 255, 0))  # Render the key text
 
     while running:
         clock.tick(60)
@@ -3115,7 +3029,7 @@ def create_lvl7_screen():
             if complete_levels < 6:
                 complete_levels = 7
                 update_locked_levels()
-            set_page('main_menu')
+            set_page('lvl8_screen')
 
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
@@ -3268,8 +3182,8 @@ def create_lvl7_screen():
         lvl7_text = levels.get("lvl7", "Level 7")  # Render the level text
         screen.blit(font.render(lvl7_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
-        portal_text = levels.get("portal_message", "These blue portals teleport you! But to good places... mostly!")
-        screen.blit(font.render(portal_text, True, (0, 196, 255)), (5000 - camera_x, 300 - camera_y))
+        portal_text = in_game.get("portal_message", "These blue portals teleport you! But to good places... mostly!")
+        screen.blit(font.render(portal_text, True, (0, 196, 255)), (4400 - camera_x, 300 - camera_y))
 
         pygame.display.update()   
 
@@ -3825,8 +3739,8 @@ def create_lvl8_screen():
         lvl8_text = levels.get("lvl8", "Level 8")  # Render the level text
         screen.blit(font.render(lvl8_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
-        portal_text = levels.get("portal_message", "These blue portals teleport you! But to good places... mostly!")
-        screen.blit(font.render(portal_text, True, (0, 196, 255)), (5000 - camera_x, 300 - camera_y))
+        placeholder = font.render("Under development!", True, (255, 255, 255))
+        screen.blit(placeholder, (20, 50))
 
         pygame.display.update()   
 
@@ -3868,6 +3782,8 @@ def handle_action(key):
             set_page("lvl6_screen")
         elif key == "lvl7":
             set_page("lvl7_screen")
+        elif key == "lvl8":
+            set_page("lvl8_screen")
         elif key == "back":
             set_page("main_menu")
     elif current_page.startswith("lvl"):
@@ -3981,6 +3897,12 @@ while running:
             pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
             screen.blit(rendered, rect)
 
+    elif current_page == "lvl8_screen":
+        create_lvl8_screen()
+
+        for rendered, rect, key in buttons:
+            pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
+            screen.blit(rendered, rect)
 
     elif current_page == "levels":
         # Fetch the localized "Select a Level" text dynamically
