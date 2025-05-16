@@ -6,13 +6,14 @@ import time  # Import time to track time(for future use in scoring)
 
 pygame.mixer.init()
 click_sound = pygame.mixer.Sound("click.wav")
+death_sound = pygame.mixer.Sound("death.wav")
 
 # Load and set window icon
 icon = pygame.image.load("roboticon.ico")
 pygame.display.set_icon(icon)
 
 complete_levels = 0  # Keep track of how many levels have been completed
-locked_levels = ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9"] # Keep track of how many levels are locked
+locked_levels = [] # Keep track of how many levels are locked
 
 pygame.init()
 SCREEN_WIDTH = 1530
@@ -28,8 +29,8 @@ font = pygame.font.Font(font_path, 25)
 
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 265, SCREEN_HEIGHT - 54)
-ver_text = font.render("Version 1.0.5.1", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 187, SCREEN_HEIGHT - 84)
+ver_text = font.render("Version 1.0.6", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 84)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -371,9 +372,6 @@ def create_lvl1_screen():
     up_text = in_game.get("up_message", "Press UP to Jump!")
     rendered_up_text = font.render(up_text, True, (0, 0, 0))  # Render the up text
 
-    stamina_text = in_game.get("stamina_message", "Stamina: ")
-    rendered_stamina_text = font.render(stamina_text, True, (0, 0, 0))  # Render the stamina text
-
     exit_text = in_game.get("exit_message", "Exit Portal! Come here to win!")
     rendered_exit_text = font.render(exit_text, True, (0, 255, 0))  # Render the exit text
 
@@ -442,58 +440,14 @@ def create_lvl1_screen():
                         player_x = block.x + block.width
 
         if player_y > SCREEN_HEIGHT:
+            player_x, player_y = 600, 200
             fall_text = in_game.get("fall_message", "Fell too far!")
             screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
+            death_sound.play()
             pygame.display.update()
             pygame.time.delay(300)
-            player_x, player_y = 600, 200
             velocity_y = 0
             deathcount += 1
-
-        # Spike death
-        bottom_points = [
-            (player_x + img_width // 2, player_y + img_height),
-            (player_x + 5, player_y + img_height),
-            (player_x + img_width - 5, player_y + img_height)
-        ]
-        collision_detected = False  # Flag to stop further checks after a collision
-        for spike in spikes:
-            if collision_detected:
-                break  # Exit the outer loop if a collision has already been detected
-            for point in bottom_points:
-                if point_in_triangle(point[0], point[1], *spike):
-                    death_text = in_game.get("dead_message", "You Died")
-                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
-                    pygame.display.update()
-                    pygame.time.delay(300)
-                    player_x, player_y = 600, 200
-                    velocity_y = 0
-                    deathcount += 1
-                    collision_detected = True  # Set the flag to stop further checks
-                    break
-
-        # Spike death (including top collision detection)
-        top_points = [
-            (player_x + img_width // 2, player_y),  # Center top point
-            (player_x + 5, player_y),               # Left top point
-            (player_x + img_width - 5, player_y)    # Right top point
-        ]
-        collision_detected = False  # Flag to stop further checks after a collision
-        for spike in spikes:
-            if collision_detected:
-                break  # Exit the outer loop if a collision has already been detected
-            for point in top_points:
-                if point_in_triangle(point[0], point[1], *spike):
-                    # Trigger death logic
-                    player_x, player_y = 150, 200  # Reset player position
-                    death_text = in_game.get("dead_message", "You Died")
-                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
-                    pygame.display.update()
-                    pygame.time.delay(300)
-                    velocity_y = 0
-                    deathcount += 1
-                    collision_detected = True  # Set the flag to stop further checks
-                    break
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
@@ -518,11 +472,56 @@ def create_lvl1_screen():
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
-        pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
-        pygame.draw.rect(screen, (128, 0, 128), (moving_block2.x - camera_x, moving_block2.y - camera_y, moving_block2.width, moving_block2.height))
+            pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
+            pygame.draw.rect(screen, (128, 0, 128), (moving_block2.x - camera_x, moving_block2.y - camera_y, moving_block2.width, moving_block2.height))
 
-        for spike in spikes:
-            pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
+            for spike in spikes:
+                pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
+                        # Spike death
+            bottom_points = [
+                (player_x + img_width // 2, player_y + img_height),
+                (player_x + 5, player_y + img_height),
+                (player_x + img_width - 5, player_y + img_height)
+            ]
+            collision_detected = False  # Flag to stop further checks after a collision
+            for spike in spikes:
+                if collision_detected:
+                    break  # Exit the outer loop if a collision has already been detected
+                for point in bottom_points:
+                    if point_in_triangle(point[0], point[1], *spike):
+                        player_x, player_y = 600, 200
+                        death_text = in_game.get("dead_message", "You Died")
+                        screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                        death_sound.play()
+                        pygame.display.update()
+                        pygame.time.delay(300)
+                        velocity_y = 0
+                        deathcount += 1
+                        collision_detected = True  # Set the flag to stop further checks
+                        break
+
+        # Spike death (including top collision detection)
+            top_points = [
+                (player_x + img_width // 2, player_y),  # Center top point
+                (player_x + 5, player_y),               # Left top point
+                (player_x + img_width - 5, player_y)    # Right top point
+            ]
+            collision_detected = False  # Flag to stop further checks after a collision
+            for spike in spikes:
+                if collision_detected:
+                    break  # Exit the outer loop if a collision has already been detected
+                for point in top_points:
+                    if point_in_triangle(point[0], point[1], *spike):
+                        # Trigger death logic
+                        player_x, player_y = 150, 200  # Reset player position
+                        death_text = in_game.get("dead_message", "You Died")
+                        screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                        pygame.display.update()
+                        pygame.time.delay(300)
+                        velocity_y = 0
+                        deathcount += 1
+                        collision_detected = True  # Set the flag to stop further checks
+                        break
 
         pygame.draw.rect(screen, (0, 205, 0), (exit_portal.x - camera_x, exit_portal.y - camera_y, exit_portal.width, exit_portal.height))
         screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
@@ -542,8 +541,6 @@ def create_lvl1_screen():
         screen.blit(font.render(lvl1_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         pygame.display.update()    
-
-
 
 def create_lvl2_screen():
     global player_img, font, screen, complete_levels
@@ -714,57 +711,12 @@ def create_lvl2_screen():
             if player_y > SCREEN_HEIGHT:
                 fall_text = in_game.get("fall_message", "Fell too far!")
                 screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
+                death_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
                 player_x, player_y = 150, 500
                 velocity_y = 0
                 deathcount += 1
-
-        # Spike death
-        bottom_points = [
-            (player_x + img_width // 2, player_y + img_height),
-            (player_x + 5, player_y + img_height),
-            (player_x + img_width - 5, player_y + img_height)
-        ]
-        collision_detected = False  # Flag to stop further checks after a collision
-        for spike in spikes:
-            if collision_detected:
-                break  # Exit the outer loop if a collision has already been detected
-            for point in bottom_points:
-                if point_in_triangle(point[0], point[1], *spike):
-                    player_x, player_y = 150, 500
-                    death_text = in_game.get("dead_message", "You Died")
-                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
-                    pygame.display.update()
-                    pygame.time.delay(300)
-                    velocity_y = 0
-                    deathcount += 1
-                    collision_detected = True  # Set the flag to stop further checks
-                    break
-
-        # Spike death (including top collision detection)
-        top_points = [
-            (player_x + img_width // 2, player_y),  # Center top point
-            (player_x + 5, player_y),               # Left top point
-            (player_x + img_width - 5, player_y)    # Right top point
-        ]
-
-        collision_detected = False  # Flag to stop further checks after a collision
-        for spike in spikes:
-             if collision_detected:
-               break  # Exit the outer loop if a collision has already been detected
-             for point in top_points:
-                if point_in_triangle(point[0], point[1], *spike):
-            # Trigger death logic
-                    player_x, player_y = 150, 500  # Reset player position
-                    death_text = in_game.get("dead_message", "You Died")
-                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
-                    pygame.display.update()
-                    pygame.time.delay(300)
-                    velocity_y = 0
-                    deathcount += 1
-                    collision_detected = True  # Set the flag to stop further checks
-                    break
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
@@ -786,15 +738,60 @@ def create_lvl2_screen():
         # Drawing
         screen.fill((0, 102, 51))
 
+        for spike in spikes:
+            pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
+            # Spike death
+            bottom_points = [
+                (player_x + img_width // 2, player_y + img_height),
+                (player_x + 5, player_y + img_height),
+                (player_x + img_width - 5, player_y + img_height)
+            ]
+            collision_detected = False  # Flag to stop further checks after a collision
+            if collision_detected:
+                    break  # Exit the outer loop if a collision has already been detected
+            for point in bottom_points:
+                    if point_in_triangle(point[0], point[1], *spike):
+                        player_x, player_y = 150, 500
+                        death_text = in_game.get("dead_message", "You Died")
+                        screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                        death_sound.play()
+                        pygame.display.update()
+                        pygame.time.delay(300)
+                        velocity_y = 0
+                        deathcount += 1
+                        collision_detected = True  # Set the flag to stop further checks
+                        break
+
+            # Spike death (including top collision detection)
+            top_points = [
+                    (player_x + img_width // 2, player_y),  # Center top point
+                    (player_x + 5, player_y),               # Left top point
+                    (player_x + img_width - 5, player_y)    # Right top point
+            ]
+            collision_detected = False  # Flag to stop further checks after a collision
+            if collision_detected:
+                break  # Exit the outer loop if a collision has already been detected
+            for point in top_points:
+                if point_in_triangle(point[0], point[1], *spike):
+                    # Trigger death logic
+                        player_x, player_y = 150, 500  # Reset player position
+                        death_text = in_game.get("dead_message", "You Died")
+                        screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                        death_sound.play()
+                        pygame.display.update()
+                        pygame.time.delay(300)
+                        velocity_y = 0
+                        deathcount += 1
+                        collision_detected = True  # Set the flag to stop further checks
+                        break
+
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
+        
         pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
   
         for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (jump_block.x - camera_x, jump_block.y - camera_y, jump_block.width, jump_block.height))
-
-        for spike in spikes:
-            pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
 
         pygame.draw.rect(screen, (0, 205, 0), (exit_portal.x - camera_x, exit_portal.y - camera_y, exit_portal.width, exit_portal.height))
         screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
@@ -986,81 +983,11 @@ def create_lvl3_screen():
             if player_y > SCREEN_HEIGHT:
                 fall_text = in_game.get("fall_message", "Fell too far!")
                 screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
+                death_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 velocity_y = 0
-                deathcount += 1
-
-        # Spike death
-        bottom_points = [
-            (player_x + img_width // 2, player_y + img_height),
-            (player_x + 5, player_y + img_height),
-            (player_x + img_width - 5, player_y + img_height)
-        ]
-        collision_detected = False  # Flag to stop further checks after a collision
-        for spike in spikes:
-            if collision_detected:
-                break  # Exit the outer loop if a collision has already been detected
-            for point in bottom_points:
-                if point_in_triangle(point[0], point[1], *spike):
-                    player_x, player_y = spawn_x, spawn_y  # Reset player position
-                    death_text = in_game.get("dead_message", "You Died")
-                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
-                    pygame.display.update()
-                    pygame.time.delay(300)
-                    velocity_y = 0
-                    deathcount += 1
-                    collision_detected = True  # Set the flag to stop further checks
-                    break
-
-        # Spike death (including top collision detection)
-        top_points = [
-            (player_x + img_width // 2, player_y),  # Center top point
-            (player_x + 5, player_y),               # Left top point
-            (player_x + img_width - 5, player_y)    # Right top point
-        ]
-        collision_detected = False  # Flag to stop further checks after a collision
-        for spike in spikes:
-             if collision_detected:
-               break  # Exit the outer loop if a collision has already been detected
-             for point in top_points:
-                if point_in_triangle(point[0], point[1], *spike):
-            # Trigger death logic
-                    player_x, player_y = spawn_x, spawn_y  # Reset player position
-                    death_text = in_game.get("dead_message", "You Died")
-                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
-                    pygame.display.update()
-                    pygame.time.delay(300)
-                    velocity_y = 0
-                    deathcount += 1
-                    collision_detected = True  # Set the flag to stop further checks
-                    break
-
-        # Saw collision detection
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
-        player_center = player_rect.center
-
-        for saw in saws:
-            saw_x, saw_y, saw_radius, _ = saw
-
-            # Find the closest point on the player's rectangle to the saw's center
-            closest_x = max(player_rect.left, min(saw_x, player_rect.right))
-            closest_y = max(player_rect.top, min(saw_y, player_rect.bottom))
-
-            # Calculate the distance between the closest point and the saw's center
-            dx = closest_x - saw_x
-            dy = closest_y - saw_y
-            distance = (dx**2 + dy**2)**0.5
-
-            # Check if the distance is less than the saw's radius
-            if distance < saw_radius:
-                # Trigger death logic
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
-                pygame.display.update()
-                pygame.time.delay(300)
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
 
         for pair in key_block_pairs:
@@ -1132,9 +1059,29 @@ def create_lvl3_screen():
         
         # Draw key only if not collected
  
+        # Draw all saws first
         for x, y, r, color in saws:
-        # Draw the saw as a circle
             pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+        # Now check for collision with all saws
+        collision_detected = False
+        for x, y, r, color in saws:
+            closest_x = max(player_rect.left, min(x, player_rect.right))
+            closest_y = max(player_rect.top, min(y, player_rect.bottom))
+            dx = closest_x - x
+            dy = closest_y - y
+            distance = (dx**2 + dy**2)**0.5
+            if distance < r:
+                if not collision_detected:
+                    sawed_text = in_game.get("sawed_message", "Sawed to bits!")
+                    screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                    death_sound.play()
+                    pygame.display.update()
+                    pygame.time.delay(300)
+                    player_x, player_y = spawn_x, spawn_y
+                    deathcount += 1
+                    collision_detected = True
+                break  # Only die once per frame
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
@@ -1143,7 +1090,52 @@ def create_lvl3_screen():
             pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))
 
         for spike in spikes:
-            pygame.draw.polygon(screen, (255, 0, 0), [((x - camera_x),( y - camera_y)) for x, y in spike])
+            pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
+            # Spike death
+            bottom_points = [
+                (player_x + img_width // 2, player_y + img_height),
+                (player_x + 5, player_y + img_height),
+                (player_x + img_width - 5, player_y + img_height)
+            ]
+            collision_detected = False  # Flag to stop further checks after a collision
+            if collision_detected:
+                    break  # Exit the outer loop if a collision has already been detected
+            for point in bottom_points:
+                    if point_in_triangle(point[0], point[1], *spike):
+                        player_x, player_y = spawn_x, spawn_y
+                        death_text = in_game.get("dead_message", "You Died")
+                        death_sound.play()
+                        collision_detected = True  # Set the flag to stop further checks
+                        screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                        pygame.display.update()
+                        pygame.time.delay(300)
+                        velocity_y = 0
+                        deathcount += 1
+                        break
+
+            # Spike death (including top collision detection)
+            top_points = [
+                    (player_x + img_width // 2, player_y),  # Center top point
+                    (player_x + 5, player_y),               # Left top point
+                    (player_x + img_width - 5, player_y)    # Right top point
+            ]
+            collision_detected = False  # Flag to stop further checks after a collision
+            if collision_detected:
+                break  # Exit the outer loop if a collision has already been detected
+            for point in top_points:
+                if point_in_triangle(point[0], point[1], *spike):
+                    # Trigger death logic
+                        player_x, player_y = spawn_x, spawn_y  # Reset player position
+                        death_text = in_game.get("dead_message", "You Died")
+                        screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                        death_sound.play()
+                        pygame.display.update()
+                        pygame.time.delay(300)
+                        velocity_y = 0
+                        deathcount += 1
+                        collision_detected = True  # Set the flag to stop further checks
+                        break
+
         
         for pair in key_block_pairs:
             key_x, key_y, key_r, key_color = pair["key"]
@@ -1378,9 +1370,6 @@ def create_lvl4_screen():
                         player_x += speed
                     elif axis == 'y':
                         player_y += speed
-
-    # Draw the block
-            pygame.draw.rect(screen, (0, 255, 0), rect.move(-camera_x, -camera_y))
 
         # Jump block logic
         for jump_block in jump_blocks:
