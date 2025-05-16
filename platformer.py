@@ -7,6 +7,9 @@ import time  # Import time to track time(for future use in scoring)
 pygame.mixer.init()
 click_sound = pygame.mixer.Sound("click.wav")
 death_sound = pygame.mixer.Sound("death.wav")
+laser_sound = pygame.mixer.Sound("laser.wav")
+fall_sound = pygame.mixer.Sound("fall.wav")
+open_sound = pygame.mixer.Sound("unlock.wav")
 
 # Load and set window icon
 icon = pygame.image.load("roboticon.ico")
@@ -21,16 +24,25 @@ SCREEN_HEIGHT = 800
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Platformer 02!")
 
+# Load logo image
+logo = pygame.image.load("logo.png").convert_alpha()
+
+# Declare font size
 font = pygame.font.SysFont(None, 40)
 
 # Load the Chinese font (ensure the font file path is correct)
 font_path = 'NotoSansSC-SemiBold.ttf'  # Adjust if the path is different
 font = pygame.font.Font(font_path, 25)
 
+
+site_text = font.render("Sound effects from: pixabay.com", True, (255, 255, 255))
+site_pos = (SCREEN_WIDTH - 405, SCREEN_HEIGHT - 54)
+logo_text = font.render("Logo made with: canva.com", True, (255, 255, 255))
+logo_pos = (SCREEN_WIDTH - 349, SCREEN_HEIGHT - 84)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
-credit_pos = (SCREEN_WIDTH - 265, SCREEN_HEIGHT - 54)
-ver_text = font.render("Version 1.0.6", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 84)
+credit_pos = (SCREEN_WIDTH - 265, SCREEN_HEIGHT - 114)
+ver_text = font.render("Version 1.0.7", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -69,12 +81,12 @@ def create_main_menu_buttons():
 
     # Center buttons vertically and horizontally
     button_spacing = 60
-    start_y = (SCREEN_HEIGHT // 2) - (len(button_texts) * button_spacing // 2)
+    start_y = (SCREEN_HEIGHT // 2) - (len(button_texts) * button_spacing // 2) + 230
 
     for i, key in enumerate(button_texts):
         text = current_lang[key]
         rendered = font.render(text, True, (255, 255, 255))
-        rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, start_y + i * button_spacing))
+        rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, start_y + i * button_spacing)) 
         buttons.append((rendered, rect, key))
 
 def create_language_buttons():
@@ -378,9 +390,6 @@ def create_lvl1_screen():
     moving_text = in_game.get("moving_message", "Not all blocks stay still...")
     rendered_moving_text = font.render(moving_text, True, (128, 0, 128))  # Render the moving text
 
-    mock_text = in_game.get("mock_message", "Wrong way my guy nothing to see here...")
-    rendered_mock_text = font.render(mock_text, True, (255, 0, 0))  # Render the mock text
-
     while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -411,10 +420,6 @@ def create_lvl1_screen():
         if moving_block.x < moving_limit_left1 or moving_block.x > moving_limit_right1:
             moving_direction1 *= -1
 
-        moving_block2.x -= 6
-        if moving_block2.x < -1000:
-            moving_block2.x = 400
-
         # Collisions and Ground Detection
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
         on_ground = False
@@ -439,11 +444,11 @@ def create_lvl1_screen():
                     elif player_x + img_width > block.x + block.width:  # Colliding with the right side
                         player_x = block.x + block.width
 
-        if player_y > SCREEN_HEIGHT:
+        if player_y > (SCREEN_HEIGHT + 50):
             player_x, player_y = 600, 200
             fall_text = in_game.get("fall_message", "Fell too far!")
             screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
-            death_sound.play()
+            fall_sound.play()
             pygame.display.update()
             pygame.time.delay(300)
             velocity_y = 0
@@ -473,7 +478,6 @@ def create_lvl1_screen():
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
             pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
-            pygame.draw.rect(screen, (128, 0, 128), (moving_block2.x - camera_x, moving_block2.y - camera_y, moving_block2.width, moving_block2.height))
 
             for spike in spikes:
                 pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
@@ -534,7 +538,6 @@ def create_lvl1_screen():
         screen.blit(rendered_warning_text, (1900 - camera_x, 150 - camera_y))  # Draws the rendered warning text
         screen.blit(rendered_moving_text, (1350 - camera_x, 170 - camera_y))  # Draws the rendered moving text
         screen.blit(rendered_exit_text, (2400 - camera_x, 300 - camera_y))  # Draws the rendered exit text
-        screen.blit(rendered_mock_text, (-1000 - camera_x, 200 - camera_y))  # Draws the rendered mock text
 
         levels = load_language(lang_code).get('levels', {})
         lvl1_text = levels.get("lvl1", "Level 1")  # Render the level text
@@ -708,10 +711,10 @@ def create_lvl2_screen():
                     elif player_x + img_width > jump_block.x + jump_block.width:  # Colliding with the right side
                         player_x = jump_block.x + jump_block.width
 
-            if player_y > SCREEN_HEIGHT:
+            if player_y > (SCREEN_HEIGHT + 50):
                 fall_text = in_game.get("fall_message", "Fell too far!")
                 screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
-                death_sound.play()
+                fall_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
                 player_x, player_y = 150, 500
@@ -980,10 +983,10 @@ def create_lvl3_screen():
                     elif player_x + img_width > jump_block.x + jump_block.width:  # Colliding with the right side
                         player_x = jump_block.x + jump_block.width
 
-            if player_y > SCREEN_HEIGHT:
+            if player_y > (SCREEN_HEIGHT + 50):
                 fall_text = in_game.get("fall_message", "Fell too far!")
                 screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
-                death_sound.play()
+                fall_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
@@ -1145,6 +1148,8 @@ def create_lvl3_screen():
             if not pair["collected"]:
                 key_rect = pygame.Rect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
             if player_rect.colliderect(key_rect):
+                if not pair["collected"]:
+                    open_sound.play()
                 pair["collected"] = True
             
             if not pair["collected"]:
@@ -1293,7 +1298,7 @@ def create_lvl4_screen():
                 pair["collected"] = False  # Reset the collected status for all keys
             checkpoint_reached = False  # Reset checkpoint status
             checkpoint_reached2 = False  # Reset checkpoint status
-            spawn_x, spawn_y = 220, 400
+            spawn_x, spawn_y = 250, 450
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount = 0
@@ -1392,9 +1397,10 @@ def create_lvl4_screen():
                     elif player_x + img_width > jump_block.x + jump_block.width:  # Colliding with the right side
                         player_x = jump_block.x + jump_block.width
 
-        if player_y > SCREEN_HEIGHT:
+        if player_y > (SCREEN_HEIGHT + 50):
             fall_text = in_game.get("fall_message", "Fell too far!")
             screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
+            fall_sound.play()
             pygame.display.update()
             pygame.time.delay(300)
             player_x, player_y = spawn_x, spawn_y  # Reset player position
@@ -1408,22 +1414,6 @@ def create_lvl4_screen():
             (player_x + 5, player_y + img_height),
             (player_x + img_width - 5, player_y + img_height)
         ]
-        collision_detected = False  # Flag to stop further checks after a collision
-        for spike in spikes:
-            if collision_detected:
-                break  # Exit the outer loop if a collision has already been detected
-            for point in bottom_points:
-                if point_in_triangle(point[0], point[1], *spike):
-                    player_x, player_y = spawn_x, spawn_y  # Reset player position
-                    death_text = in_game.get("dead_message", "You Died")
-                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
-                    pygame.display.update()
-                    pygame.time.delay(300)
-                    velocity_y = 0
-                    deathcount += 1
-                    collision_detected = True  # Set the flag to stop further checks
-                    key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
-                    break
 
         # Spike death (including top collision detection)
         top_points = [
@@ -1451,7 +1441,6 @@ def create_lvl4_screen():
 
         # Saw collision detection
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
-        player_center = player_rect.center
 
         for pair in key_block_pairs:
             if not pair["collected"]:  # Only active locked blocks
@@ -1488,41 +1477,6 @@ def create_lvl4_screen():
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
             spawn_x, spawn_y = 3150, 100  # Checkpoint position
             print("Checkpoint reached!")
-
-        for laser in lasers:
-            # Check if the player collides with the laser
-            if player_rect.colliderect(laser):
-                # Trigger death logic
-                laser_text = in_game.get("laser_message", "Lasered!")
-                screen.blit(font.render(laser_text, True, (255, 0, 0)), (20, 50))
-                pygame.display.update()
-                pygame.time.delay(300)
-                player_x, player_y = spawn_x, spawn_y
-                deathcount += 1
-                key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
-
-        for saw in saws:
-            saw_x, saw_y, saw_radius, _ = saw
-
-        # Find the closest point on the player's rectangle to the saw's center
-            closest_x = max(player_rect.left, min(saw_x, player_rect.right))
-            closest_y = max(player_rect.top, min(saw_y, player_rect.bottom))
-
-            # Calculate the distance between the closest point and the saw's center
-            dx = closest_x - saw_x
-            dy = closest_y - saw_y
-            distance = (dx**2 + dy**2)**0.5
-
-            # Check if the distance is less than the saw's radius
-            if distance < saw_radius:
-                    # Trigger death logic
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
-                deathcount += 1
-                pygame.display.update()
-                pygame.time.delay(300)  
-                key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
@@ -1591,6 +1545,7 @@ def create_lvl4_screen():
                 screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))               
                 player_x, player_y = spawn_x, spawn_y  # Reset player position    
                 deathcount += 1        
+                death_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
                 key_block_pairs[0]["collected"] = False
@@ -1616,20 +1571,61 @@ def create_lvl4_screen():
             distance = (dx**2 + dy**2)**0.5
             if distance < saw['r']:
         # Trigger death logic
+                player_x, player_y = spawn_x, spawn_y  # Reset player position
                 sawed_text = in_game.get("sawed_message", "Sawed to bits!")
                 screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                death_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
+        # Draw all saws first
         for x, y, r, color in saws:
-            # Draw the saw as a circle
             pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
 
+        # Now check for collision with all saws
+        for saw in saws:
+            saw_x, saw_y, saw_radius, _ = saw
+
+        # Find the closest point on the player's rectangle to the saw's center
+            closest_x = max(player_rect.left, min(saw_x, player_rect.right))
+            closest_y = max(player_rect.top, min(saw_y, player_rect.bottom))
+
+            # Calculate the distance between the closest point and the saw's center
+            dx = closest_x - saw_x
+            dy = closest_y - saw_y
+            distance = (dx**2 + dy**2)**0.5
+
+            # Check if the distance is less than the saw's radius
+            if distance < saw_radius:
+                    # Trigger death logic
+                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
+                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                player_x, player_y = spawn_x, spawn_y  # Reset player position
+                death_sound.play()
+                deathcount += 1
+                pygame.display.update()
+                pygame.time.delay(300)  
+                key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
+
+        # Draw all lasers first
         for laser in lasers:
             pygame.draw.rect(screen, (255, 0, 0), (int(laser.x - camera_x), int(laser.y - camera_y), laser.width, laser.height))
+
+        # Then check for collision with lasers
+        for laser in lasers:
+            # Check if the player collides with the laser
+            if player_rect.colliderect(laser):
+                # Trigger death logic
+                player_x, player_y = spawn_x, spawn_y
+                laser_text = in_game.get("laser_message", "Lasered!")
+                screen.blit(font.render(laser_text, True, (255, 0, 0)), (20, 50))
+                laser_sound.play()
+                pygame.display.update()
+                pygame.time.delay(300)
+                deathcount += 1
+                key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
@@ -1638,7 +1634,52 @@ def create_lvl4_screen():
             pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))
 
         for spike in spikes:
-            pygame.draw.polygon(screen, (255, 0, 0), [((x - camera_x),( y - camera_y)) for x, y in spike])
+            pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
+            # Spike death
+            bottom_points = [
+                (player_x + img_width // 2, player_y + img_height),
+                (player_x + 5, player_y + img_height),
+                (player_x + img_width - 5, player_y + img_height)
+            ]
+            collision_detected = False  # Flag to stop further checks after a collision
+            if collision_detected:
+                    break  # Exit the outer loop if a collision has already been detected
+            for point in bottom_points:
+                    if point_in_triangle(point[0], point[1], *spike):
+                        player_x, player_y = spawn_x, spawn_y
+                        death_text = in_game.get("dead_message", "You Died")
+                        death_sound.play()
+                        collision_detected = True  # Set the flag to stop further checks
+                        screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                        pygame.display.update()
+                        pygame.time.delay(300)
+                        velocity_y = 0
+                        deathcount += 1
+                        break
+
+            # Spike death (including top collision detection)
+            top_points = [
+                    (player_x + img_width // 2, player_y),  # Center top point
+                    (player_x + 5, player_y),               # Left top point
+                    (player_x + img_width - 5, player_y)    # Right top point
+            ]
+            collision_detected = False  # Flag to stop further checks after a collision
+            if collision_detected:
+                break  # Exit the outer loop if a collision has already been detected
+            for point in top_points:
+                if point_in_triangle(point[0], point[1], *spike):
+                    # Trigger death logic
+                        player_x, player_y = spawn_x, spawn_y  # Reset player position
+                        death_text = in_game.get("dead_message", "You Died")
+                        screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                        death_sound.play()
+                        pygame.display.update()
+                        pygame.time.delay(300)
+                        velocity_y = 0
+                        deathcount += 1
+                        collision_detected = True  # Set the flag to stop further checks
+                        break
+
         
         for pair in key_block_pairs:
             key_x, key_y, key_r, key_color = pair["key"]
@@ -1648,6 +1689,8 @@ def create_lvl4_screen():
             if not pair["collected"]:
                 key_rect = pygame.Rect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
             if player_rect.colliderect(key_rect):
+                if not pair["collected"]:
+                    open_sound.play()
                 pair["collected"] = True
             
             if not pair["collected"]:
@@ -3766,6 +3809,9 @@ while running:
                         last_page_change_time = time.time()  # Update the time after handling the click
 
     if current_page == "main_menu":
+        screen.blit(logo, ((SCREEN_WIDTH // 2 - 400), 30))
+        screen.blit(logo_text, logo_pos)
+        screen.blit(site_text, site_pos)
         screen.blit(credit_text, credit_pos)
         screen.blit(ver_text, ver_pos)
     # Render the main menu buttons
