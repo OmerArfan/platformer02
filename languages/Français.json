@@ -49,5 +49,7 @@
   ,"laser_message": "Tué par un laser!"
   ,"invisible_message": "Ces scies ne vous blesseront pas... promis!"
   ,"portal_message": "Ces portails bleus vous téléportent ! Mais surtout vers de bons endroits !"
+  ,"button1_message": "Les boutons bleus, une fois activés, vous feront sauter plus haut!",
+  "clarify_message": "Jusqu'à ce que vous atteigniez un point de contrôle, bien sûr!"
   }
 }

@@ -49,5 +49,7 @@
         ,"laser_message": "Laserizado!"
         ,"invisible_message": "Essas serras não vão te machucar... prometo!"
         ,"portal_message": "Esses portais azuis teletransportam você! Mas para lugares bons... na maioria das vezes!"
+        ,"button1_message": "Botões azuis, ao serem ativados, farão você pular mais alto!"
+        ,"clarify_message": "Até você chegar a um ponto de verificação, claro!"
     }
 }

@@ -49,5 +49,7 @@
     ,"laser_message": "激光处理！"
     ,"invisible_message": "这些锯子不会伤害你……我保证！"  
     ,"portal_message": "这些蓝色传送门会把你传送出去！不过大部分情况下……都会传送到好地方！"
+    ,"button1_message": "蓝色按钮激活后会让你跳得更高！",
+    "clarify_message": "当然，直到你到达检查点！"
   }
 }

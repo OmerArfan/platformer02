@@ -48,6 +48,9 @@
   "key_message": "Grab the coin and open the block!",
   "laser_message": "Lasered!",
   "invisible_message": "These saws won't hurt you... promise!",
-  "portal_message": "These blue portals teleport you! But to good places... mostly!"
+  "portal_message": "These blue portals teleport you! But to good places... mostly!",
+  "button1_message": "Blue buttons, upon activation, will make you jump higher!",
+  "clarify_message": "Until you reach a checkpoint, of course!"
+
 }
 }
