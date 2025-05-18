@@ -48,8 +48,8 @@ logo_text = font.render("Logo made with: canva.com", True, (255, 255, 255))
 logo_pos = (SCREEN_WIDTH - 349, SCREEN_HEIGHT - 84)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 265, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.0.12", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 183, SCREEN_HEIGHT - 144)
+ver_text = font.render("Version 1.0.12.1", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 206, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -3331,6 +3331,447 @@ def create_lvl8_screen():
         pygame.Rect(11000, -300, 100, 100),
     ]
 
+    moving_saws_x = [
+        {'r': 100, 'speed':14, 'cx': 11000, 'cy': -705, 'max': 11300, 'min': 10700}
+    ]
+
+    saws = [
+        (750, 200, 80, (255, 0, 0)),
+        (9025, -175, 150, (255, 0, 0)),
+        (9625, -175, 150, (255, 0, 0)),
+    ]
+
+    spikes = [
+    [(700, 650), (750, 600), (800, 650)],
+    [(1400, 200), (1475, 120), (1550, 200)],
+    [(9000, -750), (9025, -800), (9050, -750)],
+    [(9600, -750), (9625, -800), (9650, -750)],
+    [(10000, -800), (10050, -750), (10100, -800)],
+    [(10100, -800), (10150, -750), (10200, -800)],
+    [(10200, -800), (10250, -750), (10300, -800)],
+    [(10300, -800), (10350, -750), (10400, -800)],
+    [(10400, -800), (10450, -750), (10500, -800)],
+    [(10500, -800), (10550, -750), (10600, -800)],
+    [(10600, -800), (10650, -750), (10700, -800)],
+    [(10700, -800), (10750, -750), (10800, -800)],
+    [(10800, -800), (10850, -750), (10900, -800)],
+    [(10900, -800), (10950, -750), (11000, -800)],
+    [(11000, -800), (11050, -750), (11100, -800)],
+    [(11100, -800), (11150, -750), (11200, -800)],
+    [(11200, -800), (11250, -750), (11300, -800)],
+    [(11300, -800), (11350, -750), (11400, -800)],
+    ]
+
+    exit_portal = pygame.Rect(11050, -750, 50, 100)
+    clock = pygame.time.Clock()
+
+    gravity_weakers = [
+        (8600, -300, 30, (0, 102, 204)),
+    ]
+
+    teleporters = [
+        {
+            "entry": pygame.Rect(500, 100, 50, 100),
+            "exit": pygame.Rect(8300, -400, 50, 100),
+            "color": (0, 196, 255)
+        },
+        {
+            "entry": pygame.Rect(1650, 100, 50, 100),
+            "exit": pygame.Rect(8300, -400, 50, 100),
+            "color": (0, 196, 255)
+        }
+    ]
+
+    def point_in_triangle(px, py, a, b, c):
+        def sign(p1, p2, p3):
+            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
+        b1 = sign((px, py), a, b) < 0.0
+        b2 = sign((px, py), b, c) < 0.0
+        b3 = sign((px, py), c, a) < 0.0
+        return b1 == b2 == b3
+
+    while running:
+        clock.tick(60)
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_r]:
+            weak_grav = False # Reset weak gravity status
+            checkpoint_reached = False  # Reset checkpoint status
+            checkpoint_reached2 = False  # Reset checkpoint status
+            spawn_x, spawn_y = -25, 260
+            player_x, player_y = spawn_x, spawn_y  # Reset player position
+            velocity_y = 0
+            deathcount = 0
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                set_page("levels")
+
+        # Input
+        if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
+            if weak_grav:
+                velocity_y = -weak_jump_strength
+            else:
+                velocity_y = -jump_strength
+            jump_sound.play()
+
+        # Detect if any movement key is pressed
+        moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
+                  keys[pygame.K_RIGHT] or keys[pygame.K_d])
+
+        if moving:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                player_x -= move_speed
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                player_x += move_speed
+
+            if on_ground and not was_moving:
+                move_sound.play()
+            was_moving = True
+        else:
+            was_moving = False
+
+        # Gravity and stamina
+        if not on_ground:
+            velocity_y += gravity
+        player_y += velocity_y
+
+        # Collisions and Ground Detection
+        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        on_ground = False
+
+        for block in blocks:
+            if player_rect.colliderect(block):
+                # Falling onto a block
+                if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
+                    player_y = block.y - img_height
+                    velocity_y = 0
+                    on_ground = True
+
+                # Hitting the bottom of a block
+                elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
+                    player_y = block.y + block.height
+                    velocity_y = 0
+
+                # Horizontal collision (left or right side of the block)
+                elif player_x + img_width > block.x and player_x < block.x + block.width:
+                    if player_x < block.x:  # Colliding with the left side of the block
+                        player_x = block.x - img_width
+                    elif player_x + img_width > block.x + block.width:  # Colliding with the right side
+                        player_x = block.x + block.width
+
+        # Jump block logic
+        for jump_block in jump_blocks:
+            if player_rect.colliderect(jump_block):
+                # Falling onto a jump block
+                if velocity_y > 0 and player_y + img_height - velocity_y <= jump_block.y:
+                    player_y = jump_block.y - img_height
+                    velocity_y = -33  # Apply upward velocity for the jump
+                    on_ground = True
+                    bounce_sound.play()
+
+                # Hitting the bottom of a jump block
+                elif velocity_y < 0 and player_y >= jump_block.y + jump_block.height - velocity_y:
+                    player_y = jump_block.y + jump_block.height
+                    velocity_y = 0
+
+                # Horizontal collision (left or right side of the jump block)
+                elif player_x + img_width > jump_block.x and player_x < jump_block.x + jump_block.width:
+                    if player_x < jump_block.x:  # Colliding with the left side of the jump block
+                        player_x = jump_block.x - img_width
+                    elif player_x + img_width > jump_block.x + jump_block.width:  # Colliding with the right side
+                        player_x = jump_block.x + jump_block.width
+
+
+        if player_y > SCREEN_HEIGHT:
+            fall_text = in_game.get("fall_message", "Fell too far!")
+            screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
+            weak_grav = False # Reset weak gravity status
+            fall_sound.play()
+            pygame.display.update()
+            pygame.time.delay(300)
+            player_x, player_y = spawn_x, spawn_y  # Reset player position
+            velocity_y = 0
+            deathcount += 1
+
+        # Checkpoint Logic
+        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+
+        if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
+            checkpoint_reached = True
+            weak_grav = False # Reset weak gravity status
+            spawn_x, spawn_y = 8470, -500  # Store checkpoint position
+            checkpoint_sound.play()
+            print("Checkpoint reached!")
+            pygame.draw.rect(screen, (0, 255, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
+        if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
+            checkpoint_reached = False
+            checkpoint_reached2 = True
+            weak_grav = False # Reset weak gravity status
+            pygame.draw.rect(screen, (0, 255, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
+            pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
+            spawn_x, spawn_y = 10200, -350  # Checkpoint position
+            checkpoint_sound.play()
+            print("Checkpoint reached!")
+
+        # Exit portal
+        if player_rect.colliderect(exit_portal):
+            running = False
+            if complete_levels < 8:
+                complete_levels = 8
+                update_locked_levels()
+            warp_sound.play()
+            set_page('main_menu')
+
+        # Camera logic
+        camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
+
+        # Adjust the camera's Y position when the player moves up
+        if player_y <= 440:
+            camera_y = player_y - 440
+        else:
+            camera_y = 0  # Keep the camera fixed when the player is below the threshold
+
+        # Drawing
+        screen.fill((0, 102, 51))
+
+        # Draw flag
+        if checkpoint_reached:
+            pygame.draw.rect(screen, (0, 255, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
+        else:
+            pygame.draw.rect(screen, (255, 215, 0), flag.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
+
+        if checkpoint_reached2:
+            pygame.draw.rect(screen, (0, 255, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
+        else:
+            pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
+        
+        # Draw key only if not collected
+ 
+# Saw collision detection and drawing
+        collision_detected = False 
+        for saw in moving_saws_x:
+    # Update the circle's position (move vertically)
+            saw['cx'] += saw['speed']
+    # Check if the saw has reached the limits
+            if saw['cx'] > saw['max'] or saw['cx'] < saw['min']:
+                saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
+
+    # Draw the moving circle (saw)
+            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+
+    # Collision detection (if needed)
+            closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
+            closest_y = max(player_rect.top, min(saw['cy'], player_rect.bottom))
+            dx = closest_x - saw['cx']
+            dy = closest_y - saw['cy']
+            distance = (dx**2 + dy**2)**0.5
+            if distance < saw['r']:
+        # Trigger death logic
+                weak_grav = False # Reset weak gravity status
+                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
+                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                death_sound.play()
+                pygame.display.update()
+                pygame.time.delay(300)
+                player_x, player_y = spawn_x, spawn_y  # Reset player position
+                deathcount += 1
+
+        for teleporter in teleporters:
+            # Draw the entry rectangle
+            pygame.draw.rect(screen, teleporter["color"], teleporter["entry"].move(-camera_x, -camera_y))
+    
+            # Draw the exit rectangle
+            pygame.draw.rect(screen, teleporter["color"], teleporter["exit"].move(-camera_x, -camera_y))
+    
+           # Check if the player collides with the entry rectangle
+            if player_rect.colliderect(teleporter["entry"]):
+                # Teleport the player to the exit rectangle
+                warp_sound.play()
+                player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
+        
+        for x, y, r, color in saws:
+            # Draw the saw as a circle
+            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+        for saw in saws:
+            saw_x, saw_y, saw_radius, _ = saw
+
+        # Find the closest point on the player's rectangle to the saw's center
+            closest_x = max(player_rect.left, min(saw_x, player_rect.right))
+            closest_y = max(player_rect.top, min(saw_y, player_rect.bottom))
+
+            # Calculate the distance between the closest point and the saw's center
+            dx = closest_x - saw_x
+            dy = closest_y - saw_y
+            distance = (dx**2 + dy**2)**0.5
+
+            # Check if the distance is less than the saw's radius
+            if distance < saw_radius:
+                weak_grav = False # Reset weak gravity status
+                    # Trigger death logic
+                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
+                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                player_x, player_y = spawn_x, spawn_y  # Reset player position
+                deathcount += 1
+                death_sound.play()
+                pygame.display.update()
+                pygame.time.delay(300)  
+
+        for block in blocks:
+            pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
+        for jump_block in jump_blocks:
+            pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))        
+
+        for spike in spikes:
+            pygame.draw.polygon(screen, (255, 0, 0), [((x - camera_x),( y - camera_y)) for x, y in spike])
+
+        # Spike death
+        bottom_points = [
+            (player_x + img_width // 2, player_y + img_height),
+            (player_x + 5, player_y + img_height),
+            (player_x + img_width - 5, player_y + img_height)
+        ]
+        collision_detected = False  # Flag to stop further checks after a collision
+        for spike in spikes:
+            if collision_detected:
+                break  # Exit the outer loop if a collision has already been detected
+            for point in bottom_points:
+                if point_in_triangle(point[0], point[1], *spike):
+                    weak_grav = False # Reset weak gravity status
+                    player_x, player_y = spawn_x, spawn_y  # Reset player position
+                    death_text = in_game.get("dead_message", "You Died")
+                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                    death_sound.play()
+                    pygame.display.update()
+                    pygame.time.delay(300)
+                    velocity_y = 0
+                    deathcount += 1
+                    collision_detected = True  # Set the flag to stop further checks
+                    break
+
+        # Spike death (including top collision detection)
+        top_points = [
+            (player_x + img_width // 2, player_y),  # Center top point
+            (player_x + 5, player_y),               # Left top point
+            (player_x + img_width - 5, player_y)    # Right top point
+        ]
+        collision_detected = False  # Flag to stop further checks after a collision
+        for spike in spikes:
+             if collision_detected:
+               break  # Exit the outer loop if a collision has already been detected
+             for point in top_points:
+                if point_in_triangle(point[0], point[1], *spike):
+                    weak_grav = False # Reset weak gravity status
+            # Trigger death logic
+                    player_x, player_y = spawn_x, spawn_y  # Reset player position
+                    death_text = in_game.get("dead_message", "You Died")
+                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                    death_sound.play()
+                    pygame.display.update()
+                    pygame.time.delay(300)
+                    velocity_y = 0
+                    deathcount += 1
+                    collision_detected = True  # Set the flag to stop further checks
+                    break
+
+        for x, y, r, color in gravity_weakers:
+            # Draw the button as a circle
+            if not weak_grav:
+                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+        for gravity_weaker in gravity_weakers:
+            gravity_weaker_x, gravity_weaker_y, gravity_weaker_radius, _ = gravity_weaker
+
+        # Find the closest point on the player's rectangle to the button's center
+            closest_x = max(player_rect.left, min(gravity_weaker_x, player_rect.right))
+            closest_y = max(player_rect.top, min(gravity_weaker_y, player_rect.bottom))
+
+            # Calculate the distance between the closest point and the button's center
+            dx = closest_x - gravity_weaker_x
+            dy = closest_y - gravity_weaker_y
+            distance = (dx**2 + dy**2)**0.5
+
+            # If distance is less than radius, weaker gravity activated
+            if distance < gravity_weaker_radius and not weak_grav:
+                button_sound.play()
+                weak_grav = True
+
+
+        pygame.draw.rect(screen, (0, 205, 0), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+        screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
+
+        deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
+        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+
+        # Draw the texts
+        
+        levels = load_language(lang_code).get('levels', {})
+        lvl8_text = levels.get("lvl8", "Level 8")  # Render the level text
+        screen.blit(font.render(lvl8_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+
+        button1_text = in_game.get("button1_message", "Blue buttons, upon activation, will make you jump higher!")
+        screen.blit(font.render(button1_text, True, (0, 102, 204)), (8400 - camera_x, -150 - camera_y))
+
+        clarify_text = in_game.get("clarify_message", "Until you reach a checkpoint, of course!")
+        screen.blit(font.render(clarify_text, True, (0, 102, 204)), (9800 - camera_x, -150 - camera_y))
+
+        mock_text = in_game.get("mock_message", "Wrong way my guy nothing to see here...")
+        screen.blit(font.render(mock_text, True, (255, 0, 0)), (13200 - camera_x, -300 - camera_y))
+
+        pygame.display.update()   
+
+def create_lvl9_screen():
+    global player_img, font, screen, complete_levels
+
+    in_game = load_language(lang_code).get('in_game', {})
+
+    # Camera settings
+    camera_x = 300
+    camera_y = -500
+    spawn_x, spawn_y = -25, 260
+    player_x, player_y = spawn_x, spawn_y
+    running = True
+    gravity = 1
+    jump_strength = 21
+    # When the gravity is weaker
+    weak_jump_strength = 37
+    weak_grav = False
+    move_speed = 8
+    on_ground = False
+    velocity_y = 0
+    camera_speed = 0.5
+    deathcount = 0
+    was_moving = False
+
+    # Load player image
+    player_img = pygame.image.load("robot.png").convert_alpha()
+    img_width, img_height = player_img.get_size()
+
+    # Draw flag
+    flag = pygame.Rect(8470, -250, 80, 50)  # x, y, width, height
+    checkpoint_reached = False
+    flag2 = pygame.Rect(10200, -250, 80, 50)  # x, y, width, height
+    checkpoint_reached2 = False
+
+    blocks = [
+        pygame.Rect(0, 400, 100, 100),
+        pygame.Rect(460, 650, 540, 50),
+        pygame.Rect(500, 200, 500, 50),
+        pygame.Rect(1200, 200, 500, 50),
+        pygame.Rect(8200, -200, 6000, 400),
+        pygame.Rect(9000, -750, 50, 600),
+        pygame.Rect(9600, -750, 50, 600),
+        pygame.Rect(10000, -1300, 2000, 500),
+    ]
+    
+    jump_blocks = [
+        pygame.Rect(1100, 600, 100, 100),
+        pygame.Rect(11000, -300, 100, 100),
+    ]
+
     moving_saws = [ 
         {'r': 100, 'speed': 9, 'cx': 3800, 'cy': 200, 'max': 700, 'min': 200},
         {'r': 100, 'speed': 9, 'cx': 4500, 'cy': 600, 'max': 700, 'min': 200},
@@ -3527,8 +3968,8 @@ def create_lvl8_screen():
         # Exit portal
         if player_rect.colliderect(exit_portal):
             running = False
-            if complete_levels < 8:
-                complete_levels = 8
+            if complete_levels < 9:
+                complete_levels = 9
                 update_locked_levels()
             warp_sound.play()
             set_page('main_menu')
@@ -3784,8 +4225,8 @@ def create_lvl8_screen():
         # Draw the texts
         
         levels = load_language(lang_code).get('levels', {})
-        lvl8_text = levels.get("lvl8", "Level 8")  # Render the level text
-        screen.blit(font.render(lvl8_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+        lvl9_text = levels.get("lvl9", "Level 9")  # Render the level text
+        screen.blit(font.render(lvl9_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         button1_text = in_game.get("button1_message", "Blue buttons, upon activation, will make you jump higher!")
         screen.blit(font.render(button1_text, True, (0, 102, 204)), (8400 - camera_x, -150 - camera_y))
@@ -3796,8 +4237,7 @@ def create_lvl8_screen():
         mock_text = in_game.get("mock_message", "Wrong way my guy nothing to see here...")
         screen.blit(font.render(mock_text, True, (255, 0, 0)), (13200 - camera_x, -300 - camera_y))
 
-        pygame.display.update()   
-
+        pygame.display.update() 
 
 # Handle actions based on current page
 def handle_action(key):
