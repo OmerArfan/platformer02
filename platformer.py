@@ -44,7 +44,7 @@ logo_text = font.render("Logo made with: canva.com", True, (255, 255, 255))
 logo_pos = (SCREEN_WIDTH - 349, SCREEN_HEIGHT - 84)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 265, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.0.10", True, (255, 255, 255))
+ver_text = font.render("Version 1.0.11", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 183, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -847,14 +847,14 @@ def create_lvl3_screen():
 
     key_block_pairs = [
         {
-            "key": (300, 200, 30, (255, 255, 0)),
+            "key": (310, 225, 30, (255, 255, 0)),
             "block": pygame.Rect(2550, 250, 200, 200),
             "collected": False
         },
     ]
 
     saws = [
-        (650, 750, 80,(255, 0, 0)),  # (x, y, radius, color)
+        (620, 750, 80,(255, 0, 0)),  # (x, y, radius, color)
         (1700, 335, 100,(255, 0, 0)),  # (x, y, radius, color)
         (1200, 335, 100,(255, 0, 0)),
         (800, 335, 100,(255, 0, 0)),
@@ -1172,7 +1172,7 @@ def create_lvl3_screen():
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
 
         # Draw the texts
-        screen.blit(rendered_saw_text, (int(1550 - camera_x), int(150 - camera_y)))  # Draws the rendered up text
+        screen.blit(rendered_saw_text, (int(550 - camera_x), int(600 - camera_y)))  # Draws the rendered up text
         screen.blit(rendered_key_text, (int(2500 - camera_x), int(200 - camera_y)))  # Draws the rendered up text
 
 
@@ -1888,9 +1888,6 @@ def create_lvl5_screen():
                         player_x = block.x - img_width
                     elif player_x + img_width > block.x + block.width:  # Colliding with the right side
                         player_x = block.x + block.width
-
-    # Draw the block
-            pygame.draw.rect(screen, (0, 255, 0), rect.move(-camera_x, -camera_y))
 
         # Jump block logic
         for jump_block in jump_blocks:
@@ -3195,7 +3192,7 @@ def create_lvl8_screen():
 
     # Camera settings
     camera_x = 300
-    camera_y = 0
+    camera_y = -500
     spawn_x, spawn_y = -25, 260
     player_x, player_y = spawn_x, spawn_y
     running = True
@@ -3215,9 +3212,9 @@ def create_lvl8_screen():
     img_width, img_height = player_img.get_size()
 
     # Draw flag
-    flag = pygame.Rect(2600, 300, 80, 50)  # x, y, width, height
+    flag = pygame.Rect(8470, -250, 80, 50)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(240, -1420, 80, 50)  # x, y, width, height
+    flag2 = pygame.Rect(10200, -250, 80, 50)  # x, y, width, height
     checkpoint_reached2 = False
 
     blocks = [
@@ -3225,13 +3222,15 @@ def create_lvl8_screen():
         pygame.Rect(460, 650, 540, 50),
         pygame.Rect(500, 200, 500, 50),
         pygame.Rect(1200, 200, 500, 50),
-        pygame.Rect(2200, -200, 6000, 50),
-        pygame.Rect(3000, -750, 50, 600),
-        pygame.Rect(3600, -750, 50, 600),
+        pygame.Rect(8200, -200, 6000, 400),
+        pygame.Rect(9000, -750, 50, 600),
+        pygame.Rect(9600, -750, 50, 600),
+        pygame.Rect(10000, -1300, 2000, 500),
     ]
     
     jump_blocks = [
         pygame.Rect(1100, 600, 100, 100),
+        pygame.Rect(11000, -300, 100, 100),
     ]
 
     moving_saws = [ 
@@ -3240,41 +3239,56 @@ def create_lvl8_screen():
     ]
 
     moving_saws_x = [
-        {'r': 100, 'speed':11, 'cx': 700, 'cy': -975, 'max': 1200, 'min': 700},
-        {'r': 100, 'speed': 7, 'cx': 1550, 'cy': -1100, 'max': 2000, 'min': 1550}
+        {'r': 100, 'speed':14, 'cx': 11000, 'cy': -705, 'max': 11300, 'min': 10700}
     ]
 
     saws = [
         (750, 200, 80, (255, 0, 0)),
+        (9025, -175, 150, (255, 0, 0)),
+        (9625, -175, 150, (255, 0, 0)),
     ]
 
     rotating_saws = [
-        {'r': 40, 'orbit_radius': 250, 'angle': 0, 'speed': 3},
+        {'r': 40, 'orbit_radius': 350, 'angle': 0, 'speed': 3},
     ]
 
     spikes = [
     [(700, 650), (750, 600), (800, 650)],
     [(1400, 200), (1475, 120), (1550, 200)],
-    [(3000, -750), (3025, -800), (3050, -750)],
-    [(3600, -750), (3625, -800), (3650, -750)],
+    [(9000, -750), (9025, -800), (9050, -750)],
+    [(9600, -750), (9625, -800), (9650, -750)],
+    [(10000, -800), (10050, -750), (10100, -800)],
+    [(10100, -800), (10150, -750), (10200, -800)],
+    [(10200, -800), (10250, -750), (10300, -800)],
+    [(10300, -800), (10350, -750), (10400, -800)],
+    [(10400, -800), (10450, -750), (10500, -800)],
+    [(10500, -800), (10550, -750), (10600, -800)],
+    [(10600, -800), (10650, -750), (10700, -800)],
+    [(10700, -800), (10750, -750), (10800, -800)],
+    [(10800, -800), (10850, -750), (10900, -800)],
+    [(10900, -800), (10950, -750), (11000, -800)],
+    [(11000, -800), (11050, -750), (11100, -800)],
+    [(11100, -800), (11150, -750), (11200, -800)],
+    [(11200, -800), (11250, -750), (11300, -800)],
+    [(11300, -800), (11350, -750), (11400, -800)],
     ]
 
-    exit_portal = pygame.Rect(2050, -1225, 50, 100)
+    exit_portal = pygame.Rect(11050, -750, 50, 100)
     clock = pygame.time.Clock()
 
     gravity_weakers = [
-        (2600, -300, 30, (0, 102, 204)),
+        (8600, -300, 30, (0, 102, 204)),
     ]
 
     teleporters = [
         {
             "entry": pygame.Rect(500, 100, 50, 100),
-            "exit": pygame.Rect(2300, -400, 50, 100),
+            "exit": pygame.Rect(8300, -400, 50, 100),
             "color": (0, 196, 255)
         },
         {
             "entry": pygame.Rect(1650, 100, 50, 100),
-            "exit": pygame.Rect(2300, -400, 50, 100),
+            "exit": pygame.Rect(8300, -400, 50, 100),
             "color": (0, 196, 255)
         }
     ]
@@ -3386,7 +3400,7 @@ def create_lvl8_screen():
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
             checkpoint_reached = True
             weak_grav = False # Reset weak gravity status
-            spawn_x, spawn_y = 2600, 250  # Store checkpoint position
+            spawn_x, spawn_y = 8470, -500  # Store checkpoint position
             checkpoint_sound.play()
             print("Checkpoint reached!")
             pygame.draw.rect(screen, (0, 255, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
@@ -3396,7 +3410,7 @@ def create_lvl8_screen():
             weak_grav = False # Reset weak gravity status
             pygame.draw.rect(screen, (0, 255, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
-            spawn_x, spawn_y = 150, -1500  # Checkpoint position
+            spawn_x, spawn_y = 10200, -350  # Checkpoint position
             checkpoint_sound.play()
             print("Checkpoint reached!")
 
@@ -3413,8 +3427,8 @@ def create_lvl8_screen():
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
 
         # Adjust the camera's Y position when the player moves up
-        if player_y <= 200:
-            camera_y = player_y - 200
+        if player_y <= 440:
+            camera_y = player_y - 440
         else:
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
@@ -3663,11 +3677,14 @@ def create_lvl8_screen():
         lvl8_text = levels.get("lvl8", "Level 8")  # Render the level text
         screen.blit(font.render(lvl8_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
-        portal_text = in_game.get("portal_message", "These blue portals teleport you! But to good places... mostly!")
-        screen.blit(font.render(portal_text, True, (0, 196, 255)), (4400 - camera_x, 300 - camera_y))
+        button1_text = in_game.get("button1_message", "Blue buttons, upon activation, will make you jump higher!")
+        screen.blit(font.render(button1_text, True, (0, 102, 204)), (8400 - camera_x, -150 - camera_y))
 
-        placeholder = font.render("Under development!", True, (255, 255, 255))
-        screen.blit(placeholder, (20, 50))
+        clarify_text = in_game.get("clarify_message", "Until you reach a checkpoint, of course!")
+        screen.blit(font.render(clarify_text, True, (0, 102, 204)), (9800 - camera_x, -150 - camera_y))
+
+        mock_text = in_game.get("mock_message", "Wrong way my guy nothing to see here...")
+        screen.blit(font.render(mock_text, True, (255, 0, 0)), (13200 - camera_x, -300 - camera_y))
 
         pygame.display.update()   
 
