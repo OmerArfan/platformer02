@@ -4,6 +4,7 @@ import os
 import math
 import time  # Import time to track time(for future use in scoring)
 
+# Initialize audio
 pygame.mixer.init()
 click_sound = pygame.mixer.Sound("click.wav")
 death_sound = pygame.mixer.Sound("death.wav")
@@ -13,6 +14,9 @@ open_sound = pygame.mixer.Sound("unlock.wav")
 checkpoint_sound = pygame.mixer.Sound("checkpoint.wav")
 warp_sound = pygame.mixer.Sound("warp.wav")
 button_sound = pygame.mixer.Sound("button.wav")
+bounce_sound = pygame.mixer.Sound("bounce.wav")
+move_sound = pygame.mixer.Sound("travel.wav")
+jump_sound = pygame.mixer.Sound("jump.wav")
 
 # Load and set window icon
 icon = pygame.image.load("roboticon.ico")
@@ -44,7 +48,7 @@ logo_text = font.render("Logo made with: canva.com", True, (255, 255, 255))
 logo_pos = (SCREEN_WIDTH - 349, SCREEN_HEIGHT - 84)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 265, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.0.11", True, (255, 255, 255))
+ver_text = font.render("Version 1.0.12", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 183, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -342,6 +346,7 @@ def create_lvl1_screen():
     velocity_y = 0
     camera_speed = 0.05
     deathcount = 0
+    was_moving = False
 
     # Load player image
     player_img = pygame.image.load("robot.png").convert_alpha()
@@ -357,7 +362,6 @@ def create_lvl1_screen():
     ]
 
     moving_block = pygame.Rect(1300, 300, 100, 20)
-    moving_block2 = pygame.Rect(400, 500, 100, 20)
     moving_direction1 = 1
     moving_speed = 2
     moving_limit_left1 = 1300
@@ -405,12 +409,23 @@ def create_lvl1_screen():
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
+            jump_sound.play()
 
-        if (keys[pygame.K_LEFT] or keys[pygame.K_a]):
-            player_x -= move_speed
+        # Detect if any movement key is pressed
+        moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
+                  keys[pygame.K_RIGHT] or keys[pygame.K_d])
 
-        if (keys[pygame.K_RIGHT] or keys[pygame.K_d]):
-            player_x += move_speed
+        if moving:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                player_x -= move_speed
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                player_x += move_speed
+
+            if on_ground and not was_moving:
+                move_sound.play()
+            was_moving = True
+        else:
+            was_moving = False
 
         # Gravity and stamina
         if not on_ground:
@@ -566,6 +581,7 @@ def create_lvl2_screen():
     velocity_y = 0
     camera_speed = 0.05
     deathcount = 0
+    was_moving = False
 
     # Load player image
     player_img = pygame.image.load("robot.png").convert_alpha()
@@ -652,12 +668,23 @@ def create_lvl2_screen():
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
+            jump_sound.play()
 
-        if (keys[pygame.K_LEFT] or keys[pygame.K_a]):
-            player_x -= move_speed
+        # Detect if any movement key is pressed
+        moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
+                  keys[pygame.K_RIGHT] or keys[pygame.K_d])
 
-        if (keys[pygame.K_RIGHT] or keys[pygame.K_d]):
-            player_x += move_speed
+        if moving:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                player_x -= move_speed
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                player_x += move_speed
+
+            if on_ground and not was_moving:
+                move_sound.play()
+            was_moving = True
+        else:
+            was_moving = False
 
         # Gravity and stamina
         if not on_ground:
@@ -702,6 +729,7 @@ def create_lvl2_screen():
                     player_y = jump_block.y - img_height
                     velocity_y = -25  # Apply upward velocity for the jump
                     on_ground = True
+                    bounce_sound.play()
 
                 # Hitting the bottom of a jump block
                 elif velocity_y < 0 and player_y >= jump_block.y + jump_block.height - velocity_y:
@@ -834,6 +862,7 @@ def create_lvl3_screen():
     velocity_y = 0
     camera_speed = 0.5
     deathcount = 0
+    was_moving = False
 
     # Load player image
     player_img = pygame.image.load("robot.png").convert_alpha()
@@ -929,12 +958,24 @@ def create_lvl3_screen():
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
+            jump_sound.play()
 
-        if (keys[pygame.K_LEFT] or keys[pygame.K_a]):
-            player_x -= move_speed
+        # Detect if any movement key is pressed
+        moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
+                  keys[pygame.K_RIGHT] or keys[pygame.K_d])
 
-        if (keys[pygame.K_RIGHT] or keys[pygame.K_d]):
-            player_x += move_speed
+        if moving:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                player_x -= move_speed
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                player_x += move_speed
+
+            if on_ground and not was_moving:
+                move_sound.play()
+            was_moving = True
+        else:
+            was_moving = False
+
 
         # Gravity and stamina
         if not on_ground:
@@ -975,6 +1016,7 @@ def create_lvl3_screen():
                     player_y = jump_block.y - img_height
                     velocity_y = -33  # Apply upward velocity for the jump
                     on_ground = True
+                    bounce_sound.play()
 
                 # Hitting the bottom of a jump block
                 elif velocity_y < 0 and player_y >= jump_block.y + jump_block.height - velocity_y:
@@ -1199,13 +1241,14 @@ def create_lvl4_screen():
     velocity_y = 0
     camera_speed = 0.5
     deathcount = 0
+    was_moving = False
 
     # Load player image
     player_img = pygame.image.load("robot.png").convert_alpha()
     img_width, img_height = player_img.get_size()
 
     # Draw flag
-    flag = pygame.Rect(2650, 30, 80, 50)  # x, y, width, height
+    flag = pygame.Rect(1500, 550, 80, 50)  # x, y, width, height
     checkpoint_reached = False
     flag2 = pygame.Rect(3200, 100, 80, 50)  # x, y, width, height
     checkpoint_reached2 = False
@@ -1317,12 +1360,24 @@ def create_lvl4_screen():
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
+            jump_sound.play()
 
-        if (keys[pygame.K_LEFT] or keys[pygame.K_a]):
-            player_x -= move_speed
+        # Detect if any movement key is pressed
+        moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
+                  keys[pygame.K_RIGHT] or keys[pygame.K_d])
 
-        if (keys[pygame.K_RIGHT] or keys[pygame.K_d]):
-            player_x += move_speed
+        if moving:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                player_x -= move_speed
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                player_x += move_speed
+
+            if on_ground and not was_moving:
+                move_sound.play()
+            was_moving = True
+        else:
+            was_moving = False
+
 
         # Gravity and stamina
         if not on_ground:
@@ -1390,6 +1445,7 @@ def create_lvl4_screen():
                     player_y = jump_block.y - img_height
                     velocity_y = -33  # Apply upward velocity for the jump
                     on_ground = True
+                    bounce_sound.play()
 
                 # Hitting the bottom of a jump block
                 elif velocity_y < 0 and player_y >= jump_block.y + jump_block.height - velocity_y:
@@ -1442,7 +1498,7 @@ def create_lvl4_screen():
 
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
             checkpoint_reached = True
-            spawn_x, spawn_y = 2670, 15  # Store checkpoint position
+            spawn_x, spawn_y = 1500, 500  # Store checkpoint position
             checkpoint_sound.play()
             pygame.draw.rect(screen, (0, 255, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
         if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
@@ -1728,6 +1784,7 @@ def create_lvl5_screen():
     velocity_y = 0
     camera_speed = 0.5
     deathcount = 0
+    was_moving = False
 
     # Load player image
     player_img = pygame.image.load("robot.png").convert_alpha()
@@ -1853,12 +1910,24 @@ def create_lvl5_screen():
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
+            jump_sound.play()
 
-        if (keys[pygame.K_LEFT] or keys[pygame.K_a]):
-            player_x -= move_speed
+        # Detect if any movement key is pressed
+        moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
+                  keys[pygame.K_RIGHT] or keys[pygame.K_d])
 
-        if (keys[pygame.K_RIGHT] or keys[pygame.K_d]):
-            player_x += move_speed
+        if moving:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                player_x -= move_speed
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                player_x += move_speed
+
+            if on_ground and not was_moving:
+                move_sound.play()
+            was_moving = True
+        else:
+            was_moving = False
+
 
         # Gravity and stamina
         if not on_ground:
@@ -1897,6 +1966,7 @@ def create_lvl5_screen():
                     player_y = jump_block.y - img_height
                     velocity_y = -33  # Apply upward velocity for the jump
                     on_ground = True
+                    bounce_sound.play()
 
                 # Hitting the bottom of a jump block
                 elif velocity_y < 0 and player_y >= jump_block.y + jump_block.height - velocity_y:
@@ -2259,6 +2329,7 @@ def create_lvl6_screen():
     velocity_y = 0
     camera_speed = 0.5
     deathcount = 0
+    was_moving = False
 
     # Load player image
     player_img = pygame.image.load("robot.png").convert_alpha()
@@ -2373,12 +2444,24 @@ def create_lvl6_screen():
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
+            jump_sound.play()
 
-        if (keys[pygame.K_LEFT] or keys[pygame.K_a]):
-            player_x -= move_speed
+        # Detect if any movement key is pressed
+        moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
+                  keys[pygame.K_RIGHT] or keys[pygame.K_d])
 
-        if (keys[pygame.K_RIGHT] or keys[pygame.K_d]):
-            player_x += move_speed
+        if moving:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                player_x -= move_speed
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                player_x += move_speed
+
+            if on_ground and not was_moving:
+                move_sound.play()
+            was_moving = True
+        else:
+            was_moving = False
+
 
         # Gravity and stamina
         if not on_ground:
@@ -2417,6 +2500,7 @@ def create_lvl6_screen():
                     player_y = jump_block.y - img_height
                     velocity_y = -33  # Apply upward velocity for the jump
                     on_ground = True
+                    bounce_sound.play()
 
                 # Hitting the bottom of a jump block
                 elif velocity_y < 0 and player_y >= jump_block.y + jump_block.height - velocity_y:
@@ -2794,6 +2878,7 @@ def create_lvl7_screen():
     velocity_y = 0
     camera_speed = 0.5
     deathcount = 0
+    was_moving = False
 
     # Load player image
     player_img = pygame.image.load("robot.png").convert_alpha()
@@ -2885,12 +2970,24 @@ def create_lvl7_screen():
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
+            jump_sound.play()
 
-        if (keys[pygame.K_LEFT] or keys[pygame.K_a]):
-            player_x -= move_speed
+        # Detect if any movement key is pressed
+        moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
+                  keys[pygame.K_RIGHT] or keys[pygame.K_d])
 
-        if (keys[pygame.K_RIGHT] or keys[pygame.K_d]):
-            player_x += move_speed
+        if moving:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                player_x -= move_speed
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                player_x += move_speed
+
+            if on_ground and not was_moving:
+                move_sound.play()
+            was_moving = True
+        else:
+            was_moving = False
+
 
         # Gravity and stamina
         if not on_ground:
@@ -3206,6 +3303,7 @@ def create_lvl8_screen():
     velocity_y = 0
     camera_speed = 0.5
     deathcount = 0
+    was_moving = False
 
     # Load player image
     player_img = pygame.image.load("robot.png").convert_alpha()
@@ -3322,15 +3420,26 @@ def create_lvl8_screen():
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             if weak_grav:
-                velocity_y -= weak_jump_strength
-            elif not weak_grav:
-                velocity_y -= jump_strength
+                velocity_y = -weak_jump_strength
+            else:
+                velocity_y = -jump_strength
+            jump_sound.play()
 
-        if (keys[pygame.K_LEFT] or keys[pygame.K_a]):
-            player_x -= move_speed
+        # Detect if any movement key is pressed
+        moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
+                  keys[pygame.K_RIGHT] or keys[pygame.K_d])
 
-        if (keys[pygame.K_RIGHT] or keys[pygame.K_d]):
-            player_x += move_speed
+        if moving:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                player_x -= move_speed
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                player_x += move_speed
+
+            if on_ground and not was_moving:
+                move_sound.play()
+            was_moving = True
+        else:
+            was_moving = False
 
         # Gravity and stamina
         if not on_ground:
@@ -3369,6 +3478,7 @@ def create_lvl8_screen():
                     player_y = jump_block.y - img_height
                     velocity_y = -33  # Apply upward velocity for the jump
                     on_ground = True
+                    bounce_sound.play()
 
                 # Hitting the bottom of a jump block
                 elif velocity_y < 0 and player_y >= jump_block.y + jump_block.height - velocity_y:
