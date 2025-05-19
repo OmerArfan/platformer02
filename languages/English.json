@@ -2,7 +2,7 @@
     "main_menu": {
       "start": "Start",
       "achievements": "Achievements",
-      "settings": "Settings",
+      "settings": "Mute/Unmute Audio",
       "quit": "Quit",
       "language": "Change Language"
     }

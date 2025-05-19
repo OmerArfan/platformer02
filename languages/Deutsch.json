@@ -2,7 +2,7 @@
     "main_menu": {
       "start": "starten",
       "achievements": "Erfolge",
-      "settings": "Einstellungen",
+      "settings": "Audio stummschalten/Stummschaltung aufheben",
       "quit": "aufhören",
       "language": "Sprache ändern"
     }

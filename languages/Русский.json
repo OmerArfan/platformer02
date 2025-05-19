@@ -2,7 +2,7 @@
     "main_menu":{
         "start": "Начать",
         "achievements": "Достижения",
-        "settings": "Настройки",
+        "settings": "Отключить/включить звук",
         "quit": "Выйти",
         "language": "Язык"
     }

@@ -2,7 +2,7 @@
     "main_menu": {
       "start": "commencer",
       "achievements": "Réalisations",
-      "settings": "Paramètres",
+      "settings": "Couper/Activer le son",
       "quit": "Quitter",
       "language": "Changer de langue"
     }

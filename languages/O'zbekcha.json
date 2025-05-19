@@ -2,7 +2,7 @@
     "main_menu": {
       "start": "Boshlash",
       "achievements": "Yutuqlar",
-      "settings": "Sozlamalar",
+      "settings": "Ovozni o‘chirish/o‘chirish",
       "quit": "Chiqish",
       "language": "Tilni o'zgartirish"
     }
