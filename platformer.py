@@ -2,6 +2,7 @@ import pygame
 import json
 import os
 import math
+import sys
 import time  # Import time to track time(for future use in scoring)
 
 # Initialize audio
@@ -18,6 +19,8 @@ bounce_sound = pygame.mixer.Sound("bounce.wav")
 move_sound = pygame.mixer.Sound("travel.wav")
 jump_sound = pygame.mixer.Sound("jump.wav")
 
+is_mute = False  # Global variable to track mute state
+
 # Load and set window icon
 icon = pygame.image.load("roboticon.ico")
 pygame.display.set_icon(icon)
@@ -25,14 +28,18 @@ pygame.display.set_icon(icon)
 complete_levels = 0  # Keep track of how many levels have been completed
 locked_levels = ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9"] # Keep track of how many levels are locked
 
+# Initializing screen resolution
 pygame.init()
-SCREEN_WIDTH = 1530
-SCREEN_HEIGHT = 800
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+SCREEN_WIDTH, SCREEN_HEIGHT = screen.get_size()
 pygame.display.set_caption("Platformer 02!")
+MIN_WIDTH, MIN_HEIGHT = 1000, 700
 
 # Load logo image
 logo = pygame.image.load("logo.png").convert_alpha()
+
+# Warning Robot for error screen
+robo_img = pygame.image.load("warningrobot.png").convert_alpha()
 
 # Declare font size
 font = pygame.font.SysFont(None, 40)
@@ -48,8 +55,8 @@ logo_text = font.render("Logo made with: canva.com", True, (255, 255, 255))
 logo_pos = (SCREEN_WIDTH - 349, SCREEN_HEIGHT - 84)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 265, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.0.12.1", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 206, SCREEN_HEIGHT - 144)
+ver_text = font.render("Version 1.0.13", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 183, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -214,7 +221,6 @@ def load_level(level_id):
 
 # Button actions
 def start_game():
-    print(f"Complete Levels: {complete_levels}")
     pygame.time.delay(200)  # Delay 200 ms to avoid click pass-through
     set_page('levels')
 
@@ -222,7 +228,11 @@ def open_achievements():
     print("Opening achievements...")
 
 def open_settings():
-    print("Opening settings...")
+    global is_mute
+    if is_mute:
+        is_mute = False
+    else:
+        is_mute = True
 
 def quit_game():
     pygame.quit()
@@ -330,7 +340,7 @@ def create_quit_confirm_buttons():
     buttons.append((rendered_no, no_rect, "no"))
 
 def create_lvl1_screen():
-    global player_img, font, screen, complete_levels
+    global player_img, font, screen, complete_levels, is_mute
 
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -409,7 +419,8 @@ def create_lvl1_screen():
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
-            jump_sound.play()
+            if not is_mute:
+                jump_sound.play()
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -421,7 +432,7 @@ def create_lvl1_screen():
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 player_x += move_speed
 
-            if on_ground and not was_moving:
+            if on_ground and not was_moving and not is_mute:
                 move_sound.play()
             was_moving = True
         else:
@@ -466,7 +477,8 @@ def create_lvl1_screen():
             player_x, player_y = 600, 200
             fall_text = in_game.get("fall_message", "Fell too far!")
             screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
-            fall_sound.play()
+            if not is_mute:
+                fall_sound.play()
             pygame.display.update()
             pygame.time.delay(300)
             velocity_y = 0
@@ -477,7 +489,8 @@ def create_lvl1_screen():
             if complete_levels < 1:
               complete_levels = 1
               update_locked_levels()
-            warp_sound.play()
+            if not is_mute:
+                warp_sound.play()
             running = False
             set_page('lvl2_screen')
             
@@ -515,7 +528,8 @@ def create_lvl1_screen():
                         player_x, player_y = 600, 200
                         death_text = in_game.get("dead_message", "You Died")
                         screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
-                        death_sound.play()
+                        if not is_mute:
+                            death_sound.play()
                         pygame.display.update()
                         pygame.time.delay(300)
                         velocity_y = 0
@@ -539,6 +553,8 @@ def create_lvl1_screen():
                         player_x, player_y = 150, 200  # Reset player position
                         death_text = in_game.get("dead_message", "You Died")
                         screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                        if not is_mute:
+                            death_sound.play()
                         pygame.display.update()
                         pygame.time.delay(300)
                         velocity_y = 0
@@ -565,7 +581,7 @@ def create_lvl1_screen():
         pygame.display.update()    
 
 def create_lvl2_screen():
-    global player_img, font, screen, complete_levels
+    global player_img, font, screen, complete_levels, is_mute
 
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -595,15 +611,15 @@ def create_lvl2_screen():
         pygame.Rect(2150, 530, 250, 50),
         pygame.Rect(2080, 750, 620, 50),
         pygame.Rect(2400, 50, 50, 530),
-        pygame.Rect(3300, 650, 300, 50),
-        pygame.Rect(3760, 650, 300, 50),
-        pygame.Rect(4220, 650, 300, 50),
+        pygame.Rect(3300, 650, 260, 50),
+        pygame.Rect(3800, 650, 220, 50),
+        pygame.Rect(4260, 650, 220, 50),
         pygame.Rect(3300, 200, 1000, 50),
     ]
 
     jump_blocks = [
         pygame.Rect(1000, 550, 100, 100), # Jump blocks to help the character go up and then fall down
-        pygame.Rect(2700, 751, 100, 100),
+        pygame.Rect(2730, 751, 100, 100),
         pygame.Rect(3600, 651, 160, 100),
         pygame.Rect(4060, 651, 160, 100),
     ]
@@ -668,7 +684,8 @@ def create_lvl2_screen():
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
-            jump_sound.play()
+            if not is_mute:
+                jump_sound.play()
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -680,7 +697,7 @@ def create_lvl2_screen():
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 player_x += move_speed
 
-            if on_ground and not was_moving:
+            if on_ground and not was_moving and not is_mute:
                 move_sound.play()
             was_moving = True
         else:
@@ -729,7 +746,8 @@ def create_lvl2_screen():
                     player_y = jump_block.y - img_height
                     velocity_y = -25  # Apply upward velocity for the jump
                     on_ground = True
-                    bounce_sound.play()
+                    if not is_mute:
+                        bounce_sound.play()
 
                 # Hitting the bottom of a jump block
                 elif velocity_y < 0 and player_y >= jump_block.y + jump_block.height - velocity_y:
@@ -746,7 +764,8 @@ def create_lvl2_screen():
             if player_y > (SCREEN_HEIGHT + 50):
                 fall_text = in_game.get("fall_message", "Fell too far!")
                 screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
-                fall_sound.play()
+                if not is_mute:
+                    fall_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
                 player_x, player_y = 150, 500
@@ -758,7 +777,8 @@ def create_lvl2_screen():
             if complete_levels < 2:
                 complete_levels = 2
                 update_locked_levels()
-            warp_sound.play()
+            if not is_mute:
+                warp_sound.play()
             running = False
             set_page('lvl3_screen')    
 
@@ -790,7 +810,8 @@ def create_lvl2_screen():
                         player_x, player_y = 150, 500
                         death_text = in_game.get("dead_message", "You Died")
                         screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
-                        death_sound.play()
+                        if not is_mute:
+                            death_sound.play()
                         pygame.display.update()
                         pygame.time.delay(300)
                         velocity_y = 0
@@ -813,7 +834,8 @@ def create_lvl2_screen():
                         player_x, player_y = 150, 500  # Reset player position
                         death_text = in_game.get("dead_message", "You Died")
                         screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
-                        death_sound.play()
+                        if not is_mute:
+                            death_sound.play()
                         pygame.display.update()
                         pygame.time.delay(300)
                         velocity_y = 0
@@ -845,7 +867,7 @@ def create_lvl2_screen():
         pygame.display.update()    
 
 def create_lvl3_screen():
-    global player_img, font, screen, complete_levels
+    global player_img, font, screen, complete_levels, is_mute
 
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -4300,133 +4322,168 @@ running = True
 while running:
     screen.fill((30, 30, 30))
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+    if SCREEN_WIDTH < MIN_WIDTH or SCREEN_HEIGHT < MIN_HEIGHT:
+        countdown = 5  # seconds
+        clock = pygame.time.Clock()
+        start_time = pygame.time.get_ticks()
 
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            # Only process clicks if enough time has passed since last page change
-            if time.time() - last_page_change_time > click_delay:  
-                for _, rect, key in buttons:
-                    if rect.collidepoint(event.pos):
-                        if key != "back":
-                            click_sound.play()
-                        print(f"Clicked on: {key}")
-                        handle_action(key)
-                        last_page_change_time = time.time()  # Update the time after handling the click
+        while countdown > 0:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
 
-    if current_page == "main_menu":
-        screen.blit(logo, ((SCREEN_WIDTH // 2 - 400), 30))
-        screen.blit(logo_text, logo_pos)
-        screen.blit(site_text, site_pos)
-        screen.blit(credit_text, credit_pos)
-        screen.blit(ver_text, ver_pos)
-    # Render the main menu buttons
-        for rendered, rect, key in buttons:
-            pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-            screen.blit(rendered, rect)
+            # Calculate time left
+            elapsed = (pygame.time.get_ticks() - start_time) // 1000
+            countdown = 5 - elapsed
 
-    # Render the credit text
+            # Clear the screen
+            screen.fill((0, 0, 0))
+
+            # Display the robo image
+            screen.blit(robo_img, (SCREEN_WIDTH // 2 - robo_img.get_width() // 2, SCREEN_HEIGHT // 2 - 200))
 
 
-    if current_page == "quit_confirm":
-        # Render the quit confirmation text
-        screen.blit(quit_text, quit_text_rect)
+            # Render the text
+            error_text = font.render("Your screen resolution is too small! Increase the screen", True, (255, 255, 255))
+            error_text2 = font.render("resolution in your system settings.", True, (255, 255, 255))
+            countdown_text = font.render(f"Closing in {countdown} second(s)...", True, (255, 100, 100))
 
-        # Render the "Yes" and "No" buttons
-        for rendered, rect, key in buttons:
-            pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-            screen.blit(rendered, rect)
+            # Center the text
+            screen.blit(error_text, (SCREEN_WIDTH // 2 - error_text.get_width() // 2, SCREEN_HEIGHT // 2 - 40))
+            screen.blit(error_text2, (SCREEN_WIDTH // 2 - error_text2.get_width() // 2, SCREEN_HEIGHT // 2))
+            screen.blit(countdown_text, (SCREEN_WIDTH // 2 - countdown_text.get_width() // 2, SCREEN_HEIGHT // 2 + 50))
 
-        # Allow returning to the main menu with ESC
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_ESCAPE]:
-            set_page("main_menu")
+            pygame.display.flip()
+            clock.tick(30)
 
-    elif current_page == "lvl1_screen":
-        # Render the Level 1 screen
-        screen.fill((30, 30, 30))  # Background color
-        create_lvl1_screen()
-
-        # Render the "Back" button
-        for rendered, rect, key in buttons:
-            pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-            screen.blit(rendered, rect)
-
-    elif current_page == "lvl2_screen":
-        create_lvl2_screen()
-        
-        for rendered, rect, key in buttons:
-            pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-            screen.blit(rendered, rect)
-    
-    elif current_page == "lvl3_screen":
-        create_lvl3_screen()
-        
-        for rendered, rect, key in buttons:
-            pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-            screen.blit(rendered, rect)
-
-    elif current_page == "lvl4_screen":
-        create_lvl4_screen()
-        
-        for rendered, rect, key in buttons:
-            pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-            screen.blit(rendered, rect)
-
-    elif current_page == "lvl5_screen":
-        create_lvl5_screen()
-        
-        for rendered, rect, key in buttons:
-            pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-            screen.blit(rendered, rect)
-
-    elif current_page == "lvl6_screen":
-        create_lvl6_screen()
-
-        for rendered, rect, key in buttons:
-            pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-            screen.blit(rendered, rect)
-
-    elif current_page == "lvl7_screen":
-        create_lvl7_screen()
-
-        for rendered, rect, key in buttons:
-            pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-            screen.blit(rendered, rect)
-
-    elif current_page == "lvl8_screen":
-        create_lvl8_screen()
-
-        for rendered, rect, key in buttons:
-            pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-            screen.blit(rendered, rect)
-
-    elif current_page == "levels":
-        # Fetch the localized "Select a Level" text dynamically
-        select_text = current_lang.get("select_level", "Select a Level")
-        rendered_select_text = font.render(select_text, True, (255, 255, 255))
-        select_text_rect = rendered_select_text.get_rect(center=(SCREEN_WIDTH // 2, 50))
-
-        # Draw the "Select a Level" text
-        screen.blit(rendered_select_text, select_text_rect)
-
-        # Render buttons for levels
-        for rendered, rect, _ in buttons:
-            pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-            screen.blit(rendered, rect)
+        pygame.quit()
+        sys.exit()
 
     else:
-        # Render buttons for other pages
-        for rendered, rect, _ in buttons:
-            pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-            screen.blit(rendered, rect)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
 
-    # Handle delayed level load
-    if pending_level and time.time() >= level_load_time:
-        load_level(pending_level)
-        pending_level = None
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                # Only process clicks if enough time has passed since last page change
+                if time.time() - last_page_change_time > click_delay:  
+                    for _, rect, key in buttons:
+                        if rect.collidepoint(event.pos):
+                            if key != "back" and not is_mute:
+                                click_sound.play()
+                            handle_action(key)
+                            last_page_change_time = time.time()  # Update the time after handling the click
 
-    pygame.display.flip()
+        if current_page == "main_menu":
+            screen.blit(logo, ((SCREEN_WIDTH // 2 - 400), 30))
+            screen.blit(logo_text, logo_pos)
+            screen.blit(site_text, site_pos)
+            screen.blit(credit_text, credit_pos)
+            screen.blit(ver_text, ver_pos)
+        # Render the main menu buttons
+            for rendered, rect, key in buttons:
+                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
+                screen.blit(rendered, rect)
+
+        if current_page == "quit_confirm":
+            # Render the quit confirmation text
+            screen.blit(quit_text, quit_text_rect)
+
+            # Render the "Yes" and "No" buttons
+            for rendered, rect, key in buttons:
+                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
+                screen.blit(rendered, rect)
+
+            # Allow returning to the main menu with ESC
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_ESCAPE]:
+                set_page("main_menu")
+
+        elif current_page == "lvl1_screen":
+            # Render the Level 1 screen
+            screen.fill((30, 30, 30))  # Background color
+            create_lvl1_screen()
+
+        # Render the "Back" button
+            for rendered, rect, key in buttons:
+                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
+                screen.blit(rendered, rect)
+
+        elif current_page == "lvl2_screen":
+            create_lvl2_screen()
+        
+            for rendered, rect, key in buttons:
+                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
+                screen.blit(rendered, rect)
+    
+        elif current_page == "lvl3_screen":
+            create_lvl3_screen()
+
+            for rendered, rect, key in buttons:
+                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
+                screen.blit(rendered, rect)
+
+        elif current_page == "lvl4_screen":
+            create_lvl4_screen()
+
+            for rendered, rect, key in buttons:
+                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
+                screen.blit(rendered, rect)
+
+        elif current_page == "lvl5_screen":
+            create_lvl5_screen()
+        
+            for rendered, rect, key in buttons:
+                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
+                screen.blit(rendered, rect)
+
+        elif current_page == "lvl6_screen":
+            create_lvl6_screen()
+
+            for rendered, rect, key in buttons:
+                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
+                screen.blit(rendered, rect)
+
+        elif current_page == "lvl7_screen":
+            create_lvl7_screen()
+
+            for rendered, rect, key in buttons:
+                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
+                screen.blit(rendered, rect)
+
+        elif current_page == "lvl8_screen":
+            create_lvl8_screen()
+
+            for rendered, rect, key in buttons:
+                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
+                screen.blit(rendered, rect)
+
+        elif current_page == "levels":
+            # Fetch the localized "Select a Level" text dynamically
+            select_text = current_lang.get("select_level", "Select a Level")
+            rendered_select_text = font.render(select_text, True, (255, 255, 255))
+            select_text_rect = rendered_select_text.get_rect(center=(SCREEN_WIDTH // 2, 50))
+
+            # Draw the "Select a Level" text
+            screen.blit(rendered_select_text, select_text_rect)
+
+            # Render buttons for levels
+            for rendered, rect, _ in buttons:
+                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
+                screen.blit(rendered, rect)
+
+        else:
+            # Render buttons for other pages
+            for rendered, rect, _ in buttons:
+                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
+                screen.blit(rendered, rect)
+
+        # Handle delayed level load
+        if pending_level and time.time() >= level_load_time:
+            load_level(pending_level)
+            pending_level = None
+
+        pygame.display.flip()
 
 pygame.quit()
