@@ -55,7 +55,7 @@ logo_text = font.render("Logo made with: canva.com", True, (255, 255, 255))
 logo_pos = (SCREEN_WIDTH - 349, SCREEN_HEIGHT - 84)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 265, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.0.13", True, (255, 255, 255))
+ver_text = font.render("Version 1.0.14", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 183, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -103,6 +103,11 @@ def create_main_menu_buttons():
         rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, start_y + i * button_spacing)) 
         buttons.append((rendered, rect, key))
 
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            set_page("quit_confirm")
+
+
 def create_language_buttons():
     global current_lang, buttons
     current_lang = load_language(lang_code).get('language_select', {})
@@ -130,6 +135,10 @@ def create_language_buttons():
 
         rect = rendered.get_rect(center=(x, y))
         buttons.append((rendered, rect, lang))
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            set_page("quit_confirm")
 
     # Add a "Back" button at the bottom center
     back_text = current_lang.get("back", "Back")
@@ -314,6 +323,9 @@ def set_page(page):
     elif page == 'lvl8_screen':
         current_lang = load_language(lang_code).get('in_game', {})
         create_lvl8_screen()
+    elif page == 'lvl9_screen':
+        current_lang = load_language(lang_code).get('in_game', {})
+        create_lvl9_screen()
 
 def create_quit_confirm_buttons():
     global current_lang, buttons, quit_text, quit_text_rect
@@ -338,6 +350,8 @@ def create_quit_confirm_buttons():
     rendered_no = font.render(no_text, True, (255, 255, 255))
     no_rect = rendered_no.get_rect(center=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 + 50))
     buttons.append((rendered_no, no_rect, "no"))
+
+    pygame.display.flip()  # Update the display to show the quit confirmation screen
 
 def create_lvl1_screen():
     global player_img, font, screen, complete_levels, is_mute
@@ -412,7 +426,7 @@ def create_lvl1_screen():
         keys = pygame.key.get_pressed()
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
                 set_page('levels')
 
@@ -574,6 +588,15 @@ def create_lvl1_screen():
         screen.blit(rendered_moving_text, (1350 - camera_x, 170 - camera_y))  # Draws the rendered moving text
         screen.blit(rendered_exit_text, (2400 - camera_x, 300 - camera_y))  # Draws the rendered exit text
 
+        # Initialize and draw the reset and quit text
+        reset_text = in_game.get("reset_message", "Press R to reset")
+        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
+
+        quit_text = in_game.get("quit_message", "Press Q to quit")
+        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
+
         levels = load_language(lang_code).get('levels', {})
         lvl1_text = levels.get("lvl1", "Level 1")  # Render the level text
         screen.blit(font.render(lvl1_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
@@ -677,7 +700,7 @@ def create_lvl2_screen():
             deathcount = 0
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
                 set_page('levels')
 
@@ -860,6 +883,12 @@ def create_lvl2_screen():
             # Inside the game loop:
         screen.blit(rendered_jump_text, (900 - camera_x, 500 - camera_y))  # Draws the rendered up text
 
+        # Initialize and draw the quit text
+
+        quit_text = in_game.get("quit_message", "Press Q to quit")
+        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
+
         levels = load_language(lang_code).get('levels', {})
         lvl2_text = levels.get("lvl2", "Level 2")  # Render the level text
         screen.blit(font.render(lvl2_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
@@ -973,14 +1002,15 @@ def create_lvl3_screen():
             deathcount = 0
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
                 set_page("levels")
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
-            jump_sound.play()
+            if not is_mute:
+                jump_sound.play()
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -992,7 +1022,7 @@ def create_lvl3_screen():
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 player_x += move_speed
 
-            if on_ground and not was_moving:
+            if on_ground and not was_moving and not is_mute:
                 move_sound.play()
             was_moving = True
         else:
@@ -1038,7 +1068,8 @@ def create_lvl3_screen():
                     player_y = jump_block.y - img_height
                     velocity_y = -33  # Apply upward velocity for the jump
                     on_ground = True
-                    bounce_sound.play()
+                    if not is_mute:
+                        bounce_sound.play()
 
                 # Hitting the bottom of a jump block
                 elif velocity_y < 0 and player_y >= jump_block.y + jump_block.height - velocity_y:
@@ -1055,7 +1086,8 @@ def create_lvl3_screen():
             if player_y > (SCREEN_HEIGHT + 50):
                 fall_text = in_game.get("fall_message", "Fell too far!")
                 screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
-                fall_sound.play()
+                if not is_mute:
+                    fall_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
@@ -1088,12 +1120,14 @@ def create_lvl3_screen():
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
             checkpoint_reached = True
             spawn_x, spawn_y = 200, 100  # Store checkpoint position
-            checkpoint_sound.play()
+            if not is_mute:
+                checkpoint_sound.play()
             pygame.draw.rect(screen, (0, 255, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
         if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
             checkpoint_reached = False
             checkpoint_reached2 = True
-            checkpoint_sound.play()
+            if not is_mute:
+                checkpoint_sound.play()
             pygame.draw.rect(screen, (0, 255, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
             spawn_x, spawn_y = 2020, -400  # Checkpoint position
@@ -1103,7 +1137,8 @@ def create_lvl3_screen():
             if complete_levels < 3:
                 complete_levels = 3
                 update_locked_levels()
-            warp_sound.play()
+            if not is_mute:
+                warp_sound.play()
             running = False
             set_page('lvl4_screen')
 
@@ -1148,7 +1183,8 @@ def create_lvl3_screen():
                 if not collision_detected:
                     sawed_text = in_game.get("sawed_message", "Sawed to bits!")
                     screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
-                    death_sound.play()
+                    if not is_mute:
+                        death_sound.play()
                     pygame.display.update()
                     pygame.time.delay(300)
                     player_x, player_y = spawn_x, spawn_y
@@ -1177,7 +1213,8 @@ def create_lvl3_screen():
                     if point_in_triangle(point[0], point[1], *spike):
                         player_x, player_y = spawn_x, spawn_y
                         death_text = in_game.get("dead_message", "You Died")
-                        death_sound.play()
+                        if not is_mute:
+                            death_sound.play()
                         collision_detected = True  # Set the flag to stop further checks
                         screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
                         pygame.display.update()
@@ -1201,7 +1238,8 @@ def create_lvl3_screen():
                         player_x, player_y = spawn_x, spawn_y  # Reset player position
                         death_text = in_game.get("dead_message", "You Died")
                         screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
-                        death_sound.play()
+                        if not is_mute:
+                            death_sound.play()
                         pygame.display.update()
                         pygame.time.delay(300)
                         velocity_y = 0
@@ -1218,7 +1256,7 @@ def create_lvl3_screen():
             if not pair["collected"]:
                 key_rect = pygame.Rect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
             if player_rect.colliderect(key_rect):
-                if not pair["collected"]:
+                if not pair["collected"] and not is_mute:
                     open_sound.play()
                 pair["collected"] = True
             
@@ -1239,6 +1277,14 @@ def create_lvl3_screen():
         screen.blit(rendered_saw_text, (int(550 - camera_x), int(600 - camera_y)))  # Draws the rendered up text
         screen.blit(rendered_key_text, (int(2500 - camera_x), int(200 - camera_y)))  # Draws the rendered up text
 
+        # Initialize and draw the reset and quit text
+        reset_text = in_game.get("reset_message", "Press R to reset")
+        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
+
+        quit_text = in_game.get("quit_message", "Press Q to quit")
+        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
         levels = load_language(lang_code).get('levels', {})
         lvl3_text = levels.get("lvl3", "Level 3")  # Render the level text
@@ -1246,7 +1292,7 @@ def create_lvl3_screen():
         pygame.display.update()    
 
 def create_lvl4_screen():
-    global player_img, font, screen, complete_levels
+    global player_img, font, screen, complete_levels, is_mute
 
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -1375,14 +1421,15 @@ def create_lvl4_screen():
             deathcount = 0
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
                 set_page("levels")
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
-            jump_sound.play()
+            if not is_mute:
+                jump_sound.play()
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -1394,7 +1441,7 @@ def create_lvl4_screen():
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 player_x += move_speed
 
-            if on_ground and not was_moving:
+            if on_ground and not was_moving and not is_mute:
                 move_sound.play()
             was_moving = True
         else:
@@ -1467,7 +1514,8 @@ def create_lvl4_screen():
                     player_y = jump_block.y - img_height
                     velocity_y = -33  # Apply upward velocity for the jump
                     on_ground = True
-                    bounce_sound.play()
+                    if not is_mute:
+                        bounce_sound.play()
 
                 # Hitting the bottom of a jump block
                 elif velocity_y < 0 and player_y >= jump_block.y + jump_block.height - velocity_y:
@@ -1484,7 +1532,8 @@ def create_lvl4_screen():
         if player_y > (SCREEN_HEIGHT + 50):
             fall_text = in_game.get("fall_message", "Fell too far!")
             screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
-            fall_sound.play()
+            if not is_mute:
+                fall_sound.play()
             pygame.display.update()
             pygame.time.delay(300)
             player_x, player_y = spawn_x, spawn_y  # Reset player position
@@ -1521,12 +1570,14 @@ def create_lvl4_screen():
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
             checkpoint_reached = True
             spawn_x, spawn_y = 1500, 500  # Store checkpoint position
-            checkpoint_sound.play()
+            if not is_mute:
+                checkpoint_sound.play()
             pygame.draw.rect(screen, (0, 255, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
         if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
             checkpoint_reached = False
             checkpoint_reached2 = True
-            checkpoint_sound.play()
+            if not is_mute:
+                checkpoint_sound.play()
             pygame.draw.rect(screen, (0, 255, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
             spawn_x, spawn_y = 3150, 100  # Checkpoint position
@@ -1537,7 +1588,8 @@ def create_lvl4_screen():
             if complete_levels < 4:
                 complete_levels = 4
                 update_locked_levels()
-            warp_sound.play()
+            if not is_mute:
+                warp_sound.play()
             running = False
             set_page('lvl5_screen') 
 
@@ -1599,7 +1651,8 @@ def create_lvl4_screen():
                 screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))               
                 player_x, player_y = spawn_x, spawn_y  # Reset player position    
                 deathcount += 1        
-                death_sound.play()
+                if not is_mute:
+                    death_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
                 key_block_pairs[0]["collected"] = False
@@ -1628,7 +1681,8 @@ def create_lvl4_screen():
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 sawed_text = in_game.get("sawed_message", "Sawed to bits!")
                 screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
-                death_sound.play()
+                if not is_mute:
+                    death_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
                 deathcount += 1
@@ -1657,7 +1711,8 @@ def create_lvl4_screen():
                 sawed_text = in_game.get("sawed_message", "Sawed to bits!")
                 screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_sound.play()
+                if not is_mute:
+                    death_sound.play()
                 deathcount += 1
                 pygame.display.update()
                 pygame.time.delay(300)  
@@ -1675,7 +1730,8 @@ def create_lvl4_screen():
                 player_x, player_y = spawn_x, spawn_y
                 laser_text = in_game.get("laser_message", "Lasered!")
                 screen.blit(font.render(laser_text, True, (255, 0, 0)), (20, 50))
-                laser_sound.play()
+                if not is_mute:
+                    laser_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
                 deathcount += 1
@@ -1702,7 +1758,8 @@ def create_lvl4_screen():
                     if point_in_triangle(point[0], point[1], *spike):
                         player_x, player_y = spawn_x, spawn_y
                         death_text = in_game.get("dead_message", "You Died")
-                        death_sound.play()
+                        if not is_mute:
+                            death_sound.play()
                         collision_detected = True  # Set the flag to stop further checks
                         screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
                         pygame.display.update()
@@ -1727,7 +1784,8 @@ def create_lvl4_screen():
                         player_x, player_y = spawn_x, spawn_y  # Reset player position
                         death_text = in_game.get("dead_message", "You Died")
                         screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
-                        death_sound.play()
+                        if not is_mute:
+                            death_sound.play()
                         pygame.display.update()
                         pygame.time.delay(300)
                         velocity_y = 0
@@ -1744,7 +1802,7 @@ def create_lvl4_screen():
             if not pair["collected"]:
                 key_rect = pygame.Rect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
             if player_rect.colliderect(key_rect):
-                if not pair["collected"]:
+                if not pair["collected"] and not is_mute:
                     open_sound.play()
                 pair["collected"] = True
             
@@ -1782,6 +1840,15 @@ def create_lvl4_screen():
 
         # Draw the texts
 
+        # Initialize and draw the reset and quit text
+        reset_text = in_game.get("reset_message", "Press R to reset")
+        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
+
+        quit_text = in_game.get("quit_message", "Press Q to quit")
+        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
+
         levels = load_language(lang_code).get('levels', {})
         lvl4_text = levels.get("lvl4", "Level 4")  # Render the level text
         screen.blit(font.render(lvl4_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
@@ -1789,7 +1856,7 @@ def create_lvl4_screen():
         pygame.display.update()   
 
 def create_lvl5_screen():
-    global player_img, font, screen, complete_levels
+    global player_img, font, screen, complete_levels, is_mute
 
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -1925,14 +1992,15 @@ def create_lvl5_screen():
             deathcount = 0
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
                 set_page("levels")
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
-            jump_sound.play()
+            if not is_mute:
+                jump_sound.play()
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -1944,7 +2012,7 @@ def create_lvl5_screen():
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 player_x += move_speed
 
-            if on_ground and not was_moving:
+            if on_ground and not was_moving and not is_mute:
                 move_sound.play()
             was_moving = True
         else:
@@ -1988,7 +2056,8 @@ def create_lvl5_screen():
                     player_y = jump_block.y - img_height
                     velocity_y = -33  # Apply upward velocity for the jump
                     on_ground = True
-                    bounce_sound.play()
+                    if not is_mute:
+                        bounce_sound.play()
 
                 # Hitting the bottom of a jump block
                 elif velocity_y < 0 and player_y >= jump_block.y + jump_block.height - velocity_y:
@@ -2005,7 +2074,8 @@ def create_lvl5_screen():
         if player_y > (SCREEN_HEIGHT + 50):
             fall_text = in_game.get("fall_message", "Fell too far!")
             screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
-            fall_sound.play()
+            if not is_mute:
+                fall_sound.play()
             pygame.display.update()
             pygame.time.delay(300)
             player_x, player_y = spawn_x, spawn_y  # Reset player position
@@ -2042,12 +2112,14 @@ def create_lvl5_screen():
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
             checkpoint_reached = True
             spawn_x, spawn_y = 2050, -200  # Store checkpoint position
-            checkpoint_sound.play()
+            if not is_mute:
+                checkpoint_sound.play()
             pygame.draw.rect(screen, (0, 255, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
         if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
             checkpoint_reached = False
             checkpoint_reached2 = True
-            checkpoint_sound.play()
+            if not is_mute:
+                checkpoint_sound.play()
             pygame.draw.rect(screen, (0, 255, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
             spawn_x, spawn_y = 3450, -550  # Checkpoint position
@@ -2058,7 +2130,8 @@ def create_lvl5_screen():
             if complete_levels < 5:
                 complete_levels =  5
                 update_locked_levels()
-            warp_sound.play()
+            if not is_mute:
+                warp_sound.play()
             set_page('lvl6_screen')
             
         # Camera logic
@@ -2112,16 +2185,14 @@ def create_lvl5_screen():
             dy = closest_y - y
             distance = (dx**2 + dy**2)**0.5
 
-            if not any(distance < rotating_saw['r'] for rotating_saw in rotating_saws):
-                recently_died = False  # Reset the flag when the player is no longer colliding
-
             if distance < rotating_saw['r'] and not collision_detected:
             # Trigger death logic                
                 collision_detected = True  # Set the flag to stop further checks
                 sawed_text = in_game.get("sawed_message", "Sawed to bits!")    
                 screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))               
                 player_x, player_y = spawn_x, spawn_y  # Reset player position    
-                death_sound.play()
+                if not is_mute:
+                    death_sound.play()
                 deathcount += 1        
                 pygame.display.update()
                 pygame.time.delay(300)
@@ -2150,7 +2221,8 @@ def create_lvl5_screen():
         # Trigger death logic
                 sawed_text = in_game.get("sawed_message", "Sawed to bits!")
                 screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
-                death_sound.play()
+                if not is_mute:
+                    death_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
@@ -2178,7 +2250,8 @@ def create_lvl5_screen():
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 sawed_text = in_game.get("sawed_message", "Sawed to bits!")
                 screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
-                death_sound.play()
+                if not is_mute:
+                    death_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
                 deathcount += 1
@@ -2205,7 +2278,8 @@ def create_lvl5_screen():
                 # Trigger death logic
                 sawed_text = in_game.get("sawed_message", "Sawed to bits!")
                 screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
-                death_sound.play()
+                if not is_mute:
+                    death_sound.play()
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
                 pygame.display.update()
@@ -2234,7 +2308,8 @@ def create_lvl5_screen():
                     if point_in_triangle(point[0], point[1], *spike):
                         player_x, player_y = spawn_x, spawn_y
                         death_text = in_game.get("dead_message", "You Died")
-                        death_sound.play()
+                        if not is_mute:
+                            death_sound.play()
                         collision_detected = True  # Set the flag to stop further checks
                         screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
                         pygame.display.update()
@@ -2259,7 +2334,8 @@ def create_lvl5_screen():
                         player_x, player_y = spawn_x, spawn_y  # Reset player position
                         death_text = in_game.get("dead_message", "You Died")
                         screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
-                        death_sound.play()
+                        if not is_mute:
+                            death_sound.play()
                         pygame.display.update()
                         pygame.time.delay(300)
                         velocity_y = 0
@@ -2276,7 +2352,7 @@ def create_lvl5_screen():
             if not pair["collected"]:
                 key_rect = pygame.Rect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
             if player_rect.colliderect(key_rect):
-                if not pair["collected"]:
+                if not pair["collected"] and not is_mute:
                     open_sound.play()
                 pair["collected"] = True
             
@@ -2309,7 +2385,8 @@ def create_lvl5_screen():
                         player_x, player_y = spawn_x, spawn_y  # Reset player position
                         death_text = in_game.get("dead_message", "You Died")
                         screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
-                        death_sound.play()
+                        if not is_mute:
+                            death_sound.play()
                         pygame.display.update()
                         pygame.time.delay(300)
                         velocity_y = 0
@@ -2326,6 +2403,15 @@ def create_lvl5_screen():
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
 
         # Draw the texts
+
+        # Initialize and draw the reset and quit text
+        reset_text = in_game.get("reset_message", "Press R to reset")
+        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
+
+        quit_text = in_game.get("quit_message", "Press Q to quit")
+        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
         levels = load_language(lang_code).get('levels', {})
         lvl5_text = levels.get("lvl5", "Level 5")  # Render the level text
@@ -2459,7 +2545,7 @@ def create_lvl6_screen():
             deathcount = 0
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
                 set_page("levels")
 
@@ -2873,6 +2959,15 @@ def create_lvl6_screen():
 
         # Draw the texts
         
+        # Initialize and draw the reset and quit text
+        reset_text = in_game.get("reset_message", "Press R to reset")
+        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
+
+        quit_text = in_game.get("quit_message", "Press Q to quit")
+        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
+
         levels = load_language(lang_code).get('levels', {})
         lvl6_text = levels.get("lvl6", "Level 6")  # Render the level text
         screen.blit(font.render(lvl6_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
@@ -2985,7 +3080,7 @@ def create_lvl7_screen():
             deathcount = 0
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
                 set_page("levels")
 
@@ -3295,6 +3390,15 @@ def create_lvl7_screen():
 
         # Draw the texts
         
+        # Initialize and draw the reset and quit text
+        reset_text = in_game.get("reset_message", "Press R to reset")
+        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
+
+        quit_text = in_game.get("quit_message", "Press Q to quit")
+        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
+
         levels = load_language(lang_code).get('levels', {})
         lvl7_text = levels.get("lvl7", "Level 7")  # Render the level text
         screen.blit(font.render(lvl7_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
@@ -3426,7 +3530,7 @@ def create_lvl8_screen():
             deathcount = 0
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
                 set_page("levels")
 
@@ -3729,7 +3833,16 @@ def create_lvl8_screen():
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
 
         # Draw the texts
-        
+
+        # Initialize and draw the reset and quit text
+        reset_text = in_game.get("reset_message", "Press R to reset")
+        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
+
+        quit_text = in_game.get("quit_message", "Press Q to quit")
+        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text 
+               
         levels = load_language(lang_code).get('levels', {})
         lvl8_text = levels.get("lvl8", "Level 8")  # Render the level text
         screen.blit(font.render(lvl8_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
@@ -3759,8 +3872,8 @@ def create_lvl9_screen():
     gravity = 1
     jump_strength = 21
     # When the gravity is weaker
-    weak_jump_strength = 37
-    weak_grav = False
+    strong_jump_strength = 15
+    strong_grav = False
     move_speed = 8
     on_ground = False
     velocity_y = 0
@@ -3816,29 +3929,13 @@ def create_lvl9_screen():
     spikes = [
     [(700, 650), (750, 600), (800, 650)],
     [(1400, 200), (1475, 120), (1550, 200)],
-    [(9000, -750), (9025, -800), (9050, -750)],
-    [(9600, -750), (9625, -800), (9650, -750)],
-    [(10000, -800), (10050, -750), (10100, -800)],
-    [(10100, -800), (10150, -750), (10200, -800)],
-    [(10200, -800), (10250, -750), (10300, -800)],
-    [(10300, -800), (10350, -750), (10400, -800)],
-    [(10400, -800), (10450, -750), (10500, -800)],
-    [(10500, -800), (10550, -750), (10600, -800)],
-    [(10600, -800), (10650, -750), (10700, -800)],
-    [(10700, -800), (10750, -750), (10800, -800)],
-    [(10800, -800), (10850, -750), (10900, -800)],
-    [(10900, -800), (10950, -750), (11000, -800)],
-    [(11000, -800), (11050, -750), (11100, -800)],
-    [(11100, -800), (11150, -750), (11200, -800)],
-    [(11200, -800), (11250, -750), (11300, -800)],
-    [(11300, -800), (11350, -750), (11400, -800)],
     ]
 
     exit_portal = pygame.Rect(11050, -750, 50, 100)
     clock = pygame.time.Clock()
 
-    gravity_weakers = [
-        (8600, -300, 30, (0, 102, 204)),
+    gravity_strongers = [
+        (1000, 200, 30, (204, 102, 204)),
     ]
 
     teleporters = [
@@ -3876,14 +3973,14 @@ def create_lvl9_screen():
             deathcount = 0
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
                 set_page("levels")
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
-            if weak_grav:
-                velocity_y = -weak_jump_strength
+            if strong_grav:
+                velocity_y = -strong_jump_strength
             else:
                 velocity_y = -jump_strength
             jump_sound.play()
@@ -4215,27 +4312,27 @@ def create_lvl9_screen():
                     collision_detected = True  # Set the flag to stop further checks
                     break
 
-        for x, y, r, color in gravity_weakers:
+        for x, y, r, color in gravity_strongers:
             # Draw the button as a circle
-            if not weak_grav:
+            if not strong_grav:
                 pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
 
-        for gravity_weaker in gravity_weakers:
-            gravity_weaker_x, gravity_weaker_y, gravity_weaker_radius, _ = gravity_weaker
+        for gravity_stronger in gravity_strongers:
+            gravity_stronger_x, gravity_stronger_y, gravity_stronger_radius, _ = gravity_stronger
 
         # Find the closest point on the player's rectangle to the button's center
-            closest_x = max(player_rect.left, min(gravity_weaker_x, player_rect.right))
-            closest_y = max(player_rect.top, min(gravity_weaker_y, player_rect.bottom))
+            closest_x = max(player_rect.left, min(gravity_stronger_x, player_rect.right))
+            closest_y = max(player_rect.top, min(gravity_stronger_y, player_rect.bottom))
 
             # Calculate the distance between the closest point and the button's center
-            dx = closest_x - gravity_weaker_x
-            dy = closest_y - gravity_weaker_y
+            dx = closest_x - gravity_stronger_x
+            dy = closest_y - gravity_stronger_y
             distance = (dx**2 + dy**2)**0.5
 
             # If distance is less than radius, weaker gravity activated
-            if distance < gravity_weaker_radius and not weak_grav:
+            if distance < gravity_stronger_radius and not strong_grav:
                 button_sound.play()
-                weak_grav = True
+                strong_grav = True
 
 
         pygame.draw.rect(screen, (0, 205, 0), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
@@ -4246,6 +4343,15 @@ def create_lvl9_screen():
 
         # Draw the texts
         
+        # Initialize and draw the reset and quit text
+        reset_text = in_game.get("reset_message", "Press R to reset")
+        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
+
+        quit_text = in_game.get("quit_message", "Press Q to quit")
+        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
+
         levels = load_language(lang_code).get('levels', {})
         lvl9_text = levels.get("lvl9", "Level 9")  # Render the level text
         screen.blit(font.render(lvl9_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
@@ -4301,6 +4407,8 @@ def handle_action(key):
             set_page("lvl7_screen")
         elif key == "lvl8":
             set_page("lvl8_screen")
+        elif key == "lvl9":
+            set_page("lvl9_screen")
         elif key == "back":
             set_page("main_menu")
     elif current_page.startswith("lvl"):
@@ -4363,7 +4471,7 @@ while running:
     else:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                set_page("quit_confirm")
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # Only process clicks if enough time has passed since last page change
@@ -4389,6 +4497,10 @@ while running:
         if current_page == "quit_confirm":
             # Render the quit confirmation text
             screen.blit(quit_text, quit_text_rect)
+
+                # Set up the asking robot image
+            askrobo_img = pygame.image.load("askrobot.png").convert_alpha()
+            screen.blit(askrobo_img, (SCREEN_WIDTH // 2 - robo_img.get_width() // 2, SCREEN_HEIGHT // 2 - 300))
 
             # Render the "Yes" and "No" buttons
             for rendered, rect, key in buttons:
@@ -4454,6 +4566,13 @@ while running:
 
         elif current_page == "lvl8_screen":
             create_lvl8_screen()
+
+            for rendered, rect, key in buttons:
+                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
+                screen.blit(rendered, rect)
+
+        elif current_page == "lvl9_screen":
+            create_lvl9_screen()
 
             for rendered, rect, key in buttons:
                 pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
