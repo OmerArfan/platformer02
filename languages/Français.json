@@ -50,6 +50,8 @@
   ,"invisible_message": "Ces scies ne vous blesseront pas... promis!"
   ,"portal_message": "Ces portails bleus vous téléportent ! Mais surtout vers de bons endroits !"
   ,"button1_message": "Les boutons bleus, une fois activés, vous feront sauter plus haut!",
+  "button2_message": "Les boutons lavande, une fois activés, vous feront sauter plus bas!",
   "clarify_message": "Jusqu'à ce que vous atteigniez un point de contrôle, bien sûr!"
+  ,"clarify_message2": "Ils affectent également vos sauts sur les blocs de saut!"
   }
 }

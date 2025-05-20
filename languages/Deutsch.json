@@ -50,6 +50,8 @@
   ,"invisible_message": "Diese Sägen verletzen dich nicht... versprochen!",
   "portal_message": "Diese blauen Portale teleportieren dich! Aber an gute Orte ... meistens!"
   ,"button1_message": "Blaue Tasten, die bei Aktivierung höher springen!"
+  ,"button2_message": "Lavendel-Tasten, die bei Aktivierung niedriger springen!"
   ,"clarify_message": "Bis du einen Kontrollpunkt erreichst, natürlich!"
+  ,"clarify_message2": "Sie beeinflussen auch deine Sprünge auf Sprungblöcken!"
   }
 }

@@ -50,6 +50,8 @@
         ,"invisible_message": "Essas serras não vão te machucar... prometo!"
         ,"portal_message": "Esses portais azuis teletransportam você! Mas para lugares bons... na maioria das vezes!"
         ,"button1_message": "Botões azuis, ao serem ativados, farão você pular mais alto!"
+        ,"button2_message": "Botões lavanda, ao serem ativados, farão você pular mais baixo!"
         ,"clarify_message": "Até você chegar a um ponto de verificação, claro!"
+        ,"clarify_message2": "Eles também afetam seus saltos em blocos de salto!"
     }
 }

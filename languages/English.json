@@ -50,7 +50,8 @@
   "invisible_message": "These saws won't hurt you... promise!",
   "portal_message": "These blue portals teleport you! But to good places... mostly!",
   "button1_message": "Blue buttons, upon activation, will make you jump higher!",
+  "button2_message": "Lavender buttons, upon activation, will make you jump lower!",
   "clarify_message": "Until you reach a checkpoint, of course!"
-
+  ,"clarify_message2": "They also affect your jumps on jump blocks!"
 }
 }
