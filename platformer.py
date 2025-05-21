@@ -26,7 +26,7 @@ icon = pygame.image.load("roboticon.ico")
 pygame.display.set_icon(icon)
 
 complete_levels = 0  # Keep track of how many levels have been completed
-locked_levels = ["lvl2", "lvl3", "lvl4",  "lvl6", "lvl7", "lvl8"] # Keep track of how many levels are locked
+locked_levels = ["lvl2", "lvl3", "lvl4","lvl5",  "lvl6", "lvl7", "lvl8", "lvl9"] # Keep track of how many levels are locked
 
 # Initializing screen resolution
 pygame.init()
@@ -55,7 +55,7 @@ logo_text = font.render("Logo made with: canva.com", True, (255, 255, 255))
 logo_pos = (SCREEN_WIDTH - 349, SCREEN_HEIGHT - 84)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 265, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.0.15", True, (255, 255, 255))
+ver_text = font.render("Version 1.0.16", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 183, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -588,11 +588,7 @@ def create_lvl1_screen():
         screen.blit(rendered_moving_text, (1350 - camera_x, 170 - camera_y))  # Draws the rendered moving text
         screen.blit(rendered_exit_text, (2400 - camera_x, 300 - camera_y))  # Draws the rendered exit text
 
-        # Initialize and draw the reset and quit text
-        reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
-        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
-
+        # Initialize and draw the quit text
         quit_text = in_game.get("quit_message", "Press Q to quit")
         rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
@@ -643,8 +639,8 @@ def create_lvl2_screen():
     jump_blocks = [
         pygame.Rect(1000, 550, 100, 100), # Jump blocks to help the character go up and then fall down
         pygame.Rect(2730, 751, 100, 100),
-        pygame.Rect(3600, 651, 160, 100),
-        pygame.Rect(4060, 651, 160, 100),
+        pygame.Rect(3600, 645, 160, 100),
+        pygame.Rect(4060, 645, 160, 100),
     ]
 
     moving_block = pygame.Rect(1500, 300, 100, 20)
@@ -3653,7 +3649,7 @@ def create_lvl8_screen():
                 update_locked_levels()
             if not is_mute:
                 warp_sound.play()
-            set_page('main_menu')
+            set_page('lvl9_screen')
 
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
@@ -3720,7 +3716,8 @@ def create_lvl8_screen():
            # Check if the player collides with the entry rectangle
             if player_rect.colliderect(teleporter["entry"]):
                 # Teleport the player to the exit rectangle
-                warp_sound.play()
+                if not is_mute:
+                    warp_sound.play()
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
         
         for x, y, r, color in saws:
@@ -3898,43 +3895,61 @@ def create_lvl9_screen():
     img_width, img_height = player_img.get_size()
 
     # Draw flag
-    flag = pygame.Rect(2450, 300, 80, 50)  # x, y, width, height
+    flag = pygame.Rect(2350, 300, 80, 50)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(10200, -250, 80, 50)  # x, y, width, height
+    flag2 = pygame.Rect(5600, 550, 80, 50)  # x, y, width, height
     checkpoint_reached2 = False
+
+    key_block_pairs = [
+        {
+            "key": (3750, 550, 30, (255, 255, 0)),
+            "block": pygame.Rect(3200, 0, 400, 300),
+            "collected": False
+        },
+    ]
 
     blocks = [
         pygame.Rect(0, 100, 1000, 50),
         pygame.Rect(500, 60, 500, 80),
         pygame.Rect(0, -300, 1000, 100),
-        pygame.Rect(2400, 400, 500, 100),
+        pygame.Rect(2300, 400, 600, 100),
+        pygame.Rect(2800, -300, 100, 500),
+        pygame.Rect(3200, 200, 100, 530),
+        pygame.Rect(2900, -600, 1100, 100),
+        pygame.Rect(3600, 200, 100, 850),
+        pygame.Rect(3630, 200, 1900, 100),
+        pygame.Rect(3630, 650, 2200, 100)
     ]
     
     jump_blocks = [
         pygame.Rect(1100, 600, 100, 100),
         pygame.Rect(1400, 600, 100, 100),
+        pygame.Rect(3000, 400, 100, 100),
+        pygame.Rect(5730, 550, 100, 100),
     ]
 
     moving_saws = [ 
-        {'r': 100, 'speed': 9, 'cx': 3800, 'cy': 200, 'max': 700, 'min': 200},
-        {'r': 100, 'speed': 9, 'cx': 4500, 'cy': 600, 'max': 700, 'min': 200},
+        {'r': 70, 'speed': 6, 'cx': 3830, 'cy': 500, 'max': 800, 'min': 300},
+        {'r': 70, 'speed': 10, 'cx': 4500, 'cy': 600, 'max': 700, 'min': -60},
     ]
 
     moving_saws_x = [
-        {'r': 100, 'speed':14, 'cx': 11000, 'cy': -705, 'max': 11300, 'min': 10700}
+        {'r': 100, 'speed':14, 'cx': 3800, 'cy': 700, 'min': 3700, 'max': 5400}
     ]
 
     saws = [
+        (1000, 150, 80, (255, 0, 0)),
+    ]
+
+    deceiver_saws = [
         (1700, 650, 28, (255, 0 , 127)),
         (1900, 650, 28, (255, 0 , 127)),
-        (2300, 550, 28, (255, 0 , 127)),
-        (1000, 150, 80, (255, 0, 0)),
-
-    ]
+        (2100, 550, 28, (255, 0 , 127)),
+    ]        
 
     invisible_blocks = [
         pygame.Rect(1600, 600, 500, 100),
-        pygame.Rect(2250, 500, 100, 100),
+        pygame.Rect(2050, 500, 100, 100),
     ]
 
     rotating_saws = [
@@ -3951,9 +3966,44 @@ def create_lvl9_screen():
     [(660, -200), (710, -150), (760, -200)],
     [(770, -200), (820, -150), (870, -200)],
     [(880, -200), (930, -150), (980, -200)],
+    [(2900, 200), (2950, 150), (2900, 100)],
+    [(2900, 90), (2950, 40), (2900, -10)],
+    [(2900, -20), (2950, -70), (2900, -120)],
+    [(2900, -130), (2950, -180), (2900, -230)],
+    [(2900, -240), (2950, -265), (2900, -290)],
+    [(3200, 0), (3150, 50), (3200, 100)],
+    [(3200, 110), (3150, 160), (3200, 210)],
+    [(3200, 220), (3150, 270), (3200, 320)],
+    [(3200, 330), (3150, 380), (3200, 430)],
+    [(2900, -500), (2950, -450), (3000, -500)],
+    [(3010, -500), (3060, -450), (3110, -500)],
+    [(3120, -500), (3170, -450), (3220, -500)],
+    [(3230, -500), (3280, -450), (3330, -500)],
+    [(3340, -500), (3390, -450), (3440, -500)],
+    [(3450, -500), (3500, -450), (3550, -500)],
+    [(3560, -500), (3610, -450), (3660, -500)],
+    [(3670, -500), (3720, -450), (3770, -500)],
+    [(3780, -500), (3830, -450), (3880, -500)],
+    [(3890, -500), (3940, -450), (3990, -500)],
+    [(4000, 200), (4050, 150), (4100, 200)],
+    [(4110, 200), (4160, 150), (4210, 200)],
+    [(4220, 200), (4270, 150), (4320, 200)],
+    [(4330, 200), (4380, 150), (4430, 200)],
+    [(4440, 200), (4490, 150), (4540, 200)],
+    [(4550, 200), (4600, 150), (4650, 200)],
+    [(4660, 200), (4710, 150), (4760, 200)],
+    [(4770, 200), (4820, 150), (4870, 200)],
+    [(4880, 200), (4930, 150), (4980, 200)],
+    [(4990, 200), (5040, 150), (5090, 200)],
+    [(5100, 200), (5150, 150), (5200, 200)],
+    [(5210, 200), (5260, 150), (5310, 200)],
+    [(5320, 200), (5370, 150), (5420, 200)],
+    [(5430, 200), (5480, 150), (5530, 200)],
+    [(4950, 300), (5000, 350), (5050, 300)],
+    [(4350, 300), (4400, 350), (4450, 300)],
     ]
 
-    exit_portal = pygame.Rect(11050, -750, 50, 100)
+    exit_portal = pygame.Rect(3425, 500, 50, 100)
     clock = pygame.time.Clock()
 
     gravity_strongers = [
@@ -3961,7 +4011,7 @@ def create_lvl9_screen():
     ]
 
     gravity_weakers = [
-        (2700, 50, 30, (0, 102, 204)),
+        (2550, 350, 30, (0, 102, 204)),
     ]
 
     teleporters = [
@@ -3977,6 +4027,12 @@ def create_lvl9_screen():
         }
     ]
 
+    moving_block = pygame.Rect(4200, 30, 100, 20)
+    moving_direction1 = 1
+    moving_speed = 5
+    moving_limit_left1 = 4050
+    moving_limit_right1 = 5400
+
     def point_in_triangle(px, py, a, b, c):
         def sign(p1, p2, p3):
             return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
@@ -3990,7 +4046,9 @@ def create_lvl9_screen():
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_r]:
-            strong_grav = False # Reset strong gravity status
+            key_block_pairs[0]["collected"] = False  # Reset key block status
+            weak_grav = False
+            strong_grav = False # Reset gravity status
             checkpoint_reached = False  # Reset checkpoint status
             checkpoint_reached2 = False  # Reset checkpoint status
             spawn_x, spawn_y = 50, -50
@@ -4039,7 +4097,7 @@ def create_lvl9_screen():
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
         on_ground = False
 
-        for block in blocks:
+        for block in blocks + [moving_block]:
             if player_rect.colliderect(block):
                 # Falling onto a block
                 if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
@@ -4067,6 +4125,8 @@ def create_lvl9_screen():
                     player_y = jump_block.y - img_height
                     if strong_grav:
                         velocity_y = -21
+                    elif weak_grav:
+                        velocity_y = -54
                     else:
                         velocity_y = -33  # Apply upward velocity for the jump
                     on_ground = True
@@ -4085,11 +4145,35 @@ def create_lvl9_screen():
                     elif player_x + img_width > jump_block.x + jump_block.width:  # Colliding with the right side
                         player_x = jump_block.x + jump_block.width
 
+        for pair in key_block_pairs:
+            if not pair["collected"]:  # Only active locked blocks
+                block = pair["block"]
+                if player_rect.colliderect(block):
+            # Falling onto a block
+                    if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
+                        player_y = block.y - img_height
+                        velocity_y = 0
+                        on_ground = True
+
+            # Hitting the bottom of a block
+                    elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
+                        player_y = block.y + block.height
+                        velocity_y = 0
+
+            # Horizontal collisions
+                    elif player_x + img_width > block.x and player_x < block.x + block.width:
+                        if player_x < block.x:
+                            player_x = block.x - img_width
+                        elif player_x + img_width > block.x + block.width:
+                            player_x = block.x + block.width
+
 
         if player_y > SCREEN_HEIGHT:
             fall_text = in_game.get("fall_message", "Fell too far!")
             screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
-            strong_grav = False # Reset weak gravity status
+            key_block_pairs[0]["collected"] = False  # Reset key block status
+            strong_grav = False # Reset strong gravity status
+            weak_grav = False # Reset weak gravity status
             if not is_mute:    
                 fall_sound.play()
             pygame.display.update()
@@ -4098,23 +4182,30 @@ def create_lvl9_screen():
             velocity_y = 0
             deathcount += 1
 
+                # Moving blocks
+        moving_block.x += moving_speed * moving_direction1
+        if moving_block.x < moving_limit_left1 or moving_block.x > moving_limit_right1:
+            moving_direction1 *= -1
+
         # Checkpoint Logic
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
 
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
             checkpoint_reached = True
-            strong_grav = False # Reset weak gravity status
-            spawn_x, spawn_y = 2500, 260  # Store checkpoint position
+            weak_grav = False # Reset weak gravity status
+            strong_grav = False # Reset strong gravity status
+            spawn_x, spawn_y = 2300, 260  # Store checkpoint position
             if not is_mute:
                 checkpoint_sound.play()
             pygame.draw.rect(screen, (0, 255, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
         if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
             checkpoint_reached = False
             checkpoint_reached2 = True
-            strong_grav = False # Reset weak gravity status
+            weak_grav = False
+            strong_grav = False # Reset gravity status
             pygame.draw.rect(screen, (0, 255, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
-            spawn_x, spawn_y = 10200, -350  # Checkpoint position
+            spawn_x, spawn_y = 5600, 500  # Checkpoint position
             if not is_mute:
                 checkpoint_sound.play()
 
@@ -4162,8 +4253,11 @@ def create_lvl9_screen():
             pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))        
 
 
+
         # Drawing
         screen.fill((0, 102, 51))
+
+
 
         # Draw flag
         if checkpoint_reached:
@@ -4178,6 +4272,26 @@ def create_lvl9_screen():
         
         # Draw key only if not collected
  
+        for pair in key_block_pairs:
+            key_x, key_y, key_r, key_color = pair["key"]
+            block = pair["block"]
+
+            # Check collision if not yet collected
+            if not pair["collected"]:
+                key_rect = pygame.Rect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
+            if player_rect.colliderect(key_rect):
+                if not pair["collected"] and not is_mute:
+                    open_sound.play()
+                pair["collected"] = True
+            
+            if not pair["collected"]:
+                pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
+
+            # Draw block only if key is not collected
+            if not pair["collected"]:
+                pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
+
+
 # Saw collision detection and drawing
         collision_detected = False  
         for rotating_saw in rotating_saws:
@@ -4205,8 +4319,10 @@ def create_lvl9_screen():
             distance = (dx**2 + dy**2)**0.5
 
             if distance < rotating_saw['r'] and not collision_detected:
-            # Trigger death logic                
-                strong_grav = False # Reset weak gravity status
+            # Trigger death logic               
+                key_block_pairs[0]["collected"] = False  # Reset key block status
+                weak_grav = False # Reset weak gravity status 
+                strong_grav = False # Reset strong gravity status
                 collision_detected = True  # Set the flag to stop further checks
                 sawed_text = in_game.get("sawed_message", "Sawed to bits!")    
                 screen.blit(font.render(sawed_text, True, (0, 0, 0)), (20, 50))               
@@ -4238,7 +4354,9 @@ def create_lvl9_screen():
             distance = (dx**2 + dy**2)**0.5
             if distance < saw['r']:
         # Trigger death logic
-                strong_grav = False # Reset weak gravity status
+                key_block_pairs[0]["collected"] = False  # Reset key block status
+                weak_grav = False # Reset weak gravity status
+                strong_grav = False # Reset strong gravity status
                 sawed_text = in_game.get("sawed_message", "Sawed to bits!")
                 screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
                 if not is_mute:
@@ -4265,8 +4383,10 @@ def create_lvl9_screen():
             dy = closest_y - saw['cy']
             distance = (dx**2 + dy**2)**0.5
             if distance < saw['r']:
+                key_block_pairs[0]["collected"] = False  # Reset key block status
         # Trigger death logic
-                strong_grav = False # Reset weak gravity status
+                weak_grav = False # Reset weak gravity status
+                strong_grav = False # Reset strong gravity status
                 sawed_text = in_game.get("sawed_message", "Sawed to bits!")
                 screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
                 if not is_mute:
@@ -4307,7 +4427,9 @@ def create_lvl9_screen():
 
             # Check if the distance is less than the saw's radius
             if distance < saw_radius:
-                strong_grav = False # Reset gravity status
+                key_block_pairs[0]["collected"] = False  # Reset key block status
+                weak_grav = False # Reset weak gravity status
+                strong_grav = False # Reset strong gravity status
                     # Trigger death logic
                 sawed_text = in_game.get("sawed_message", "Sawed to bits!")
                 screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
@@ -4324,6 +4446,8 @@ def create_lvl9_screen():
         for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))        
 
+        pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
+
         for spike in spikes:
             pygame.draw.polygon(screen, (255, 0, 0), [((x - camera_x),( y - camera_y)) for x, y in spike])
 
@@ -4339,7 +4463,9 @@ def create_lvl9_screen():
                 break  # Exit the outer loop if a collision has already been detected
             for point in bottom_points:
                 if point_in_triangle(point[0], point[1], *spike):
+                    key_block_pairs[0]["collected"] = False  # Reset key block status
                     strong_grav = False # Reset gravity status
+                    weak_grav = False # Reset weak gravity status
                     player_x, player_y = spawn_x, spawn_y  # Reset player position
                     death_text = in_game.get("dead_message", "You Died")
                     screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
@@ -4364,6 +4490,8 @@ def create_lvl9_screen():
                break  # Exit the outer loop if a collision has already been detected
              for point in top_points:
                 if point_in_triangle(point[0], point[1], *spike):
+                    key_block_pairs[0]["collected"] = False  # Reset key block status
+                    weak_grav = False
                     strong_grav = False # Reset gravity status
             # Trigger death logic
                     player_x, player_y = spawn_x, spawn_y  # Reset player position
@@ -4397,8 +4525,10 @@ def create_lvl9_screen():
 
             # If distance is less than radius, stronger gravity activated
             if distance < gravity_stronger_radius and not strong_grav:
-                button_sound.play()
+                if not is_mute:
+                    button_sound.play()
                 strong_grav = True
+                weak_grav = False
 
         for x, y, r, color in gravity_weakers:
             # Draw the button as a circle
@@ -4422,6 +4552,10 @@ def create_lvl9_screen():
                 if not is_mute:
                     button_sound.play()
                 weak_grav = True
+                strong_grav = False
+
+        for x, y, r, color in deceiver_saws:
+            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
 
         pygame.draw.rect(screen, (0, 205, 0), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
         screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
@@ -4445,7 +4579,7 @@ def create_lvl9_screen():
         screen.blit(font.render(lvl9_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         button2_text = in_game.get("button2_message", "Lavender buttons, upon activation, will make you jump lower!")
-        screen.blit(font.render(button2_text, True, (204, 102, 204)), (100 - camera_x, 80 - camera_y))
+        screen.blit(font.render(button2_text, True, (204, 102, 204)), (100 - camera_x, 100 - camera_y))
 
         clarify2_text = in_game.get("clarify_message2", "They also affect your jumps on jump blocks!")
         screen.blit(font.render(clarify2_text, True, (204, 102, 204)), (1000 - camera_x, 450 - camera_y))
