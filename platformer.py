@@ -27,7 +27,21 @@ icon = pygame.image.load("roboticon.ico")
 pygame.display.set_icon(icon)
 
 complete_levels = 0  # Keep track of how many levels have been completed
-locked_levels = ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"] # Keep track of how many levels are locked
+locked_levels = [ "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"] # Keep track of how many levels are locked
+
+# Initalizing time
+lvl1_time = 0
+lvl2_time = 0
+lvl3_time = 0
+lvl4_time = 0
+lvl5_time = 0
+lvl6_time = 0   
+lvl7_time = 0
+lvl8_time = 0
+lvl9_time = 0
+lvl10_time = 0
+lvl11_time = 0
+lvl12_time = 0
 
 # Initializing screen resolution
 pygame.init()
@@ -364,9 +378,13 @@ def create_quit_confirm_buttons():
     pygame.display.flip()  # Update the display to show the quit confirmation screen
 
 def create_lvl1_screen():
-    global player_img, font, screen, complete_levels, is_mute
+    global player_img, font, screen, complete_levels, is_mute, lvl1_time
 
     in_game = load_language(lang_code).get('in_game', {})
+
+    start_time = time.time()
+
+    # each frame
 
     # Camera settings
     camera_x = 0  
@@ -434,6 +452,9 @@ def create_lvl1_screen():
     while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
+
+        current_time = time.time() - start_time
+        formatted_time = "{:.2f}".format(current_time)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
@@ -515,6 +536,8 @@ def create_lvl1_screen():
               update_locked_levels()
             if not is_mute:
                 warp_sound.play()
+            if current_time < lvl1_time or lvl1_time == 0:
+                lvl1_time = round(current_time, 2)
             running = False
             set_page('lvl2_screen')
             
@@ -598,6 +621,9 @@ def create_lvl1_screen():
         screen.blit(rendered_moving_text, (1350 - camera_x, 170 - camera_y))  # Draws the rendered moving text
         screen.blit(rendered_exit_text, (2400 - camera_x, 300 - camera_y))  # Draws the rendered exit text
 
+        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - 300, 20))  # draw it at the top-left corner
+
         # Initialize and draw the quit text
         quit_text = in_game.get("quit_message", "Press Q to quit")
         rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
@@ -610,9 +636,11 @@ def create_lvl1_screen():
         pygame.display.update()    
 
 def create_lvl2_screen():
-    global player_img, font, screen, complete_levels, is_mute
+    global player_img, font, screen, complete_levels, is_mute, lvl2_time
 
     in_game = load_language(lang_code).get('in_game', {})
+
+    start_time = time.time()
 
     # Camera settings
     camera_x = 0  
@@ -700,10 +728,8 @@ def create_lvl2_screen():
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_r]:
-            player_x, player_y = 150, 200
-            velocity_y = 0
-            deathcount = 0
+        current_time = time.time() - start_time
+        formatted_time = "{:.2f}".format(current_time)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
@@ -808,6 +834,8 @@ def create_lvl2_screen():
                 update_locked_levels()
             if not is_mute:
                 warp_sound.play()
+            if current_time < lvl2_time or lvl2_time == 0:
+                lvl2_time = round(current_time, 2)
             running = False
             set_page('lvl3_screen')    
 
@@ -886,6 +914,9 @@ def create_lvl2_screen():
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
 
+        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - 300, 20))  # draw it at the top-left corner
+
             # Inside the game loop:
         screen.blit(rendered_jump_text, (900 - camera_x, 500 - camera_y))  # Draws the rendered up text
 
@@ -902,7 +933,9 @@ def create_lvl2_screen():
         pygame.display.update()    
 
 def create_lvl3_screen():
-    global player_img, font, screen, complete_levels, is_mute
+    global player_img, font, screen, complete_levels, is_mute, lvl3_time
+
+    start_time = time.time()
 
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -997,7 +1030,12 @@ def create_lvl3_screen():
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
+        current_time = time.time() - start_time
+        formatted_time = "{:.2f}".format(current_time)
+
         if keys[pygame.K_r]:
+            start_time = time.time()
+            current_time = 0
             for pair in key_block_pairs:
                 pair["collected"] = False  # Reset the collected status for all keys
             checkpoint_reached = False  # Reset checkpoint status
@@ -1145,6 +1183,8 @@ def create_lvl3_screen():
                 update_locked_levels()
             if not is_mute:
                 warp_sound.play()
+            if current_time < lvl3_time or lvl3_time == 0:
+                lvl3_time = round(current_time, 2)
             running = False
             set_page('lvl4_screen')
 
@@ -1292,13 +1332,18 @@ def create_lvl3_screen():
         rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
+        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - 300, 20))  # draw it at the top-left corner
+
         levels = load_language(lang_code).get('levels', {})
         lvl3_text = levels.get("lvl3", "Level 3")  # Render the level text
         screen.blit(font.render(lvl3_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
         pygame.display.update()    
 
 def create_lvl4_screen():
-    global player_img, font, screen, complete_levels, is_mute
+    global player_img, font, screen, complete_levels, is_mute, lvl4_time
+
+    start_time = time.time()
 
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -1416,7 +1461,11 @@ def create_lvl4_screen():
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
+        current_time = time.time() - start_time
+        formatted_time = "{:.2f}".format(current_time)
+
         if keys[pygame.K_r]:
+            start_time = time.time()
             for pair in key_block_pairs:
                 pair["collected"] = False  # Reset the collected status for all keys
             checkpoint_reached = False  # Reset checkpoint status
@@ -1596,6 +1645,8 @@ def create_lvl4_screen():
                 update_locked_levels()
             if not is_mute:
                 warp_sound.play()
+            if current_time < lvl4_time or lvl4_time == 0:
+                lvl4_time = round(current_time, 2)
             running = False
             set_page('lvl5_screen') 
 
@@ -1855,6 +1906,9 @@ def create_lvl4_screen():
         rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
+        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - 300, 20))  # draw it at the top-left corner
+
         levels = load_language(lang_code).get('levels', {})
         lvl4_text = levels.get("lvl4", "Level 4")  # Render the level text
         screen.blit(font.render(lvl4_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
@@ -1862,7 +1916,9 @@ def create_lvl4_screen():
         pygame.display.update()   
 
 def create_lvl5_screen():
-    global player_img, font, screen, complete_levels, is_mute
+    global player_img, font, screen, complete_levels, is_mute, lvl5_time
+
+    start_time = time.time()
 
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -1987,7 +2043,11 @@ def create_lvl5_screen():
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
+        current_time = time.time() - start_time
+        formatted_time = "{:.2f}".format(current_time)
+
         if keys[pygame.K_r]:
+            start_time = time.time()
             for pair in key_block_pairs:
                 pair["collected"] = False  # Reset the collected status for all keys
             checkpoint_reached = False  # Reset checkpoint status
@@ -2138,6 +2198,8 @@ def create_lvl5_screen():
                 update_locked_levels()
             if not is_mute:
                 warp_sound.play()
+            if current_time < lvl5_time or lvl5_time == 0:
+                lvl5_time = round(current_time, 2)
             set_page('lvl6_screen')
             
         # Camera logic
@@ -2419,6 +2481,9 @@ def create_lvl5_screen():
         rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
+        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - 300, 20))  # draw it at the top-left corner
+
         levels = load_language(lang_code).get('levels', {})
         lvl5_text = levels.get("lvl5", "Level 5")  # Render the level text
         screen.blit(font.render(lvl5_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
@@ -2426,7 +2491,8 @@ def create_lvl5_screen():
         pygame.display.update()   
 
 def create_lvl6_screen():
-    global player_img, font, screen, complete_levels, is_mute
+    global player_img, font, screen, complete_levels, is_mute, lvl6_time
+    start_time = time.time()
 
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -2538,7 +2604,11 @@ def create_lvl6_screen():
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
+        current_time = time.time() - start_time
+        formatted_time = "{:.2f}".format(current_time)
+
         if keys[pygame.K_r]:
+            start_time = time.time()
             for pair in key_block_pairs:
                 pair["collected"] = False  # Reset the collected status for all keys
             checkpoint_reached = False  # Reset checkpoint status
@@ -2689,6 +2759,8 @@ def create_lvl6_screen():
                 update_locked_levels()
             if not is_mute:
                 warp_sound.play()
+            if current_time < lvl6_time or lvl6_time == 0:
+                lvl6_time = round(current_time, 2)
             set_page('lvl7_screen')
 
 
@@ -2986,6 +3058,9 @@ def create_lvl6_screen():
         levels = load_language(lang_code).get('levels', {})
         lvl6_text = levels.get("lvl6", "Level 6")  # Render the level text
         screen.blit(font.render(lvl6_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+
+        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - 300, 20))  # draw it at the top-left corner
 
         invisible_text = in_game.get("invisible_message", "These saws won't hurt you... promise!")
         screen.blit(font.render(invisible_text, True, (255, 51, 153)), (900 - camera_x, 250 - camera_y)) # Render the invisible block text
@@ -5934,6 +6009,8 @@ while running:
                     pygame.draw.rect(screen, (0, 102, 51), rect.inflate(20, 10))
                 screen.blit(rendered, rect)
 
+
+
             # Allow returning to the main menu with ESC
             keys = pygame.key.get_pressed()
             if keys[pygame.K_ESCAPE]:
@@ -6028,6 +6105,61 @@ while running:
                     if hovered and not button_hovered_last_frame and not is_mute:
                         hover_sound.play()
                     button_hovered_last_frame = hovered
+                # Show lvl1_time if hovering Level 1 button
+                    if key == "lvl1":
+                        lvl1_time_text = font.render(f"Best Time: {lvl1_time}s", True, (255, 255, 0))
+                        # Adjust position as needed
+                        screen.blit(lvl1_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
+                    
+                    elif key == "lvl2":
+                        lvl2_time_text = font.render(f"Best Time: {lvl2_time}s", True, (255, 255, 0))
+                        # Adjust position as needed
+                        screen.blit(lvl2_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
+
+                    elif key == "lvl3":
+                        lvl3_time_text = font.render(f"Best Time: {lvl3_time}s", True, (255, 255, 0))
+                        # Adjust position as needed
+                        screen.blit(lvl3_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
+
+                    elif key == "lvl4":
+                        lvl4_time_text = font.render(f"Best Time: {lvl4_time}s", True, (255, 255, 0))
+                        # Adjust position as needed
+                        screen.blit(lvl4_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
+                    
+                    elif key == "lvl5":
+                        lvl5_time_text = font.render(f"Best Time: {lvl5_time}s", True, (255, 255, 0))
+                        # Adjust position as needed
+                        screen.blit(lvl5_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
+
+                    elif key == "lvl6":
+                        lvl6_time_text = font.render(f"Best Time: {lvl6_time}s", True, (255, 255, 0))
+                        # Adjust position as needed
+                        screen.blit(lvl6_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
+                    
+                    elif key == "lvl7":
+                        lvl7_time_text = font.render(f"Best Time: {lvl7_time}s", True, (255, 255, 0))
+                        # Adjust position as needed
+                        screen.blit(lvl7_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
+                    
+                    elif key == "lvl8":
+                        lvl8_time_text = font.render(f"Best Time: {lvl8_time}s", True, (255, 255, 0))
+                        # Adjust position as needed
+                        screen.blit(lvl8_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
+                    
+                    elif key == "lvl9":
+                        lvl9_time_text = font.render(f"Best Time: {lvl9_time}s", True, (255, 255, 0))
+                        # Adjust position as needed
+                        screen.blit(lvl9_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
+                    
+                    elif key == "lvl10":
+                        lvl10_time_text = font.render(f"Best Time: {lvl10_time}s", True, (255, 255, 0))
+                        # Adjust position as needed
+                        screen.blit(lvl10_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
+                    
+                    elif key == "lvl11":
+                        lvl11_txt = font.render(f"Coming soon!", True, (255, 255, 0))
+                        screen.blit(lvl11_txt, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
+
                 else:
                     pygame.draw.rect(screen, (0, 102, 51), rect.inflate(20, 10))
                 screen.blit(rendered, rect)
