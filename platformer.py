@@ -26,23 +26,37 @@ is_mute = False  # Global variable to track mute state
 icon = pygame.image.load("roboticon.ico")
 pygame.display.set_icon(icon)
 
-complete_levels = 0  # Keep track of how many levels have been completed
-# locked_levels = [] for testing purposes
-locked_levels = ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"] # Keep track of how many levels are locked
+# Save file name
+SAVE_FILE = "save_data.json"
 
-# Initalizing time
-lvl1_time = 0
-lvl2_time = 0
-lvl3_time = 0
-lvl4_time = 0
-lvl5_time = 0
-lvl6_time = 0   
-lvl7_time = 0
-lvl8_time = 0
-lvl9_time = 0
-lvl10_time = 0
-lvl11_time = 0
-lvl12_time = 0
+# Default progress dictionary
+default_progress = {
+    "complete_levels": 0,
+    "locked_levels": ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"],
+    "times": {f"lvl{i}": 0 for i in range(1, 13)},
+    "medals": {f"lvl{i}": "None" for i in range(1, 13)},
+    "language": "English"
+}
+
+# Load progress from save file or return default
+def load_progress():
+    if os.path.exists(SAVE_FILE):
+        with open(SAVE_FILE, "r") as f:
+            return json.load(f)
+    else:
+        return default_progress.copy()
+
+# Save progress to file
+def save_progress(data):
+    with open(SAVE_FILE, "w") as f:
+        json.dump(data, f, indent=4)
+
+# Load progress at start
+progress = load_progress()
+
+# Define shortcuts for easier access if needed
+complete_levels = progress.get("complete_levels", 0)
+locked_levels = progress.get("locked_levels", default_progress["locked_levels"])
 
 # Level rank thresholds
 level_thresholds = [
@@ -58,26 +72,11 @@ level_thresholds = [
     {'level': 10,'gold': 30, 'silver': 45, 'bronze': 60},
 ]
 
-# Medal of Levels
-lvl1_medal = "None"
-lvl2_medal = "None"
-lvl3_medal = "None"
-lvl4_medal = "None"
-lvl5_medal = "None"
-lvl6_medal = "None"
-lvl7_medal = "None"
-lvl8_medal = "None"
-lvl9_medal = "None"
-lvl10_medal = "None"
-lvl11_medal = "None"
-lvl12_medal = "None"
-
-# Function to get the medal based on level and time taken
+# Function to get medal based on time
 def get_medal(level, time_taken):
     thresholds = next((t for t in level_thresholds if t['level'] == level), None)
     if not thresholds:
         return None
-
     if time_taken <= thresholds['gold']:
         return "Gold"
     elif time_taken <= thresholds['silver']:
@@ -114,7 +113,7 @@ logo_text = font.render("Logo made with: canva.com", True, (255, 255, 255))
 logo_pos = (SCREEN_WIDTH - 349, SCREEN_HEIGHT - 84)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 265, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.1.3", True, (255, 255, 255))
+ver_text = font.render("Version 1.1.4", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -138,7 +137,8 @@ lang_code = 'english'
 # Page states
 current_page = 'main_menu'
 buttons = []
-current_lang = {}
+current_lang = load_language(lang_code)  # Reload the language data
+progress["language"] = current_lang
 
 # New variable to track last page change time
 pending_level = None
@@ -312,6 +312,7 @@ def change_language(lang):
     print(f"Language changed to: {lang_code}")
     last_page_change_time = time.time()  # Track the time when the language changes
     current_lang = load_language(lang_code)  # Reload the language data
+    progress["language"] = lang_code
     set_page('main_menu')
 
 def go_back():
@@ -320,31 +321,37 @@ def go_back():
     set_page('main_menu')
 
 def update_locked_levels():
+    # Read complete_levels from progress dictionary
+    complete = progress.get("complete_levels", 0)
+
+    if complete == 0:
+        progress["locked_levels"] = ["lvl2","lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
+    elif complete == 1:
+        progress["locked_levels"] = ["lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
+    elif complete == 2:
+        progress["locked_levels"] = ["lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
+    elif complete == 3:
+        progress["locked_levels"] = ["lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
+    elif complete == 4:
+        progress["locked_levels"] = ["lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
+    elif complete == 5:
+        progress["locked_levels"] = ["lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
+    elif complete == 6:
+        progress["locked_levels"] = ["lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
+    elif complete == 7:
+        progress["locked_levels"] = ["lvl9", "lvl10", "lvl11", "lvl12"]
+    elif complete == 8:
+        progress["locked_levels"] = ["lvl10", "lvl11", "lvl12"]
+    elif complete == 9:
+        progress["locked_levels"] = ["lvl11", "lvl12"]
+    elif complete == 10:
+        progress["locked_levels"] = ["lvl12"]
+    elif complete == 11:
+        progress["locked_levels"] = []
+    
+    # Optionally update your global locked_levels shortcut if you use it elsewhere
     global locked_levels
-    if complete_levels == 0:
-        locked_levels = ["lvl2","lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]  # Example of locked levels
-    elif complete_levels == 1:
-        locked_levels = ["lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
-    elif complete_levels == 2:
-        locked_levels = ["lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
-    elif complete_levels == 3:
-        locked_levels = ["lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
-    elif complete_levels == 4:
-        locked_levels = ["lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
-    elif complete_levels == 5:
-        locked_levels = ["lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
-    elif complete_levels == 6:
-        locked_levels = ["lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
-    elif complete_levels == 7:
-        locked_levels = ["lvl9", "lvl10", "lvl11", "lvl12"]
-    elif complete_levels == 8:
-        locked_levels = ["lvl10", "lvl11", "lvl12"]
-    elif complete_levels == 9:
-        locked_levels = ["lvl11", "lvl12"]
-    elif complete_levels == 10:
-        locked_levels = ["lvl12"]
-    elif complete_levels == 11:
-        locked_levels = []
+    locked_levels = progress["locked_levels"]
 
 # Central page switcher
 def set_page(page):
@@ -422,7 +429,7 @@ def create_quit_confirm_buttons():
     pygame.display.flip()  # Update the display to show the quit confirmation screen
 
 def create_lvl1_screen():
-    global player_img, font, screen, complete_levels, is_mute, lvl1_time, lvl1_medal
+    global player_img, font, screen, complete_levels, is_mute
 
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -573,21 +580,25 @@ def create_lvl1_screen():
             velocity_y = 0
             deathcount += 1
 
-        # Exit portal
         if player_rect.colliderect(exit_portal):
-            if complete_levels < 1:
-              complete_levels = 1
-              update_locked_levels()
+            if progress["complete_levels"] < 1:
+                progress["complete_levels"] = 1
+                # You might want to update locked_levels here as well if needed
+                update_locked_levels()  # make sure this updates progress["locked_levels"]
+
             if not is_mute:
                 warp_sound.play()
-            if current_time < lvl1_time or lvl1_time == 0:
-                lvl1_time = round(current_time, 2)
-                lvl1_medal = get_medal(1, lvl1_time)  # Get the medal for level 1
-            print(lvl1_medal)
+
+            if current_time < progress["times"]["lvl1"] or progress["times"]["lvl1"] == 0:
+                progress["times"]["lvl1"] = round(current_time, 2)
+                progress["medals"]["lvl1"] = get_medal(1, progress["times"]["lvl1"])
+
+            save_progress(progress)  # Save progress to JSON file
+
+            print(progress["medals"]["lvl1"])
             running = False
             set_page('lvl2_screen')
-            
-
+        
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
 
@@ -682,7 +693,7 @@ def create_lvl1_screen():
         pygame.display.update()    
 
 def create_lvl2_screen():
-    global player_img, font, screen, complete_levels, is_mute, lvl2_time, lvl2_medal
+    global player_img, font, screen, complete_levels, is_mute
 
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -875,14 +886,21 @@ def create_lvl2_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if complete_levels < 2:
-                complete_levels = 2
-                update_locked_levels()
+            if progress["complete_levels"] < 2:
+                progress["complete_levels"] = 2
+                # You might want to update locked_levels here as well if needed
+                update_locked_levels()  # make sure this updates progress["locked_levels"]
+
             if not is_mute:
                 warp_sound.play()
-            if current_time < lvl2_time or lvl2_time == 0:
-                lvl2_time = round(current_time, 2)
-                lvl2_medal = get_medal(2, lvl2_time)  # Get the medal for level 2
+
+            if current_time < progress["times"]["lvl2"] or progress["times"]["lvl2"] == 0:
+                progress["times"]["lvl2"] = round(current_time, 2)
+                progress["medals"]["lvl2"] = get_medal(2, progress["times"]["lvl2"])
+
+            save_progress(progress)  # Save progress to JSON file
+
+            print(progress["medals"]["lvl2"])
             running = False
             set_page('lvl3_screen')    
 
@@ -980,7 +998,7 @@ def create_lvl2_screen():
         pygame.display.update()    
 
 def create_lvl3_screen():
-    global player_img, font, screen, complete_levels, is_mute, lvl3_time, lvl3_medal
+    global player_img, font, screen, complete_levels, is_mute
 
     start_time = time.time()
 
@@ -1225,14 +1243,21 @@ def create_lvl3_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if complete_levels < 3:
-                complete_levels = 3
-                update_locked_levels()
+            if progress["complete_levels"] < 3:
+                progress["complete_levels"] = 3
+                # You might want to update locked_levels here as well if needed
+                update_locked_levels()  # make sure this updates progress["locked_levels"]
+
             if not is_mute:
                 warp_sound.play()
-            if current_time < lvl3_time or lvl3_time == 0:
-                lvl3_time = round(current_time, 2)
-                lvl3_medal = get_medal(3, lvl3_time)  # Get the medal for level 3
+
+            if current_time < progress["times"]["lvl3"] or progress["times"]["lvl3"] == 0:
+                progress["times"]["lvl3"] = round(current_time, 2)
+                progress["medals"]["lvl3"] = get_medal(3, progress["times"]["lvl3"])
+
+            save_progress(progress)  # Save progress to JSON file
+
+            print(progress["medals"]["lvl3"])
             running = False
             set_page('lvl4_screen')
 
@@ -1389,7 +1414,7 @@ def create_lvl3_screen():
         pygame.display.update()    
 
 def create_lvl4_screen():
-    global player_img, font, screen, complete_levels, is_mute, lvl4_time, lvl4_medal
+    global player_img, font, screen, complete_levels, is_mute
 
     start_time = time.time()
 
@@ -1687,15 +1712,21 @@ def create_lvl4_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
+            if progress["complete_levels"] < 4:
+                progress["complete_levels"] = 4
+                # You might want to update locked_levels here as well if needed
+                update_locked_levels()  # make sure this updates progress["locked_levels"]
 
-            if complete_levels < 4:
-                complete_levels = 4
-                update_locked_levels()
             if not is_mute:
                 warp_sound.play()
-            if current_time < lvl4_time or lvl4_time == 0:
-                lvl4_time = round(current_time, 2)
-                lvl4_medal = get_medal(4, lvl4_time)  # Get the medal for level 4
+
+            if current_time < progress["times"]["lvl4"] or progress["times"]["lvl4"] == 0:
+                progress["times"]["lvl4"] = round(current_time, 2)
+                progress["medals"]["lvl4"] = get_medal(4, progress["times"]["lvl4"])
+
+            save_progress(progress)  # Save progress to JSON file
+
+            print(progress["medals"]["lvl2"])
             running = False
             set_page('lvl5_screen') 
 
@@ -1965,7 +1996,7 @@ def create_lvl4_screen():
         pygame.display.update()   
 
 def create_lvl5_screen():
-    global player_img, font, screen, complete_levels, is_mute, lvl5_time, lvl5_medal
+    global player_img, font, screen, complete_levels, is_mute
 
     start_time = time.time()
 
@@ -2241,15 +2272,22 @@ def create_lvl5_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            running = False
-            if complete_levels < 5:
-                complete_levels =  5
-                update_locked_levels()
+            if progress["complete_levels"] < 5:
+                progress["complete_levels"] = 5
+                # You might want to update locked_levels here as well if needed
+                update_locked_levels()  # make sure this updates progress["locked_levels"]
+
             if not is_mute:
                 warp_sound.play()
-            if current_time < lvl5_time or lvl5_time == 0:
-                lvl5_time = round(current_time, 2)
-                lvl5_medal = get_medal(5, lvl5_time)  # Get the medal for level 5
+
+            if current_time < progress["times"]["lvl5"] or progress["times"]["lvl5"] == 0:
+                progress["times"]["lvl5"] = round(current_time, 2)
+                progress["medals"]["lvl5"] = get_medal(5, progress["times"]["lvl5"])
+
+            save_progress(progress)  # Save progress to JSON file
+
+            print(progress["medals"]["lvl5"])
+            running = False
             set_page('lvl6_screen')
             
         # Camera logic
@@ -2803,15 +2841,22 @@ def create_lvl6_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            running = False
-            if complete_levels < 6:
-                complete_levels =  6
-                update_locked_levels()
+            if progress["complete_levels"] < 6:
+                progress["complete_levels"] = 6
+                # You might want to update locked_levels here as well if needed
+                update_locked_levels()  # make sure this updates progress["locked_levels"]
+
             if not is_mute:
                 warp_sound.play()
-            if current_time < lvl6_time or lvl6_time == 0:
-                lvl6_time = round(current_time, 2)
-                lvl6_medal = get_medal(6, lvl6_time)  # Get the medal for level 6
+
+            if current_time < progress["times"]["lvl6"] or progress["times"]["lvl6"] == 0:
+                progress["times"]["lvl6"] = round(current_time, 2)
+                progress["medals"]["lvl6"] = get_medal(6, progress["times"]["lvl6"])
+
+            save_progress(progress)  # Save progress to JSON file
+
+            print(progress["medals"]["lvl6"])
+            running = False
             set_page('lvl7_screen')
 
 
@@ -3119,7 +3164,7 @@ def create_lvl6_screen():
         pygame.display.update()   
 
 def create_lvl7_screen():
-    global player_img, font, screen, complete_levels, is_mute, lvl7_time, lvl7_medal
+    global player_img, font, screen, complete_levels, is_mute
     start_time = time.time()
 
     in_game = load_language(lang_code).get('in_game', {})
@@ -3313,15 +3358,22 @@ def create_lvl7_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            running = False
-            if complete_levels < 7:
-                complete_levels = 7
-                update_locked_levels()
-            if current_time < lvl7_time or lvl7_time == 0:
-                lvl7_time = round(current_time, 2)
-                lvl7_medal = get_medal(7, lvl7_time)  # Get the medal for level 7
+            if progress["complete_levels"] < 7:
+                progress["complete_levels"] = 7
+                # You might want to update locked_levels here as well if needed
+                update_locked_levels()  # make sure this updates progress["locked_levels"]
+
             if not is_mute:
                 warp_sound.play()
+
+            if current_time < progress["times"]["lvl7"] or progress["times"]["lvl7"] == 0:
+                progress["times"]["lvl7"] = round(current_time, 2)
+                progress["medals"]["lvl7"] = get_medal(7, progress["times"]["lvl7"])
+
+            save_progress(progress)  # Save progress to JSON file
+
+            print(progress["medals"]["lvl7"])
+            running = False
             set_page('lvl8_screen')
 
         # Camera logic
@@ -3571,7 +3623,7 @@ def create_lvl7_screen():
         pygame.display.update()   
 
 def create_lvl8_screen():
-    global player_img, font, screen, complete_levels, is_mute, lvl8_time, lvl8_medal
+    global player_img, font, screen, complete_levels, is_mute
     start_time = time.time()
 
     in_game = load_language(lang_code).get('in_game', {})
@@ -3811,15 +3863,22 @@ def create_lvl8_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            running = False
-            if complete_levels < 8:
-                complete_levels = 8
-                update_locked_levels()
+            if progress["complete_levels"] < 8:
+                progress["complete_levels"] = 8
+                # You might want to update locked_levels here as well if needed
+                update_locked_levels()  # make sure this updates progress["locked_levels"]
+
             if not is_mute:
-                warp_sound.play()#
-            if current_time < lvl8_time or lvl8_time == 0:
-                lvl8_time = round(current_time, 2)
-                lvl8_medal = get_medal(8, lvl8_time)  # Get the medal for level 8
+                warp_sound.play()
+
+            if current_time < progress["times"]["lvl8"] or progress["times"]["lvl8"] == 0:
+                progress["times"]["lvl8"] = round(current_time, 2)
+                progress["medals"]["lvl8"] = get_medal(8, progress["times"]["lvl8"])
+
+            save_progress(progress)  # Save progress to JSON file
+
+            print(progress["medals"]["lvl8"])
+            running = False
             set_page('lvl9_screen')
 
         # Camera logic
@@ -4068,7 +4127,7 @@ def create_lvl8_screen():
         pygame.display.update()   
 
 def create_lvl9_screen():
-    global player_img, font, screen, complete_levels, is_mute, lvl9_time, lvl9_medal
+    global player_img, font, screen, complete_levels, is_mute
     start_time = time.time()
 
     in_game = load_language(lang_code).get('in_game', {})
@@ -4396,15 +4455,22 @@ def create_lvl9_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            running = False
-            if complete_levels < 9:
-                complete_levels = 9
-                update_locked_levels()
+            if progress["complete_levels"] < 9:
+                progress["complete_levels"] = 9
+                # You might want to update locked_levels here as well if needed
+                update_locked_levels()  # make sure this updates progress["locked_levels"]
+
             if not is_mute:
                 warp_sound.play()
-            if current_time < lvl9_time or lvl9_time == 0:
-                lvl9_time = round(current_time, 2)
-                lvl9_medal = get_medal(9, lvl9_time)  # Get the medal for level 9
+
+            if current_time < progress["times"]["lvl9"] or progress["times"]["lvl9"] == 0:
+                progress["times"]["lvl9"] = round(current_time, 2)
+                progress["medals"]["lvl9"] = get_medal(9, progress["times"]["lvl9"])
+
+            save_progress(progress)  # Save progress to JSON file
+
+            print(progress["medals"]["lvl9"])
+            running = False
             set_page('lvl10_screen')
 
         # Camera logic
@@ -4947,15 +5013,22 @@ def create_lvl10_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            running = False
-            if complete_levels < 10:
-                complete_levels = 10
-                update_locked_levels()
+            if progress["complete_levels"] < 10:
+                progress["complete_levels"] = 10
+                # You might want to update locked_levels here as well if needed
+                update_locked_levels()  # make sure this updates progress["locked_levels"]
+
             if not is_mute:
                 warp_sound.play()
-            if current_time < lvl10_time or lvl10_time == 0:
-                lvl10_time = round(current_time, 2)
-                lvl10_medal = get_medal(10, lvl10_time)  # Get the medal for level 10
+
+            if current_time < progress["times"]["lvl10"] or progress["times"]["lvl10"] == 0:
+                progress["times"]["lvl10"] = round(current_time, 2)
+                progress["medals"]["lvl10"] = get_medal(10, progress["times"]["lvl10"])
+
+            save_progress(progress)  # Save progress to JSON file
+
+            print(progress["medals"]["lvl10"])
+            running = False
             set_page('main_menu')
 
         # Camera logic
@@ -6077,6 +6150,8 @@ while running:
         sys.exit()
 
     else:
+        print("Language code from progress:", lang_code)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 set_page("quit_confirm")
@@ -6241,168 +6316,168 @@ while running:
                 # Show lvl1_time if hovering Level 1 button
                     
                     if key == "lvl1":
-                        lvl1_time_text = font.render(f"Best Time: {lvl1_time}s", True, (255, 255, 0))
+                        lvl1_time_text = font.render(f"Best Time: {progress['times']['lvl1']}s", True, (255, 255, 0))
                         # Adjust position as needed
                         screen.blit(lvl1_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                        if lvl1_medal == "Gold":
-                            lvl1_medal_text = font.render(f"Medal: {lvl1_medal}", True, (255, 255, 0))
+                        if progress['medals']['lvl1'] == "Gold":
+                            lvl1_medal_text = font.render(f"Medal: {progress['medals']['lvl1']}", True, (255, 255, 0))
                             screen.blit(lvl1_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl1_medal == "Silver":
-                            lvl1_medal_text = font.render(f"Medal: {lvl1_medal}", True, (160, 160, 160))
+                        elif progress['medals']['lvl1'] == "Silver":
+                            lvl1_medal_text = font.render(f"Medal: {progress['medals']['lvl1']}", True, (160, 160, 160))
                             screen.blit(lvl1_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl1_medal == "Bronze":
-                            lvl1_medal_text = font.render(f"Medal: {lvl1_medal}", True, (153, 76, 0))
+                        elif progress['medals']['lvl1'] == "Bronze":
+                            lvl1_medal_text = font.render(f"Medal: {progress['medals']['lvl1']}", True, (153, 76, 0))
                             screen.blit(lvl1_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
                         else:
-                            lvl1_medal_text = font.render("Medal: None", True, (255, 255, 255))
+                            lvl1_medal_text = font.render(f"Medal: {progress['medals']['lvl1']}", True, (255, 255, 255))
                             screen.blit(lvl1_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
                     
                     elif key == "lvl2":
-                        lvl2_time_text = font.render(f"Best Time: {lvl2_time}s", True, (255, 255, 0))
+                        lvl2_time_text = font.render(f"Best Time: {progress['times']['lvl2']}s", True, (255, 255, 0))
                         # Adjust position as needed
                         screen.blit(lvl2_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                        if lvl2_medal == "Gold":
-                            lvl2_medal_text = font.render(f"Medal: {lvl2_medal}", True, (255, 255, 0))
+                        if progress['medals']['lvl2'] == "Gold":
+                            lvl2_medal_text = font.render(f"Medal: {progress['medals']['lvl2']}", True, (255, 255, 0))
                             screen.blit(lvl2_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl2_medal == "Silver":
-                            lvl2_medal_text = font.render(f"Medal: {lvl2_medal}", True, (160, 160, 160))
+                        elif progress['medals']['lvl2'] == "Silver":
+                            lvl2_medal_text = font.render(f"Medal: {progress['medals']['lvl2']}", True, (160, 160, 160))
                             screen.blit(lvl2_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl2_medal == "Bronze":
-                            lvl2_medal_text = font.render(f"Medal: {lvl2_medal}", True, (153, 76, 0))
+                        elif progress['medals']['lvl2'] == "Bronze":
+                            lvl2_medal_text = font.render(f"Medal: {progress['medals']['lvl2']}", True, (153, 76, 0))
                             screen.blit(lvl2_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
                         else:
                             lvl2_medal_text = font.render("Medal: None", True, (255, 255, 255))
                             screen.blit(lvl2_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
                     
                     elif key == "lvl3":
-                        lvl3_time_text = font.render(f"Best Time: {lvl3_time}s", True, (255, 255, 0))
+                        lvl3_time_text = font.render(f"Best Time: {progress['times']['lvl3']}s", True, (255, 255, 0))
                         # Adjust position as needed
                         screen.blit(lvl3_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                        if lvl3_medal == "Gold":
-                            lvl3_medal_text = font.render(f"Medal: {lvl3_medal}", True, (255, 255, 0))
+                        if progress['medals']['lvl3'] == "Gold":
+                            lvl3_medal_text = font.render(f"Medal: {progress['medals']['lvl3']}", True, (255, 255, 0))
                             screen.blit(lvl3_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl3_medal == "Silver":
-                            lvl3_medal_text = font.render(f"Medal: {lvl3_medal}", True, (160, 160, 160))
+                        elif progress['medals']['lvl3'] == "Silver":
+                            lvl3_medal_text = font.render(f"Medal: {progress['medals']['lvl3']}", True, (160, 160, 160))
                             screen.blit(lvl3_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl3_medal == "Bronze":
-                            lvl3_medal_text = font.render(f"Medal: {lvl3_medal}", True, (153, 76, 0))
+                        elif progress['medals']['lvl3'] == "Bronze":
+                            lvl3_medal_text = font.render(f"Medal: {progress['medals']['lvl3']}", True, (153, 76, 0))
                             screen.blit(lvl3_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
                         else:
                             lvl3_medal_text = font.render("Medal: None", True, (255, 255, 255))
                             screen.blit(lvl3_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
                     
                     elif key == "lvl4":
-                        lvl4_time_text = font.render(f"Best Time: {lvl4_time}s", True, (255, 255, 0))
+                        lvl4_time_text = font.render(f"Best Time: {progress['times']['lvl4']}s", True, (255, 255, 0))
                         # Adjust position as needed
                         screen.blit(lvl4_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                        if lvl4_medal == "Gold":
-                            lvl4_medal_text = font.render(f"Medal: {lvl4_medal}", True, (255, 255, 0))
+                        if progress['medals']['lvl4'] == "Gold":
+                            lvl4_medal_text = font.render(f"Medal: {progress['medals']['lvl4']}", True, (255, 255, 0))
                             screen.blit(lvl4_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl4_medal == "Silver":
-                            lvl4_medal_text = font.render(f"Medal: {lvl4_medal}", True, (160, 160, 160))
+                        elif progress['medals']['lvl4'] == "Silver":
+                            lvl4_medal_text = font.render(f"Medal: {progress['medals']['lvl4']}", True, (160, 160, 160))
                             screen.blit(lvl4_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl4_medal == "Bronze":
-                            lvl4_medal_text = font.render(f"Medal: {lvl4_medal}", True, (153, 76, 0))
+                        elif progress['medals']['lvl4'] == "Bronze":
+                            lvl4_medal_text = font.render(f"Medal: {progress['medals']['lvl4']}", True, (153, 76, 0))
                             screen.blit(lvl4_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
                         else:
                             lvl4_medal_text = font.render("Medal: None", True, (255, 255, 255))
                             screen.blit(lvl4_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))                    
                     
                     elif key == "lvl5":
-                        lvl5_time_text = font.render(f"Best Time: {lvl5_time}s", True, (255, 255, 0))
+                        lvl5_time_text = font.render(f"Best Time: {progress['times']['lvl5']}s", True, (255, 255, 0))
                         # Adjust position as needed
                         screen.blit(lvl5_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                        if lvl5_medal == "Gold":
-                            lvl5_medal_text = font.render(f"Medal: {lvl5_medal}", True, (255, 255, 0))
+                        if progress['medals']['lvl5'] == "Gold":
+                            lvl5_medal_text = font.render(f"Medal: {progress['medals']['lvl5']}", True, (255, 255, 0))
                             screen.blit(lvl5_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl5_medal == "Silver":
-                            lvl5_medal_text = font.render(f"Medal: {lvl5_medal}", True, (160, 160, 160))
+                        elif progress['medals']['lvl5'] == "Silver":
+                            lvl5_medal_text = font.render(f"Medal: {progress['medals']['lvl5']}", True, (160, 160, 160))
                             screen.blit(lvl5_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl5_medal == "Bronze":
-                            lvl5_medal_text = font.render(f"Medal: {lvl5_medal}", True, (153, 76, 0))
+                        elif progress['medals']['lvl5'] == "Bronze":
+                            lvl5_medal_text = font.render(f"Medal: {progress['medals']['lvl5']}", True, (153, 76, 0))
                             screen.blit(lvl5_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
                         else:
                             lvl5_medal_text = font.render("Medal: None", True, (255, 255, 255))
                             screen.blit(lvl5_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100)) 
                     
                     elif key == "lvl6":
-                        lvl6_time_text = font.render(f"Best Time: {lvl6_time}s", True, (255, 255, 0))
+                        lvl6_time_text = font.render(f"Best Time: {progress['times']['lvl6']}s", True, (255, 255, 0))
                         # Adjust position as needed
                         screen.blit(lvl6_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                        if lvl6_medal == "Gold":
-                            lvl6_medal_text = font.render(f"Medal: {lvl6_medal}", True, (255, 255, 0))
+                        if progress['medals']['lvl6'] == "Gold":
+                            lvl6_medal_text = font.render(f"Medal: {progress['medals']['lvl6']}", True, (255, 255, 0))
                             screen.blit(lvl6_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl6_medal == "Silver":
-                            lvl6_medal_text = font.render(f"Medal: {lvl6_medal}", True, (160, 160, 160))
+                        elif progress['medals']['lvl6'] == "Silver":
+                            lvl6_medal_text = font.render(f"Medal: {progress['medals']['lvl6']}", True, (160, 160, 160))
                             screen.blit(lvl6_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl6_medal == "Bronze":
-                            lvl6_medal_text = font.render(f"Medal: {lvl6_medal}", True, (153, 76, 0))
+                        elif progress['medals']['lvl6'] == "Bronze":
+                            lvl6_medal_text = font.render(f"Medal: {progress['medals']['lvl6']}", True, (153, 76, 0))
                             screen.blit(lvl6_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
                         else:
                             lvl6_medal_text = font.render("Medal: None", True, (255, 255, 255))
                             screen.blit(lvl6_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100)) 
                     
                     elif key == "lvl7":
-                        lvl7_time_text = font.render(f"Best Time: {lvl7_time}s", True, (255, 255, 0))
+                        lvl7_time_text = font.render(f"Best Time: {progress['times']['lvl7']}s", True, (255, 255, 0))
                         # Adjust position as needed
                         screen.blit(lvl7_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                        if lvl7_medal == "Gold":
-                            lvl7_medal_text = font.render(f"Medal: {lvl7_medal}", True, (255, 255, 0))
+                        if progress['medals']['lvl7'] == "Gold":
+                            lvl7_medal_text = font.render(f"Medal: {progress['medals']['lvl7']}", True, (255, 255, 0))
                             screen.blit(lvl7_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl7_medal == "Silver":
-                            lvl7_medal_text = font.render(f"Medal: {lvl7_medal}", True, (160, 160, 160))
+                        elif progress['medals']['lvl7'] == "Silver":
+                            lvl7_medal_text = font.render(f"Medal: {progress['medals']['lvl7']}", True, (160, 160, 160))
                             screen.blit(lvl7_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl7_medal == "Bronze":
-                            lvl7_medal_text = font.render(f"Medal: {lvl7_medal}", True, (153, 76, 0))
+                        elif progress['medals']['lvl7'] == "Bronze":
+                            lvl7_medal_text = font.render(f"Medal: {progress['medals']['lvl7']}", True, (153, 76, 0))
                             screen.blit(lvl7_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
                         else:
                             lvl7_medal_text = font.render("Medal: None", True, (255, 255, 255))
                             screen.blit(lvl7_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
 
                     elif key == "lvl8":
-                        lvl8_time_text = font.render(f"Best Time: {lvl8_time}s", True, (255, 255, 0))
+                        lvl8_time_text = font.render(f"Best Time: {progress['times']['lvl8']}s", True, (255, 255, 0))
                         # Adjust position as needed
                         screen.blit(lvl8_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                        if lvl8_medal == "Gold":
-                            lvl8_medal_text = font.render(f"Medal: {lvl8_medal}", True, (255, 255, 0))
+                        if progress['medals']['lvl8'] == "Gold":
+                            lvl8_medal_text = font.render(f"Medal: {progress['medals']['lvl8']}", True, (255, 255, 0))
                             screen.blit(lvl8_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl8_medal == "Silver":
-                            lvl8_medal_text = font.render(f"Medal: {lvl8_medal}", True, (160, 160, 160))
+                        elif progress['medals']['lvl8'] == "Silver":
+                            lvl8_medal_text = font.render(f"Medal: {progress['medals']['lvl8']}", True, (160, 160, 160))
                             screen.blit(lvl8_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl8_medal == "Bronze":
-                            lvl8_medal_text = font.render(f"Medal: {lvl8_medal}", True, (153, 76, 0))
+                        elif progress['medals']['lvl8'] == "Bronze":
+                            lvl8_medal_text = font.render(f"Medal: {progress['medals']['lvl8']}", True, (153, 76, 0))
                             screen.blit(lvl8_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
                         else:
                             lvl8_medal_text = font.render("Medal: None", True, (255, 255, 255))
                             screen.blit(lvl8_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100)) 
                     elif key == "lvl9":
-                        lvl9_time_text = font.render(f"Best Time: {lvl9_time}s", True, (255, 255, 0))
+                        lvl9_time_text = font.render(f"Best Time: {progress['times']['lvl9']}s", True, (255, 255, 0))
                         # Adjust position as needed
                         screen.blit(lvl9_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                        if lvl9_medal == "Gold":
-                            lvl9_medal_text = font.render(f"Medal: {lvl9_medal}", True, (255, 255, 0))
+                        if progress['medals']['lvl9'] == "Gold":
+                            lvl9_medal_text = font.render(f"Medal: {progress['medals']['lvl9']}", True, (255, 255, 0))
                             screen.blit(lvl9_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl9_medal == "Silver":
-                            lvl9_medal_text = font.render(f"Medal: {lvl9_medal}", True, (160, 160, 160))
+                        elif progress['medals']['lvl9'] == "Silver":
+                            lvl9_medal_text = font.render(f"Medal: {progress['medals']['lvl9']}", True, (160, 160, 160))
                             screen.blit(lvl9_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl9_medal == "Bronze":
-                            lvl9_medal_text = font.render(f"Medal: {lvl9_medal}", True, (153, 76, 0))
+                        elif progress['medals']['lvl9'] == "Bronze":
+                            lvl9_medal_text = font.render(f"Medal: {progress['medals']['lvl9']}", True, (153, 76, 0))
                             screen.blit(lvl9_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
                         else:
                             lvl9_medal_text = font.render("Medal: None", True, (255, 255, 255))
                             screen.blit(lvl9_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100)) 
                     elif key == "lvl10":
-                        lvl10_time_text = font.render(f"Best Time: {lvl10_time}s", True, (255, 255, 0))
+                        lvl10_time_text = font.render(f"Best Time: {progress['times']['lvl10']}s", True, (255, 255, 0))
                         # Adjust position as needed
                         screen.blit(lvl10_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                        if lvl10_medal == "Gold":
-                            lvl10_medal_text = font.render(f"Medal: {lvl10_medal}", True, (255, 255, 0))
+                        if progress['medals']['lvl10'] == "Gold":
+                            lvl10_medal_text = font.render(f"Medal: {progress['medals']['lvl10']}", True, (255, 255, 0))
                             screen.blit(lvl10_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl10_medal == "Silver":
-                            lvl10_medal_text = font.render(f"Medal: {lvl10_medal}", True, (160, 160, 160))
+                        elif progress['medals']['lvl10'] == "Silver":
+                            lvl10_medal_text = font.render(f"Medal: {progress['medals']['lvl10']}", True, (160, 160, 160))
                             screen.blit(lvl10_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif lvl10_medal == "Bronze":
-                            lvl10_medal_text = font.render(f"Medal: {lvl10_medal}", True, (153, 76, 0))
+                        elif progress['medals']['lvl10'] == "Bronze":
+                            lvl10_medal_text = font.render(f"Medal: {progress['medals']['lvl10']}", True, (153, 76, 0))
                             screen.blit(lvl10_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
                         else:
                             lvl10_medal_text = font.render("Medal: None", True, (255, 255, 255))
