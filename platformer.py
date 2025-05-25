@@ -5,20 +5,25 @@ import math
 import sys
 import time  # Import time to track time(for future use in scoring)
 
+# Path to sound folder
+SOUND_FOLDER = os.path.join("audio")
+
 # Initialize audio
 pygame.mixer.init()
-click_sound = pygame.mixer.Sound("click.wav")
-hover_sound = pygame.mixer.Sound("hover.wav")
-death_sound = pygame.mixer.Sound("death.wav")
-laser_sound = pygame.mixer.Sound("laser.wav")
-fall_sound = pygame.mixer.Sound("fall.wav")
-open_sound = pygame.mixer.Sound("unlock.wav")
-checkpoint_sound = pygame.mixer.Sound("checkpoint.wav")
-warp_sound = pygame.mixer.Sound("warp.wav")
-button_sound = pygame.mixer.Sound("button.wav")
-bounce_sound = pygame.mixer.Sound("bounce.wav")
-move_sound = pygame.mixer.Sound("travel.wav")
-jump_sound = pygame.mixer.Sound("jump.wav")
+
+# Load sounds using the path
+click_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "click.wav"))
+hover_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hover.wav"))
+death_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "death.wav"))
+laser_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "laser.wav"))
+fall_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "fall.wav"))
+open_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "unlock.wav"))
+checkpoint_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "checkpoint.wav"))
+warp_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "warp.wav"))
+button_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "button.wav"))
+bounce_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "bounce.wav"))
+move_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "travel.wav"))
+jump_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "jump.wav"))
 
 is_mute = False  # Global variable to track mute state
 
@@ -35,7 +40,7 @@ default_progress = {
     "locked_levels": ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"],
     "times": {f"lvl{i}": 0 for i in range(1, 13)},
     "medals": {f"lvl{i}": "None" for i in range(1, 13)},
-    "language": "English"
+    "language": "en"
 }
 
 # Load progress from save file or return default
@@ -48,11 +53,14 @@ def load_progress():
 
 # Save progress to file
 def save_progress(data):
-    with open(SAVE_FILE, "w") as f:
-        json.dump(data, f, indent=4)
+    with open(SAVE_FILE, "w", encoding="utf-8" ) as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
 
 # Load progress at start
 progress = load_progress()
+
+# Get just the language code, default to English
+lang_code = progress.get("language", "en")
 
 # Define shortcuts for easier access if needed
 complete_levels = progress.get("complete_levels", 0)
@@ -99,27 +107,37 @@ logo = pygame.image.load("logo.png").convert_alpha()
 # Warning Robot for error screen
 robo_img = pygame.image.load("warningrobot.png").convert_alpha()
 
-# Declare font size
-font = pygame.font.SysFont(None, 40)
-
 # Load the Chinese font (ensure the font file path is correct)
-font_path = 'NotoSansSC-SemiBold.ttf'  # Adjust if the path is different
-font = pygame.font.Font(font_path, 25)
+font_path_ch = 'NotoSansSC-SemiBold.ttf'
+font_path = 'NotoSansDisplay-SemiBold.ttf'
+if lang_code == "zh_cn":
+    font = pygame.font.Font(font_path_ch, 25)
+else:
+    font = pygame.font.Font(font_path, 25)
 
+def render_text(text, color = (255, 255, 255)):
+    # Use Chinese font if any CJK character is present
+    if any('\u4e00' <= c <= '\u9fff' for c in text):
+        return pygame.font.Font('NotoSansSC-SemiBold.ttf', 25).render(text, True, color)
+    else:
+        return font.render(text, True, color)
 
 site_text = font.render("Sound effects from: pixabay.com", True, (255, 255, 255))
-site_pos = (SCREEN_WIDTH - 405, SCREEN_HEIGHT - 54)
+site_pos = (SCREEN_WIDTH - 398, SCREEN_HEIGHT - 54)
 logo_text = font.render("Logo made with: canva.com", True, (255, 255, 255))
-logo_pos = (SCREEN_WIDTH - 349, SCREEN_HEIGHT - 84)
+logo_pos = (SCREEN_WIDTH - 342, SCREEN_HEIGHT - 84)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
-credit_pos = (SCREEN_WIDTH - 265, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.1.4", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 144)
+credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
+ver_text = font.render("Version 1.1.5", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 168, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
     with open(f'lang/{lang_code}.json', encoding='utf-8') as f:
         return json.load(f)
+
+# Load the actual language strings from file
+current_lang = load_language(lang_code)
 
 def loading_screen():
     global lang_code
@@ -132,13 +150,11 @@ def loading_screen():
     pygame.display.flip()
     pygame.time.delay(1300)  # Delay to show the loading screen
 
-lang_code = 'english'
 
 # Page states
 current_page = 'main_menu'
 buttons = []
-current_lang = load_language(lang_code)  # Reload the language data
-progress["language"] = current_lang
+progress["language"] = lang_code
 
 # New variable to track last page change time
 pending_level = None
@@ -172,7 +188,16 @@ def create_language_buttons():
     current_lang = load_language(lang_code).get('language_select', {})
     buttons.clear()
 
-    language_options = ["English", "Français", "Español", "Deutsch", "简体中文", "O'zbekcha", "Português(Brasil)", "Русский"]
+    language_options = [
+        ("English", "en"),
+        ("Français", "fr"),
+        ("Español", "es"),
+        ("Deutsch", "de"),
+        ("简体中文", "zh_cn"),
+        ("O'zbekcha", "uz"),
+        ("Português(Brasil)", "pt_br"),
+        ("Русский", "ru")
+    ]
     buttons_per_row = 4
     spacing_x = 200
     spacing_y = 70
@@ -182,9 +207,9 @@ def create_language_buttons():
     start_x = (SCREEN_WIDTH - grid_width) // 2
     start_y = (SCREEN_HEIGHT // 2) - (len(language_options) // buttons_per_row * spacing_y // 2)
 
-    for i, lang in enumerate(language_options):
-        text = lang.capitalize()
-        rendered = font.render(text, True, (255, 255, 255))
+    for i, (display_name, code) in enumerate(language_options):
+        text = display_name
+        rendered = render_text(text, (255, 255, 255))
 
         col = i % buttons_per_row
         row = i // buttons_per_row
@@ -193,7 +218,7 @@ def create_language_buttons():
         y = start_y + row * spacing_y
 
         rect = rendered.get_rect(center=(x, y))
-        buttons.append((rendered, rect, lang))
+        buttons.append((rendered, rect, code))
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -284,9 +309,6 @@ def load_level(level_id):
     back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100))  # Center at the bottom
     buttons.append((rendered_back, back_rect, "back"))
 
-    print(f"Loading level: {level_id}")
-
-
 # Button actions
 def start_game():
     pygame.time.delay(200)  # Delay 200 ms to avoid click pass-through
@@ -307,12 +329,16 @@ def quit_game():
     exit()
 
 def change_language(lang):
-    global lang_code, last_page_change_time, current_lang
+    global lang_code, last_page_change_time, current_lang, font, font_path_ch, font_path
     lang_code = lang
-    print(f"Language changed to: {lang_code}")
     last_page_change_time = time.time()  # Track the time when the language changes
     current_lang = load_language(lang_code)  # Reload the language data
     progress["language"] = lang_code
+    save_progress(progress)
+    if lang_code == "zh_cn":
+        font = pygame.font.Font(font_path_ch, 25)
+    else:
+        font = pygame.font.Font(font_path, 25)
     set_page('main_menu')
 
 def go_back():
@@ -6051,7 +6077,6 @@ def handle_action(key):
     if current_page == 'main_menu':
         if key == "start":
             start_game()
-            print(complete_levels)
         elif key == "achievements":
             open_achievements()
         elif key == "settings":
@@ -6063,7 +6088,7 @@ def handle_action(key):
     elif current_page == 'language_select':
         if key == "back":
             go_back()
-        elif key in ["English", "Français", "Español", "Deutsch", "简体中文", "O'zbekcha", "Português(Brasil)", "Русский"]:
+        elif key in ["en", "fr", "es", "de", "zh_cn", "uz", "pt_br", "ru"]:
             change_language(key)
     elif current_page == 'levels':
         if key is None:  # Ignore clicks on locked levels
@@ -6150,8 +6175,6 @@ while running:
         sys.exit()
 
     else:
-        print("Language code from progress:", lang_code)
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 set_page("quit_confirm")
