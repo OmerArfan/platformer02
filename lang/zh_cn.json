@@ -1,0 +1,58 @@
+{
+    "main_menu": {
+      "start": "开始",
+      "achievements": "成就",
+      "settings": "静音/取消静音",
+      "quit": "辞职",
+      "language": "更改语言"
+    }
+    ,"language_select": {
+          "back": "返回"
+      }
+  ,"levels": {
+    "level_display": "选择一个级别",
+    "lvl1": "第1关",
+    "lvl2": "第2关",
+    "lvl3": "第3关",
+    "lvl4": "第4关",
+    "lvl5": "第5关",
+    "lvl6": "第6关",
+    "lvl7": "第7关",
+    "lvl8": "第8关",
+    "lvl9": "第9关",
+    "lvl10": "第10关",
+    "lvl11": "第11关",
+    "lvl12": "第12关",
+    "back": "返回"
+     }
+  ,"messages": {    
+    "you_are_in": "你在{level}"
+  ,"loading": "加载中..."
+  ,"confirm_quit": "你确定要退出吗？",
+  "yes": "是",
+  "no": "否"
+    }
+  ,"in_game": {
+    "dead_message": "你死了！",
+    "fall_message": "掉得太远了！",
+    "deaths_no": "死亡：{deathcount}"
+    ,"warning_message": "小心尖刺！",
+    "up_message": "按上键跳跃！",
+    "stamina_message": "耐力：",
+    "exit_message": "出口传送门！来这里赢得胜利！",
+    "moving_message": "并非所有方块都保持静止...",
+    "mock_message": "路线错误，这里没什么特别的，我的朋友……"
+    ,"jump_message": "使用橙色方块跳跃！"
+    ,"saws_message": "小心锯子！"
+    ,"sawed_message": "锯成碎片！"
+    ,"key_message": "抓住硬币，打开方块！"
+    ,"laser_message": "激光处理！"
+    ,"invisible_message": "这些锯子不会伤害你……我保证！"  
+    ,"portal_message": "这些蓝色传送门会把你传送出去！不过大部分情况下……都会传送到好地方！"
+    ,"button1_message": "蓝色按钮激活后会让你跳得更高！",
+    "button2_message": "当你激活薰衣草按钮时，你会跳得更低!",
+    "clarify_message": "当然，直到你到达检查点！"
+    ,"clarify_message2": "它们还会影响你在跳跃方块上的跳跃！"
+    ,"button3_message": "紫色按钮激活时会关闭几乎所有灯光！"
+  }
+}
