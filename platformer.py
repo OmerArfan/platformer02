@@ -128,7 +128,7 @@ logo_text = font.render("Logo made with: canva.com", True, (255, 255, 255))
 logo_pos = (SCREEN_WIDTH - 342, SCREEN_HEIGHT - 84)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.1.5", True, (255, 255, 255))
+ver_text = font.render("Version 1.1.6", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 168, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -246,8 +246,8 @@ def create_levels_buttons():
     select_level_rect = select_text_rect
 
     level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
-    buttons_per_row = 3
-    spacing_x = 180
+    buttons_per_row = 4
+    spacing_x = 140
     spacing_y = 70
 
     # Calculate starting positions to center the grid
@@ -427,6 +427,9 @@ def set_page(page):
     elif page == 'lvl10_screen':
         current_lang = load_language(lang_code).get('in_game', {})
         create_lvl10_screen()
+    elif page == 'lvl11_screen':
+        current_lang = load_language(lang_code).get('in_game', {})
+        create_lvl11_screen()
 
 def create_quit_confirm_buttons():
     global current_lang, buttons, quit_text, quit_text_rect
@@ -5358,17 +5361,24 @@ def create_lvl11_screen():
     # Camera settings
     camera_x = 300
     camera_y = -500
-    spawn_x, spawn_y =  50, -50
+    spawn_x, spawn_y =  -120, -50
     player_x, player_y = spawn_x, spawn_y
     running = True
     gravity = 1
     jump_strength = 21
-    # When the gravity is weaker
+
+    # Gravity buttons
     strong_jump_strength = 15
     strong_grav = False
     weak_grav_strength = 37
     weak_grav = False
+    
+    # Speed settings
     move_speed = 8
+    stamina = False
+    stamina_speed = 19
+
+    # Other settings
     on_ground = False
     velocity_y = 0
     camera_speed = 0.5
@@ -5395,7 +5405,7 @@ def create_lvl11_screen():
     ]
 
     blocks = [
-        pygame.Rect(100, 500, 1000, 50),
+        pygame.Rect(-200, 525, 2000, 50),
         pygame.Rect(1300, 400, 200, 50),
         pygame.Rect(1625, 500, 200, 50),
         pygame.Rect(3000, 480, 300, 50),
@@ -5425,9 +5435,9 @@ def create_lvl11_screen():
     ]
 
     saws = [
-        (1500, 425, 80, (255, 0, 0)),
-        (1825, 525, 80, (255, 0, 0)),
-        (2500, 310, 50, (255, 0, 0)),
+        (600, 25, 80, (255, 0, 0)),
+        (760, 25, 80, (255, 0, 0)),
+        (920, 25, 80, (255, 0, 0)),
     ]
 
     deceiver_saws = [
@@ -5439,14 +5449,13 @@ def create_lvl11_screen():
     ]
 
     rotating_saws = [
-        {'r': 40, 'orbit_radius': 300, 'angle': 0, 'speed': 3},
+        {'r': 40, 'orbit_radius': 300000, 'angle': 0, 'speed': 1},
     ]
 
     spikes = [
-    [(0, 500), (50, 550), (100, 500)],
-    [(110, -200), (160, -150), (210, -200)],
-    [(220, -200), (270, -150), (320, -200)],
-    [(330, -200), (380, -150), (430, -200)],
+    [(0, 525), (100, 475), (200, 525)],
+    [(210, 525), (310, 475), (410, 525)],
+    [(420, 525), (520, 475), (620, 525)],
     ]
 
     light_off_button = pygame.Rect(400, 350, 50, 50)
@@ -5465,6 +5474,10 @@ def create_lvl11_screen():
 
     gravity_weakers = [
         (4250, 350, 30, (0, 102, 204)),
+    ]
+
+    speedsters = [
+        (-200, 400, 30, (51, 255, 51))
     ]
 
     teleporters = [
@@ -5527,9 +5540,15 @@ def create_lvl11_screen():
 
         if moving:
             if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-                player_x -= move_speed
+                if stamina:
+                    player_x -= stamina_speed
+                else:
+                    player_x -= move_speed
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-                player_x += move_speed
+                if stamina:
+                    player_x += stamina_speed
+                else:
+                    player_x += move_speed
 
             if on_ground and not was_moving and not is_mute:
                 move_sound.play()
@@ -5960,6 +5979,31 @@ def create_lvl11_screen():
                     collision_detected = True  # Set the flag to stop further checks
                     break
 
+        for x, y, r, color in speedsters:
+            # Draw the button as a circle
+            if not stamina:
+                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+        for speedster in speedsters:
+            speedster_x, speedster_y, speedster_radius, _ = speedster
+
+        # Find the closest point on the player's rectangle to the button's center
+            closest_x = max(player_rect.left, min(speedster_x, player_rect.right))
+            closest_y = max(player_rect.top, min(speedster_y, player_rect.bottom))
+
+            # Calculate the distance between the closest point and the button's center
+            dx = closest_x - speedster_x
+            dy = closest_y - speedster_y
+            distance = (dx**2 + dy**2)**0.5
+
+            # If distance is less than radius, stronger gravity activated
+            if distance < speedster_radius and not stamina:
+                if not is_mute:
+                    button_sound.play()
+                strong_grav = False
+                stamina = True
+                weak_grav = False
+
         for x, y, r, color in gravity_strongers:
             # Draw the button as a circle
             if not strong_grav:
@@ -5983,74 +6027,77 @@ def create_lvl11_screen():
                     button_sound.play()
                 strong_grav = True
                 weak_grav = False
+#
+    #    for x, y, r, color in gravity_weakers:
+   #         # Draw the button as a circle
+  #          if not weak_grav:
+ #               pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+#
+  #      for gravity_weaker in gravity_weakers:
+ #           gravity_weaker_x, gravity_weaker_y, gravity_weaker_radius, _ = gravity_weaker
+#
+        ## Find the closest point on the player's rectangle to the button's center
+       #     closest_x = max(player_rect.left, min(gravity_weaker_x, player_rect.right))
+     ##       closest_y = max(player_rect.top, min(gravity_weaker_y, player_rect.bottom))
 
-        for x, y, r, color in gravity_weakers:
-            # Draw the button as a circle
-            if not weak_grav:
-                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+    #        # Calculate the distance between the closest point and the button's center
+   #         dx = closest_x - gravity_weaker_x
+  #          dy = closest_y - gravity_weaker_y
+ #           distance = (dx**2 + dy**2)**0.5
+#
+       #     # If distance is less than radius, weaker gravity activated
+      #      if distance < gravity_weaker_radius and not weak_grav:
+    ##            if not is_mute:
+   #                 button_sound.play()
+  #              weak_grav = True
+ #               strong_grav = False
+#
+  #      for x, y, r, color in deceiver_saws:
+ #           pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+#
+  #      pygame.draw.rect(screen, (0, 205, 0), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+ #       screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
+#
+    #    if player_rect.colliderect(light_off_button):
+  #          if not is_mute and lights_off:
+ #               button_sound.play()
+#            lights_off = False
 
-        for gravity_weaker in gravity_weakers:
-            gravity_weaker_x, gravity_weaker_y, gravity_weaker_radius, _ = gravity_weaker
+#       if not lights_off:
+ #           # Create a full dark surface
+  #          pygame.draw.rect(screen, (0, 0, 0), (0, 0, SCREEN_WIDTH // 2 -  320 , SCREEN_HEIGHT ))
+   #         pygame.draw.rect(screen, (0, 0, 0), (SCREEN_WIDTH // 2 + 320, 0, SCREEN_WIDTH // 2 + 320, SCREEN_HEIGHT))
+    #        pygame.draw.rect(screen, (0, 0, 0), (0, 0, SCREEN_WIDTH, SCREEN_HEIGHT // 2 - 320))
+     #       pygame.draw.rect(screen, (0, 0, 0), (0, SCREEN_HEIGHT // 2 + 320, SCREEN_WIDTH, SCREEN_HEIGHT // 2 + 320))
+      #  
+       # if lights_off:
+        #    pygame.draw.rect(screen, (104, 102, 204), (light_off_button.x - camera_x, light_off_button.y - camera_y, light_off_button.width, light_off_button.height))
+         #   for light_block in light_blocks:
+          ##      pygame.draw.rect(screen, (104, 102, 204), (light_block.x - camera_x, light_block.y - camera_y, light_block.width, light_block.height))
+#
+ #       if lights_off:
+  #          for block in light_blocks:
+   #             if player_rect.colliderect(block):
+    #                # Falling onto a block
+     #               if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
+      ##                  player_y = block.y - img_height
+        #                velocity_y = 0
+         #               on_ground = True
+#
+ #                   # Hitting the bottom of a block
+  #                  elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
+   #                     player_y = block.y + block.height
+    ##                    velocity_y = 0
+#
+ #                   # Horizontal collision (left or right side of the block)
+  #                  elif player_x + img_width > block.x and player_x < block.x + block.width:
+   #                     if player_x < block.x:  # Colliding with the left side of the block
+    #                        player_x = block.x - img_width
+     #                   elif player_x + img_width > block.x + block.width:  # Colliding with the right side
+      #                      player_x = block.x + block.width
+#
 
-        # Find the closest point on the player's rectangle to the button's center
-            closest_x = max(player_rect.left, min(gravity_weaker_x, player_rect.right))
-            closest_y = max(player_rect.top, min(gravity_weaker_y, player_rect.bottom))
-
-            # Calculate the distance between the closest point and the button's center
-            dx = closest_x - gravity_weaker_x
-            dy = closest_y - gravity_weaker_y
-            distance = (dx**2 + dy**2)**0.5
-
-            # If distance is less than radius, weaker gravity activated
-            if distance < gravity_weaker_radius and not weak_grav:
-                if not is_mute:
-                    button_sound.play()
-                weak_grav = True
-                strong_grav = False
-
-        for x, y, r, color in deceiver_saws:
-            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
-
-        pygame.draw.rect(screen, (0, 205, 0), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
         screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
-
-        if player_rect.colliderect(light_off_button):
-            if not is_mute and lights_off:
-                button_sound.play()
-            lights_off = False
-
-        if not lights_off:
-            # Create a full dark surface
-            pygame.draw.rect(screen, (0, 0, 0), (0, 0, SCREEN_WIDTH // 2 -  320 , SCREEN_HEIGHT ))
-            pygame.draw.rect(screen, (0, 0, 0), (SCREEN_WIDTH // 2 + 320, 0, SCREEN_WIDTH // 2 + 320, SCREEN_HEIGHT))
-            pygame.draw.rect(screen, (0, 0, 0), (0, 0, SCREEN_WIDTH, SCREEN_HEIGHT // 2 - 320))
-            pygame.draw.rect(screen, (0, 0, 0), (0, SCREEN_HEIGHT // 2 + 320, SCREEN_WIDTH, SCREEN_HEIGHT // 2 + 320))
-        
-        if lights_off:
-            pygame.draw.rect(screen, (104, 102, 204), (light_off_button.x - camera_x, light_off_button.y - camera_y, light_off_button.width, light_off_button.height))
-            for light_block in light_blocks:
-                pygame.draw.rect(screen, (104, 102, 204), (light_block.x - camera_x, light_block.y - camera_y, light_block.width, light_block.height))
-
-        if lights_off:
-            for block in light_blocks:
-                if player_rect.colliderect(block):
-                    # Falling onto a block
-                    if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
-                        player_y = block.y - img_height
-                        velocity_y = 0
-                        on_ground = True
-
-                    # Hitting the bottom of a block
-                    elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
-                        player_y = block.y + block.height
-                        velocity_y = 0
-
-                    # Horizontal collision (left or right side of the block)
-                    elif player_x + img_width > block.x and player_x < block.x + block.width:
-                        if player_x < block.x:  # Colliding with the left side of the block
-                            player_x = block.x - img_width
-                        elif player_x + img_width > block.x + block.width:  # Colliding with the right side
-                            player_x = block.x + block.width
 
         levels = load_language(lang_code).get('levels', {})
         lvl11_text = levels.get("lvl11", "Level 11")  # Render the level text
@@ -6113,6 +6160,8 @@ def handle_action(key):
             set_page("lvl9_screen")
         elif key == "lvl10":
             set_page("lvl10_screen")
+        elif key == "lvl11":
+            set_page("lvl11_screen")
         elif key == "back":
             set_page("main_menu")
     elif current_page.startswith("lvl"):
@@ -6314,6 +6363,13 @@ while running:
 
         elif current_page == "lvl10_screen":
             create_lvl10_screen()
+
+            for rendered, rect, key in buttons:
+                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
+                screen.blit(rendered, rect)
+
+        elif current_page == "lvl11_screen":
+            create_lvl11_screen()
 
             for rendered, rect, key in buttons:
                 pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
