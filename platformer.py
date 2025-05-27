@@ -69,16 +69,16 @@ locked_levels = progress.get("locked_levels", default_progress["locked_levels"])
 
 # Level rank thresholds
 level_thresholds = [
-    {'level': 1 ,'gold': 6, 'silver': 8, 'bronze': 10},
+    {'level': 1 ,'gold': 7, 'silver': 9, 'bronze': 12},
     {'level': 2 ,'gold': 25, 'silver': 30, 'bronze': 40},
     {'level': 3 ,'gold': 35, 'silver': 45, 'bronze': 60},
-    {'level': 4 ,'gold': 30, 'silver': 40, 'bronze': 50},
-    {'level': 5 ,'gold': 40, 'silver': 55, 'bronze': 70},
+    {'level': 4 ,'gold': 40, 'silver': 50, 'bronze': 60},
+    {'level': 5 ,'gold': 50, 'silver': 65, 'bronze': 80},
     {'level': 6 ,'gold': 50, 'silver': 70, 'bronze': 90},
     {'level': 7 ,'gold': 35, 'silver': 40, 'bronze': 45},
-    {'level': 8 ,'gold': 25, 'silver': 30, 'bronze': 45},
+    {'level': 8 ,'gold': 25, 'silver': 35, 'bronze': 45},
     {'level': 9 ,'gold': 60, 'silver': 80, 'bronze': 100},
-    {'level': 10,'gold': 30, 'silver': 45, 'bronze': 60},
+    {'level': 10,'gold': 35, 'silver': 50, 'bronze': 60},
 ]
 
 # Function to get medal based on time
@@ -129,7 +129,7 @@ logo_text = font.render("Logo made with: canva.com", True, (255, 255, 255))
 logo_pos = (SCREEN_WIDTH - 342, SCREEN_HEIGHT - 84)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.1.7", True, (255, 255, 255))
+ver_text = font.render("Version 1.1.8", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 168, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -621,7 +621,8 @@ def create_lvl1_screen():
 
             if current_time < progress["times"]["lvl1"] or progress["times"]["lvl1"] == 0:
                 progress["times"]["lvl1"] = round(current_time, 2)
-                progress["medals"]["lvl1"] = get_medal(1, progress["times"]["lvl1"])
+            
+            progress["medals"]["lvl1"] = get_medal(1, progress["times"]["lvl1"])
 
             save_progress(progress)  # Save progress to JSON file
 
@@ -645,7 +646,12 @@ def create_lvl1_screen():
             pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
             pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
 
-            laser_rect = pygame.Rect(block.x + 14, block.y + block.height, block.width - 28, 5)  # 5 px tall death zone
+        for block in blocks:
+            pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+            if block.width <= 100:
+                laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
+            else:
+                laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = 600, 200  # Reset player position
                 fall_text = in_game.get("hit_message", "Hit on the head!")
@@ -655,7 +661,7 @@ def create_lvl1_screen():
                 pygame.display.update()
                 pygame.time.delay(300)
                 velocity_y = 0
-                deathcount += 1  
+                deathcount += 1 
 
             for spike in spikes:
                 pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
@@ -745,6 +751,7 @@ def create_lvl2_screen():
     camera_x = 0  
     camera_y = 0
     player_x, player_y = 150, 500
+    spawn_x, spawn_y = player_x, player_y  # Set the spawn point
     running = True
     gravity = 1
     jump_strength = 20
@@ -758,6 +765,10 @@ def create_lvl2_screen():
     # Load player image
     player_img = pygame.image.load("robot.png").convert_alpha()
     img_width, img_height = player_img.get_size()
+
+    # Draw flag
+    flag = pygame.Rect(2150, 650, 80, 50)  # x, y, width, height
+    checkpoint_reached = False
 
     blocks = [
         pygame.Rect(100, 650, 1000, 50),
@@ -794,7 +805,6 @@ def create_lvl2_screen():
         [(790, 650), (840, 600), (890, 650)],
         [(900, 650), (950, 600), (1000, 650)],
         [(2040, 200), (2070, 150), (2100, 200)],
-        [(2150, 580), (2300, 610), (2450, 580)],
         [(3100, 450), (3135, 400), (3170, 450)],
         [(3300, 250), (3350, 300), (3400, 250)],
         [(3400, 250), (3450, 300), (3500, 250)],
@@ -938,7 +948,8 @@ def create_lvl2_screen():
 
             if current_time < progress["times"]["lvl2"] or progress["times"]["lvl2"] == 0:
                 progress["times"]["lvl2"] = round(current_time, 2)
-                progress["medals"]["lvl2"] = get_medal(2, progress["times"]["lvl2"])
+            
+            progress["medals"]["lvl2"] = get_medal(2, progress["times"]["lvl2"])
 
             save_progress(progress)  # Save progress to JSON file
 
@@ -971,7 +982,7 @@ def create_lvl2_screen():
                     break  # Exit the outer loop if a collision has already been detected
             for point in bottom_points:
                     if point_in_triangle(point[0], point[1], *spike):
-                        player_x, player_y = 150, 500
+                        player_x, player_y = spawn_x, spawn_y
                         death_text = in_game.get("dead_message", "You Died")
                         screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
                         if not is_mute:
@@ -995,7 +1006,7 @@ def create_lvl2_screen():
             for point in top_points:
                 if point_in_triangle(point[0], point[1], *spike):
                     # Trigger death logic
-                        player_x, player_y = 150, 500  # Reset player position
+                        player_x, player_y = spawn_x, spawn_y  # Reset player position
                         death_text = in_game.get("dead_message", "You Died")
                         screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
                         if not is_mute:
@@ -1008,11 +1019,13 @@ def create_lvl2_screen():
                         break
 
         for block in blocks:
-            pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
-        
-            laser_rect = pygame.Rect(block.x + 14, block.y + block.height, block.width - 28, 5)  # 5 px tall death zone
+            pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+            if block.width <= 100:
+                laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
+            else:
+                laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
-                player_x, player_y = 150, 500  # Reset player position
+                player_x, player_y = spawn_x, spawn_y  # Reset player position
                 fall_text = in_game.get("hit_message", "Hit on the head!")
                 screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
                 if not is_mute:    
@@ -1023,7 +1036,19 @@ def create_lvl2_screen():
                 deathcount += 1  
 
         pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
-  
+
+        if player_rect.colliderect(flag) and not checkpoint_reached:
+            checkpoint_reached = True
+            spawn_x, spawn_y = 2150, 620  # Store checkpoint position
+            if not is_mute:
+                checkpoint_sound.play()
+            pygame.draw.rect(screen, (0, 255, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
+
+        if checkpoint_reached:
+            pygame.draw.rect(screen, (0, 255, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
+        else:
+            pygame.draw.rect(screen, (255, 215, 0), flag.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
+
         for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (jump_block.x - camera_x, jump_block.y - camera_y, jump_block.width, jump_block.height))
 
@@ -1307,7 +1332,8 @@ def create_lvl3_screen():
 
             if current_time < progress["times"]["lvl3"] or progress["times"]["lvl3"] == 0:
                 progress["times"]["lvl3"] = round(current_time, 2)
-                progress["medals"]["lvl3"] = get_medal(3, progress["times"]["lvl3"])
+            
+            progress["medals"]["lvl3"] = get_medal(3, progress["times"]["lvl3"])
 
             save_progress(progress)  # Save progress to JSON file
 
@@ -1367,8 +1393,10 @@ def create_lvl3_screen():
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-
-            laser_rect = pygame.Rect(block.x + 14, block.y + block.height, block.width - 28, 5)  # 5 px tall death zone
+            if block.width <= 100:
+                laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
+            else:
+                laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 fall_text = in_game.get("hit_message", "Hit on the head!")
@@ -1379,7 +1407,7 @@ def create_lvl3_screen():
                 pygame.display.update()
                 pygame.time.delay(300)
                 velocity_y = 0
-                deathcount += 1  
+                deathcount += 1 
 
         for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))
@@ -1789,7 +1817,8 @@ def create_lvl4_screen():
 
             if current_time < progress["times"]["lvl4"] or progress["times"]["lvl4"] == 0:
                 progress["times"]["lvl4"] = round(current_time, 2)
-                progress["medals"]["lvl4"] = get_medal(4, progress["times"]["lvl4"])
+            
+            progress["medals"]["lvl4"] = get_medal(4, progress["times"]["lvl4"])
 
             save_progress(progress)  # Save progress to JSON file
 
@@ -1943,7 +1972,10 @@ def create_lvl4_screen():
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-            laser_rect = pygame.Rect(block.x + 14, block.y + block.height, block.width - 28, 5)  # 5 px tall death zone
+            if block.width <= 100:
+                laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
+            else:
+                laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 fall_text = in_game.get("hit_message", "Hit on the head!")
@@ -1954,7 +1986,7 @@ def create_lvl4_screen():
                 pygame.display.update()
                 pygame.time.delay(300)
                 velocity_y = 0
-                deathcount += 1  
+                deathcount += 1 
 
         for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))
@@ -2361,7 +2393,8 @@ def create_lvl5_screen():
 
             if current_time < progress["times"]["lvl5"] or progress["times"]["lvl5"] == 0:
                 progress["times"]["lvl5"] = round(current_time, 2)
-                progress["medals"]["lvl5"] = get_medal(5, progress["times"]["lvl5"])
+            
+            progress["medals"]["lvl5"] = get_medal(5, progress["times"]["lvl5"])
 
             save_progress(progress)  # Save progress to JSON file
 
@@ -2524,8 +2557,8 @@ def create_lvl5_screen():
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-            if block.width < 100:
-                laser_rect = pygame.Rect(block.x - 10, block.y + block.height + 30, block.width + 20, 5)  # 5 px tall death zone
+            if block.width <= 100:
+                laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
             else:
                 laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
@@ -2941,7 +2974,8 @@ def create_lvl6_screen():
 
             if current_time < progress["times"]["lvl6"] or progress["times"]["lvl6"] == 0:
                 progress["times"]["lvl6"] = round(current_time, 2)
-                progress["medals"]["lvl6"] = get_medal(6, progress["times"]["lvl6"])
+            
+            progress["medals"]["lvl6"] = get_medal(6, progress["times"]["lvl6"])
 
             save_progress(progress)  # Save progress to JSON file
 
@@ -3146,7 +3180,12 @@ def create_lvl6_screen():
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-            laser_rect = pygame.Rect(block.x + 14, block.y + block.height, block.width - 28, 5)  # 5 px tall death zone
+        for block in blocks:
+            pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+            if block.width <= 100:
+                laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
+            else:
+                laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 fall_text = in_game.get("hit_message", "Hit on the head!")
@@ -3471,7 +3510,8 @@ def create_lvl7_screen():
 
             if current_time < progress["times"]["lvl7"] or progress["times"]["lvl7"] == 0:
                 progress["times"]["lvl7"] = round(current_time, 2)
-                progress["medals"]["lvl7"] = get_medal(7, progress["times"]["lvl7"])
+            
+            progress["medals"]["lvl7"] = get_medal(7, progress["times"]["lvl7"])
 
             save_progress(progress)  # Save progress to JSON file
 
@@ -3643,7 +3683,10 @@ def create_lvl7_screen():
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-            laser_rect = pygame.Rect(block.x + 14, block.y + block.height, block.width - 28, 5)  # 5 px tall death zone
+            if block.width <= 100:
+                laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
+            else:
+                laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 fall_text = in_game.get("hit_message", "Hit on the head!")
@@ -3988,7 +4031,8 @@ def create_lvl8_screen():
 
             if current_time < progress["times"]["lvl8"] or progress["times"]["lvl8"] == 0:
                 progress["times"]["lvl8"] = round(current_time, 2)
-                progress["medals"]["lvl8"] = get_medal(8, progress["times"]["lvl8"])
+                
+            progress["medals"]["lvl8"] = get_medal(8, progress["times"]["lvl8"])
 
             save_progress(progress)  # Save progress to JSON file
 
@@ -4124,21 +4168,21 @@ def create_lvl8_screen():
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-            if block.width < 100:
-                laser_rect = pygame.Rect(block.x, block.y + block.height, block.width , 5)  # 5 px tall death zone
+            if block.width <= 100:
+                laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
             else:
                 laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 fall_text = in_game.get("hit_message", "Hit on the head!")
                 screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
-                weak_grav = False # Reset weak gravity status
+                weak_grav = False
                 if not is_mute:    
                     hit_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
                 velocity_y = 0
-                deathcount += 1  
+                deathcount += 1
 
         for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))        
@@ -4316,7 +4360,7 @@ def create_lvl9_screen():
 
     jump_blocks = [
         pygame.Rect(1250, 600, 100, 100),
-        pygame.Rect(3000, 400, 100, 100),
+        pygame.Rect(2970, 420, 100, 100),
         pygame.Rect(5730, 550, 100, 100),
     ]
 
@@ -4596,7 +4640,8 @@ def create_lvl9_screen():
 
             if current_time < progress["times"]["lvl9"] or progress["times"]["lvl9"] == 0:
                 progress["times"]["lvl9"] = round(current_time, 2)
-                progress["medals"]["lvl9"] = get_medal(9, progress["times"]["lvl9"])
+            
+            progress["medals"]["lvl9"] = get_medal(9, progress["times"]["lvl9"])
 
             save_progress(progress)  # Save progress to JSON file
 
@@ -4737,21 +4782,23 @@ def create_lvl9_screen():
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-            if block.width < 100:
-                laser_rect = pygame.Rect(block.x - 10, block.y + block.height + 30, block.width + 20, 5)  # 5 px tall death zone
+            if block.width <= 100:
+                laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
             else:
                 laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 fall_text = in_game.get("hit_message", "Hit on the head!")
                 screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
-                weak_grav = False # Reset weak gravity status
+                weak_grav = False
+                strong_grav = False
+                key_block_pairs[0]["collected"] = False  # Reset key block status
                 if not is_mute:    
                     hit_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
                 velocity_y = 0
-                deathcount += 1  
+                deathcount += 1
 
         for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))        
@@ -4985,8 +5032,7 @@ def create_lvl10_screen():
         {'r': 40, 'orbit_radius': 300, 'angle': 0, 'speed': 3},
     ]
 
-    light_off_button = pygame.Rect(400, 350, 50, 50)
-    light_block = pygame.Rect(1300, 0, 200, 400)
+    light_off_button = pygame.Rect(400, 380, 50, 50)
     
     light_blocks = [
         pygame.Rect(1300, 0, 200, 400),
@@ -5172,7 +5218,8 @@ def create_lvl10_screen():
 
             if current_time < progress["times"]["lvl10"] or progress["times"]["lvl10"] == 0:
                 progress["times"]["lvl10"] = round(current_time, 2)
-                progress["medals"]["lvl10"] = get_medal(10, progress["times"]["lvl10"])
+            
+            progress["medals"]["lvl10"] = get_medal(10, progress["times"]["lvl10"])
 
             save_progress(progress)  # Save progress to JSON file
 
@@ -5373,20 +5420,21 @@ def create_lvl10_screen():
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-            laser_rect = pygame.Rect(block.x + 14, block.y + block.height, block.width - 28, 5)  # 5 px tall death zone
+            if block.width <= 100:
+                laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
+            else:
+                laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 fall_text = in_game.get("hit_message", "Hit on the head!")
                 screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
-                weak_grav = False # Reset weak gravity status
-                strong_grav = False # Reset strong gravity status
-                lights_off = True
+                weak_grav = False
                 if not is_mute:    
                     hit_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
                 velocity_y = 0
-                deathcount += 1  
+                deathcount += 1
 
         for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))        
