@@ -1,13 +1,13 @@
 {
     "main_menu": {
-      "start": "starten",
-      "achievements": "Erfolge",
+      "start": "Starten",
+      "achievements": "Charakterauswahl",
       "settings": "Audio stummschalten/Stummschaltung aufheben",
       "quit": "aufhören",
       "language": "Sprache ändern"
     }
     ,"language_select": {
-      "back": "zurückkehren"
+      "back": "Zurückkehren"
   }
   ,"levels": {
   "level_display": "WÄHLE EINEN LEVEL",
@@ -22,7 +22,7 @@
   "lvl9": "Stufe 9",
   "lvl10": "Stufe 10",
   "lvl11": "Stufe 11",
-  "lvl12": "stufe 12",
+  "lvl12": "Stufe 12",
   "back": "zurückkehren"
    }
   ,"messages": {

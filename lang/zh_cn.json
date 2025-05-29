@@ -1,7 +1,7 @@
 {
     "main_menu": {
       "start": "开始",
-      "achievements": "成就",
+      "achievements": "角色选择",
       "settings": "静音/取消静音",
       "quit": "辞职",
       "language": "更改语言"

@@ -1,7 +1,7 @@
 {
     "main_menu":{
         "start": "Начать",
-        "achievements": "Достижения",
+        "achievements": "Выбор персонажа",
         "settings": "Отключить/включить звук",
         "quit": "Выйти",
         "language": "Язык"

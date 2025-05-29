@@ -1,13 +1,13 @@
 {
     "main_menu": {
-      "start": "commencer",
-      "achievements": "Réalisations",
+      "start": "Commencer",
+      "achievements": "Sélection de personnage",
       "settings": "Couper/Activer le son",
       "quit": "Quitter",
       "language": "Changer de langue"
     }
     ,"language_select": {
-      "back": "retour"
+      "back": "Retour"
   }
   ,"levels": {
   "level_display": "CHOISIR UN NIVEAU",
