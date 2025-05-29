@@ -130,8 +130,8 @@ logo_text = font.render("Logo made with: canva.com", True, (255, 255, 255))
 logo_pos = (SCREEN_WIDTH - 342, SCREEN_HEIGHT - 84)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.1.11", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
+ver_text = font.render("Version 1.2.0", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 163, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -165,6 +165,7 @@ click_delay = 1  # Delay between clicks isn seconds
 last_page_change_time = 0  # Initialize the last page change time
 
 def create_main_menu_buttons():
+
     global current_lang, buttons
     current_lang = load_language(lang_code)['main_menu']
     buttons.clear()
@@ -316,8 +317,39 @@ def start_game():
     pygame.time.delay(200)  # Delay 200 ms to avoid click pass-through
     set_page('levels')
 
+#Initialize default character
+selected_character = "robot"
+
+# Load character images
+robot_img = pygame.image.load("char/robot.png").convert_alpha()
+evilrobot_img = pygame.image.load("char/evilrobot.png").convert_alpha()
+
+# Get rects and position them
+robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
+evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 - 50))
+
 def open_achievements():
-    print("Opening achievements...")
+    global selected_character, set_page, current_page
+    
+    # Clear screen
+    buttons.clear()
+
+    # Draw images
+    current_page == "character_select"
+    screen.blit(robot_img, robot_rect)
+    screen.blit(evilrobot_img, evilrobot_rect)
+    for event in pygame.event.get():#
+        
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # left click
+            mouse_pos = event.pos
+            if robot_rect.collidepoint(mouse_pos):
+                selected_character = "robot"
+                set_page("main_menu")
+            elif evilrobot_rect.collidepoint(mouse_pos):
+                selected_character = "evilrobot"
+                set_page("main_menu")
+    
+    pygame.display.flip()
 
 def open_settings():
     global is_mute
@@ -390,6 +422,8 @@ def set_page(page):
     if page == 'main_menu':
         current_lang = load_language(lang_code).get('main_menu', {})
         create_main_menu_buttons()
+    elif page == 'character_select':
+        open_achievements()
     elif page == 'language_select':
         current_lang = load_language(lang_code).get('language_select', {})
         create_language_buttons()
@@ -434,7 +468,7 @@ def set_page(page):
         create_lvl11_screen()
 
 def create_quit_confirm_buttons():
-    global current_lang, buttons, quit_text, quit_text_rect
+    global current_lang, buttons, quit_text, quit_text_rect, selected_character
     buttons.clear()
 
     # Get the quit confirmation text from the current language
@@ -483,7 +517,7 @@ def create_lvl1_screen():
     was_moving = False
 
     # Load player image
-    player_img = pygame.image.load("robot.png").convert_alpha()
+    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
     img_width, img_height = player_img.get_size()
 
     blocks = [
@@ -742,7 +776,7 @@ def create_lvl1_screen():
         pygame.display.update()    
 
 def create_lvl2_screen():
-    global player_img, font, screen, complete_levels, is_mute
+    global player_img, font, screen, complete_levels, is_mute, selected_character
 
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -764,7 +798,7 @@ def create_lvl2_screen():
     was_moving = False
 
     # Load player image
-    player_img = pygame.image.load("robot.png").convert_alpha()
+    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -1078,7 +1112,7 @@ def create_lvl2_screen():
         pygame.display.update()    
 
 def create_lvl3_screen():
-    global player_img, font, screen, complete_levels, is_mute
+    global player_img, font, screen, complete_levels, is_mute, selected_character
 
     start_time = time.time()
 
@@ -1100,7 +1134,7 @@ def create_lvl3_screen():
     was_moving = False
 
     # Load player image
-    player_img = pygame.image.load("robot.png").convert_alpha()
+    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -1510,7 +1544,7 @@ def create_lvl3_screen():
         pygame.display.update()    
 
 def create_lvl4_screen():
-    global player_img, font, screen, complete_levels, is_mute
+    global player_img, font, screen, complete_levels, is_mute, selected_character
 
     start_time = time.time()
 
@@ -1532,7 +1566,7 @@ def create_lvl4_screen():
     was_moving = False
 
     # Load player image
-    player_img = pygame.image.load("robot.png").convert_alpha()
+    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -2108,7 +2142,7 @@ def create_lvl4_screen():
         pygame.display.update()   
 
 def create_lvl5_screen():
-    global player_img, font, screen, complete_levels, is_mute
+    global player_img, font, screen, complete_levels, is_mute, selected_character
 
     start_time = time.time()
 
@@ -2130,7 +2164,7 @@ def create_lvl5_screen():
     was_moving = False
 
     # Load player image
-    player_img = pygame.image.load("robot.png").convert_alpha()
+    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -2707,7 +2741,7 @@ def create_lvl5_screen():
         pygame.display.update()   
 
 def create_lvl6_screen():
-    global player_img, font, screen, complete_levels, is_mute, lvl6_time, lvl6_medal
+    global player_img, font, screen, complete_levels, is_mute, selected_character
     start_time = time.time()
 
     in_game = load_language(lang_code).get('in_game', {})
@@ -2728,7 +2762,7 @@ def create_lvl6_screen():
     was_moving = False
 
     # Load player image
-    player_img = pygame.image.load("robot.png").convert_alpha()
+    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -3306,7 +3340,7 @@ def create_lvl6_screen():
         pygame.display.update()   
 
 def create_lvl7_screen():
-    global player_img, font, screen, complete_levels, is_mute
+    global player_img, font, screen, complete_levels, is_mute, selected_character
     start_time = time.time()
 
     in_game = load_language(lang_code).get('in_game', {})
@@ -3327,7 +3361,7 @@ def create_lvl7_screen():
     was_moving = False
 
     # Load player image
-    player_img = pygame.image.load("robot.png").convert_alpha()
+    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -3781,7 +3815,7 @@ def create_lvl7_screen():
         pygame.display.update()   
 
 def create_lvl8_screen():
-    global player_img, font, screen, complete_levels, is_mute
+    global player_img, font, screen, complete_levels, is_mute, selected_character
     start_time = time.time()
 
     in_game = load_language(lang_code).get('in_game', {})
@@ -3805,7 +3839,7 @@ def create_lvl8_screen():
     was_moving = False
 
     # Load player image
-    player_img = pygame.image.load("robot.png").convert_alpha()
+    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -4302,7 +4336,7 @@ def create_lvl8_screen():
         pygame.display.update()   
 
 def create_lvl9_screen():
-    global player_img, font, screen, complete_levels, is_mute
+    global player_img, font, screen, complete_levels, is_mute, selected_character
     start_time = time.time()
 
     in_game = load_language(lang_code).get('in_game', {})
@@ -4329,7 +4363,7 @@ def create_lvl9_screen():
     on_ground = False
 
     # Load player image
-    player_img = pygame.image.load("robot.png").convert_alpha()
+    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -4948,7 +4982,7 @@ def create_lvl9_screen():
         pygame.display.update() 
 
 def create_lvl10_screen():
-    global player_img, font, screen, complete_levels, is_mute, lvl10_time, lvl10_medal
+    global player_img, font, screen, complete_levels, is_mute, selected_character
     start_time = time.time()
 
 
@@ -4976,7 +5010,7 @@ def create_lvl10_screen():
     lights_off = True
 
     # Load player image
-    player_img = pygame.image.load("robot.png").convert_alpha()
+    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -5537,7 +5571,7 @@ def create_lvl10_screen():
         pygame.display.update() 
 
 def create_lvl11_screen():
-    global player_img, font, screen, complete_levels, is_mute
+    global player_img, font, screen, complete_levels, is_mute, selected_character
 
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -5572,7 +5606,7 @@ def create_lvl11_screen():
     lights_off = True
 
     # Load player image
-    player_img = pygame.image.load("robot.png").convert_alpha()
+    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -7138,7 +7172,7 @@ def handle_action(key):
         if key == "start":
             start_game()
         elif key == "achievements":
-            open_achievements()
+            set_page("character_select")
         elif key == "settings":
             open_settings()
         elif key == "quit":
@@ -7195,7 +7229,8 @@ button_hovered_last_frame = False
 # Main loop
 running = True
 while running:
-    screen.fill((0, 102, 51))
+    # Clear screen!
+    screen.fill((153, 51, 255))
     mouse_pos = pygame.mouse.get_pos()
 
     if SCREEN_WIDTH < MIN_WIDTH or SCREEN_HEIGHT < MIN_HEIGHT:
@@ -7252,6 +7287,7 @@ while running:
                             last_page_change_time = time.time()  # Update the time after handling the click
 
         if current_page == "main_menu":
+
             screen.blit(logo, ((SCREEN_WIDTH // 2 - 338), 30))
             screen.blit(logo_text, logo_pos)
             screen.blit(site_text, site_pos)
@@ -7260,7 +7296,7 @@ while running:
         # Render the main menu buttons
             for rendered, rect, key in buttons:
                 if rect.collidepoint(mouse_pos):
-                    pygame.draw.rect(screen, (0, 255, 0), rect.inflate(20, 10))
+                    pygame.draw.rect(screen, (76, 0, 153), rect.inflate(20, 10))
                     hovered = rect.collidepoint(pygame.mouse.get_pos())
                     if hovered and not button_hovered_last_frame and not is_mute:
                         hover_sound.play()
@@ -7269,8 +7305,8 @@ while running:
                         menu_text = font.render("Play the game.", True, (255, 255, 0))
                         screen.blit(menu_text, (SCREEN_WIDTH // 2 - 70, SCREEN_HEIGHT - 50))
                     elif key == "achievements":
-                        achieve_text = font.render("Coming soon!", True, (255, 255, 0))
-                        screen.blit(achieve_text, (SCREEN_WIDTH // 2 - 70, SCREEN_HEIGHT - 50))
+                        achieve_text = font.render("Select your character! Under Development.", True, (255, 255, 0))
+                        screen.blit(achieve_text, (SCREEN_WIDTH // 2 - 260, SCREEN_HEIGHT - 50))
                     elif key == "settings": 
                         settings_text = font.render("Turn on the audio or turn it off, depending on current mode.", True, (255, 255, 0))
                         screen.blit(settings_text, (SCREEN_WIDTH // 2 - 400, SCREEN_HEIGHT - 50))
@@ -7281,8 +7317,34 @@ while running:
                         lang_text = font.render("Select your language.", True, (255, 255, 0))
                         screen.blit(lang_text, (SCREEN_WIDTH // 2 - 120, SCREEN_HEIGHT - 50))
                 else:
-                    pygame.draw.rect(screen, (0, 102, 51), rect.inflate(20, 10))
+                    pygame.draw.rect(screen, (153, 51, 255), rect.inflate(20, 10))
                 screen.blit(rendered, rect)
+
+        if current_page == "character_select":
+            # Draw images
+            screen.blit(robot_img, robot_rect)
+            screen.blit(evilrobot_img, evilrobot_rect)
+
+            # Draw a highlight border around the selected character
+            if selected_character == "robot":
+                pygame.draw.rect(screen, (128, 0, 128), robot_rect.inflate(10, 10), 3)
+            else:
+                pygame.draw.rect(screen, (128, 0, 128), evilrobot_rect.inflate(10, 10), 3)
+
+            # Handle events from the main loop, not a new event loop!
+            if pygame.mouse.get_pressed()[0]:  # Left mouse button is pressed
+                mouse_pos = pygame.mouse.get_pos()
+                if robot_rect.collidepoint(mouse_pos):
+                    selected_character = "robot"
+                    click_sound.play()
+                    set_page("main_menu")
+                elif evilrobot_rect.collidepoint(mouse_pos):
+                    selected_character = "evilrobot"
+                    click_sound.play()
+                    set_page("main_menu")
+            keys = pygame.key.get_pressed() 
+            if keys[pygame.K_ESCAPE]:
+                set_page("main_menu")
 
         if current_page == "quit_confirm":
             # Render the quit confirmation text
@@ -7295,13 +7357,13 @@ while running:
             # Render the "Yes" and "No" buttons
             for rendered, rect, key in buttons:
                 if rect.collidepoint(mouse_pos):
-                    pygame.draw.rect(screen, (0, 255, 0), rect.inflate(20, 10))
+                    pygame.draw.rect(screen, (76, 0, 153), rect.inflate(20, 10))
                     hovered = rect.collidepoint(pygame.mouse.get_pos())
                     if hovered and not button_hovered_last_frame and not is_mute:
                         hover_sound.play()
                     button_hovered_last_frame = hovered
                 else:
-                    pygame.draw.rect(screen, (0, 102, 51), rect.inflate(20, 10))
+                    pygame.draw.rect(screen, (153, 51, 255), rect.inflate(20, 10))
                 screen.blit(rendered, rect)
 
             # Allow returning to the main menu with ESC
@@ -7400,7 +7462,7 @@ while running:
             # Render buttons for levels
             for rendered, rect, key in buttons:
                 if rect.collidepoint(mouse_pos):
-                    pygame.draw.rect(screen, (0, 255, 0), rect.inflate(20, 10))
+                    pygame.draw.rect(screen, (76, 0, 153), rect.inflate(20, 10))
                     hovered = rect.collidepoint(pygame.mouse.get_pos())
                     if hovered and not button_hovered_last_frame and not is_mute:
                         hover_sound.play()
@@ -7594,20 +7656,20 @@ while running:
                         screen.blit(lvl11_txt, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
 
                 else:
-                    pygame.draw.rect(screen, (0, 102, 51), rect.inflate(20, 10))
+                    pygame.draw.rect(screen, (153, 51, 255), rect.inflate(20, 10))
                 screen.blit(rendered, rect)
 
         else:
             # Render buttons for other pages
             for rendered, rect, key in buttons:
                 if rect.collidepoint(mouse_pos):
-                    pygame.draw.rect(screen, (0, 255, 0), rect.inflate(20, 10))
+                    pygame.draw.rect(screen, (76, 0, 153), rect.inflate(20, 10))
                     hovered = rect.collidepoint(pygame.mouse.get_pos())
                     if hovered and not button_hovered_last_frame and not is_mute:
                         hover_sound.play()
                     button_hovered_last_frame = hovered
                 else:
-                    pygame.draw.rect(screen, (0, 102, 51), rect.inflate(20, 10))
+                    pygame.draw.rect(screen, (153, 51, 255), rect.inflate(20, 10))
                 screen.blit(rendered, rect)
 
         # Handle delayed level load
