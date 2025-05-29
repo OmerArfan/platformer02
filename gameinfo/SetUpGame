@@ -1,0 +1,24 @@
+1)If you run Python directly without an editor like VSCode, it might default to your System32 folder and not find the game files. This can cause errors. That’s why using VSCode is the safest option!
+  Download it here: https://code.visualstudio.com/
+
+2)Install(Safest choice):
+  Python 3.11+
+  Download it here: https://www.python.org/downloads/
+  Pygame 2.6.1
+  YOU CAN INSTALL IT USING pip install pygame IN CMD(Windows)
+
+3)If you haven't already, download the ZIP file, what are you waiting for lol...
+
+4)Open the ZIP folder and take out the main file folder 
+
+5)Move the game folder to a safe and accessible location (like your Documents or where VSCode normally opens projects from).
+
+5)Open VScode, click "file" in the top left corner.
+
+6)Click "Open Folder".
+
+7)Navigate to the main game file, select it and click "open".
+
+8)Then run the "platformer.py" file in VScode by clicking the "play"-like button on the top right.
+
+9)Cry.
