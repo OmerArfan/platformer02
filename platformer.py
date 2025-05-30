@@ -29,7 +29,7 @@ hit_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hit.wav"))
 is_mute = False  # Global variable to track mute state
 
 # Load and set window icon
-icon = pygame.image.load("roboticon.ico")
+icon = pygame.image.load("robots.ico")
 pygame.display.set_icon(icon)
 
 # Save file name
@@ -106,6 +106,10 @@ MIN_WIDTH, MIN_HEIGHT = 1000, 750
 # Load logo image
 logo = pygame.image.load("logo.png").convert_alpha()
 
+# Load and scale background
+background_img = pygame.image.load("Background.png").convert()
+background = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
 # Warning Robot for error screen
 robo_img = pygame.image.load("warningrobot.png").convert_alpha()
 
@@ -125,12 +129,12 @@ def render_text(text, color = (255, 255, 255)):
         return font.render(text, True, color)
 
 site_text = font.render("Sound effects from: pixabay.com", True, (255, 255, 255))
-site_pos = (SCREEN_WIDTH - 398, SCREEN_HEIGHT - 54)
-logo_text = font.render("Logo made with: canva.com", True, (255, 255, 255))
-logo_pos = (SCREEN_WIDTH - 342, SCREEN_HEIGHT - 84)
+site_pos = (SCREEN_WIDTH - 398, SCREEN_HEIGHT - 84)
+logo_text = font.render("Logo and Background made with: canva.com", True, (255, 255, 255))
+logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.2.0", True, (255, 255, 255))
+ver_text = font.render("Version 1.2.1", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 163, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -323,10 +327,14 @@ selected_character = "robot"
 # Load character images
 robot_img = pygame.image.load("char/robot.png").convert_alpha()
 evilrobot_img = pygame.image.load("char/evilrobot.png").convert_alpha()
+icerobot_img = pygame.image.load("char/icerobot.png").convert_alpha()
+lavarobot_img = pygame.image.load("char/lavarobot.png").convert_alpha()
 
 # Get rects and position them
-robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
-evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 - 50))
+robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2 - 50))
+evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
+icerobot_rect = icerobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 50, SCREEN_HEIGHT // 2 - 50))
+lavarobot_rect = lavarobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 200, SCREEN_HEIGHT // 2 - 50))
 
 def open_achievements():
     global selected_character, set_page, current_page
@@ -336,8 +344,7 @@ def open_achievements():
 
     # Draw images
     current_page == "character_select"
-    screen.blit(robot_img, robot_rect)
-    screen.blit(evilrobot_img, evilrobot_rect)
+
     for event in pygame.event.get():#
         
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # left click
@@ -348,7 +355,12 @@ def open_achievements():
             elif evilrobot_rect.collidepoint(mouse_pos):
                 selected_character = "evilrobot"
                 set_page("main_menu")
-    
+            elif icerobot_rect.collidepoint(mouse_pos):
+                selected_character = "icerobot"
+                set_page("main_menu")
+            elif lavarobot_rect.collidepoint(mouse_pos):
+                selected_character = "lavarobot"
+                set_page("main_menu")   
     pygame.display.flip()
 
 def open_settings():
@@ -7230,7 +7242,7 @@ button_hovered_last_frame = False
 running = True
 while running:
     # Clear screen!
-    screen.fill((153, 51, 255))
+    screen.blit(background, (0, 0))
     mouse_pos = pygame.mouse.get_pos()
 
     if SCREEN_WIDTH < MIN_WIDTH or SCREEN_HEIGHT < MIN_HEIGHT:
@@ -7288,7 +7300,7 @@ while running:
 
         if current_page == "main_menu":
 
-            screen.blit(logo, ((SCREEN_WIDTH // 2 - 338), 30))
+            screen.blit(logo, ((SCREEN_WIDTH // 2 - 473), 30))
             screen.blit(logo_text, logo_pos)
             screen.blit(site_text, site_pos)
             screen.blit(credit_text, credit_pos)
@@ -7296,11 +7308,7 @@ while running:
         # Render the main menu buttons
             for rendered, rect, key in buttons:
                 if rect.collidepoint(mouse_pos):
-                    pygame.draw.rect(screen, (76, 0, 153), rect.inflate(20, 10))
-                    hovered = rect.collidepoint(pygame.mouse.get_pos())
-                    if hovered and not button_hovered_last_frame and not is_mute:
-                        hover_sound.play()
-                    button_hovered_last_frame = hovered
+
                     if key == "start":
                         menu_text = font.render("Play the game.", True, (255, 255, 0))
                         screen.blit(menu_text, (SCREEN_WIDTH // 2 - 70, SCREEN_HEIGHT - 50))
@@ -7317,31 +7325,52 @@ while running:
                         lang_text = font.render("Select your language.", True, (255, 255, 0))
                         screen.blit(lang_text, (SCREEN_WIDTH // 2 - 120, SCREEN_HEIGHT - 50))
                 else:
-                    pygame.draw.rect(screen, (153, 51, 255), rect.inflate(20, 10))
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((153, 51, 255, 0))  # RGBA: 100 is alpha (transparency)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
                 screen.blit(rendered, rect)
 
         if current_page == "character_select":
             # Draw images
             screen.blit(robot_img, robot_rect)
             screen.blit(evilrobot_img, evilrobot_rect)
+            screen.blit(icerobot_img, icerobot_rect)
+            screen.blit(lavarobot_img, lavarobot_rect)
 
             # Draw a highlight border around the selected character
             if selected_character == "robot":
-                pygame.draw.rect(screen, (128, 0, 128), robot_rect.inflate(10, 10), 3)
-            else:
-                pygame.draw.rect(screen, (128, 0, 128), evilrobot_rect.inflate(10, 10), 3)
+                pygame.draw.rect(screen, (63, 72, 204), robot_rect.inflate(5, 5), 5)
+            elif selected_character == "evilrobot":
+                pygame.draw.rect(screen, (128, 0, 128), evilrobot_rect.inflate(5, 5), 5)
+            elif selected_character == "icerobot":
+                pygame.draw.rect(screen, (51, 254, 255), icerobot_rect.inflate(5, 5), 5)
+            elif selected_character == "lavarobot":
+                pygame.draw.rect(screen, (136, 0, 21), lavarobot_rect.inflate(5, 5), 5)
 
             # Handle events from the main loop, not a new event loop!
             if pygame.mouse.get_pressed()[0]:  # Left mouse button is pressed
                 mouse_pos = pygame.mouse.get_pos()
                 if robot_rect.collidepoint(mouse_pos):
                     selected_character = "robot"
-                    click_sound.play()
+                    if not is_mute:
+                        click_sound.play()
                     set_page("main_menu")
                 elif evilrobot_rect.collidepoint(mouse_pos):
                     selected_character = "evilrobot"
-                    click_sound.play()
+                    if not is_mute:
+                        click_sound.play()
                     set_page("main_menu")
+                elif icerobot_rect.collidepoint(mouse_pos):
+                    selected_character = "icerobot"
+                    if not is_mute:
+                        click_sound.play()
+                    set_page("main_menu")
+                elif lavarobot_rect.collidepoint(mouse_pos):
+                    selected_character = "lavarobot"
+                    if not is_mute:
+                        click_sound.play()
+                    set_page("main_menu")
+
             keys = pygame.key.get_pressed() 
             if keys[pygame.K_ESCAPE]:
                 set_page("main_menu")
@@ -7357,13 +7386,17 @@ while running:
             # Render the "Yes" and "No" buttons
             for rendered, rect, key in buttons:
                 if rect.collidepoint(mouse_pos):
-                    pygame.draw.rect(screen, (76, 0, 153), rect.inflate(20, 10))
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
                     hovered = rect.collidepoint(pygame.mouse.get_pos())
                     if hovered and not button_hovered_last_frame and not is_mute:
                         hover_sound.play()
                     button_hovered_last_frame = hovered
                 else:
-                    pygame.draw.rect(screen, (153, 51, 255), rect.inflate(20, 10))
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((153, 51, 255, 0))  # RGBA: 100 is alpha (transparency)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
                 screen.blit(rendered, rect)
 
             # Allow returning to the main menu with ESC
@@ -7462,7 +7495,9 @@ while running:
             # Render buttons for levels
             for rendered, rect, key in buttons:
                 if rect.collidepoint(mouse_pos):
-                    pygame.draw.rect(screen, (76, 0, 153), rect.inflate(20, 10))
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
                     hovered = rect.collidepoint(pygame.mouse.get_pos())
                     if hovered and not button_hovered_last_frame and not is_mute:
                         hover_sound.play()
@@ -7656,20 +7691,26 @@ while running:
                         screen.blit(lvl11_txt, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
 
                 else:
-                    pygame.draw.rect(screen, (153, 51, 255), rect.inflate(20, 10))
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((153, 51, 255, 0))  # RGBA: 100 is alpha (transparency)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
                 screen.blit(rendered, rect)
 
         else:
             # Render buttons for other pages
             for rendered, rect, key in buttons:
                 if rect.collidepoint(mouse_pos):
-                    pygame.draw.rect(screen, (76, 0, 153), rect.inflate(20, 10))
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
                     hovered = rect.collidepoint(pygame.mouse.get_pos())
                     if hovered and not button_hovered_last_frame and not is_mute:
                         hover_sound.play()
                     button_hovered_last_frame = hovered
                 else:
-                    pygame.draw.rect(screen, (153, 51, 255), rect.inflate(20, 10))
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((153, 51, 255, 0))  # RGBA: 100 is alpha (transparency)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
                 screen.blit(rendered, rect)
 
         # Handle delayed level load
