@@ -134,8 +134,8 @@ logo_text = font.render("Logo and Background made with: canva.com", True, (255, 
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.2.1", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 163, SCREEN_HEIGHT - 144)
+ver_text = font.render("Version 1.2.2", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -489,7 +489,7 @@ def create_quit_confirm_buttons():
 
     # Store the quit confirmation text for rendering in the main loop
     quit_text = font.render(confirm_quit, True, (255, 255, 255))
-    quit_text_rect = quit_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100))
+    quit_text_rect = quit_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 25))
 
     # Create "Yes" button
     yes_text = messages.get("yes", "Yes")
@@ -887,6 +887,15 @@ def create_lvl2_screen():
         current_time = time.time() - start_time
         formatted_time = "{:.2f}".format(current_time)
 
+        if keys[pygame.K_r]:
+            start_time = time.time()
+            current_time = 0
+            checkpoint_reached = False  # Reset checkpoint status
+            spawn_x, spawn_y = 150, 500
+            player_x, player_y = spawn_x, spawn_y  # Reset player position
+            velocity_y = 0
+            deathcount = 0
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
@@ -979,7 +988,7 @@ def create_lvl2_screen():
                     fall_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
-                player_x, player_y = 150, 500
+                player_x, player_y = spawn_x, spawn_y
                 velocity_y = 0
                 deathcount += 1
 
@@ -1111,7 +1120,10 @@ def create_lvl2_screen():
             # Inside the game loop:
         screen.blit(rendered_jump_text, (900 - camera_x, 500 - camera_y))  # Draws the rendered up text
 
-        # Initialize and draw the quit text
+        # Initialize and draw the reset and quit text
+        reset_text = in_game.get("reset_message", "Press R to reset")
+        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
         rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
@@ -1433,6 +1445,7 @@ def create_lvl3_screen():
                         death_sound.play()
                     pygame.display.update()
                     pygame.time.delay(300)
+                    velocity_y = 0
                     player_x, player_y = spawn_x, spawn_y
                     deathcount += 1
                     collision_detected = True
@@ -1935,6 +1948,7 @@ def create_lvl4_screen():
                     death_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
+                velocity_y = 0
                 key_block_pairs[0]["collected"] = False
                 break
                 
@@ -1966,6 +1980,7 @@ def create_lvl4_screen():
                 pygame.display.update()
                 pygame.time.delay(300)
                 deathcount += 1
+                velocity_y = 0
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
         # Draw all saws first
@@ -1995,7 +2010,8 @@ def create_lvl4_screen():
                     death_sound.play()
                 deathcount += 1
                 pygame.display.update()
-                pygame.time.delay(300)  
+                pygame.time.delay(300) 
+                velocity_y = 0 
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
         # Draw all lasers first
@@ -2014,6 +2030,7 @@ def create_lvl4_screen():
                     laser_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
+                velocity_y = 0
                 deathcount += 1
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
@@ -2508,7 +2525,8 @@ def create_lvl5_screen():
                 player_x, player_y = spawn_x, spawn_y  # Reset player position    
                 if not is_mute:
                     death_sound.play()
-                deathcount += 1        
+                deathcount += 1       
+                velocity_y = 0 
                 pygame.display.update()
                 pygame.time.delay(300)
                 key_block_pairs[0]["collected"] = False
@@ -2539,6 +2557,7 @@ def create_lvl5_screen():
                 if not is_mute:
                     death_sound.play()
                 pygame.display.update()
+                velocity_y = 0
                 pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
@@ -2569,6 +2588,7 @@ def create_lvl5_screen():
                     death_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
+                velocity_y = 0
                 deathcount += 1
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
@@ -2599,6 +2619,7 @@ def create_lvl5_screen():
                 deathcount += 1
                 pygame.display.update()
                 pygame.time.delay(300)  
+                velocity_y = 0
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
 
@@ -3117,6 +3138,7 @@ def create_lvl6_screen():
                     death_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
+                velocity_y = 0
                 key_block_pairs[0]["collected"] = False
                 break
                 
@@ -3147,6 +3169,7 @@ def create_lvl6_screen():
                 pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
+                velocity_y = 0
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
         for saw in moving_saws_x:
@@ -3175,6 +3198,7 @@ def create_lvl6_screen():
                 pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
+                velocity_y = 0
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
 
@@ -3205,6 +3229,7 @@ def create_lvl6_screen():
                     death_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)  
+                velocity_y = 0
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
 
@@ -3223,6 +3248,7 @@ def create_lvl6_screen():
                 pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y
                 deathcount += 1
+                velocity_y = 0
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
         for block in blocks:
@@ -7264,15 +7290,16 @@ while running:
             screen.fill((0, 0, 0))
 
             # Display the robo image
-            screen.blit(robo_img, (SCREEN_WIDTH // 2 - robo_img.get_width() // 2, SCREEN_HEIGHT // 2 - 200))
-
+            screen.blit(lavarobot_img, (SCREEN_WIDTH // 2 - lavarobot_img.get_width() // 2, SCREEN_HEIGHT // 2 - 200))
 
             # Render the text
+            deny_text = font.render("Access denied!", True, (255, 100, 100))
             error_text = font.render("Your screen resolution is too small! Increase the screen", True, (255, 255, 255))
             error_text2 = font.render("resolution in your system settings.", True, (255, 255, 255))
             countdown_text = font.render(f"Closing in {countdown} second(s)...", True, (255, 100, 100))
 
             # Center the text
+            screen.blit(deny_text, (SCREEN_WIDTH // 2 - deny_text.get_width() // 2, SCREEN_HEIGHT // 2 - 280))            
             screen.blit(error_text, (SCREEN_WIDTH // 2 - error_text.get_width() // 2, SCREEN_HEIGHT // 2 - 40))
             screen.blit(error_text2, (SCREEN_WIDTH // 2 - error_text2.get_width() // 2, SCREEN_HEIGHT // 2))
             screen.blit(countdown_text, (SCREEN_WIDTH // 2 - countdown_text.get_width() // 2, SCREEN_HEIGHT // 2 + 50))
@@ -7378,10 +7405,7 @@ while running:
         if current_page == "quit_confirm":
             # Render the quit confirmation text
             screen.blit(quit_text, quit_text_rect)
-
-                # Set up the asking robot image
-            askrobo_img = pygame.image.load("askrobot.png").convert_alpha()
-            screen.blit(askrobo_img, (SCREEN_WIDTH // 2 - robo_img.get_width() // 2, SCREEN_HEIGHT // 2 - 300))
+            screen.blit(icerobot_img, (SCREEN_WIDTH // 2 - icerobot_img.get_width() // 2, SCREEN_HEIGHT // 2 - 200))
 
             # Render the "Yes" and "No" buttons
             for rendered, rect, key in buttons:
@@ -7721,3 +7745,4 @@ while running:
         pygame.display.flip()
 
 pygame.quit()
+
