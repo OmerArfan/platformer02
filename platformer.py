@@ -25,6 +25,7 @@ bounce_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "bounce.wav"))
 move_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "travel.wav"))
 jump_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "jump.wav"))
 hit_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hit.wav"))
+notify_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "notify.wav"))
 
 # Load and set window icon
 icon = pygame.image.load("robots.ico")
@@ -42,6 +43,7 @@ default_progress = {
     "language": "en",
     "selected_character": "robot",
     "is_mute": False,
+    "evilrobo_unlocked": False,
 }
 
 # Load progress from save file or return default
@@ -133,7 +135,7 @@ logo_text = font.render("Logo and Background made with: canva.com", True, (255, 
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.2.4", True, (255, 255, 255))
+ver_text = font.render("Version 1.2.5", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -5650,6 +5652,10 @@ def create_lvl11_screen():
     evilrobo_mascot = pygame.image.load(f"char/evilrobot.png").convert_alpha()
     evilrobo_phase = 0    
 
+    # Logic for unlocking Evil Robo
+    unlock = progress.get("evilrobo_unlocked", False)
+    unlock_time = None
+
     # Load player image
     player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
     img_width, img_height = player_img.get_size()
@@ -6241,7 +6247,7 @@ def create_lvl11_screen():
         screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
 
         # Boss Trigger Area
-        if player_x > suspicious_x and player_y < -300:
+        if player_x > suspicious_x and player_y < -300 and lights_off:
             screen.blit(evilrobo_mascot, ((epos_x - camera_x), (epos_y - camera_y)))
 
             if evilrobo_phase == 0 and player_x < trigger_x:
@@ -6250,21 +6256,36 @@ def create_lvl11_screen():
             else:
                 evilrobo_phase = 1  # Prevents repeating
 
-        if evilrobo_phase == 1 and player_y < -300:
+        if evilrobo_phase == 1 and player_y < -300 and lights_off:
             holup_message = font.render("HEY! Get away from here!", True, (185, 0, 0))
             screen.blit(holup_message, (4800 - camera_x, -450 - camera_y))
             
-        if evilrobo_phase == 1:
+        if evilrobo_phase == 1 and lights_off:
             screen.blit(evilrobo_mascot, (int(epos_x - camera_x), int(epos_y - camera_y)))
-            if epos_x > player_x:
+            if epos_x > player_x + 10:
                 epos_x -= 17
-            elif epos_x < player_x:
+            elif epos_x < player_x - 10:
                 epos_x += 17
             else:
-                epos_x = epos_x
+                epos_x = player_x
+
+        if epos_x < 2000 and not unlock:
+            if not is_mute:
+                notify_sound.play()
+            unlock = True
+            unlock_time = pygame.time.get_ticks()
+            progress["evilrobo_unlocked"] = unlock
+            save_progress(progress)
+
+        if unlock and unlock_time is not None:
+            current_time = pygame.time.get_ticks()
+            if current_time - unlock_time <= 5000:
+                evilrobo_unlock_text = font.render("Evil Robo unlocked!", True, (41, 255, 11))
+                screen.blit(evilrobo_unlock_text, (SCREEN_WIDTH // 2 - evilrobo_unlock_text.get_width() // 2, 80))
 
         evilrobo_rect = pygame.Rect(int(epos_x), int(epos_y), evilrobo_mascot.get_width(), evilrobo_mascot.get_height())
-        if player_rect.colliderect(evilrobo_rect):
+        
+        if player_rect.colliderect(evilrobo_rect) and lights_off:
             evilrobo_phase = 0
             player_x, player_y = spawn_x, spawn_y
             epos_x, epos_y = espawn_x, espawn_y
