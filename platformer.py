@@ -26,8 +26,6 @@ move_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "travel.wav"))
 jump_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "jump.wav"))
 hit_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hit.wav"))
 
-is_mute = False  # Global variable to track mute state
-
 # Load and set window icon
 icon = pygame.image.load("robots.ico")
 pygame.display.set_icon(icon)
@@ -41,7 +39,9 @@ default_progress = {
     "locked_levels": ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"],
     "times": {f"lvl{i}": 0 for i in range(1, 13)},
     "medals": {f"lvl{i}": "None" for i in range(1, 13)},
-    "language": "en"
+    "language": "en",
+    "selected_character": "robot",
+    "is_mute": False,
 }
 
 # Load progress from save file or return default
@@ -62,6 +62,8 @@ progress = load_progress()
 
 # Get just the language code, default to English
 lang_code = progress.get("language", "en")
+
+is_mute = progress.get("is_mute", default_progress["is_mute"])  # Global variable to track mute state
 
 # Define shortcuts for easier access if needed
 complete_levels = progress.get("complete_levels", 0)
@@ -110,9 +112,6 @@ logo = pygame.image.load("logo.png").convert_alpha()
 background_img = pygame.image.load("Background.png").convert()
 background = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
-# Warning Robot for error screen
-robo_img = pygame.image.load("warningrobot.png").convert_alpha()
-
 # Load the Chinese font (ensure the font file path is correct)
 font_path_ch = 'NotoSansSC-SemiBold.ttf'
 font_path = 'NotoSansDisplay-SemiBold.ttf'
@@ -134,7 +133,7 @@ logo_text = font.render("Logo and Background made with: canva.com", True, (255, 
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.2.2", True, (255, 255, 255))
+ver_text = font.render("Version 1.2.3", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -321,14 +320,14 @@ def start_game():
     pygame.time.delay(200)  # Delay 200 ms to avoid click pass-through
     set_page('levels')
 
-#Initialize default character
-selected_character = "robot"
-
 # Load character images
 robot_img = pygame.image.load("char/robot.png").convert_alpha()
 evilrobot_img = pygame.image.load("char/evilrobot.png").convert_alpha()
 icerobot_img = pygame.image.load("char/icerobot.png").convert_alpha()
 lavarobot_img = pygame.image.load("char/lavarobot.png").convert_alpha()
+
+#Initialize default character
+selected_character = progress.get("selected_character", default_progress["selected_character"])
 
 # Get rects and position them
 robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2 - 50))
@@ -7213,6 +7212,8 @@ def handle_action(key):
             set_page("character_select")
         elif key == "settings":
             open_settings()
+            progress["is_mute"] = is_mute
+            save_progress(progress)
         elif key == "quit":
             set_page("quit_confirm")
         elif key == "language":
@@ -7379,21 +7380,29 @@ while running:
                 mouse_pos = pygame.mouse.get_pos()
                 if robot_rect.collidepoint(mouse_pos):
                     selected_character = "robot"
+                    progress["selected_character"] = selected_character
+                    save_progress(progress)
                     if not is_mute:
                         click_sound.play()
                     set_page("main_menu")
                 elif evilrobot_rect.collidepoint(mouse_pos):
                     selected_character = "evilrobot"
+                    progress["selected_character"] = selected_character
+                    save_progress(progress)
                     if not is_mute:
                         click_sound.play()
                     set_page("main_menu")
                 elif icerobot_rect.collidepoint(mouse_pos):
                     selected_character = "icerobot"
+                    progress["selected_character"] = selected_character
+                    save_progress(progress)
                     if not is_mute:
                         click_sound.play()
                     set_page("main_menu")
                 elif lavarobot_rect.collidepoint(mouse_pos):
                     selected_character = "lavarobot"
+                    progress["selected_character"] = selected_character
+                    save_progress(progress)
                     if not is_mute:
                         click_sound.play()
                     set_page("main_menu")
