@@ -133,7 +133,7 @@ logo_text = font.render("Logo and Background made with: canva.com", True, (255, 
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.2.3", True, (255, 255, 255))
+ver_text = font.render("Version 1.2.4", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -5617,7 +5617,7 @@ def create_lvl11_screen():
     # Camera settings
     camera_x = 300
     camera_y = -500
-    spawn_x, spawn_y =  -400, 300
+    spawn_x, spawn_y =  3000, -700
     player_x, player_y = spawn_x, spawn_y
     running = True
     gravity = 1
@@ -5641,6 +5641,14 @@ def create_lvl11_screen():
     deathcount = 0
     was_moving = False
     lights_off = True
+
+    # Preparation for fight with Evil Robo
+    suspicious_x = 4200
+    trigger_x = 4650
+    espawn_x, espawn_y = 5200, -400
+    epos_x, epos_y = espawn_x, espawn_y
+    evilrobo_mascot = pygame.image.load(f"char/evilrobot.png").convert_alpha()
+    evilrobo_phase = 0    
 
     # Load player image
     player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
@@ -6229,7 +6237,42 @@ def create_lvl11_screen():
                 weak_grav = False
 
         pygame.draw.rect(screen, (0, 205, 0), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+        # Player Image
         screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
+
+        # Boss Trigger Area
+        if player_x > suspicious_x and player_y < -300:
+            screen.blit(evilrobo_mascot, ((epos_x - camera_x), (epos_y - camera_y)))
+
+            if evilrobo_phase == 0 and player_x < trigger_x:
+                sus_message = font.render("Huh? Is there anyone there?", True, (255, 20, 12))
+                screen.blit(sus_message, (4800 - camera_x, -450 - camera_y))
+            else:
+                evilrobo_phase = 1  # Prevents repeating
+
+        if evilrobo_phase == 1 and player_y < -300:
+            holup_message = font.render("HEY! Get away from here!", True, (185, 0, 0))
+            screen.blit(holup_message, (4800 - camera_x, -450 - camera_y))
+            
+        if evilrobo_phase == 1:
+            screen.blit(evilrobo_mascot, (int(epos_x - camera_x), int(epos_y - camera_y)))
+            if epos_x > player_x:
+                epos_x -= 17
+            elif epos_x < player_x:
+                epos_x += 17
+            else:
+                epos_x = epos_x
+
+        evilrobo_rect = pygame.Rect(int(epos_x), int(epos_y), evilrobo_mascot.get_width(), evilrobo_mascot.get_height())
+        if player_rect.colliderect(evilrobo_rect):
+            evilrobo_phase = 0
+            player_x, player_y = spawn_x, spawn_y
+            epos_x, epos_y = espawn_x, espawn_y
+            if not is_mute:
+                hit_sound.play()
+            deathcount += 1
+            pygame.display.update()
+            pygame.time.delay(300)
 
         button4_text = in_game.get("button4_message", "Green buttons, upon activation, will give you a massive speed boost!")
         rendered_button4_text = font.render(button4_text, True, (51, 255, 51))
@@ -7754,4 +7797,3 @@ while running:
         pygame.display.flip()
 
 pygame.quit()
-
