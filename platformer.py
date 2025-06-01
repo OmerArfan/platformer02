@@ -26,6 +26,8 @@ move_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "travel.wav"))
 jump_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "jump.wav"))
 hit_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hit.wav"))
 notify_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "notify.wav"))
+overheat_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "overheat.wav"))
+freeze_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "freeze.wav"))
 
 # Load and set window icon
 icon = pygame.image.load("robots.ico")
@@ -152,7 +154,7 @@ logo_text = font.render("Logo and Background made with: canva.com", True, (255, 
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.2.7", True, (255, 255, 255))
+ver_text = font.render("Version 1.2.8", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -6406,17 +6408,16 @@ def create_lvl12_screen():
     was_moving = False
     lights_off = True
 
-    # Preparation for fight with Evil Robo
-    suspicious_x = 4200
-    trigger_x = 4650
-    espawn_x, espawn_y = 5200, -400
-    epos_x, epos_y = espawn_x, espawn_y
-    evilrobo_mascot = pygame.image.load(f"char/evilrobot.png").convert_alpha()
-    evilrobo_phase = 0    
-
-    # Logic for unlocking Evil Robo
-    unlock = progress.get("evilrobo_unlocked", False)
-    unlock_time = None
+    # Robo Temperature and Ice
+    start_temp = 30.0
+    on_ground_heatup = 0.08
+    air_heatup = 0.02
+    ice_cooldown = 0.11
+    max_temp = 55.0
+    min_temp = 5.0
+    current_temp = start_temp
+    ice_melt = 1
+    on_ice = False
 
     # Load player image
     player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
@@ -6440,21 +6441,15 @@ def create_lvl12_screen():
         pygame.Rect(-600, 525, 2850, 50),
         pygame.Rect(1065, 200, 70, 375),
         pygame.Rect(1625, -200, 100, 590),
-        pygame.Rect(2250, -250, 150, 825),
-        pygame.Rect(1625, 50, 150, 50),
-        pygame.Rect(2200, 400, 100, 50),
-        pygame.Rect(2250, -300, 600, 100),
-        pygame.Rect(2300, 200, 3000, 100),
-        pygame.Rect(3100, -300, 2600, 100),
-        pygame.Rect(3050, -500, 120, 300),
-        pygame.Rect(5180, 250, 120, 300),
-        pygame.Rect(5250, 450, 1000, 100),
-        pygame.Rect(5600, -300, 120, 600),
     ]
 
     jump_blocks = [
         pygame.Rect(630, 425, 100, 100),
         pygame.Rect(14000, 600, 100, 100),
+    ]
+
+    ice_blocks = [
+        pygame.Rect(2300, 550, 500, 100)
     ]
 
     moving_saws = [ 
@@ -6541,6 +6536,27 @@ def create_lvl12_screen():
                 running = False
                 set_page("levels")
 
+        # Ice and Ground temeprature logic
+        if not on_ice and on_ground:
+            current_temp += on_ground_heatup
+        elif not on_ice and not on_ground:
+            current_temp += air_heatup
+        else:
+            current_temp -= ice_cooldown
+
+        # Minimum and Maximum Temperature Logic
+        if current_temp > max_temp:
+            player_x, player_y = spawn_x, spawn_y
+            overheat_sound.play()
+            current_temp = start_temp
+        elif current_temp < min_temp:
+            player_x, player_y = spawn_x, spawn_y
+            freeze_sound.play()
+            current_temp = start_temp            
+        
+        # Rounded off value
+        current_temp = round(current_temp, 2)
+        
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             if strong_grav:
@@ -6582,6 +6598,7 @@ def create_lvl12_screen():
         # Collisions and Ground Detection
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
         on_ground = False
+        on_ice = False
 
         for block in blocks:
             if player_rect.colliderect(block):
@@ -6590,6 +6607,28 @@ def create_lvl12_screen():
                     player_y = block.y - img_height
                     velocity_y = 0
                     on_ground = True
+
+                # Hitting the bottom of a block
+                elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
+                    player_y = block.y + block.height
+                    velocity_y = 0
+
+                # Horizontal collision (left or right side of the block)
+                elif player_x + img_width > block.x and player_x < block.x + block.width:
+                    if player_x < block.x:  # Colliding with the left side of the block
+                        player_x = block.x - img_width
+                    elif player_x + img_width > block.x + block.width:  # Colliding with the right side
+                        player_x = block.x + block.width
+
+        for block in ice_blocks:
+            if player_rect.colliderect(block):
+                # Falling onto a block
+                if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
+                    player_y = block.y - img_height
+                    velocity_y = 0
+                    on_ground = True
+                    on_ice = True
+                    block.height -= ice_melt
 
                 # Hitting the bottom of a block
                 elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
@@ -6923,6 +6962,9 @@ def create_lvl12_screen():
                 velocity_y = 0
                 deathcount += 1
 
+        for block in ice_blocks:
+            pygame.draw.rect(screen, (0, 205, 255), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
         for spike in spikes:
             pygame.draw.polygon(screen, (255, 0, 0), [((x - camera_x),( y - camera_y)) for x, y in spike])
 
@@ -7008,72 +7050,12 @@ def create_lvl12_screen():
         # Player Image
         screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
 
-        # Boss Trigger Area
-
-        if player_x > suspicious_x and player_y < -300 and lights_off:
-            screen.blit(evilrobo_mascot, ((epos_x - camera_x), (epos_y - camera_y)))
-
-            if evilrobo_phase == 0 and player_x < trigger_x:
-                sus_message = font.render("Huh? Is there anyone there?", True, (255, 20, 12))
-                screen.blit(sus_message, (4800 - camera_x, -450 - camera_y))
-            else:
-                if evilrobo_phase < 1:
-                    evilrobo_phase = 1  # Prevents repeating
-
-        if evilrobo_phase == 1 and player_y < -300 and lights_off:
-            holup_message = font.render("HEY! Get away from here!", True, (185, 0, 0))
-            screen.blit(holup_message, (4800 - camera_x, -450 - camera_y))
-            
-        if evilrobo_phase == 1 and lights_off:
-            screen.blit(evilrobo_mascot, (int(epos_x - camera_x), int(epos_y - camera_y)))
-            if epos_x > player_x + 10:
-                epos_x -= 20
-            elif epos_x < player_x - 10:
-                epos_x += 20
-            else:
-                epos_x = player_x
-
-        if evilrobo_phase == 2:
-            screen.blit(evilrobo_mascot, (int(epos_x - camera_x), int(epos_y - camera_y)))
-            if player_y > -300:
-                confused_text = font.render("WHERE DID HE GO????", True, (82, 0, 0))
-                screen.blit(confused_text, ((epos_x - camera_x), ((epos_y - 50) - camera_y)))
-                if not unlock:
-                    if not is_mute:
-                        notify_sound.play()
-                    unlock = True
-                    unlock_time = pygame.time.get_ticks()
-                    progress["evilrobo_unlocked"] = unlock
-                    save_progress(progress)
-            epos_x -= 12
-
-
-        if epos_x < 2150:
-            evilrobo_phase = 2
-
-        if unlock and unlock_time is not None:
-            current_time = pygame.time.get_ticks()
-            if current_time - unlock_time <= 5000:
-                evilrobo_unlock_text = font.render("Evil Robo unlocked!", True, (41, 255, 11))
-                screen.blit(evilrobo_unlock_text, (SCREEN_WIDTH // 2 - evilrobo_unlock_text.get_width() // 2, 80))
-
-        evilrobo_rect = pygame.Rect(int(epos_x), int(epos_y), evilrobo_mascot.get_width(), evilrobo_mascot.get_height())
-        
-        if player_rect.colliderect(evilrobo_rect) and lights_off:
-            evilrobo_phase = 0
-            player_x, player_y = spawn_x, spawn_y
-            epos_x, epos_y = espawn_x, espawn_y
-            if not is_mute:
-                hit_sound.play()
-            deathcount += 1
-            pygame.display.update()
-            pygame.time.delay(300)
 
         button4_text = in_game.get("button4_message", "Green buttons, upon activation, will give you a massive speed boost!")
         rendered_button4_text = font.render(button4_text, True, (51, 255, 51))
         screen.blit(rendered_button4_text, (-320 - camera_x, 300 - camera_y))
 
-        if player_rect.colliderect(light_off_button) and evilrobo_phase != 1:
+        if player_rect.colliderect(light_off_button):
             if not is_mute and lights_off:
                 button_sound.play()
             lights_off = False
@@ -7085,7 +7067,7 @@ def create_lvl12_screen():
             pygame.draw.rect(screen, (0, 0, 0), (0, 0, SCREEN_WIDTH, SCREEN_HEIGHT // 2 - 320))
             pygame.draw.rect(screen, (0, 0, 0), (0, SCREEN_HEIGHT // 2 + 320, SCREEN_WIDTH, SCREEN_HEIGHT // 2 + 320))
         
-        if lights_off and evilrobo_phase != 1:
+        if lights_off:
             pygame.draw.rect(screen, (104, 102, 204), (light_off_button.x - camera_x, light_off_button.y - camera_y, light_off_button.width, light_off_button.height))
             for light_block in light_blocks:
                 pygame.draw.rect(screen, (104, 102, 204), (light_block.x - camera_x, light_block.y - camera_y, light_block.width, light_block.height))
@@ -7120,6 +7102,9 @@ def create_lvl12_screen():
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+
+        temp_val = in_game.get("temp", "Temperature: {current_temp}").format(current_temp=current_temp)
+        screen.blit(font.render(temp_val, True, (255, 255, 255)), (20, 120))
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
