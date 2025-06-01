@@ -135,7 +135,7 @@ logo_text = font.render("Logo and Background made with: canva.com", True, (255, 
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.2.5", True, (255, 255, 255))
+ver_text = font.render("Version 1.2.6", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -327,13 +327,17 @@ robot_img = pygame.image.load("char/robot.png").convert_alpha()
 evilrobot_img = pygame.image.load("char/evilrobot.png").convert_alpha()
 icerobot_img = pygame.image.load("char/icerobot.png").convert_alpha()
 lavarobot_img = pygame.image.load("char/lavarobot.png").convert_alpha()
+locked_img = pygame.image.load("char/lockedrobot.png").convert_alpha()
 
 #Initialize default character
 selected_character = progress.get("selected_character", default_progress["selected_character"])
 
 # Get rects and position them
 robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2 - 50))
+#Evil Robot
 evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
+locked_evilrobot_rect = locked_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
+#Ice and lava robot
 icerobot_rect = icerobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 50, SCREEN_HEIGHT // 2 - 50))
 lavarobot_rect = lavarobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 200, SCREEN_HEIGHT // 2 - 50))
 
@@ -5619,7 +5623,7 @@ def create_lvl11_screen():
     # Camera settings
     camera_x = 300
     camera_y = -500
-    spawn_x, spawn_y =  3000, -700
+    spawn_x, spawn_y =  -400, 300
     player_x, player_y = spawn_x, spawn_y
     running = True
     gravity = 1
@@ -6254,7 +6258,8 @@ def create_lvl11_screen():
                 sus_message = font.render("Huh? Is there anyone there?", True, (255, 20, 12))
                 screen.blit(sus_message, (4800 - camera_x, -450 - camera_y))
             else:
-                evilrobo_phase = 1  # Prevents repeating
+                if evilrobo_phase < 1:
+                    evilrobo_phase = 1  # Prevents repeating
 
         if evilrobo_phase == 1 and player_y < -300 and lights_off:
             holup_message = font.render("HEY! Get away from here!", True, (185, 0, 0))
@@ -6269,13 +6274,23 @@ def create_lvl11_screen():
             else:
                 epos_x = player_x
 
-        if epos_x < 2000 and not unlock:
-            if not is_mute:
-                notify_sound.play()
-            unlock = True
-            unlock_time = pygame.time.get_ticks()
-            progress["evilrobo_unlocked"] = unlock
-            save_progress(progress)
+        if evilrobo_phase == 2:
+            screen.blit(evilrobo_mascot, (int(epos_x - camera_x), int(epos_y - camera_y)))
+            if player_y > -300:
+                confused_text = font.render("WHERE DID HE GO????", True, (82, 0, 0))
+                screen.blit(confused_text, ((epos_x - camera_x), ((epos_y - 50) - camera_y)))
+                if not unlock:
+                    if not is_mute:
+                        notify_sound.play()
+                    unlock = True
+                    unlock_time = pygame.time.get_ticks()
+                    progress["evilrobo_unlocked"] = unlock
+                    save_progress(progress)
+            epos_x -= 12
+
+
+        if epos_x < 2150:
+            evilrobo_phase = 2
 
         if unlock and unlock_time is not None:
             current_time = pygame.time.get_ticks()
@@ -6299,7 +6314,7 @@ def create_lvl11_screen():
         rendered_button4_text = font.render(button4_text, True, (51, 255, 51))
         screen.blit(rendered_button4_text, (-320 - camera_x, 300 - camera_y))
 
-        if player_rect.colliderect(light_off_button):
+        if player_rect.colliderect(light_off_button) and evilrobo_phase != 1:
             if not is_mute and lights_off:
                 button_sound.play()
             lights_off = False
@@ -6311,7 +6326,7 @@ def create_lvl11_screen():
             pygame.draw.rect(screen, (0, 0, 0), (0, 0, SCREEN_WIDTH, SCREEN_HEIGHT // 2 - 320))
             pygame.draw.rect(screen, (0, 0, 0), (0, SCREEN_HEIGHT // 2 + 320, SCREEN_WIDTH, SCREEN_HEIGHT // 2 + 320))
         
-        if lights_off:
+        if lights_off and evilrobo_phase != 1:
             pygame.draw.rect(screen, (104, 102, 204), (light_off_button.x - camera_x, light_off_button.y - camera_y, light_off_button.width, light_off_button.height))
             for light_block in light_blocks:
                 pygame.draw.rect(screen, (104, 102, 204), (light_block.x - camera_x, light_block.y - camera_y, light_block.width, light_block.height))
@@ -7423,9 +7438,19 @@ while running:
                 screen.blit(rendered, rect)
 
         if current_page == "character_select":
+            messages = load_language(lang_code).get('messages', {})  # Fetch localized messages
+            # Initialize time when message appears
+            wait_time = None
+            # To make sure locked sound is only played once
+            locked_sound_played = False
+            #Check if characters are locked
+            evilrobo_unlock = progress["evilrobo_unlocked"]
             # Draw images
             screen.blit(robot_img, robot_rect)
-            screen.blit(evilrobot_img, evilrobot_rect)
+            if evilrobo_unlock:
+                screen.blit(evilrobot_img, evilrobot_rect)
+            else:
+                screen.blit(locked_img, evilrobot_rect)
             screen.blit(icerobot_img, icerobot_rect)
             screen.blit(lavarobot_img, lavarobot_rect)
 
@@ -7449,13 +7474,28 @@ while running:
                     if not is_mute:
                         click_sound.play()
                     set_page("main_menu")
+                # WORK IN PROGRESS, QUITE BUGGY RIGHT NOW!
                 elif evilrobot_rect.collidepoint(mouse_pos):
-                    selected_character = "evilrobot"
-                    progress["selected_character"] = selected_character
-                    save_progress(progress)
-                    if not is_mute:
-                        click_sound.play()
-                    set_page("main_menu")
+                    if evilrobo_unlock:
+                        selected_character = "evilrobot"
+                        progress["selected_character"] = selected_character
+                        save_progress(progress)
+                        if not is_mute:
+                            click_sound.play()
+                        set_page("main_menu")
+                    else:
+                        locked_text = messages.get("locked_message", "This character is locked.")
+                        rendered_locked_text = font.render(locked_text, True, (255, 255, 0))
+                        if not is_mute and not locked_sound_played:
+                            death_sound.play()
+                            locked_sound_played = True
+                            # Initialize the time
+                        wait_time = pygame.time.get_ticks()
+                        if wait_time is not None:
+                            if pygame.time.get_ticks() - wait_time < 5000:
+                                screen.blit(rendered_locked_text, ((SCREEN_WIDTH // 2 - rendered_locked_text.get_width() // 2), SCREEN_HEIGHT - 700))
+                            else:
+                                wait_time = None
                 elif icerobot_rect.collidepoint(mouse_pos):
                     selected_character = "icerobot"
                     progress["selected_character"] = selected_character
@@ -7470,6 +7510,9 @@ while running:
                     if not is_mute:
                         click_sound.play()
                     set_page("main_menu")
+                
+            if not pygame.mouse.get_pressed()[0]:
+                locked_sound_played = False
 
             keys = pygame.key.get_pressed() 
             if keys[pygame.K_ESCAPE]:
