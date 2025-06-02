@@ -129,9 +129,11 @@ MIN_WIDTH, MIN_HEIGHT = 1000, 750
 # Load logo image
 logo = pygame.image.load("logo.png").convert_alpha()
 
-# Load and scale background
-background_img = pygame.image.load("Background.png").convert()
+# Load and scale backgrounds
+background_img = pygame.image.load("bgs/Background.png").convert()
 background = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+ice_background_img = pygame.image.load("bgs/IceBackground.png").convert()
+ice_background = pygame.transform.scale(ice_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Load the Chinese font (ensure the font file path is correct)
 font_path_ch = 'NotoSansSC-SemiBold.ttf'
@@ -154,8 +156,8 @@ logo_text = font.render("Logo and Background made with: canva.com", True, (255, 
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.2.9", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 144)
+ver_text = font.render("Version 1.2.10", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -5675,16 +5677,15 @@ def create_lvl11_screen():
         pygame.Rect(-600, 525, 2850, 50),
         pygame.Rect(1065, 200, 70, 375),
         pygame.Rect(1625, -200, 100, 590),
-        pygame.Rect(2250, -250, 150, 825),
         pygame.Rect(1625, 50, 150, 50),
         pygame.Rect(2200, 400, 100, 50),
-        pygame.Rect(2250, -300, 600, 100),
+        pygame.Rect(2250, -300, 600, 1000),
         pygame.Rect(2300, 200, 3000, 100),
         pygame.Rect(3100, -300, 2600, 100),
         pygame.Rect(3050, -500, 120, 300),
         pygame.Rect(5180, 250, 120, 300),
-        pygame.Rect(5250, 450, 1000, 100),
-        pygame.Rect(5600, -300, 120, 600),
+        pygame.Rect(5250, 450, 1500, 100),
+        pygame.Rect(5600, -1400, 520, 1700),
     ]
 
     jump_blocks = [
@@ -5705,10 +5706,7 @@ def create_lvl11_screen():
     ]
 
     rushing_saws = [
-        {'r': 50, 'speed': 21, 'cx': 2300, 'cy': -150 ,'max': 5650},
-        {'r': 50, 'speed': 21, 'cx': 2300, 'cy': -50 ,'max': 5650},
-        {'r': 50, 'speed': 21, 'cx': 2300, 'cy': 50 ,'max': 5650},
-        {'r': 50, 'speed': 21, 'cx': 2300, 'cy': 150 ,'max': 5650},
+        {'r': 200, 'speed': 21, 'cx': 3000, 'cy': 0, 'max': 5920},
     ]
 
     moving_block = [
@@ -5718,7 +5716,7 @@ def create_lvl11_screen():
 
     saws = [
         (1100, 200, 200, (255, 0, 0)),
-        (6000, 450, 80, (255, 0, 0)),
+        (6300, 450, 80, (255, 0, 0)),
     ]
 
     spikes = [
@@ -5737,7 +5735,7 @@ def create_lvl11_screen():
         pygame.Rect(5300, 200, 300, 100),
     ]
 
-    exit_portal = pygame.Rect(6200, 350, 50, 100)
+    exit_portal = pygame.Rect(6620, 350, 50, 100)
     clock = pygame.time.Clock()
 
     speedsters = [
@@ -5910,7 +5908,7 @@ def create_lvl11_screen():
                             player_x = block.x + block.width
 
 
-        if player_y > SCREEN_HEIGHT:
+        if player_y > (SCREEN_HEIGHT + 100):
             fall_text = in_game.get("fall_message", "Fell too far!")
             screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
             lights_off = True
@@ -6085,7 +6083,7 @@ def create_lvl11_screen():
         for saw in rushing_saws:
             saw['cx'] += saw['speed']
             if saw['cx'] > saw['max']:
-                saw['cx'] = 2275 
+                saw['cx'] = 2700
             # Find the closest point on the player's rectangle to the saw's center
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
             closest_y = max(player_rect.top, min(saw['cy'], player_rect.bottom))
@@ -6379,7 +6377,7 @@ def create_lvl12_screen():
     # Camera settings
     camera_x = 300
     camera_y = -500
-    spawn_x, spawn_y =  -400, 300
+    spawn_x, spawn_y =  2400, 400
     player_x, player_y = spawn_x, spawn_y
     running = True
     gravity = 1
@@ -6409,7 +6407,7 @@ def create_lvl12_screen():
     deathcount = 0
     was_moving = False
     lights_off = True
-
+    
     # Robo Temperature and Ice
     start_temp = 24.0
     on_ground_heatup = 0.08
@@ -6439,6 +6437,10 @@ def create_lvl12_screen():
         },
     ]
 
+    maintext_blocks = [
+        pygame.Rect(0, 0, 200, 150),
+    ]
+
     blocks = [
         pygame.Rect(-600, 525, 2850, 50),
         pygame.Rect(1065, 200, 70, 375),
@@ -6458,7 +6460,7 @@ def create_lvl12_screen():
 
     ice_blocks = [
         IceBlock(pygame.Rect(2300, 550, 1000, 150))
-        ]
+    ]
 
     moving_saws = [ 
         {'r': 70, 'speed': 6, 'cx': 3500, 'cy': -350, 'max': 500, 'min': -500},
@@ -6490,13 +6492,10 @@ def create_lvl12_screen():
     ]
 
     spikes = [
-    [(0, 525), (100, 475), (200, 525)],
-    [(210, 525), (310, 475), (410, 525)],
-    [(420, 525), (520, 475), (620, 525)],
-    [(1625, -50), (1575, 0), (1625, 50)],
-    [(1625, 60), (1575, 110), (1625, 160)],
-    [(1625, 170), (1575, 220), (1625, 270)],
-    [(1625, 280), (1575, 330), (1625, 380)],
+    [(2600, 550), (2645, 500), (2690, 550)],
+    [(2700, 550), (2745, 500), (2790, 550)],
+    [(3200, 550), (3245, 500), (3290, 550)],
+    [(3300, 550), (3345, 500), (3390, 550)],
     ]
 
     light_off_button = pygame.Rect(2350, -425, 50, 50)
@@ -6744,20 +6743,6 @@ def create_lvl12_screen():
                         elif player_x + img_width > block.x + block.width:
                             player_x = block.x + block.width
 
-
-        if player_y > SCREEN_HEIGHT:
-            fall_text = in_game.get("fall_message", "Fell too far!")
-            screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 80))
-            lights_off = True
-            stamina = False
-            if not is_mute:    
-                fall_sound.play()
-            pygame.display.update()
-            pygame.time.delay(300)
-            player_x, player_y = spawn_x, spawn_y  # Reset player position
-            velocity_y = 0
-            deathcount += 1
-
         # Moving blocks
         for block in moving_block:
             block['x'] += block['speed'] * block['direction']
@@ -6816,7 +6801,7 @@ def create_lvl12_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         # Drawing
-        screen.fill((0, 102, 51))
+        screen.blit(ice_background, (0, 0))
 
         # Draw flag
         if checkpoint_reached:
@@ -6830,67 +6815,168 @@ def create_lvl12_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         for saw in moving_saws:
-    # Update the circle's position (move vertically)
-            saw['cy'] += saw['speed']  # Move down or up depending on speed
-
-    # Check if the saw has reached the limits
-            if saw['cy'] > saw['max'] or saw['cy'] < saw['min']:
-                saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
-
-    # Draw the moving circle (saw)
+                # Draw the moving circle (saw)
             pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
-
-    # Collision detection (if needed)
-            closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
-            closest_y = max(player_rect.top, min(saw['cy'], player_rect.bottom))
-            dx = closest_x - saw['cx']
-            dy = closest_y - saw['cy']
-            distance = (dx**2 + dy**2)**0.5
-            if distance < saw['r']:
-        # Trigger death logic
-                lights_off = True
-                stamina = False
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 80))
-                if not is_mute:
-                    death_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
-                deathcount += 1
 
         for saw in moving_saws_x:
-    # Update the circle's position (move vertically)
-            saw['cx'] += saw['speed']
-    # Check if the saw has reached the limits
-            if saw['cx'] > saw['max'] or saw['cx'] < saw['min']:
-                saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
-
     # Draw the moving circle (saw)
             pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
-
-    # Collision detection (if needed)
-            closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
-            closest_y = max(player_rect.top, min(saw['cy'], player_rect.bottom))
-            dx = closest_x - saw['cx']
-            dy = closest_y - saw['cy']
-            distance = (dx**2 + dy**2)**0.5
-            if distance < saw['r']:
-        # Trigger death logic
-                lights_off = True
-                stamina = False
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 80))
-                if not is_mute:
-                    death_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
-                deathcount += 1
 
         for x, y, r, color in saws:
             # Draw the saw as a circle
             pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+        for saw in rushing_saws:
+            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+
+        for block in blocks:
+            pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
+        for jump_block in jump_blocks:
+            pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))        
+
+        for block in moving_block:
+            pygame.draw.rect(screen, (128, 0, 128), (block['x'] - camera_x, block['y'] - camera_y, block['width'], block['height']))
+        
+        for block in moving_block:
+            pygame.draw.rect(screen, (128, 0, 128), ((block['x'] - camera_x), (block['y'] - camera_y), block['width'], block['height']))
+                
+        for block in blocks:
+            pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
+        for ice in ice_blocks:
+            block = ice.rect
+            pygame.draw.rect(screen, (0, 205, 255), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+        
+        for spike in spikes:
+            pygame.draw.polygon(screen, (255, 0, 0), [((x - camera_x),( y - camera_y)) for x, y in spike])
+
+        for x, y, r, color in speedsters:
+            # Draw the button as a circle
+            if not stamina:
+                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+        for speedster in speedsters:
+            speedster_x, speedster_y, speedster_radius, _ = speedster
+
+        # Find the closest point on the player's rectangle to the button's center
+            closest_x = max(player_rect.left, min(speedster_x, player_rect.right))
+            closest_y = max(player_rect.top, min(speedster_y, player_rect.bottom))
+
+            # Calculate the distance between the closest point and the button's center
+            dx = closest_x - speedster_x
+            dy = closest_y - speedster_y
+            distance = (dx**2 + dy**2)**0.5
+
+            # If distance is less than radius, stronger gravity activated
+            if distance < speedster_radius and not stamina:
+                if not is_mute:
+                    button_sound.play()
+                strong_grav = False
+                stamina = True
+                weak_grav = False
+
+        pygame.draw.rect(screen, (0, 205, 0), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+
+        button4_text = in_game.get("button4_message", "Green buttons, upon activation, will give you a massive speed boost!")
+        rendered_button4_text = font.render(button4_text, True, (51, 255, 51))
+        screen.blit(rendered_button4_text, (-320 - camera_x, 300 - camera_y))
+
+        if player_rect.colliderect(light_off_button):
+            if not is_mute and lights_off:
+                button_sound.play()
+            lights_off = False
+
+        if not lights_off:
+            # Create a full dark surface
+            pygame.draw.rect(screen, (0, 0, 0), (0, 0, SCREEN_WIDTH // 2 -  320 , SCREEN_HEIGHT ))
+            pygame.draw.rect(screen, (0, 0, 0), (SCREEN_WIDTH // 2 + 320, 0, SCREEN_WIDTH // 2 + 320, SCREEN_HEIGHT))
+            pygame.draw.rect(screen, (0, 0, 0), (0, 0, SCREEN_WIDTH, SCREEN_HEIGHT // 2 - 320))
+            pygame.draw.rect(screen, (0, 0, 0), (0, SCREEN_HEIGHT // 2 + 320, SCREEN_WIDTH, SCREEN_HEIGHT // 2 + 320))
+        
+        if lights_off:
+            pygame.draw.rect(screen, (104, 102, 204), (light_off_button.x - camera_x, light_off_button.y - camera_y, light_off_button.width, light_off_button.height))
+            for light_block in light_blocks:
+                pygame.draw.rect(screen, (104, 102, 204), (light_block.x - camera_x, light_block.y - camera_y, light_block.width, light_block.height))
+
+        if lights_off:
+            for block in light_blocks:
+                if player_rect.colliderect(block):
+                    # Falling onto a block
+                    if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
+                        player_y = block.y - img_height
+                        velocity_y = 0
+                        on_ground = True
+
+                    # Hitting the bottom of a block
+                    elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
+                        player_y = block.y + block.height
+                        velocity_y = 0
+
+                    # Horizontal collision (left or right side of the block)
+                    elif player_x + img_width > block.x and player_x < block.x + block.width:
+                        if player_x < block.x:  # Colliding with the left side of the block
+                            player_x = block.x - img_width
+                        elif player_x + img_width > block.x + block.width:  # Colliding with the right side
+                            player_x = block.x + block.width
+
+        pygame.draw.rect(screen, (96, 96, 96), (0, 0, 300 , 130 ))
+        pygame.draw.rect(screen, (96, 96, 96), (SCREEN_WIDTH // 2 - 63, 0, 120 , 70))
+        pygame.draw.rect(screen, (96, 96, 96), (SCREEN_WIDTH - 250, 0, 250 , 80 ))
+
+        levels = load_language(lang_code).get('levels', {})
+        lvl_text = levels.get("lvl12", "Level 12")  # Render the level text
+        screen.blit(font.render(lvl_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+
+        deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
+        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+
+        temp_val = in_game.get("temp", "Temperature: {current_temp}").format(current_temp=current_temp)
+        if current_temp >= 4 and current_temp <= 13:
+            screen.blit(font.render(temp_val, True, (0, 188, 255)), (20, 50))
+        elif current_temp >= 13 and current_temp <= 20:
+            screen.blit(font.render(temp_val, True, (0, 255, 239)), (20, 50))
+        elif current_temp >= 20 and current_temp <= 27:
+            screen.blit(font.render(temp_val, True, (0, 255, 43)), (20, 50))
+        elif current_temp >= 27 and current_temp <= 35:
+            screen.blit(font.render(temp_val, True, (205, 255, 0)), (20, 50))
+        elif current_temp >= 35 and current_temp <= 43: 
+            screen.blit(font.render(temp_val, True, (230, 255, 0)), (20, 50))
+        elif current_temp >= 43 and current_temp <= 50: 
+            screen.blit(font.render(temp_val, True, (255, 162, 0)), (20, 50))
+        elif current_temp >= 50:
+            screen.blit(font.render(temp_val, True, (255, 0, 0)), (20, 50))
+
+        # Initialize and draw the reset and quit text
+        reset_text = in_game.get("reset_message", "Press R to reset")
+        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
+
+        quit_text = in_game.get("quit_message", "Press Q to quit")
+        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
+
+        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+
+        # DEATH LOGICS
+        for block in moving_block:
+            if block['width'] < 100:
+                laser_rect = pygame.Rect(block['x'], block['y'] + block['height'] +10, block['width'], 5)  # 5 px tall death zone
+            else:
+                laser_rect = pygame.Rect(block['x'] + 4, block['y'] + block['height'] + 5, block['width'] - 8 , 5)  # 5 px tall death zone
+            if player_rect.colliderect(laser_rect) and not on_ground and player_x != block['x']:  # Only if jumping upward
+                player_x, player_y = spawn_x, spawn_y  # Reset player position
+                fall_text = in_game.get("hit_message", "Hit on the head!")
+                screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 80))
+                stamina = False
+                lights_off = True
+                if not is_mute:    
+                    hit_sound.play()
+                pygame.display.update()
+                pygame.time.delay(300)
+                velocity_y = 0
+                deathcount += 1
 
         for saw in saws:
             saw_x, saw_y, saw_radius, _ = saw
@@ -6931,8 +7017,6 @@ def create_lvl12_screen():
             dy = closest_y - saw['cy']
             distance = (dx**2 + dy**2)**0.5
 
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
-
             if distance < saw['r']:
                 lights_off = True
                 stamina = False
@@ -6946,36 +7030,61 @@ def create_lvl12_screen():
                 pygame.display.update()
                 pygame.time.delay(300) 
 
-        for jump_block in jump_blocks:
-            pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))        
+        for saw in moving_saws_x:
+    # Update the circle's position (move vertically)
+            saw['cx'] += saw['speed']
+    # Check if the saw has reached the limits
+            if saw['cx'] > saw['max'] or saw['cx'] < saw['min']:
+                saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
-        for block in moving_block:
-            pygame.draw.rect(screen, (128, 0, 128), (block['x'] - camera_x, block['y'] - camera_y, block['width'], block['height']))
-        
-        for block in moving_block:
-            pygame.draw.rect(screen, (128, 0, 128), ((block['x'] - camera_x), (block['y'] - camera_y), block['width'], block['height']))
-            if block['width'] < 100:
-                laser_rect = pygame.Rect(block['x'], block['y'] + block['height'] +10, block['width'], 5)  # 5 px tall death zone
-            else:
-                laser_rect = pygame.Rect(block['x'] + 4, block['y'] + block['height'] + 5, block['width'] - 8 , 5)  # 5 px tall death zone
-            if player_rect.colliderect(laser_rect) and not on_ground and player_x != block['x']:  # Only if jumping upward
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
-                fall_text = in_game.get("hit_message", "Hit on the head!")
-                screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 80))
-                stamina = False
+    # Collision detection (if needed)
+            closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
+            closest_y = max(player_rect.top, min(saw['cy'], player_rect.bottom))
+            dx = closest_x - saw['cx']
+            dy = closest_y - saw['cy']
+            distance = (dx**2 + dy**2)**0.5
+            if distance < saw['r']:
+        # Trigger death logic
                 lights_off = True
-                if not is_mute:    
-                    hit_sound.play()
+                stamina = False
+                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
+                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 80))
+                if not is_mute:
+                    death_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300)
-                velocity_y = 0
+                player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
-                
-        for block in blocks:
-            pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
+
+    # Update the circle's position (move vertically)
+            saw['cy'] += saw['speed']  # Move down or up depending on speed
+
+    # Check if the saw has reached the limits
+            if saw['cy'] > saw['max'] or saw['cy'] < saw['min']:
+                saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
+
+        for saw in moving_saws:
+    # Collision detection (if needed)
+            closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
+            closest_y = max(player_rect.top, min(saw['cy'], player_rect.bottom))
+            dx = closest_x - saw['cx']
+            dy = closest_y - saw['cy']
+            distance = (dx**2 + dy**2)**0.5
+            if distance < saw['r']:
+        # Trigger death logic
+                lights_off = True
+                stamina = False
+                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
+                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 80))
+                if not is_mute:
+                    death_sound.play()
+                pygame.display.update()
+                pygame.time.delay(300)
+                player_x, player_y = spawn_x, spawn_y  # Reset player position
+                deathcount += 1
 
         for block in blocks:
-            pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
             if block.width <= 100:
                 laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
             else:
@@ -6992,13 +7101,6 @@ def create_lvl12_screen():
                 pygame.time.delay(300)
                 velocity_y = 0
                 deathcount += 1
-
-        for ice in ice_blocks:
-            block = ice.rect
-            pygame.draw.rect(screen, (0, 205, 255), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-        
-        for spike in spikes:
-            pygame.draw.polygon(screen, (255, 0, 0), [((x - camera_x),( y - camera_y)) for x, y in spike])
 
         # Spike death
         bottom_points = [
@@ -7053,115 +7155,21 @@ def create_lvl12_screen():
                     collision_detected = True  # Set the flag to stop further checks
                     break
 
-        for x, y, r, color in speedsters:
-            # Draw the button as a circle
-            if not stamina:
-                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+        if player_y > (SCREEN_HEIGHT + 100):
+            fall_text = in_game.get("fall_message", "Fell too far!")
+            screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 80))
+            lights_off = True
+            stamina = False
+            if not is_mute:    
+                fall_sound.play()
+            pygame.display.update()
+            pygame.time.delay(300)
+            player_x, player_y = spawn_x, spawn_y  # Reset player position
+            velocity_y = 0
+            deathcount += 1
 
-        for speedster in speedsters:
-            speedster_x, speedster_y, speedster_radius, _ = speedster
-
-        # Find the closest point on the player's rectangle to the button's center
-            closest_x = max(player_rect.left, min(speedster_x, player_rect.right))
-            closest_y = max(player_rect.top, min(speedster_y, player_rect.bottom))
-
-            # Calculate the distance between the closest point and the button's center
-            dx = closest_x - speedster_x
-            dy = closest_y - speedster_y
-            distance = (dx**2 + dy**2)**0.5
-
-            # If distance is less than radius, stronger gravity activated
-            if distance < speedster_radius and not stamina:
-                if not is_mute:
-                    button_sound.play()
-                strong_grav = False
-                stamina = True
-                weak_grav = False
-
-        pygame.draw.rect(screen, (0, 205, 0), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
         # Player Image
         screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
-
-
-        button4_text = in_game.get("button4_message", "Green buttons, upon activation, will give you a massive speed boost!")
-        rendered_button4_text = font.render(button4_text, True, (51, 255, 51))
-        screen.blit(rendered_button4_text, (-320 - camera_x, 300 - camera_y))
-
-        if player_rect.colliderect(light_off_button):
-            if not is_mute and lights_off:
-                button_sound.play()
-            lights_off = False
-
-        if not lights_off:
-            # Create a full dark surface
-            pygame.draw.rect(screen, (0, 0, 0), (0, 0, SCREEN_WIDTH // 2 -  320 , SCREEN_HEIGHT ))
-            pygame.draw.rect(screen, (0, 0, 0), (SCREEN_WIDTH // 2 + 320, 0, SCREEN_WIDTH // 2 + 320, SCREEN_HEIGHT))
-            pygame.draw.rect(screen, (0, 0, 0), (0, 0, SCREEN_WIDTH, SCREEN_HEIGHT // 2 - 320))
-            pygame.draw.rect(screen, (0, 0, 0), (0, SCREEN_HEIGHT // 2 + 320, SCREEN_WIDTH, SCREEN_HEIGHT // 2 + 320))
-        
-        if lights_off:
-            pygame.draw.rect(screen, (104, 102, 204), (light_off_button.x - camera_x, light_off_button.y - camera_y, light_off_button.width, light_off_button.height))
-            for light_block in light_blocks:
-                pygame.draw.rect(screen, (104, 102, 204), (light_block.x - camera_x, light_block.y - camera_y, light_block.width, light_block.height))
-
-        if lights_off:
-            for block in light_blocks:
-                if player_rect.colliderect(block):
-                    # Falling onto a block
-                    if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
-                        player_y = block.y - img_height
-                        velocity_y = 0
-                        on_ground = True
-
-                    # Hitting the bottom of a block
-                    elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
-                        player_y = block.y + block.height
-                        velocity_y = 0
-
-                    # Horizontal collision (left or right side of the block)
-                    elif player_x + img_width > block.x and player_x < block.x + block.width:
-                        if player_x < block.x:  # Colliding with the left side of the block
-                            player_x = block.x - img_width
-                        elif player_x + img_width > block.x + block.width:  # Colliding with the right side
-                            player_x = block.x + block.width
-
-
-        screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
-
-        levels = load_language(lang_code).get('levels', {})
-        lvl_text = levels.get("lvl12", "Level 12")  # Render the level text
-        screen.blit(font.render(lvl_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
-
-        deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
-
-        temp_val = in_game.get("temp", "Temperature: {current_temp}").format(current_temp=current_temp)
-        if current_temp >= 4 and current_temp <= 13:
-            screen.blit(font.render(temp_val, True, (0, 188, 255)), (20, 50))
-        elif current_temp >= 13 and current_temp <= 20:
-            screen.blit(font.render(temp_val, True, (0, 255, 239)), (20, 50))
-        elif current_temp >= 20 and current_temp <= 27:
-            screen.blit(font.render(temp_val, True, (0, 255, 43)), (20, 50))
-        elif current_temp >= 27 and current_temp <= 35:
-            screen.blit(font.render(temp_val, True, (205, 255, 0)), (20, 50))
-        elif current_temp >= 35 and current_temp <= 43: 
-            screen.blit(font.render(temp_val, True, (230, 255, 0)), (20, 50))
-        elif current_temp >= 43 and current_temp <= 50: 
-            screen.blit(font.render(temp_val, True, (255, 162, 0)), (20, 50))
-        elif current_temp >= 50:
-            screen.blit(font.render(temp_val, True, (255, 0, 0)), (20, 50))
-
-        # Initialize and draw the reset and quit text
-        reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
-        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
-
-        quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
-        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
-
-        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
         pygame.display.update() 
 
