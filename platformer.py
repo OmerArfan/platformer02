@@ -154,7 +154,7 @@ logo_text = font.render("Logo and Background made with: canva.com", True, (255, 
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.2.8", True, (255, 255, 255))
+ver_text = font.render("Version 1.2.9", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 167, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -355,7 +355,6 @@ selected_character = progress.get("selected_character", default_progress["select
 robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2 - 50))
 #Evil Robot
 evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
-locked_evilrobot_rect = locked_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
 #Ice and lava robot
 icerobot_rect = icerobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 50, SCREEN_HEIGHT // 2 - 50))
 lavarobot_rect = lavarobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 200, SCREEN_HEIGHT // 2 - 50))
@@ -365,9 +364,6 @@ def open_achievements():
     
     # Clear screen
     buttons.clear()
-
-    # Draw images
-    current_page == "character_select"
 
     for event in pygame.event.get():#
         
@@ -6399,6 +6395,12 @@ def create_lvl12_screen():
     move_speed = 8
     stamina = False
     stamina_speed = 19
+    velocity_x = move_speed
+    ice_dece = 0.2 # Velocity X deceleration when on ice
+
+    # Which key was the last one pressed?
+    leftkey_prev = False
+    rightkey_prev = False
 
     # Other settings
     on_ground = False
@@ -6409,14 +6411,14 @@ def create_lvl12_screen():
     lights_off = True
 
     # Robo Temperature and Ice
-    start_temp = 30.0
+    start_temp = 24.0
     on_ground_heatup = 0.08
     air_heatup = 0.02
     ice_cooldown = 0.11
     max_temp = 55.0
     min_temp = 5.0
     current_temp = start_temp
-    ice_melt = 1
+    ice_melt = 0.3
     on_ice = False
 
     # Load player image
@@ -6424,7 +6426,7 @@ def create_lvl12_screen():
     img_width, img_height = player_img.get_size()
 
     # Draw flag
-    flag = pygame.Rect(1400, 420, 80, 50)  # x, y, width, height
+    flag = pygame.Rect(1400, -1000, 80, 50)  # x, y, width, height
     checkpoint_reached = False
     flag2 = pygame.Rect(5400, 300, 80, 50)  # x, y, width, height
     checkpoint_reached2 = False
@@ -6448,9 +6450,15 @@ def create_lvl12_screen():
         pygame.Rect(14000, 600, 100, 100),
     ]
 
+    class IceBlock:
+        def __init__(self, rect):
+            self.rect = rect
+            self.initial_height = float(rect.height)
+            self.float_height = self.initial_height
+
     ice_blocks = [
-        pygame.Rect(2300, 550, 500, 100)
-    ]
+        IceBlock(pygame.Rect(2300, 550, 1000, 150))
+        ]
 
     moving_saws = [ 
         {'r': 70, 'speed': 6, 'cx': 3500, 'cy': -350, 'max': 500, 'min': -500},
@@ -6549,11 +6557,17 @@ def create_lvl12_screen():
             player_x, player_y = spawn_x, spawn_y
             overheat_sound.play()
             current_temp = start_temp
+            for ice in ice_blocks:
+                ice.float_height = ice.initial_height
+                ice.rect.height = int(ice.float_height)
         elif current_temp < min_temp:
             player_x, player_y = spawn_x, spawn_y
             freeze_sound.play()
             current_temp = start_temp            
-        
+            for ice in ice_blocks:
+                ice.float_height = ice.initial_height
+                ice.rect.height = int(ice.float_height)
+
         # Rounded off value
         current_temp = round(current_temp, 2)
         
@@ -6575,20 +6589,36 @@ def create_lvl12_screen():
         if moving:
             if keys[pygame.K_LEFT] or keys[pygame.K_a]:
                 if stamina:
-                    player_x -= stamina_speed
+                    velocity_x = stamina_speed
+                    player_x -= velocity_x
                 else:
-                    player_x -= move_speed
+                    velocity_x = move_speed
+                    player_x -= velocity_x
+                leftkey_prev = True
+                rightkey_prev = False
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 if stamina:
-                    player_x += stamina_speed
+                    velocity_x = stamina_speed
+                    player_x += velocity_x
                 else:
-                    player_x += move_speed
+                    velocity_x = move_speed
+                    player_x += velocity_x
+                leftkey_prev = False
+                rightkey_prev = True
 
             if on_ground and not was_moving and not is_mute:
                 move_sound.play()
             was_moving = True
         else:
             was_moving = False
+
+        if on_ice and velocity_x > 0:
+            if leftkey_prev:
+                velocity_x = velocity_x - ice_dece
+                player_x -= velocity_x
+            elif rightkey_prev:
+                velocity_x = velocity_x - ice_dece
+                player_x += velocity_x
 
         # Gravity and stamina
         if not on_ground:
@@ -6620,15 +6650,16 @@ def create_lvl12_screen():
                     elif player_x + img_width > block.x + block.width:  # Colliding with the right side
                         player_x = block.x + block.width
 
-        for block in ice_blocks:
+        for ice in ice_blocks:
+            block = ice.rect
             if player_rect.colliderect(block):
-                # Falling onto a block
                 if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
                     player_y = block.y - img_height
                     velocity_y = 0
                     on_ground = True
                     on_ice = True
-                    block.height -= ice_melt
+                    ice.float_height -= ice_melt
+                    block.height = int(ice.float_height)
 
                 # Hitting the bottom of a block
                 elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
@@ -6716,7 +6747,7 @@ def create_lvl12_screen():
 
         if player_y > SCREEN_HEIGHT:
             fall_text = in_game.get("fall_message", "Fell too far!")
-            screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
+            screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 80))
             lights_off = True
             stamina = False
             if not is_mute:    
@@ -6820,7 +6851,7 @@ def create_lvl12_screen():
                 lights_off = True
                 stamina = False
                 sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 80))
                 if not is_mute:
                     death_sound.play()
                 pygame.display.update()
@@ -6849,7 +6880,7 @@ def create_lvl12_screen():
                 lights_off = True
                 stamina = False
                 sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 80))
                 if not is_mute:
                     death_sound.play()
                 pygame.display.update()
@@ -6879,7 +6910,7 @@ def create_lvl12_screen():
                 stamina = False
                     # Trigger death logic
                 sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 80))
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
                 if not is_mute:
@@ -6907,7 +6938,7 @@ def create_lvl12_screen():
                 stamina = False
                     # Trigger death logic
                 sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 80))
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
                 if not is_mute:
@@ -6930,7 +6961,7 @@ def create_lvl12_screen():
             if player_rect.colliderect(laser_rect) and not on_ground and player_x != block['x']:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 fall_text = in_game.get("hit_message", "Hit on the head!")
-                screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
+                screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 80))
                 stamina = False
                 lights_off = True
                 if not is_mute:    
@@ -6952,7 +6983,7 @@ def create_lvl12_screen():
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 fall_text = in_game.get("hit_message", "Hit on the head!")
-                screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
+                screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 80))
                 stamina = False
                 lights_off = True
                 if not is_mute:    
@@ -6962,9 +6993,10 @@ def create_lvl12_screen():
                 velocity_y = 0
                 deathcount += 1
 
-        for block in ice_blocks:
+        for ice in ice_blocks:
+            block = ice.rect
             pygame.draw.rect(screen, (0, 205, 255), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-
+        
         for spike in spikes:
             pygame.draw.polygon(screen, (255, 0, 0), [((x - camera_x),( y - camera_y)) for x, y in spike])
 
@@ -6984,7 +7016,7 @@ def create_lvl12_screen():
                     stamina = False
                     player_x, player_y = spawn_x, spawn_y  # Reset player position
                     death_text = in_game.get("dead_message", "You Died")
-                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 80))
                     if not is_mute:
                         death_sound.play()
                     pygame.display.update()
@@ -7011,7 +7043,7 @@ def create_lvl12_screen():
             # Trigger death logic
                     player_x, player_y = spawn_x, spawn_y  # Reset player position
                     death_text = in_game.get("dead_message", "You Died")
-                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 80))
                     if not is_mute:
                         death_sound.play()
                     pygame.display.update()
@@ -7097,14 +7129,27 @@ def create_lvl12_screen():
         screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
 
         levels = load_language(lang_code).get('levels', {})
-        lvl11_text = levels.get("lvl11", "Level 11")  # Render the level text
-        screen.blit(font.render(lvl11_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+        lvl_text = levels.get("lvl12", "Level 12")  # Render the level text
+        screen.blit(font.render(lvl_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
 
         temp_val = in_game.get("temp", "Temperature: {current_temp}").format(current_temp=current_temp)
-        screen.blit(font.render(temp_val, True, (255, 255, 255)), (20, 120))
+        if current_temp >= 4 and current_temp <= 13:
+            screen.blit(font.render(temp_val, True, (0, 188, 255)), (20, 50))
+        elif current_temp >= 13 and current_temp <= 20:
+            screen.blit(font.render(temp_val, True, (0, 255, 239)), (20, 50))
+        elif current_temp >= 20 and current_temp <= 27:
+            screen.blit(font.render(temp_val, True, (0, 255, 43)), (20, 50))
+        elif current_temp >= 27 and current_temp <= 35:
+            screen.blit(font.render(temp_val, True, (205, 255, 0)), (20, 50))
+        elif current_temp >= 35 and current_temp <= 43: 
+            screen.blit(font.render(temp_val, True, (230, 255, 0)), (20, 50))
+        elif current_temp >= 43 and current_temp <= 50: 
+            screen.blit(font.render(temp_val, True, (255, 162, 0)), (20, 50))
+        elif current_temp >= 50:
+            screen.blit(font.render(temp_val, True, (255, 0, 0)), (20, 50))
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
