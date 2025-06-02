@@ -55,5 +55,6 @@
   ,"clarify_message2": "Ils affectent également vos sauts sur les blocs de saut!"
   ,"button3_message": "Les boutons violets éteignent presque toutes les lumières lorsqu'ils sont activés!"
   ,"button4_message": "Les boutons verts, une fois activés, vous donneront un énorme coup de pouce de vitesse!"
+  ,"temp": "Température: {current_temp}"
 }
 }

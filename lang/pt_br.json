@@ -55,5 +55,6 @@
         ,"clarify_message2": "Eles também afetam seus saltos em blocos de salto!"
         ,"button3_message": "Botões roxos desligam quase todas as luzes ao serem ativados!"
         ,"button4_message": "Botões verdes, ao serem ativados, darão um grande impulso de velocidade!"
+        ,"temp": "Temperatura: {current_temp}"
     }
 }
