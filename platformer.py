@@ -48,6 +48,7 @@ default_progress = {
     "evilrobo_unlocked": False,
     "icerobo_unlocked": False,
     "lavarobo_unlocked": False,
+    "greenrobo_unlocked": True,
 }
 
 # Load progress from save file or return default
@@ -162,8 +163,8 @@ logo_text = font.render("Logo and Background made with: canva.com", True, (255, 
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.2.12", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
+ver_text = font.render("Version 1.2.13", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -344,6 +345,17 @@ def load_level(level_id):
     back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100))  # Center at the bottom
     buttons.append((rendered_back, back_rect, "back"))
 
+def check_green_gold():
+    all_gold = all(progress["medals"][f"lvl{i}"] == "Gold" for i in range(1, 12))
+    if all_gold:
+        unlock = progress.get("greenrobo_unlocked", False)
+        if not unlock:
+            if not is_mute:
+                notify_sound.play()
+            unlock = True
+            progress["greenrobo_unlocked"] = unlock
+            save_progress(progress)
+
 # Button actions
 def start_game():
     pygame.time.delay(200)  # Delay 200 ms to avoid click pass-through
@@ -354,19 +366,20 @@ robot_img = pygame.image.load("char/robot.png").convert_alpha()
 evilrobot_img = pygame.image.load("char/evilrobot.png").convert_alpha()
 icerobot_img = pygame.image.load("char/icerobot.png").convert_alpha()
 lavarobot_img = pygame.image.load("char/lavarobot.png").convert_alpha()
+greenrobot_img = pygame.image.load("char/greenrobot.png").convert_alpha()
 locked_img = pygame.image.load("char/lockedrobot.png").convert_alpha()
 
 #Initialize default character
 selected_character = progress.get("selected_character", default_progress["selected_character"])
 
 # Get rects and position them
-robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2 - 50))
+robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 350, SCREEN_HEIGHT // 2 - 50))
 #Evil Robot
-evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
+evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 50))
 #Ice and lava robot
-icerobot_rect = icerobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 50, SCREEN_HEIGHT // 2 - 50))
-lavarobot_rect = lavarobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 200, SCREEN_HEIGHT // 2 - 50))
-
+icerobot_rect = icerobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 - 50))
+lavarobot_rect = lavarobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 - 50))
+greenrobot_rect = greenrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 250, SCREEN_HEIGHT // 2 - 50))
 def open_achievements():
     global selected_character, set_page, current_page
     
@@ -389,7 +402,11 @@ def open_achievements():
             elif lavarobot_rect.collidepoint(mouse_pos):
                 selected_character = "lavarobot"
                 set_page("main_menu")   
+            elif greenrobot_rect.collidepoint(mouse_pos):
+                selected_character = "greenrobot"
+                set_page("main_menu")
     pygame.display.flip()
+
 
 def open_settings():
     global is_mute
@@ -684,9 +701,11 @@ def create_lvl1_screen():
             progress["medals"]["lvl1"] = get_medal(1, progress["times"]["lvl1"])
 
             update_locked_levels()
-            save_progress(progress)  # Save progress to JSON file
 
-            print(progress["medals"]["lvl1"])
+            # Check if all medals from lvl1 to lvl11 are "Gold"
+            check_green_gold()
+
+            save_progress(progress)  # Save progress to JSON file
             running = False
             set_page('lvl2_screen')
         
@@ -1021,9 +1040,10 @@ def create_lvl2_screen():
             progress["medals"]["lvl2"] = get_medal(2, progress["times"]["lvl2"])
 
             update_locked_levels()
-            save_progress(progress)  # Save progress to JSON file
+            # Check if all medals from lvl1 to lvl11 are "Gold"
+            check_green_gold()
 
-            print(progress["medals"]["lvl2"])
+            save_progress(progress)  # Save progress to JSON file
             running = False
             set_page('lvl3_screen')    
 
@@ -1405,11 +1425,11 @@ def create_lvl3_screen():
             
             progress["medals"]["lvl3"] = get_medal(3, progress["times"]["lvl3"])
 
-
             update_locked_levels()
-            save_progress(progress)  # Save progress to JSON file
+            # Check if all medals from lvl1 to lvl11 are "Gold"
+            check_green_gold()
 
-            print(progress["medals"]["lvl3"])
+            save_progress(progress)  # Save progress to JSON file
             running = False
             set_page('lvl4_screen')
 
@@ -1901,9 +1921,10 @@ def create_lvl4_screen():
             progress["medals"]["lvl4"] = get_medal(4, progress["times"]["lvl4"])
 
             update_locked_levels()
-            save_progress(progress)  # Save progress to JSON file
+            # Check if all medals from lvl1 to lvl11 are "Gold"
+            check_green_gold()
 
-            print(progress["medals"]["lvl2"])
+            save_progress(progress)  # Save progress to JSON file
             running = False
             set_page('lvl5_screen') 
 
@@ -2491,9 +2512,10 @@ def create_lvl5_screen():
             progress["medals"]["lvl5"] = get_medal(5, progress["times"]["lvl5"])
 
             update_locked_levels()
-            save_progress(progress)  # Save progress to JSON file
+            # Check if all medals from lvl1 to lvl11 are "Gold"
+            check_green_gold()
 
-            print(progress["medals"]["lvl5"])
+            save_progress(progress)  # Save progress to JSON file
             running = False
             set_page('lvl6_screen')
             
@@ -3086,9 +3108,10 @@ def create_lvl6_screen():
             progress["medals"]["lvl6"] = get_medal(6, progress["times"]["lvl6"])
 
             update_locked_levels()
-            save_progress(progress)  # Save progress to JSON file
+            # Check if all medals from lvl1 to lvl11 are "Gold"
+            check_green_gold()
 
-            print(progress["medals"]["lvl6"])
+            save_progress(progress)  # Save progress to JSON file
             running = False
             set_page('lvl7_screen')
 
@@ -3637,9 +3660,10 @@ def create_lvl7_screen():
             progress["medals"]["lvl7"] = get_medal(7, progress["times"]["lvl7"])
 
             update_locked_levels()
-            save_progress(progress)  # Save progress to JSON file
+            # Check if all medals from lvl1 to lvl11 are "Gold"
+            check_green_gold()
 
-            print(progress["medals"]["lvl7"])
+            save_progress(progress)  # Save progress to JSON file
             running = False
             set_page('lvl8_screen')
 
@@ -4168,9 +4192,10 @@ def create_lvl8_screen():
             progress["medals"]["lvl8"] = get_medal(8, progress["times"]["lvl8"])
 
             update_locked_levels()
-            save_progress(progress)  # Save progress to JSON file
+            # Check if all medals from lvl1 to lvl11 are "Gold"
+            check_green_gold()
 
-            print(progress["medals"]["lvl8"])
+            save_progress(progress)  # Save progress to JSON file
             running = False
             set_page('lvl9_screen')
 
@@ -4785,9 +4810,10 @@ def create_lvl9_screen():
             progress["medals"]["lvl9"] = get_medal(9, progress["times"]["lvl9"])
 
             update_locked_levels()
-            save_progress(progress)  # Save progress to JSON file
+            # Check if all medals from lvl1 to lvl11 are "Gold"
+            check_green_gold()
 
-            print(progress["medals"]["lvl9"])
+            save_progress(progress)  # Save progress to JSON file
             running = False
             set_page('lvl10_screen')
 
@@ -5370,9 +5396,10 @@ def create_lvl10_screen():
             progress["medals"]["lvl10"] = get_medal(10, progress["times"]["lvl10"])
 
             update_locked_levels()
-            save_progress(progress)  # Save progress to JSON file
+            # Check if all medals from lvl1 to lvl11 are "Gold"
+            check_green_gold()
 
-            print(progress["medals"]["lvl10"])
+            save_progress(progress)  # Save progress to JSON file
             running = False
             set_page('lvl11_screen')
 
@@ -6050,8 +6077,10 @@ def create_lvl11_screen():
             progress["medals"]["lvl11"] = get_medal(11, progress["times"]["lvl11"])
 
             update_locked_levels()
-            save_progress(progress)  # Save progress to JSON file
+            # Check if all medals from lvl1 to lvl11 are "Gold"
+            check_green_gold()
 
+            save_progress(progress)  # Save progress to JSON file
             running = False
             set_page('lvl12_screen')    
 
@@ -6473,7 +6502,7 @@ def create_lvl12_screen():
     # Camera settings
     camera_x = 300
     camera_y = -500
-    spawn_x, spawn_y =  2400, 400
+    spawn_x, spawn_y =  2100, 400
     player_x, player_y = spawn_x, spawn_y
     running = True
     gravity = 1
@@ -6529,25 +6558,21 @@ def create_lvl12_screen():
 
     key_block_pairs = [
         {
-            "key": (3700, 1550, 30, (255, 255, 0)),
-            "block": pygame.Rect(3200, 1000, 400, 200),
+            "key": (3650, -50, 30, (255, 255, 0)),
+            "block": pygame.Rect(4200, 350, 200, 200),
             "collected": False
         },
     ]
 
-    maintext_blocks = [
-        pygame.Rect(0, 0, 200, 150),
-    ]
-
     blocks = [
-        pygame.Rect(-600, 525, 2850, 50),
-        pygame.Rect(1065, 200, 70, 375),
-        pygame.Rect(1625, -200, 100, 590),
+        pygame.Rect(4200, 550, 1200, 100),
+        pygame.Rect(3100, 50, 125, 125),
+        pygame.Rect(3800, 50, 125, 125),
+        pygame.Rect(4200, -100, 200, 450)
     ]
 
     jump_blocks = [
-        pygame.Rect(630, 425, 100, 100),
-        pygame.Rect(14000, 600, 100, 100),
+        pygame.Rect(3700, 450, 100, 100),
     ]
 
     class IceBlock:
@@ -6557,14 +6582,12 @@ def create_lvl12_screen():
             self.float_height = self.initial_height
 
     ice_blocks = [
-        IceBlock(pygame.Rect(2300, 550, 1000, 150))
+        IceBlock(pygame.Rect(2000, 550, 2000, 150))
     ]
 
     moving_saws = [ 
-        {'r': 70, 'speed': 6, 'cx': 3500, 'cy': -350, 'max': 500, 'min': -500},
-        {'r': 70, 'speed': 6, 'cx': 4000, 'cy': -200, 'max': 500, 'min': -500},
-        {'r': 70, 'speed': 6, 'cx': 4500, 'cy': -50, 'max': 500, 'min': -500},
-        {'r': 70, 'speed': 6, 'cx': 5000, 'cy': 50, 'max': 500, 'min': -500},
+        {'r': 70, 'speed': 4, 'cx': 2870, 'cy': 350, 'max': 750, 'min': 200},
+        {'r': 70, 'speed': 6, 'cx': 3230, 'cy': 600, 'max': 850, 'min': 200},
     ]
 
     moving_saws_x = [
@@ -6573,10 +6596,7 @@ def create_lvl12_screen():
     ]
 
     rushing_saws = [
-        {'r': 50, 'speed': 21, 'cx': 2300, 'cy': -150 ,'max': 5650},
-        {'r': 50, 'speed': 21, 'cx': 2300, 'cy': -50 ,'max': 5650},
-        {'r': 50, 'speed': 21, 'cx': 2300, 'cy': 50 ,'max': 5650},
-        {'r': 50, 'speed': 21, 'cx': 2300, 'cy': 150 ,'max': 5650},
+        {'r': 50, 'speed': 12, 'cx': 3150, 'cy': 120 ,'max': 3850},
     ]
 
     moving_block = [
@@ -6585,15 +6605,17 @@ def create_lvl12_screen():
     ]
 
     saws = [
-        (1100, 200, 200, (255, 0, 0)),
-        (6000, 450, 80, (255, 0, 0)),
+        (4600, 550, 80, (255, 0, 0)),
+        (5000, 550, 80, (255, 0, 0)),
     ]
 
     spikes = [
     [(2600, 550), (2645, 500), (2690, 550)],
     [(2700, 550), (2745, 500), (2790, 550)],
-    [(3200, 550), (3245, 500), (3290, 550)],
     [(3300, 550), (3345, 500), (3390, 550)],
+    [(3400, 550), (3445, 500), (3490, 550)],
+    [(3100, 50), (3162, -100), (3225, 50)],
+    [(3800, 50), (3862, -100), (3925, 50)],
     ]
 
     light_off_button = pygame.Rect(2350, -425, 50, 50)
@@ -6631,7 +6653,8 @@ def create_lvl12_screen():
             stamina = False
             checkpoint_reached = False  # Reset checkpoint status
             checkpoint_reached2 = False  # Reset checkpoint status
-            spawn_x, spawn_y = -400, 300
+            current_temp = start_temp
+            spawn_x, spawn_y = 2100, 400
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount = 0
@@ -6642,12 +6665,13 @@ def create_lvl12_screen():
                 set_page("levels")
 
         # Ice and Ground temeprature logic
-        if not on_ice and on_ground:
-            current_temp += on_ground_heatup
-        elif not on_ice and not on_ground:
-            current_temp += air_heatup
-        else:
-            current_temp -= ice_cooldown
+        if not keys[pygame.K_r]:
+            if not on_ice and on_ground:
+                current_temp += on_ground_heatup
+            elif not on_ice and not on_ground:
+                current_temp += air_heatup
+            else:
+                current_temp -= ice_cooldown
 
         # Minimum and Maximum Temperature Logic
         if current_temp > max_temp:
@@ -6910,7 +6934,7 @@ def create_lvl12_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(green_background, (0, 0))
+        screen.blit(ice_background, (0, 0))
 
         if checkpoint_reached:
             screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
@@ -7084,6 +7108,9 @@ def create_lvl12_screen():
                 pygame.time.delay(300)
                 velocity_y = 0
                 deathcount += 1
+                for ice in ice_blocks:
+                    ice.float_height = ice.initial_height
+                    ice.rect.height = int(ice.float_height)
 
         for saw in saws:
             saw_x, saw_y, saw_radius, _ = saw
@@ -7110,11 +7137,14 @@ def create_lvl12_screen():
                     death_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300) 
+                for ice in ice_blocks:
+                    ice.float_height = ice.initial_height
+                    ice.rect.height = int(ice.float_height)
 
         for saw in rushing_saws:
             saw['cx'] += saw['speed']
             if saw['cx'] > saw['max']:
-                saw['cx'] = 2275 
+                saw['cx'] = 3150
             # Find the closest point on the player's rectangle to the saw's center
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
             closest_y = max(player_rect.top, min(saw['cy'], player_rect.bottom))
@@ -7136,6 +7166,10 @@ def create_lvl12_screen():
                     death_sound.play()
                 pygame.display.update()
                 pygame.time.delay(300) 
+                for ice in ice_blocks:
+                    ice.float_height = ice.initial_height
+                    ice.rect.height = int(ice.float_height)
+
 
         for saw in moving_saws_x:
     # Update the circle's position (move vertically)
@@ -7162,14 +7196,10 @@ def create_lvl12_screen():
                 pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
+                for ice in ice_blocks:
+                    ice.float_height = ice.initial_height
+                    ice.rect.height = int(ice.float_height)
 
-
-    # Update the circle's position (move vertically)
-            saw['cy'] += saw['speed']  # Move down or up depending on speed
-
-    # Check if the saw has reached the limits
-            if saw['cy'] > saw['max'] or saw['cy'] < saw['min']:
-                saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
         for saw in moving_saws:
     # Collision detection (if needed)
@@ -7178,6 +7208,13 @@ def create_lvl12_screen():
             dx = closest_x - saw['cx']
             dy = closest_y - saw['cy']
             distance = (dx**2 + dy**2)**0.5
+            # Update the circle's position (move vertically)
+            saw['cy'] += saw['speed']  # Move down or up depending on speed
+
+            # Check if the saw has reached the limits
+            if saw['cy'] > saw['max'] or saw['cy'] < saw['min']:
+                saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
+            
             if distance < saw['r']:
         # Trigger death logic
                 lights_off = True
@@ -7190,6 +7227,10 @@ def create_lvl12_screen():
                 pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
+                for ice in ice_blocks:
+                    ice.float_height = ice.initial_height
+                    ice.rect.height = int(ice.float_height)
+
 
         for block in blocks:
             if block.width <= 100:
@@ -7208,6 +7249,10 @@ def create_lvl12_screen():
                 pygame.time.delay(300)
                 velocity_y = 0
                 deathcount += 1
+                for ice in ice_blocks:
+                    ice.float_height = ice.initial_height
+                    ice.rect.height = int(ice.float_height)
+
 
         # Spike death
         bottom_points = [
@@ -7233,6 +7278,9 @@ def create_lvl12_screen():
                     velocity_y = 0
                     deathcount += 1
                     collision_detected = True  # Set the flag to stop further checks
+                    for ice in ice_blocks:
+                        ice.float_height = ice.initial_height
+                        ice.rect.height = int(ice.float_height)
                     break
 
         # Spike death (including top collision detection)
@@ -7260,6 +7308,9 @@ def create_lvl12_screen():
                     velocity_y = 0
                     deathcount += 1
                     collision_detected = True  # Set the flag to stop further checks
+                    for ice in ice_blocks:
+                        ice.float_height = ice.initial_height
+                        ice.rect.height = int(ice.float_height)
                     break
 
         if player_y > (SCREEN_HEIGHT + 100):
@@ -7274,6 +7325,52 @@ def create_lvl12_screen():
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount += 1
+            for ice in ice_blocks:
+                ice.float_height = ice.initial_height
+                ice.rect.height = int(ice.float_height)
+
+
+        for pair in key_block_pairs:
+            if not pair["collected"]:  # Only active locked blocks
+                block = pair["block"]
+                if player_rect.colliderect(block):
+            # Falling onto a block
+                    if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
+                        player_y = block.y - img_height
+                        velocity_y = 0
+                        on_ground = True
+
+            # Hitting the bottom of a block
+                    elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
+                        player_y = block.y + block.height
+                        velocity_y = 0
+
+            # Horizontal collisions
+                    elif player_x + img_width > block.x and player_x < block.x + block.width:
+                        if player_x < block.x:
+                            player_x = block.x - img_width
+                        elif player_x + img_width > block.x + block.width:
+                            player_x = block.x + block.width
+
+        for pair in key_block_pairs:
+            key_x, key_y, key_r, key_color = pair["key"]
+            block = pair["block"]
+
+            # Check collision if not yet collected
+            if not pair["collected"]:
+                key_rect = pygame.Rect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
+            if player_rect.colliderect(key_rect):
+                if not pair["collected"] and not is_mute:
+                    open_sound.play()
+                pair["collected"] = True
+            
+            if not pair["collected"]:
+                pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
+
+            # Draw block only if key is not collected
+            if not pair["collected"]:
+                pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
+
 
         # Player Image
         screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
@@ -7394,8 +7491,6 @@ while running:
         sys.exit()
 
     else:
-        print(progress["locked_levels"])
-        print(progress["complete_levels"])
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 set_page("quit_confirm")
@@ -7452,6 +7547,7 @@ while running:
             icerobo_unlock = progress.get("icerobo_unlocked", False)
             evilrobo_unlock = progress.get("evilrobo_unlocked", False)
             lavarobo_unlock = progress.get("lavarobo_unlocked", False)
+            greenrobo_unlock = progress.get("greenrobo_unlocked", False)
             save_progress(progress)
             # Draw images
             screen.blit(robot_img, robot_rect)
@@ -7467,6 +7563,10 @@ while running:
                 screen.blit(lavarobot_img, lavarobot_rect)
             else:
                 screen.blit(locked_img, lavarobot_rect)
+            if greenrobo_unlock:
+                screen.blit(greenrobot_img, greenrobot_rect)
+            else:
+                screen.blit(locked_img, greenrobot_rect)
             # Draw a highlight border around the selected character
             if selected_character == "robot":
                 pygame.draw.rect(screen, (63, 72, 204), robot_rect.inflate(5, 5), 5)
@@ -7476,6 +7576,8 @@ while running:
                 pygame.draw.rect(screen, (51, 254, 255), icerobot_rect.inflate(5, 5), 5)
             elif selected_character == "lavarobot":
                 pygame.draw.rect(screen, (136, 0, 21), lavarobot_rect.inflate(5, 5), 5)
+            elif selected_character == "greenrobot":
+                pygame.draw.rect(screen, (25, 195, 21), greenrobot_rect.inflate(5, 5), 5)
 
             # Handle events from the main loop, not a new event loop!
             if pygame.mouse.get_pressed()[0]:  # Left mouse button is pressed
@@ -7497,7 +7599,7 @@ while running:
                             click_sound.play()
                         set_page("main_menu")
                     else:
-                        locked_text = messages.get("locked_message", "This character is locked.")
+                        locked_text = messages.get("locked_message", "Encounter this robot in an alternative route to unlock him!")
                         rendered_locked_text = font.render(locked_text, True, (255, 255, 0))
                         if not is_mute and not locked_sound_played:
                             death_sound.play()
@@ -7518,7 +7620,7 @@ while running:
                             click_sound.play()
                         set_page("main_menu")
                     else:
-                        locked_text = messages.get("locked_message", "This character is locked.")
+                        locked_text = messages.get("locked_message", "This robot is coming soon!")
                         rendered_locked_text = font.render(locked_text, True, (255, 255, 0))
                         if not is_mute and not locked_sound_played:
                             death_sound.play()
@@ -7539,7 +7641,28 @@ while running:
                             click_sound.play()
                         set_page("main_menu")
                     else:
-                        locked_text = messages.get("locked_message", "This character is locked.")
+                        locked_text = messages.get("lavalocked_message", "This robot is coming soon!")
+                        rendered_locked_text = font.render(locked_text, True, (255, 255, 0))
+                        if not is_mute and not locked_sound_played:
+                            death_sound.play()
+                            locked_sound_played = True
+                            # Initialize the time
+                        wait_time = pygame.time.get_ticks()
+                        if wait_time is not None:
+                            if pygame.time.get_ticks() - wait_time < 5000:
+                                screen.blit(rendered_locked_text, ((SCREEN_WIDTH // 2 - rendered_locked_text.get_width() // 2), SCREEN_HEIGHT - 700))
+                            else:
+                                wait_time = None
+                elif greenrobot_rect.collidepoint(mouse_pos):
+                    if greenrobo_unlock:
+                        selected_character = "greenrobot"
+                        progress["selected_character"] = selected_character
+                        save_progress(progress)
+                        if not is_mute:
+                            click_sound.play()
+                        set_page("main_menu")
+                    else:
+                        locked_text = messages.get("greenlocked_message", "Get GOLD rank in all Green World Levels to unlock this robot!")
                         rendered_locked_text = font.render(locked_text, True, (255, 255, 0))
                         if not is_mute and not locked_sound_played:
                             death_sound.play()
