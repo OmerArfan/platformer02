@@ -137,6 +137,10 @@ ice_background = pygame.transform.scale(ice_background_img, (SCREEN_WIDTH, SCREE
 green_background_img = pygame.image.load("bgs/GreenBackground.png").convert()
 green_background = pygame.transform.scale(green_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
+# Load and initalize Images!
+nact_cp = pygame.image.load("oimgs/checkpoints/yellow_flag.png").convert_alpha()
+act_cp = pygame.image.load("oimgs/checkpoints/green_flag.png").convert_alpha()
+
 # Load the Chinese font (ensure the font file path is correct)
 font_path_ch = 'NotoSansSC-SemiBold.ttf'
 font_path = 'NotoSansDisplay-SemiBold.ttf'
@@ -158,8 +162,8 @@ logo_text = font.render("Logo and Background made with: canva.com", True, (255, 
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.2.11", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 144)
+ver_text = font.render("Version 1.2.12", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -825,6 +829,7 @@ def create_lvl2_screen():
     # Draw flag
     flag = pygame.Rect(2150, 650, 80, 50)  # x, y, width, height
     checkpoint_reached = False
+    flag_1_x, flag_1_y = 2150, 650
 
     blocks = [
         pygame.Rect(100, 650, 1000, 50),
@@ -1034,6 +1039,17 @@ def create_lvl2_screen():
         # Drawing
         screen.blit(green_background, (0, 0))
 
+        if player_rect.colliderect(flag) and not checkpoint_reached:
+            checkpoint_reached = True
+            spawn_x, spawn_y = 2150, 620  # Store checkpoint position
+            if not is_mute:
+                checkpoint_sound.play()
+            
+        if checkpoint_reached:
+            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+
         for spike in spikes:
             pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
             # Spike death
@@ -1102,18 +1118,6 @@ def create_lvl2_screen():
 
         pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
 
-        if player_rect.colliderect(flag) and not checkpoint_reached:
-            checkpoint_reached = True
-            spawn_x, spawn_y = 2150, 620  # Store checkpoint position
-            if not is_mute:
-                checkpoint_sound.play()
-            pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
-
-        if checkpoint_reached:
-            pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
-        else:
-            pygame.draw.rect(screen, (255, 215, 0), flag.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
-
         for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (jump_block.x - camera_x, jump_block.y - camera_y, jump_block.width, jump_block.height))
 
@@ -1171,10 +1175,12 @@ def create_lvl3_screen():
     img_width, img_height = player_img.get_size()
 
     # Draw flag
-    flag = pygame.Rect(200, 200, 80, 50)  # x, y, width, height
+    flag = pygame.Rect(200, 200, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(2000, -300, 80, 50)  # x, y, width, height
+    flag2 = pygame.Rect(2000, -260, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
+    flag_1_x, flag_1_y = 200, 200
+    flag_2_x, flag_2_y = 2000, -260
 
     key_block_pairs = [
         {
@@ -1378,14 +1384,11 @@ def create_lvl3_screen():
             spawn_x, spawn_y = 200, 100  # Store checkpoint position
             if not is_mute:
                 checkpoint_sound.play()
-            pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
         if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
             checkpoint_reached = False
             checkpoint_reached2 = True
             if not is_mute:
                 checkpoint_sound.play()
-            pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
-            pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
             spawn_x, spawn_y = 2020, -400  # Checkpoint position
 
         # Exit portal
@@ -1419,9 +1422,6 @@ def create_lvl3_screen():
         else:
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
-        # Drawing
-        screen.blit(green_background, (0, 0))
-
         # Draw flag
         if checkpoint_reached:
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
@@ -1432,8 +1432,18 @@ def create_lvl3_screen():
             pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
         else:
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
-        
-        # Draw key only if not collected
+
+        # Drawing
+        screen.blit(green_background, (0, 0))
+
+        if checkpoint_reached:
+            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        if checkpoint_reached2:
+            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
  
         # Draw all saws first
         for x, y, r, color in saws:
@@ -1605,10 +1615,12 @@ def create_lvl4_screen():
     img_width, img_height = player_img.get_size()
 
     # Draw flag
-    flag = pygame.Rect(1500, 550, 80, 50)  # x, y, width, height
+    flag = pygame.Rect(1500, 550, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(3200, 100, 80, 50)  # x, y, width, height
+    flag2 = pygame.Rect(3200, 120, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
+    flag_1_x, flag_1_y = 1500, 550
+    flag_2_x, flag_2_y = 3200, 120
 
     key_block_pairs = [
         {
@@ -1904,9 +1916,6 @@ def create_lvl4_screen():
         else:
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
-        # Drawing
-        screen.blit(green_background, (0, 0))
-
         # Draw flag
         if checkpoint_reached:
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
@@ -1917,6 +1926,18 @@ def create_lvl4_screen():
             pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
         else:
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
+
+        # Drawing
+        screen.blit(green_background, (0, 0))
+
+        if checkpoint_reached:
+            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        if checkpoint_reached2:
+            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         
         # Draw key only if not collected
  
@@ -2206,10 +2227,12 @@ def create_lvl5_screen():
     img_width, img_height = player_img.get_size()
 
     # Draw flag
-    flag = pygame.Rect(2100, -150, 80, 50)  # x, y, width, height
+    flag = pygame.Rect(2100, -150, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(3450, -450, 80, 50)  # x, y, width, height
+    flag2 = pygame.Rect(3450, -450, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
+    flag_1_x, flag_1_y = 2100, -150
+    flag_2_x, flag_2_y = 3450, -450
 
     key_block_pairs = [
         {
@@ -2483,9 +2506,6 @@ def create_lvl5_screen():
         else:
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
-        # Drawing
-        screen.blit(green_background, (0, 0))
-
         # Draw flag
         if checkpoint_reached:
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
@@ -2496,6 +2516,18 @@ def create_lvl5_screen():
             pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
         else:
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
+
+        # Drawing
+        screen.blit(green_background, (0, 0))
+
+        if checkpoint_reached:
+            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        if checkpoint_reached2:
+            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         
         # Draw key only if not collected
  
@@ -2807,10 +2839,12 @@ def create_lvl6_screen():
     img_width, img_height = player_img.get_size()
 
     # Draw flag
-    flag = pygame.Rect(2400, 450, 80, 50)  # x, y, width, height
+    flag = pygame.Rect(2400, 380, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(3200, 470, 80, 50)  # x, y, width, height
+    flag2 = pygame.Rect(3200, 410, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
+    flag_1_x, flag_1_y = 2400, 380
+    flag_2_x, flag_2_y = 3200, 410
 
     key_block_pairs = [
         {
@@ -3092,9 +3126,6 @@ def create_lvl6_screen():
             # Draw the invisible block as a gray rectangle 
             pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))        
 
-        # Drawing
-        screen.blit(green_background, (0, 0))
-
         # Draw flag
         if checkpoint_reached:
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
@@ -3105,6 +3136,18 @@ def create_lvl6_screen():
             pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
         else:
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
+
+        # Drawing
+        screen.blit(green_background, (0, 0))
+
+        if checkpoint_reached:
+            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        if checkpoint_reached2:
+            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         
         # Draw key only if not collected
  
@@ -3410,10 +3453,12 @@ def create_lvl7_screen():
     img_width, img_height = player_img.get_size()
 
     # Draw flag
-    flag = pygame.Rect(2600, 300, 80, 50)  # x, y, width, height
+    flag = pygame.Rect(2600, 300, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(240, -1380, 80, 50)  # x, y, width, height
+    flag2 = pygame.Rect(240, -1360, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
+    flag_1_x, flag_1_y = 2600, 300
+    flag_2_x, flag_2_y = 240, -1360
 
     blocks = [
         pygame.Rect(0, 400, 3000, 50),
@@ -3607,9 +3652,6 @@ def create_lvl7_screen():
         else:
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
-        # Drawing
-        screen.blit(green_background, (0, 0))
-
         # Draw flag
         if checkpoint_reached:
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
@@ -3620,6 +3662,18 @@ def create_lvl7_screen():
             pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
         else:
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
+
+        # Drawing
+        screen.blit(green_background, (0, 0))
+
+        if checkpoint_reached:
+            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        if checkpoint_reached2:
+            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         
         # Draw key only if not collected
  
@@ -3887,10 +3941,12 @@ def create_lvl8_screen():
     img_width, img_height = player_img.get_size()
 
     # Draw flag
-    flag = pygame.Rect(8470, -250, 80, 50)  # x, y, width, height
+    flag = pygame.Rect(8470, -320, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(10200, -250, 80, 50)  # x, y, width, height
+    flag2 = pygame.Rect(10200, -320, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
+    flag_1_x, flag_1_y = 8470, -320
+    flag_2_x, flag_2_y = 10200, -320
 
     blocks = [
         pygame.Rect(0, 400, 100, 100),
@@ -4127,9 +4183,6 @@ def create_lvl8_screen():
         else:
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
-        # Drawing
-        screen.blit(green_background, (0, 0))
-
         # Draw flag
         if checkpoint_reached:
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
@@ -4140,8 +4193,18 @@ def create_lvl8_screen():
             pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
         else:
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
-        
-        # Draw key only if not collected
+
+        # Drawing
+        screen.blit(green_background, (0, 0))
+
+        if checkpoint_reached:
+            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        if checkpoint_reached2:
+            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
  
 # Saw collision detection and drawing
         collision_detected = False 
@@ -4410,10 +4473,12 @@ def create_lvl9_screen():
     img_width, img_height = player_img.get_size()
 
     # Draw flag
-    flag = pygame.Rect(2350, 300, 80, 50)  # x, y, width, height
+    flag = pygame.Rect(2350, 300, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(5600, 550, 80, 50)  # x, y, width, height
+    flag2 = pygame.Rect(5600, 550, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
+    flag_1_x, flag_1_y = 2350, 300
+    flag_2_x, flag_2_y = 5600, 550
 
     key_block_pairs = [
         {
@@ -4759,9 +4824,6 @@ def create_lvl9_screen():
             # Draw the invisible block as a gray rectangle 
             pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))        
 
-        # Drawing
-        screen.blit(green_background, (0, 0))
-
         # Draw flag
         if checkpoint_reached:
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
@@ -4772,8 +4834,18 @@ def create_lvl9_screen():
             pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
         else:
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
-        
-        # Draw key only if not collected
+
+        # Drawing
+        screen.blit(green_background, (0, 0))
+
+        if checkpoint_reached:
+            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        if checkpoint_reached2:
+            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
  
         for pair in key_block_pairs:
             key_x, key_y, key_r, key_color = pair["key"]
@@ -5056,10 +5128,12 @@ def create_lvl10_screen():
     img_width, img_height = player_img.get_size()
 
     # Draw flag
-    flag = pygame.Rect(3100, 380, 80, 50)  # x, y, width, height
+    flag = pygame.Rect(3100, 370, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(5000, 400, 80, 50)  # x, y, width, height
+    flag2 = pygame.Rect(5000, 370, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
+    flag_1_x, flag_1_y = 3100, 370
+    flag_2_x, flag_2_y = 5000, 370
 
     blocks = [
         pygame.Rect(100, 500, 1000, 50),
@@ -5335,9 +5409,6 @@ def create_lvl10_screen():
             # Draw the invisible block as a gray rectangle 
             pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))        
 
-        # Drawing
-        screen.blit(green_background, (0, 0))
-
         # Draw flag
         if checkpoint_reached:
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
@@ -5348,7 +5419,19 @@ def create_lvl10_screen():
             pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
         else:
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
-        
+
+        # Drawing
+        screen.blit(green_background, (0, 0))
+
+        if checkpoint_reached:
+            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        if checkpoint_reached2:
+            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+
 # Saw collision detection and drawing
         collision_detected = False  
         for rotating_saw in rotating_saws:
@@ -5662,10 +5745,12 @@ def create_lvl11_screen():
     img_width, img_height = player_img.get_size()
 
     # Draw flag
-    flag = pygame.Rect(1400, 420, 80, 50)  # x, y, width, height
+    flag = pygame.Rect(1400, 420, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(5400, 300, 80, 50)  # x, y, width, height
+    flag2 = pygame.Rect(5400, 330, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
+    flag_1_x, flag_1_y = 1400, 420
+    flag_2_x, flag_2_y = 5400, 330
 
     key_block_pairs = [
         {
@@ -5979,9 +6064,6 @@ def create_lvl11_screen():
         else:
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
-        # Drawing
-        screen.blit(green_background, (0, 0))
-
         # Draw flag
         if checkpoint_reached:
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
@@ -5992,6 +6074,18 @@ def create_lvl11_screen():
             pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
         else:
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
+
+        # Drawing
+        screen.blit(green_background, (0, 0))
+
+        if checkpoint_reached:
+            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        if checkpoint_reached2:
+            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
 
         for saw in moving_saws:
     # Update the circle's position (move vertically)
@@ -6426,10 +6520,12 @@ def create_lvl12_screen():
     img_width, img_height = player_img.get_size()
 
     # Draw flag
-    flag = pygame.Rect(1400, -1000, 80, 50)  # x, y, width, height
+    flag = pygame.Rect(1400, -1000, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(5400, 300, 80, 50)  # x, y, width, height
+    flag2 = pygame.Rect(5400, 300, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
+    flag_1_x, flag_1_y = 1400, -1000
+    flag_2_x, flag_2_y = 5400, 300
 
     key_block_pairs = [
         {
@@ -6802,9 +6898,6 @@ def create_lvl12_screen():
         else:
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
-        # Drawing
-        screen.blit(ice_background, (0, 0))
-
         # Draw flag
         if checkpoint_reached:
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
@@ -6815,6 +6908,18 @@ def create_lvl12_screen():
             pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
         else:
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
+
+        # Drawing
+        screen.blit(green_background, (0, 0))
+
+        if checkpoint_reached:
+            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+        if checkpoint_reached2:
+            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+        else:
+            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
 
         for saw in moving_saws:
                 # Draw the moving circle (saw)
@@ -6942,10 +7047,10 @@ def create_lvl12_screen():
             screen.blit(font.render(temp_val, True, (0, 255, 43)), (20, 50))
         elif current_temp >= 27 and current_temp <= 35:
             screen.blit(font.render(temp_val, True, (205, 255, 0)), (20, 50))
-        elif current_temp >= 35 and current_temp <= 43: 
-            screen.blit(font.render(temp_val, True, (230, 105, 0)), (20, 50))
-        elif current_temp >= 43 and current_temp <= 50: 
+        elif current_temp >= 35 and current_temp <= 43:             
             screen.blit(font.render(temp_val, True, (255, 162, 0)), (20, 50))
+        elif current_temp >= 43 and current_temp <= 50: 
+            screen.blit(font.render(temp_val, True, (230, 105, 0)), (20, 50))
         elif current_temp >= 50:
             screen.blit(font.render(temp_val, True, (255, 0, 0)), (20, 50))
 
