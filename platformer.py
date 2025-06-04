@@ -33,6 +33,16 @@ freeze_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "freeze.wav"))
 icon = pygame.image.load("robots.ico")
 pygame.display.set_icon(icon)
 
+# Ambient themes
+pygame.mixer.music.load("audio/amb/ambience.wav")
+pygame.mixer.music.set_volume(0.1)
+pygame.mixer.music.play(-1)  # Loop forever
+
+def change_ambience(new_file):
+    pygame.mixer.music.load(new_file)
+    pygame.mixer.music.set_volume(2)  # Adjust as needed
+    pygame.mixer.music.play(-1)
+
 # Save file name
 SAVE_FILE = "save_data.json"
 
@@ -169,7 +179,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.18", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.19", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -541,6 +551,7 @@ def set_page(page):
     elif page == 'levels':
         current_lang = load_language(lang_code).get('levels', {})
         green_world_buttons()
+        change_ambience("audio/amb/greenambience.wav")
     elif page == 'quit_confirm':
         current_lang = load_language(lang_code).get('messages', {})
         create_quit_confirm_buttons()
@@ -583,6 +594,7 @@ def set_page(page):
     elif page == 'ice_levels':
         current_lang = load_language(lang_code).get('levels', {})
         ice_world_buttons()
+        change_ambience("audio/amb/iceambience.wav")
 
 def create_quit_confirm_buttons():
     global current_lang, buttons, quit_text, quit_text_rect, selected_character
