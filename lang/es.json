@@ -30,7 +30,15 @@
   ,"loading": "Cargando..."
   ,"confirm_quit": "¿Estás seguro de que quieres salir?",
   "yes": "Sí",
-  "no": "No"
+  "no": "No",
+  "deny_message": "¡Acceso denegado!",
+  "error_message": "¡La resolución de tu pantalla es demasiado baja! Aumenta"
+  ,"error_message2": "la resolución en la configuración del sistema.",
+  "countdown_message": "Cerrando en {countdown} segundo(s)..."
+  ,"evillocked_message": "¡Encuentra a este robot en una ruta alternativa para desbloquearlo!"
+  ,"icelocked_message": "¡Este robot llegará pronto!"
+  ,"lavalocked_message": "¡Este robot llegará pronto!"
+  ,"greenlocked_message": "¡Consigue el rango ORO en todos los niveles del Mundo Verde para desbloquearlo!"
   }
   ,"in_game": {
   "dead_message": "¡Has muerto!", 

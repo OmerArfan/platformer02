@@ -31,6 +31,14 @@
         "confirm_quit": "Você tem certeza que deseja sair?",
         "yes": "Sim",
         "no": "Não"
+        ,"deny_message": "Acesso negado!",
+        "error_message": "A resolução da sua tela está muito baixa! Aumente a"
+        ,"error_message2": "resolução da tela nas Preferências do Sistema.",
+        "countdown_message": "Fechando em {countdown} segundo(s)..."
+        ,"evillocked_message": "Encontre este robô em uma rota alternativa para desbloqueá-lo!"
+        ,"icelocked_message": "Este robô chegará em breve!"
+        ,"lavalocked_message": "Este robô chegará em breve!"
+        ,"greenlocked_message": "Consiga a classificação OURO em todos os Níveis do Mundo Verde para desbloquear este robô!"
     }
     ,"in_game": {
         "dead_message": "Você está morto!",

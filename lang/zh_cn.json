@@ -31,7 +31,15 @@
   ,"confirm_quit": "你确定要退出吗？",
   "yes": "是",
   "no": "否"
-    }
+  ,"deny_message": "访问被拒绝!",
+  "error_message": "您的屏幕分辨率太低！请在“系统偏好设置”中提高屏幕分辨率。"
+  ,"error_message2": "   ",
+  "countdown_message": "即将于 {countdown} 秒后关闭……"
+  ,"evillocked_message": "在另一条路线上遇到这个机器人并解锁它！"
+  ,"icelocked_message": "这个机器人即将推出!"
+  ,"lavalocked_message": "这个机器人即将推出!"
+  ,"greenlocked_message": "在所有绿色世界关卡中达到黄金等级即可解锁这个机器人!"
+  }
   ,"in_game": {
     "dead_message": "你死了！",
     "fall_message": "掉得太远了！",

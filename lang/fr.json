@@ -31,6 +31,14 @@
   "confirm_quit": "Êtes-vous sûr de vouloir quitter?",
   "yes": "Oui",
   "no": "Non"
+  ,"deny_message": "Accès refusé!",
+  "error_message": "Votre résolution d'écran est trop faible! Augmentez-la"
+  ,"error_message2": "dans les Préférences Système.",
+  "countdown_message": "Fermeture dans {countdown} seconde(s)…"
+  ,"evillocked_message": "Rencontrez ce robot sur un chemin alternatif pour le débloquer !"
+  ,"icelocked_message": "Ce robot arrive bientôt!"
+  ,"lavalocked_message": "Ce robot arrive bientôt!"
+  ,"greenlocked_message": "Obtenez le rang OR dans tous les niveaux du Monde Vert pour débloquer ce robot!"
   }
   ,"in_game": {
   "dead_message": "Vous êtes mort!",

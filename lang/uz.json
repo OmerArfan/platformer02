@@ -31,7 +31,15 @@
   ,"confirm_quit": "Chiqmoqchimisiz?",
   "yes": "Ha",
   "no": "Yo'q"
-  }
+  ,"deny_message": "Ruxsat berilmadi!",
+  "error_message": "Ekran o'lchamlari juda past! Tizim sozlamalarida"
+  ,"error_message2": "ekran o'lchamlarini oshiring.",
+  "countdown_message": "{countdown} soniyadan keyin yopiladi..."
+  ,"evillocked_message": "Uni qulfdan chiqarish uchun muqobil yo'lda ushbu robotga duch keling!"
+  ,"icelocked_message": "Bu robot tez orada keladi!"
+  ,"lavalocked_message": "Bu robot tez orada keladi!"
+  ,"greenlocked_message": "Ushbu robotning qulfini ochish uchun barcha Yashil dunyo darajalarida OLTIN darajaga ega bo'ling!"
+}
   ,"in_game": {
   "dead_message": "Siz o'ldingiz!",
   "fall_message": "Juda pastga tushdingiz!",
