@@ -125,7 +125,11 @@ pygame.init()
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 SCREEN_WIDTH, SCREEN_HEIGHT = screen.get_size()
 pygame.display.set_caption("Platformer 02!")
-MIN_WIDTH, MIN_HEIGHT = 1000, 750
+MIN_WIDTH = 1000
+if SCREEN_WIDTH < 1300:
+    MIN_HEIGHT = 800
+else:
+    MIN_HEIGHT = 760
 
 # Load logo image
 logo = pygame.image.load("logo.png").convert_alpha()
@@ -145,6 +149,8 @@ act_cp = pygame.image.load("oimgs/checkpoints/green_flag.png").convert_alpha()
 # Load the Chinese font (ensure the font file path is correct)
 font_path_ch = 'NotoSansSC-SemiBold.ttf'
 font_path = 'NotoSansDisplay-SemiBold.ttf'
+font_def = pygame.font.Font(font_path, 25)
+
 if lang_code == "zh_cn":
     font = pygame.font.Font(font_path_ch, 25)
 else:
@@ -157,13 +163,13 @@ def render_text(text, color = (255, 255, 255)):
     else:
         return font.render(text, True, color)
 
-site_text = font.render("Sound effects from: pixabay.com", True, (255, 255, 255))
+site_text = font_def.render("Sound effects from: pixabay.com", True, (255, 255, 255))
 site_pos = (SCREEN_WIDTH - 398, SCREEN_HEIGHT - 84)
-logo_text = font.render("Logo and Background made with: canva.com", True, (255, 255, 255))
+logo_text = font_def.render("Logo and Background made with: canva.com", True, (255, 255, 255))
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
-credit_text = font.render("Made by: Omer Arfan", True, (255, 255, 255))
+credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font.render("Version 1.2.14", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.15", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -824,9 +830,11 @@ def create_lvl1_screen():
         screen.blit(font.render(lvl1_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = font.render("Green Robo Unlocked!", True, (51, 255, 51))
-                screen.blit(unlocked_text, (SCREEN_WIDTH // 2 - unlocked_text.get_width() // 2, 100))
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
@@ -1180,9 +1188,11 @@ def create_lvl2_screen():
         screen.blit(font.render(lvl2_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = font.render("Green Robo Unlocked!", True, (51, 255, 51))
-                screen.blit(unlocked_text, (SCREEN_WIDTH // 2 - unlocked_text.get_width() // 2, 100))
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
@@ -1628,9 +1638,11 @@ def create_lvl3_screen():
         screen.blit(font.render(lvl3_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
         
         if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = font.render("Green Robo Unlocked!", True, (51, 255, 51))
-                screen.blit(unlocked_text, (SCREEN_WIDTH // 2 - unlocked_text.get_width() // 2, 100))
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
         
@@ -2248,9 +2260,11 @@ def create_lvl4_screen():
         screen.blit(font.render(lvl4_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = font.render("Green Robo Unlocked!", True, (51, 255, 51))
-                screen.blit(unlocked_text, (SCREEN_WIDTH // 2 - unlocked_text.get_width() // 2, 100))
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
@@ -2869,9 +2883,11 @@ def create_lvl5_screen():
         screen.blit(font.render(lvl5_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = font.render("Green Robo Unlocked!", True, (51, 255, 51))
-                screen.blit(unlocked_text, (SCREEN_WIDTH // 2 - unlocked_text.get_width() // 2, 100))
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
@@ -3491,9 +3507,11 @@ def create_lvl6_screen():
         screen.blit(font.render(invisible_text, True, (255, 51, 153)), (900 - camera_x, 250 - camera_y)) # Render the invisible block text
 
         if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = font.render("Green Robo Unlocked!", True, (51, 255, 51))
-                screen.blit(unlocked_text, (SCREEN_WIDTH // 2 - unlocked_text.get_width() // 2, 100))
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
@@ -3984,9 +4002,11 @@ def create_lvl7_screen():
         screen.blit(font.render(portal_text, True, (0, 196, 255)), (4400 - camera_x, 300 - camera_y))
 
         if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = font.render("Green Robo Unlocked!", True, (51, 255, 51))
-                screen.blit(unlocked_text, (SCREEN_WIDTH // 2 - unlocked_text.get_width() // 2, 100))
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
@@ -4521,9 +4541,11 @@ def create_lvl8_screen():
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
         if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = font.render("Green Robo Unlocked!", True, (51, 255, 51))
-                screen.blit(unlocked_text, (SCREEN_WIDTH // 2 - unlocked_text.get_width() // 2, 100))
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
@@ -5183,9 +5205,11 @@ def create_lvl9_screen():
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
         if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = font.render("Green Robo Unlocked!", True, (51, 255, 51))
-                screen.blit(unlocked_text, (SCREEN_WIDTH // 2 - unlocked_text.get_width() // 2, 100))
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
@@ -5789,9 +5813,11 @@ def create_lvl10_screen():
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
         if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = font.render("Green Robo Unlocked!", True, (51, 255, 51))
-                screen.blit(unlocked_text, (SCREEN_WIDTH // 2 - unlocked_text.get_width() // 2, 100))
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
@@ -5801,6 +5827,7 @@ def create_lvl11_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
 
     in_game = load_language(lang_code).get('in_game', {})
+    messages = load_language(lang_code).get('messages', {})
 
     start_time = time.time()
 
@@ -6488,8 +6515,9 @@ def create_lvl11_screen():
         if unlock and unlock_time is not None:
             current_time = pygame.time.get_ticks()
             if current_time - unlock_time <= 5000:
-                evilrobo_unlock_text = font.render("Evil Robo unlocked!", True, (41, 255, 11))
-                screen.blit(evilrobo_unlock_text, (SCREEN_WIDTH // 2 - evilrobo_unlock_text.get_width() // 2, 80))
+                unlock_text = messages.get("evilrobo_unlocked", "Evil Robo unlocked!")
+                rendered_unlock_text = font.render(unlock_text, True, (41, 255, 11))
+                screen.blit(rendered_unlock_text , (SCREEN_WIDTH // 2 - rendered_unlock_text .get_width() // 2, 80))
 
         evilrobo_rect = pygame.Rect(int(epos_x), int(epos_y), evilrobo_mascot.get_width(), evilrobo_mascot.get_height())
         
@@ -6569,8 +6597,9 @@ def create_lvl11_screen():
         
         if show_greenrobo_unlocked:
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = font.render("Green Robo Unlocked!", True, (51, 255, 51))
-                screen.blit(unlocked_text, (SCREEN_WIDTH // 2 - unlocked_text.get_width() // 2, 100))
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
@@ -7456,9 +7485,11 @@ def create_lvl12_screen():
                 pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
         if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = font.render("Green Robo Unlocked!", True, (51, 255, 51))
-                screen.blit(unlocked_text, (SCREEN_WIDTH // 2 - unlocked_text.get_width() // 2, 100))
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
@@ -7541,8 +7572,6 @@ while running:
     # Clear screen!
     screen.blit(background, (0, 0))
     mouse_pos = pygame.mouse.get_pos()
-    if wait_time is not None:
-        print(pygame.time.get_ticks() - wait_time)
     if SCREEN_WIDTH < MIN_WIDTH or SCREEN_HEIGHT < MIN_HEIGHT:
         countdown = 5  # seconds
         clock = pygame.time.Clock()
@@ -7565,16 +7594,21 @@ while running:
             screen.blit(lavarobot_img, (SCREEN_WIDTH // 2 - lavarobot_img.get_width() // 2, SCREEN_HEIGHT // 2 - 200))
 
             # Render the text
-            deny_text = font.render("Access denied!", True, (255, 100, 100))
-            error_text = font.render("Your screen resolution is too small! Increase the screen", True, (255, 255, 255))
-            error_text2 = font.render("resolution in your system settings.", True, (255, 255, 255))
-            countdown_text = font.render(f"Closing in {countdown} second(s)...", True, (255, 100, 100))
+            messages = load_language(lang_code).get('messages', {})
+            deny_text = messages.get("deny_message", "Access denied!")
+            rendered_deny_text = font.render(deny_text, True, (255, 100, 100))
+            error_text = messages.get("error_message","Your screen resolution is too small! Increase the screen")
+            rendered_error_text = font.render(error_text, True, (255, 255, 255))
+            error_text2 = messages.get("error_message2", "resolution in your system settings.")
+            rendered_error_text2 = font.render(error_text2, True, (255, 255, 255))
+            countdown_text = messages.get("countdown_message", "Closing in {countdown} second(s)...").format(countdown=countdown)
+            rendered_countdown_text = font.render(countdown_text, True, (255, 100, 100))
 
             # Center the text
-            screen.blit(deny_text, (SCREEN_WIDTH // 2 - deny_text.get_width() // 2, SCREEN_HEIGHT // 2 - 280))            
-            screen.blit(error_text, (SCREEN_WIDTH // 2 - error_text.get_width() // 2, SCREEN_HEIGHT // 2 - 40))
-            screen.blit(error_text2, (SCREEN_WIDTH // 2 - error_text2.get_width() // 2, SCREEN_HEIGHT // 2))
-            screen.blit(countdown_text, (SCREEN_WIDTH // 2 - countdown_text.get_width() // 2, SCREEN_HEIGHT // 2 + 50))
+            screen.blit(rendered_deny_text, (SCREEN_WIDTH // 2 - rendered_deny_text.get_width() // 2, SCREEN_HEIGHT // 2 - 280))            
+            screen.blit(rendered_error_text, (SCREEN_WIDTH // 2 - rendered_error_text.get_width() // 2, SCREEN_HEIGHT // 2 - 40))
+            screen.blit(rendered_error_text2, (SCREEN_WIDTH // 2 - rendered_error_text2.get_width() // 2, SCREEN_HEIGHT // 2))
+            screen.blit(rendered_countdown_text, (SCREEN_WIDTH // 2 - rendered_countdown_text.get_width() // 2, SCREEN_HEIGHT // 2 + 50))
 
             pygame.display.flip()
             clock.tick(30)
@@ -7695,7 +7729,7 @@ while running:
                             # Initialize the time
                         if wait_time is None:
                             wait_time = pygame.time.get_ticks()                            
-                        locked_text = messages.get("locked_message", "Encounter this robot in an alternative route to unlock him!")
+                        locked_text = messages.get("evillocked_message", "Encounter this robot in an alternative route to unlock him!")
                 
                 elif icerobot_rect.collidepoint(mouse_pos):
                     if icerobo_unlock:
