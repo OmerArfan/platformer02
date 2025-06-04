@@ -169,7 +169,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.17", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.18", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -275,7 +275,7 @@ def create_language_buttons():
     back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, y + spacing_y + 40))
     buttons.append((rendered_back, back_rect, "back"))
 
-def create_levels_buttons():
+def green_world_buttons():
     global current_lang, buttons
     levels = load_language(lang_code).get('levels', {})
     buttons.clear()
@@ -290,7 +290,67 @@ def create_levels_buttons():
     select_level_text = rendered_select_text
     select_level_rect = select_text_rect
 
-    level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12", "lvl13", "lvl14", "lvl15"]
+    level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11"]
+    buttons_per_row = 4
+    spacing_x = 140
+    spacing_y = 70
+
+    # Calculate starting positions to center the grid
+    grid_width = (buttons_per_row - 1) * spacing_x
+    start_x = (SCREEN_WIDTH - grid_width) // 2 
+    start_y = ((SCREEN_HEIGHT // 2) - (1.25*(len(level_options) // buttons_per_row * spacing_y // 2)))
+
+    for i, level in enumerate(level_options):
+        text = levels.get(level, level.capitalize())
+        is_locked = level in progress["locked_levels"]  # Check if the level is locked
+
+        # Render the level text
+        color = (150, 150, 150) if is_locked else (255, 255, 255)  # Gray out locked levels
+        rendered = font.render(text, True, color)
+
+        col = i % buttons_per_row
+        row = i // buttons_per_row
+
+        x = start_x + col * spacing_x
+        y = start_y + row * spacing_y
+
+        rect = rendered.get_rect(center=(x, y))
+
+        # Add the button only if the level is not locked
+        if not is_locked:
+            buttons.append((rendered, rect, level))
+        else:
+            # Add the locked button for display purposes (no interaction)
+            buttons.append((rendered, rect, None))  # Use `None` as the key for locked levels
+
+    # Back button at bottom center
+    back_text = current_lang.get("back", "Back")
+    rendered_back = font.render(back_text, True, (255, 255, 255))
+    back_rect = rendered_back.get_rect(center=(50, SCREEN_HEIGHT // 2))
+    buttons.append((rendered_back, back_rect, "back"))
+
+        # Next button at bottom center
+    next_text = current_lang.get("next", "next")
+    rendered_next = font.render(next_text, True, (255, 255, 255))
+    next_rect = rendered_next.get_rect(center=(SCREEN_WIDTH - 50, SCREEN_HEIGHT // 2))
+    buttons.append((rendered_next, next_rect, "next"))
+
+def ice_world_buttons():
+    global current_lang, buttons
+    levels = load_language(lang_code).get('levels', {})
+    buttons.clear()
+
+    # Render "Select a Level" text
+    select_text = levels.get("level_display", "SELECT A LEVEL")
+    rendered_select_text = font.render(select_text, True, (255, 255, 255))
+    select_text_rect = rendered_select_text.get_rect(center=(SCREEN_WIDTH // 2, 50))  # Center at the top
+
+    # Store the rendered text and its position for later drawing
+    global select_level_text, select_level_rect
+    select_level_text = rendered_select_text
+    select_level_rect = select_text_rect
+
+    level_options = ["lvl12", "lvl13", "lvl14", "lvl15"]
     buttons_per_row = 4
     spacing_x = 140
     spacing_y = 70
@@ -326,7 +386,7 @@ def create_levels_buttons():
     # Back button at bottom center
     back_text = current_lang.get("back", "Back")
     rendered_back = font.render(back_text, True, (255, 255, 255))
-    back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, y + spacing_y + 40))
+    back_rect = rendered_back.get_rect(center=(50, SCREEN_HEIGHT // 2 - 50))
     buttons.append((rendered_back, back_rect, "back"))
 
 def load_level(level_id):
@@ -480,7 +540,7 @@ def set_page(page):
         create_language_buttons()
     elif page == 'levels':
         current_lang = load_language(lang_code).get('levels', {})
-        create_levels_buttons()
+        green_world_buttons()
     elif page == 'quit_confirm':
         current_lang = load_language(lang_code).get('messages', {})
         create_quit_confirm_buttons()
@@ -520,6 +580,9 @@ def set_page(page):
     elif page == 'lvl12_screen':
         current_lang = load_language(lang_code).get('in_game', {})
         create_lvl12_screen()   
+    elif page == 'ice_levels':
+        current_lang = load_language(lang_code).get('levels', {})
+        ice_world_buttons()
 
 def create_quit_confirm_buttons():
     global current_lang, buttons, quit_text, quit_text_rect, selected_character
@@ -7507,6 +7570,8 @@ def handle_action(key):
             set_page("lvl12_screen")
         elif key == "back":
             set_page("main_menu")
+        elif key == "next":
+            set_page("ice_levels")
     elif current_page.startswith("lvl"):
         if key == "back":
             set_page("levels")
@@ -7517,6 +7582,11 @@ def handle_action(key):
             quit_game()
         elif key == "no":
             set_page("main_menu")
+    elif current_page == "ice_levels":
+        if key == "back":
+            set_page("levels")
+        elif key in ["lvl12", "lvl13", "lvl14", "lvl15"]:
+            set_page(f"{key}_screen")
 
 # Start with main menu
 set_page('main_menu')
@@ -7865,6 +7935,7 @@ while running:
                 screen.blit(rendered, rect)
 
         elif current_page == "levels":
+            screen.blit(green_background, (0, 0))
             # Fetch the localized "Select a Level" text dynamically
             select_text = current_lang.get("select_level", "Select a Level")
             rendered_select_text = font.render(select_text, True, (255, 255, 255))
@@ -8076,6 +8147,37 @@ while running:
                     button_surface.fill((153, 51, 255, 0))  # RGBA: 100 is alpha (transparency)
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)
                 screen.blit(rendered, rect)
+
+        elif current_page == "ice_levels":
+            screen.blit(ice_background, (0, 0))
+            # Fetch the localized "Select a Level" text dynamically
+            select_text = current_lang.get("select_level", "Select a Level")
+            rendered_select_text = font.render(select_text, True, (0, 0, 0))
+            select_text_rect = rendered_select_text.get_rect(center=(SCREEN_WIDTH // 2, 50))
+            screen.blit(rendered_select_text, select_text_rect)
+
+    # Render buttons for ice world levels
+            for rendered, rect, key in buttons:
+                if rect.collidepoint(mouse_pos):
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
+                    hovered = rect.collidepoint(pygame.mouse.get_pos())
+                    if hovered and not button_hovered_last_frame and not is_mute:
+                        hover_sound.play()
+                    button_hovered_last_frame = hovered
+                    if key == "lvl12":
+                        lvl12_txt = font.render(f"Coming soon!", True, (255, 255, 0))
+                        screen.blit(lvl12_txt, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
+                    else:
+                        lvl_txt = font.render(f"I don't even know if I'll make this...", True, (255, 0, 0))
+                        screen.blit(lvl_txt, (SCREEN_WIDTH // 2 - lvl_txt.get_width() // 2, SCREEN_HEIGHT - 50))
+                else:
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((153, 51, 255, 0))  # RGBA: 100 is alpha (transparency)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
+                screen.blit(rendered, rect)
+        
 
         else:
             # Render buttons for other pages
