@@ -169,7 +169,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.16", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.17", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -835,7 +835,7 @@ def create_lvl1_screen():
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 70))
+                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
@@ -1194,7 +1194,7 @@ def create_lvl2_screen():
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 70))
+                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
@@ -1641,7 +1641,7 @@ def create_lvl3_screen():
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 70))
+                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
@@ -2254,7 +2254,7 @@ def create_lvl4_screen():
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 70))
+                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
@@ -2866,7 +2866,7 @@ def create_lvl5_screen():
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 70))
+                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
@@ -3479,7 +3479,7 @@ def create_lvl6_screen():
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 70))
+                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
@@ -3969,7 +3969,7 @@ def create_lvl7_screen():
         
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 70))
+                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
@@ -4505,7 +4505,7 @@ def create_lvl8_screen():
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 70))
+                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
@@ -4513,6 +4513,8 @@ def create_lvl8_screen():
 
 def create_lvl9_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
+    
+    wait_time = None
     start_time = time.time()
 
     in_game = load_language(lang_code).get('in_game', {})
@@ -4801,15 +4803,13 @@ def create_lvl9_screen():
 
 
         if player_y > SCREEN_HEIGHT:
-            fall_text = in_game.get("fall_message", "Fell too far!")
-            screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
+            death_text = in_game.get("fall_message", "Fell too far!")
+            wait_time = pygame.time.get_ticks()
             key_block_pairs[0]["collected"] = False  # Reset key block status
             strong_grav = False # Reset strong gravity status
             weak_grav = False # Reset weak gravity status
             if not is_mute:    
                 fall_sound.play()
-            pygame.display.update()
-            pygame.time.delay(300)
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount += 1
@@ -4959,12 +4959,11 @@ def create_lvl9_screen():
                 key_block_pairs[0]["collected"] = False  # Reset key block status
                 weak_grav = False # Reset weak gravity status
                 strong_grav = False # Reset strong gravity status
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                death_text = in_game.get("sawed_message", "Sawed to bits!")
+                wait_time = pygame.time.get_ticks()
+                velocity_y = 0
                 if not is_mute:
                     death_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
 
@@ -4989,12 +4988,11 @@ def create_lvl9_screen():
         # Trigger death logic
                 weak_grav = False # Reset weak gravity status
                 strong_grav = False # Reset strong gravity status
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                death_text = in_game.get("sawed_message", "Sawed to bits!")
+                wait_time = pygame.time.get_ticks()
+                velocity_y = 0
                 if not is_mute:
                     death_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
 
@@ -5008,15 +5006,13 @@ def create_lvl9_screen():
                 laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                fall_text = in_game.get("hit_message", "Hit on the head!")
-                screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
+                death_text = in_game.get("hit_message", "Hit on the head!")
+                wait_time = pygame.time.get_ticks()
                 weak_grav = False
                 strong_grav = False
                 key_block_pairs[0]["collected"] = False  # Reset key block status
                 if not is_mute:    
                     hit_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
                 velocity_y = 0
                 deathcount += 1
 
@@ -5045,11 +5041,9 @@ def create_lvl9_screen():
                     weak_grav = False # Reset weak gravity status
                     player_x, player_y = spawn_x, spawn_y  # Reset player position
                     death_text = in_game.get("dead_message", "You Died")
-                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                    wait_time = pygame.time.get_ticks()
                     if not is_mute:
                         death_sound.play()
-                    pygame.display.update()
-                    pygame.time.delay(300)
                     velocity_y = 0
                     deathcount += 1
                     collision_detected = True  # Set the flag to stop further checks
@@ -5073,11 +5067,9 @@ def create_lvl9_screen():
             # Trigger death logic
                     player_x, player_y = spawn_x, spawn_y  # Reset player position
                     death_text = in_game.get("dead_message", "You Died")
-                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                    wait_time = pygame.time.get_ticks()
                     if not is_mute:
                         death_sound.play()
-                    pygame.display.update()
-                    pygame.time.delay(300)
                     velocity_y = 0
                     deathcount += 1
                     collision_detected = True  # Set the flag to stop further checks
@@ -5173,19 +5165,26 @@ def create_lvl9_screen():
         else:
             show_greenrobo_unlocked = False
 
+        if wait_time is not None:
+            if pygame.time.get_ticks() - wait_time < 2500:
+                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
+            else:
+                wait_time = None
+
         pygame.display.update() 
 
 def create_lvl10_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
+    
+    wait_time = None
     start_time = time.time()
-
 
     in_game = load_language(lang_code).get('in_game', {})
 
     # Camera settings
     camera_x = 300
     camera_y = -500
-    spawn_x, spawn_y =  50, -50
+    spawn_x, spawn_y =  0, 50
     player_x, player_y = spawn_x, spawn_y
     running = True
     gravity = 1
@@ -5216,7 +5215,7 @@ def create_lvl10_screen():
     flag_2_x, flag_2_y = 5000, 370
 
     blocks = [
-        pygame.Rect(100, 500, 1000, 50),
+        pygame.Rect(-100, 500, 1200, 50),
         pygame.Rect(1300, 400, 200, 50),
         pygame.Rect(1625, 500, 200, 50),
         pygame.Rect(3000, 480, 300, 50),
@@ -5395,17 +5394,13 @@ def create_lvl10_screen():
                     elif player_x + img_width > jump_block.x + jump_block.width:  # Colliding with the right side
                         player_x = jump_block.x + jump_block.width
 
-
-
         if player_y > SCREEN_HEIGHT:
-            fall_text = in_game.get("fall_message", "Fell too far!")
-            screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
+            death_text = in_game.get("fall_message", "Fell too far!")
+            wait_time = pygame.time.get_ticks()
             lights_off = True
             strong_grav = False # Reset strong gravity status
             if not is_mute:    
                 fall_sound.play()
-            pygame.display.update()
-            pygame.time.delay(300)
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount += 1
@@ -5544,14 +5539,13 @@ def create_lvl10_screen():
                 lights_off = True 
                 strong_grav = False # Reset strong gravity status
                 collision_detected = True  # Set the flag to stop further checks
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")    
-                screen.blit(font.render(sawed_text, True, (0, 0, 0)), (20, 50))               
+                death_text = in_game.get("sawed_message", "Sawed to bits!")    
+                wait_time = pygame.time.get_ticks()
+                velocity_y = 0            
                 player_x, player_y = spawn_x, spawn_y  # Reset player position    
                 deathcount += 1        
                 if not is_mute:
                     death_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
                 break
                 
 
@@ -5576,12 +5570,11 @@ def create_lvl10_screen():
         # Trigger death logic
                 lights_off = True
                 strong_grav = False # Reset strong gravity status
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                death_text = in_game.get("sawed_message", "Sawed to bits!")
+                wait_time = pygame.time.get_ticks()
+                velocity_y = 0
                 if not is_mute:
                     death_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
 
@@ -5605,12 +5598,11 @@ def create_lvl10_screen():
         # Trigger death logic
                 lights_off = True
                 strong_grav = False # Reset strong gravity status
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                death_text = in_game.get("sawed_message", "Sawed to bits!")
+                wait_time = pygame.time.get_ticks()
+                velocity_y = 0
                 if not is_mute:
                     death_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
 
@@ -5648,14 +5640,13 @@ def create_lvl10_screen():
                 lights_off = True
                 strong_grav = False # Reset strong gravity status
                     # Trigger death logic
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                death_text = in_game.get("sawed_message", "Sawed to bits!")
+                wait_time = pygame.time.get_ticks()
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
+                velocity_y = 0
                 if not is_mute:
                     death_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)  
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
@@ -5665,13 +5656,11 @@ def create_lvl10_screen():
                 laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                fall_text = in_game.get("hit_message", "Hit on the head!")
-                screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
+                death_text = in_game.get("hit_message", "Hit on the head!")
+                wait_time = pygame.time.get_ticks()
                 weak_grav = False
                 if not is_mute:    
                     hit_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
                 velocity_y = 0
                 deathcount += 1
 
@@ -5781,6 +5770,12 @@ def create_lvl10_screen():
         else:
             show_greenrobo_unlocked = False
 
+        if wait_time is not None:
+            if pygame.time.get_ticks() - wait_time < 2500:
+                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
+            else:
+                wait_time = None
+
         pygame.display.update() 
 
 def create_lvl11_screen():
@@ -5789,6 +5784,7 @@ def create_lvl11_screen():
     in_game = load_language(lang_code).get('in_game', {})
     messages = load_language(lang_code).get('messages', {})
 
+    wait_time = None
     start_time = time.time()
 
     # Camera settings
@@ -6087,14 +6083,13 @@ def create_lvl11_screen():
 
 
         if player_y > (SCREEN_HEIGHT + 100):
-            fall_text = in_game.get("fall_message", "Fell too far!")
-            screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
+            death_text = in_game.get("fall_message", "Fell too far!")
+            evilrobo_phase = 0
+            epos_x, epos_y = espawn_x, espawn_y
             lights_off = True
             stamina = False
             if not is_mute:    
                 fall_sound.play()
-            pygame.display.update()
-            pygame.time.delay(300)
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount += 1
@@ -6201,12 +6196,12 @@ def create_lvl11_screen():
         # Trigger death logic
                 lights_off = True
                 stamina = False
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                death_text = in_game.get("sawed_message", "Sawed to bits!")
+                velocity_y = 0
+                evilrobo_phase = 0
+                epos_x, epos_y = espawn_x, espawn_y
                 if not is_mute:
                     death_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
 
@@ -6230,12 +6225,12 @@ def create_lvl11_screen():
         # Trigger death logic
                 lights_off = True
                 stamina = False
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                death_text = in_game.get("sawed_message", "Sawed to bits!")
+                velocity_y = 0
+                evilrobo_phase = 0
+                epos_x, epos_y = espawn_x, espawn_y
                 if not is_mute:
                     death_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
 
@@ -6260,14 +6255,14 @@ def create_lvl11_screen():
                 lights_off = True
                 stamina = False
                     # Trigger death logic
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                death_text = in_game.get("sawed_message", "Sawed to bits!")
+                velocity_y = 0
+                evilrobo_phase = 0
+                epos_x, epos_y = espawn_x, espawn_y
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
                 if not is_mute:
                     death_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300) 
 
         for saw in rushing_saws:
             saw['cx'] += saw['speed']
@@ -6288,14 +6283,15 @@ def create_lvl11_screen():
                 lights_off = True
                 stamina = False
                     # Trigger death logic
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 50))
+                death_text = in_game.get("sawed_message", "Sawed to bits!")
+                velocity_y = 0
+                evilrobo_phase = 0
+                epos_x, epos_y = espawn_x, espawn_y
+                wait_time = pygame.time.get_ticks()
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
                 if not is_mute:
                     death_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300) 
 
         for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))        
@@ -6311,14 +6307,13 @@ def create_lvl11_screen():
                 laser_rect = pygame.Rect(block['x'] + 4, block['y'] + block['height'] + 5, block['width'] - 8 , 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground and player_x != block['x']:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                fall_text = in_game.get("hit_message", "Hit on the head!")
-                screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
+                death_text = in_game.get("hit_message", "Hit on the head!")
+                evilrobo_phase = 0
+                epos_x, epos_y = espawn_x, espawn_y
                 stamina = False
                 lights_off = True
                 if not is_mute:    
                     hit_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
                 velocity_y = 0
                 deathcount += 1
                 
@@ -6333,14 +6328,13 @@ def create_lvl11_screen():
                 laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                fall_text = in_game.get("hit_message", "Hit on the head!")
-                screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 50))
+                death_text = in_game.get("hit_message", "Hit on the head!")
+                evilrobo_phase = 0
+                epos_x, epos_y = espawn_x, espawn_y
                 stamina = False
                 lights_off = True
                 if not is_mute:    
                     hit_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
                 velocity_y = 0
                 deathcount += 1
 
@@ -6363,11 +6357,10 @@ def create_lvl11_screen():
                     stamina = False
                     player_x, player_y = spawn_x, spawn_y  # Reset player position
                     death_text = in_game.get("dead_message", "You Died")
-                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                    evilrobo_phase = 0
+                    epos_x, epos_y = espawn_x, espawn_y
                     if not is_mute:
                         death_sound.play()
-                    pygame.display.update()
-                    pygame.time.delay(300)
                     velocity_y = 0
                     deathcount += 1
                     collision_detected = True  # Set the flag to stop further checks
@@ -6390,12 +6383,11 @@ def create_lvl11_screen():
             # Trigger death logic
                     player_x, player_y = spawn_x, spawn_y  # Reset player position
                     death_text = in_game.get("dead_message", "You Died")
-                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                    evilrobo_phase = 0
+                    velocity_y = 0
+                    epos_x, epos_y = espawn_x, espawn_y
                     if not is_mute:
                         death_sound.play()
-                    pygame.display.update()
-                    pygame.time.delay(300)
-                    velocity_y = 0
                     deathcount += 1
                     collision_detected = True  # Set the flag to stop further checks
                     break
@@ -6468,7 +6460,6 @@ def create_lvl11_screen():
                     save_progress(progress)
             epos_x -= 12
 
-
         if epos_x < 2150:
             evilrobo_phase = 2
 
@@ -6483,13 +6474,14 @@ def create_lvl11_screen():
         
         if player_rect.colliderect(evilrobo_rect) and lights_off:
             evilrobo_phase = 0
-            player_x, player_y = spawn_x, spawn_y
+            velocity_y = 0
             epos_x, epos_y = espawn_x, espawn_y
+            player_x, player_y = spawn_x, spawn_y
+            screen.fill((255, 255, 255))
+            stamina = False
             if not is_mute:
                 hit_sound.play()
             deathcount += 1
-            pygame.display.update()
-            pygame.time.delay(300)
 
         button4_text = in_game.get("button4_message", "Green buttons, upon activation, will give you a massive speed boost!")
         rendered_button4_text = font.render(button4_text, True, (51, 255, 51))
@@ -6562,6 +6554,12 @@ def create_lvl11_screen():
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
+
+        if wait_time is not None:
+            if pygame.time.get_ticks() - wait_time < 2500:
+                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
+            else:
+                wait_time = None
 
         pygame.display.update() 
 
