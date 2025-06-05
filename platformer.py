@@ -4,6 +4,7 @@ import os
 import math
 import sys
 import time  # Import time to track time(for future use in scoring)
+import random
 
 # Path to sound folder
 SOUND_FOLDER = os.path.join("audio")
@@ -179,8 +180,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.19", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
+ver_text = font_def.render("Version 1.2.20", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -201,6 +202,24 @@ def loading_screen():
     pygame.display.flip()
     pygame.time.delay(1300)  # Delay to show the loading screen
 
+# Particles
+class Particle:
+    def __init__(self, x, y, color=(255,255,255), size=5, lifetime=30, vx = None, vy = None):
+        self.x = x
+        self.y = y
+        self.vx = random.uniform(-2, 2) if vx is None else vx
+        self.vy = random.uniform(-2, 2) if vy is None else vy
+        self.color = color
+        self.size = size
+        self.lifetime = lifetime
+
+    def update(self):
+        self.x += self.vx
+        self.y += self.vy
+        self.lifetime -= 1
+
+    def draw(self, surface):
+        pygame.draw.circle(surface, self.color, (int(self.x), int(self.y)), self.size)
 
 # Page states
 current_page = 'main_menu'
@@ -622,15 +641,15 @@ def create_quit_confirm_buttons():
 
     pygame.display.flip()  # Update the display to show the quit confirmation screen
 
+particles = []
+
 def create_lvl1_screen():
-    global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked
+    global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, particles
 
     in_game = load_language(lang_code).get('in_game', {})
 
     wait_time = None
     start_time = time.time()
-
-    # each frame
 
     # Camera settings
     camera_x = 0  
@@ -645,7 +664,8 @@ def create_lvl1_screen():
     camera_speed = 0.05
     deathcount = 0
     was_moving = False
-
+    just_collided = False
+    
     # Load player image
     player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
     img_width, img_height = player_img.get_size()
@@ -712,8 +732,11 @@ def create_lvl1_screen():
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
+            collided_with_block = False
+            just_collided = True
             if not is_mute:
                 jump_sound.play()
+        
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -736,7 +759,6 @@ def create_lvl1_screen():
             velocity_y += gravity
         player_y += velocity_y
 
-
         # Moving blocks
         moving_block.x += moving_speed * moving_direction1
         if moving_block.x < moving_limit_left1 or moving_block.x > moving_limit_right1:
@@ -745,6 +767,7 @@ def create_lvl1_screen():
         # Collisions and Ground Detection
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
         on_ground = False
+        collided_with_block = False
 
         for block in blocks + [moving_block]:
             if player_rect.colliderect(block):
@@ -753,6 +776,9 @@ def create_lvl1_screen():
                     player_y = block.y - img_height
                     velocity_y = 0
                     on_ground = True
+                    if just_collided:
+                        collided_with_block = True
+                        just_collided = False
 
                 # Hitting the bottom of a block
                 elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
@@ -876,6 +902,35 @@ def create_lvl1_screen():
                         break
 
         pygame.draw.rect(screen, (129, 94, 123), (exit_portal.x - camera_x, exit_portal.y - camera_y, exit_portal.width, exit_portal.height))
+
+        if on_ground and moving:
+            # Only spawn one particle per frame for a smooth trail
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                # Spawn at the left-back edge as player moves right
+                px = player_x - camera_x
+                py = random.randint(int(player_y + img_height * 0.7), int(player_y + img_height)- camera_y) 
+                particles.append(Particle(px, py, color=(0, 113, 22), size=3, lifetime=40, vy = 0))
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                # Spawn at the right-back edge as player moves left
+                px = player_x + img_width - camera_x
+                py = random.randint(int(player_y + img_height * 0.7), int(player_y + img_height)- camera_y)
+                particles.append(Particle(px, py, color=(0, 113, 22), size=3, lifetime=40, vy = 0))
+
+        elif collided_with_block:
+            for _ in range(7):
+                px = random.randint(player_x, player_x + img_width)
+                py = player_y + img_height
+                particles.append(Particle(px - camera_x, py - camera_y, color=(0, 113, 22), size=3, lifetime=40))
+            collided_with_block = False
+            just_collided = False # Flag to prevent collided with block becoming True again
+
+            # Update and draw particles
+        for particle in particles[:]:
+            particle.update()
+            particle.draw(screen)
+            if particle.lifetime <= 0:
+                particles.remove(particle)
+
         screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
