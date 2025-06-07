@@ -180,8 +180,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.22", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
+ver_text = font_def.render("Version 1.2.23", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -769,7 +769,7 @@ def create_lvl1_screen():
                     elif player_x + img_width > block.x + block.width:  # Colliding with the right side
                         player_x = block.x + block.width
 
-        if player_y > (SCREEN_HEIGHT + 50):
+        if player_y > 1100:
             player_x, player_y = 600, 200
             death_text = in_game.get("fall_message", "Fell too far!")
             wait_time = pygame.time.get_ticks()
@@ -1117,7 +1117,7 @@ def create_lvl2_screen():
                     elif player_x + img_width > jump_block.x + jump_block.width:  # Colliding with the right side
                         player_x = jump_block.x + jump_block.width
 
-            if player_y > (SCREEN_HEIGHT + 50):
+            if player_y > 1100:
                 death_text = in_game.get("fall_message", "Fell too far!")
                 if not is_mute:
                     fall_sound.play()
@@ -1476,7 +1476,7 @@ def create_lvl3_screen():
                     elif player_x + img_width > jump_block.x + jump_block.width:  # Colliding with the right side
                         player_x = jump_block.x + jump_block.width
 
-            if player_y > (SCREEN_HEIGHT + 50):
+            if player_y > 1100:
                 death_text = in_game.get("fall_message", "Fell too far!")
                 wait_time = pygame.time.get_ticks()
                 if not is_mute:
@@ -1972,7 +1972,7 @@ def create_lvl4_screen():
                     elif player_x + img_width > jump_block.x + jump_block.width:  # Colliding with the right side
                         player_x = jump_block.x + jump_block.width
 
-        if player_y > (SCREEN_HEIGHT + 50):
+        if player_y > 1100:
             death_text = in_game.get("fall_message", "Fell too far!")
             wait_time = pygame.time.get_ticks()
             if not is_mute:
@@ -2563,7 +2563,7 @@ def create_lvl5_screen():
                     elif player_x + img_width > jump_block.x + jump_block.width:  # Colliding with the right side
                         player_x = jump_block.x + jump_block.width
 
-        if player_y > (SCREEN_HEIGHT + 50):
+        if player_y > 1100:
             death_text = in_game.get("fall_message", "Fell too far!")
             wait_time = pygame.time.get_ticks()
             if not is_mute:
@@ -3157,7 +3157,7 @@ def create_lvl6_screen():
                     elif player_x + img_width > jump_block.x + jump_block.width:  # Colliding with the right side
                         player_x = jump_block.x + jump_block.width
 
-        if player_y > (SCREEN_HEIGHT + 50):
+        if player_y > 1100:
             death_text = in_game.get("fall_message", "Fell too far!")
             wait_time = pygame.time.get_ticks()
             if not is_mute:
@@ -3731,7 +3731,7 @@ def create_lvl7_screen():
                         player_x = block.x + block.width
 
 
-        if player_y > SCREEN_HEIGHT:
+        if player_y > 1100:
             death_text = in_game.get("fall_message", "Fell too far!")
             wait_time = pygame.time.get_ticks()
             if not is_mute:
@@ -4265,7 +4265,7 @@ def create_lvl8_screen():
                         player_x = jump_block.x + jump_block.width
 
 
-        if player_y > SCREEN_HEIGHT:
+        if player_y > 1100:
             death_text = in_game.get("fall_message", "Fell too far!")
             wait_time = pygame.time.get_ticks()
             weak_grav = False # Reset weak gravity status
@@ -4880,7 +4880,7 @@ def create_lvl9_screen():
                             player_x = block.x + block.width
 
 
-        if player_y > SCREEN_HEIGHT:
+        if player_y > 1100:
             death_text = in_game.get("fall_message", "Fell too far!")
             wait_time = pygame.time.get_ticks()
             key_block_pairs[0]["collected"] = False  # Reset key block status
@@ -5472,7 +5472,7 @@ def create_lvl10_screen():
                     elif player_x + img_width > jump_block.x + jump_block.width:  # Colliding with the right side
                         player_x = jump_block.x + jump_block.width
 
-        if player_y > SCREEN_HEIGHT:
+        if player_y > 1100:
             death_text = in_game.get("fall_message", "Fell too far!")
             wait_time = pygame.time.get_ticks()
             lights_off = True
@@ -6140,7 +6140,7 @@ def create_lvl11_screen():
                             player_x = block.x + block.width
 
 
-        if player_y > (SCREEN_HEIGHT + 100):
+        if player_y > 1100:
             death_text = in_game.get("fall_message", "Fell too far!")
             evilrobo_phase = 0
             epos_x, epos_y = espawn_x, espawn_y
@@ -6663,7 +6663,7 @@ class Particle:
 snow = []
 
 def create_lvl12_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, particles
+    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, snow
 
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -7108,6 +7108,11 @@ def create_lvl12_screen():
         # Drawing
         screen.blit(ice_background, (0, 0))
 
+        for _ in range(2):
+            px = random.randint(-200, SCREEN_WIDTH + 200)
+            py = -300
+            snow.append(Particle(px, py, color=(255, 255, 255), size=3, lifetime=1400))
+
         # Update and draw particles
         for particle in snow[:]:
             particle.update()
@@ -7535,7 +7540,7 @@ def create_lvl12_screen():
                         ice.rect.height = int(ice.float_height)
                     break
 
-        if player_y > (SCREEN_HEIGHT + 100):
+        if player_y > 1100:
             fall_text = in_game.get("fall_message", "Fell too far!")
             screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 80))
             lights_off = True
