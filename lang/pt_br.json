@@ -24,6 +24,7 @@
         "lvl11": "Nível 11",
         "lvl12": "Nível 12",
         "back": "Voltar"
+        ,"next": "próximo"
     },
     "messages": {
         "you_are_in": "Você está no {level}",

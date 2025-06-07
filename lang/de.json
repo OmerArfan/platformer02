@@ -24,6 +24,7 @@
   "lvl11": "Stufe 11",
   "lvl12": "Stufe 12",
   "back": "zurückkehren"
+  ,"next": "Nächste"
    }
   ,"messages": {
   "you_are_in": "Du bist in {level}"
