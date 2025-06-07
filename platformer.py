@@ -180,8 +180,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.21", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 176, SCREEN_HEIGHT - 144)
+ver_text = font_def.render("Version 1.2.22", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -336,13 +336,13 @@ def green_world_buttons():
     # Back button at bottom center
     back_text = current_lang.get("back", "Back")
     rendered_back = font.render(back_text, True, (255, 255, 255))
-    back_rect = rendered_back.get_rect(center=(50, SCREEN_HEIGHT // 2))
+    back_rect = rendered_back.get_rect(center=(90, SCREEN_HEIGHT // 2))
     buttons.append((rendered_back, back_rect, "back"))
 
         # Next button at bottom center
     next_text = current_lang.get("next", "next")
     rendered_next = font.render(next_text, True, (255, 255, 255))
-    next_rect = rendered_next.get_rect(center=(SCREEN_WIDTH - 50, SCREEN_HEIGHT // 2))
+    next_rect = rendered_next.get_rect(center=(SCREEN_WIDTH - 80, SCREEN_HEIGHT // 2))
     buttons.append((rendered_next, next_rect, "next"))
 
 def ice_world_buttons():
@@ -350,9 +350,7 @@ def ice_world_buttons():
     levels = load_language(lang_code).get('levels', {})
     buttons.clear()
 
-    # Render "Select a Level" text
-    select_text = levels.get("level_display", "SELECT A LEVEL")
-    rendered_select_text = font.render(select_text, True, (255, 255, 255))
+    rendered_select_text = font.render(select_text, True, (0, 0, 0))
     select_text_rect = rendered_select_text.get_rect(center=(SCREEN_WIDTH // 2, 50))  # Center at the top
 
     # Store the rendered text and its position for later drawing
@@ -375,7 +373,7 @@ def ice_world_buttons():
         is_locked = level in progress["locked_levels"]  # Check if the level is locked
 
         # Render the level text
-        color = (150, 150, 150) if is_locked else (255, 255, 255)  # Gray out locked levels
+        color = (79, 79, 79) if is_locked else (0, 0, 0)  # Gray out locked levels
         rendered = font.render(text, True, color)
 
         col = i % buttons_per_row
@@ -6642,8 +6640,30 @@ def create_lvl11_screen():
 
         pygame.display.update() 
 
+# Check snow effects!
+class Particle:
+    def __init__(self, x, y, color=(255,255,255), size=5, lifetime=30, vx = None, vy = None):
+        self.x = x
+        self.y = y
+        self.vx = random.uniform(-2, 2) if vx is None else vx
+        self.vy = random.uniform(-2, 2) if vy is None else vy
+        self.color = color
+        self.size = size
+        self.lifetime = lifetime
+
+    def update(self):
+        self.x += self.vx
+        self.y += self.vy
+        self.lifetime -= 1
+
+    def draw(self, surface):
+        pygame.draw.circle(surface, self.color, (int(self.x), int(self.y)), self.size)
+
+# Snow
+snow = []
+
 def create_lvl12_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
+    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, particles
 
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -6699,12 +6719,12 @@ def create_lvl12_screen():
     img_width, img_height = player_img.get_size()
 
     # Draw flag
-    flag = pygame.Rect(1400, -1000, 100, 125)  # x, y, width, height
+    flag = pygame.Rect(5250, 460, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(5400, 300, 100, 125)  # x, y, width, height
+    flag2 = pygame.Rect(54000, 300, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
-    flag_1_x, flag_1_y = 1400, -1000
-    flag_2_x, flag_2_y = 5400, 300
+    flag_1_x, flag_1_y = 5250, 460
+    flag_2_x, flag_2_y = 54900, 300
 
     key_block_pairs = [
         {
@@ -6732,7 +6752,8 @@ def create_lvl12_screen():
             self.float_height = self.initial_height
 
     ice_blocks = [
-        IceBlock(pygame.Rect(2000, 550, 2000, 150))
+        IceBlock(pygame.Rect(2000, 550, 2000, 150)),
+        IceBlock(pygame.Rect(5670, 550, 6000, 50))
     ]
 
     moving_saws = [ 
@@ -6741,7 +6762,7 @@ def create_lvl12_screen():
     ]
 
     moving_saws_x = [
-        {'r': 30, 'speed': 3, 'cx': 1700, 'cy': 320, 'min': 1650, 'max': 1900},
+        {'r': 30, 'speed': 9, 'cx': 6300, 'cy': 550, 'min': 6250, 'max': 7800},
         {'r': 30, 'speed': 4, 'cx': 2100, 'cy': -130, 'min': 1750, 'max': 2100},
     ]
 
@@ -6778,8 +6799,7 @@ def create_lvl12_screen():
     clock = pygame.time.Clock()
 
     speedsters = [
-        (-100, 400, 30, (51, 255, 51)),
-        (2450, -400, 30, (51, 255, 51)),
+        (5300, 450, 30, (51, 255, 51)),
     ]
 
     def point_in_triangle(px, py, a, b, c):
@@ -6812,7 +6832,7 @@ def create_lvl12_screen():
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                set_page("levels")
+                set_page("ice_levels")
 
         # Ice and Ground temeprature logic
         if not keys[pygame.K_r]:
@@ -6826,14 +6846,16 @@ def create_lvl12_screen():
         # Minimum and Maximum Temperature Logic
         if current_temp > max_temp:
             player_x, player_y = spawn_x, spawn_y
-            overheat_sound.play()
+            if not is_mute:
+                overheat_sound.play()
             current_temp = start_temp
             for ice in ice_blocks:
                 ice.float_height = ice.initial_height
                 ice.rect.height = int(ice.float_height)
         elif current_temp < min_temp:
             player_x, player_y = spawn_x, spawn_y
-            freeze_sound.play()
+            if not is_mute:
+                freeze_sound.play()
             current_temp = start_temp            
             for ice in ice_blocks:
                 ice.float_height = ice.initial_height
@@ -7028,7 +7050,7 @@ def create_lvl12_screen():
             checkpoint_reached = True
             stamina = False  # Reset stamina status
             lights_off = True
-            spawn_x, spawn_y = 1400, 420  # Store checkpoint position
+            spawn_x, spawn_y = 5300, 400  # Store checkpoint position
             if not is_mute:
                 checkpoint_sound.play()
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
@@ -7085,6 +7107,13 @@ def create_lvl12_screen():
 
         # Drawing
         screen.blit(ice_background, (0, 0))
+
+        # Update and draw particles
+        for particle in snow[:]:
+            particle.update()
+            particle.draw(screen)
+            if particle.lifetime <= 0:
+                snow.remove(particle)
 
         if checkpoint_reached:
             screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
@@ -7202,12 +7231,13 @@ def create_lvl12_screen():
                             player_x = block.x + block.width
 
         pygame.draw.rect(screen, (96, 96, 96), (0, 0, 300 , 130 ))
-        pygame.draw.rect(screen, (96, 96, 96), (SCREEN_WIDTH // 2 - 63, 0, 120 , 70))
+        pygame.draw.rect(screen, (96, 96, 96), (SCREEN_WIDTH // 2 - 80, 0, 160 , 70))
         pygame.draw.rect(screen, (96, 96, 96), (SCREEN_WIDTH - 250, 0, 250 , 80 ))
 
         levels = load_language(lang_code).get('levels', {})
         lvl_text = levels.get("lvl12", "Level 12")  # Render the level text
-        screen.blit(font.render(lvl_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+        rendered_lvl_text = font.render(lvl_text, True, (255, 255, 255))
+        screen.blit(rendered_lvl_text, (SCREEN_WIDTH //2 - rendered_lvl_text.get_width() // 2, 20)) # Draws the level text
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -7239,6 +7269,48 @@ def create_lvl12_screen():
 
         timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+
+        # Locked blocks logic!
+        for pair in key_block_pairs:
+            if not pair["collected"]:  # Only active locked blocks
+                block = pair["block"]
+                if player_rect.colliderect(block):
+            # Falling onto a block
+                    if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
+                        player_y = block.y - img_height
+                        velocity_y = 0
+                        on_ground = True
+
+            # Hitting the bottom of a block
+                    elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
+                        player_y = block.y + block.height
+                        velocity_y = 0
+
+            # Horizontal collisions
+                    elif player_x + img_width > block.x and player_x < block.x + block.width:
+                        if player_x < block.x:
+                            player_x = block.x - img_width
+                        elif player_x + img_width > block.x + block.width:
+                            player_x = block.x + block.width
+
+        for pair in key_block_pairs:
+            key_x, key_y, key_r, key_color = pair["key"]
+            block = pair["block"]
+
+            # Check collision if not yet collected
+            if not pair["collected"]:
+                key_rect = pygame.Rect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
+            if player_rect.colliderect(key_rect):
+                if not pair["collected"] and not is_mute:
+                    open_sound.play()
+                pair["collected"] = True
+            
+            if not pair["collected"]:
+                pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
+
+            # Draw block only if key is not collected
+            if not pair["collected"]:
+                pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
         # DEATH LOGICS
         for block in moving_block:
@@ -7478,48 +7550,6 @@ def create_lvl12_screen():
             for ice in ice_blocks:
                 ice.float_height = ice.initial_height
                 ice.rect.height = int(ice.float_height)
-
-
-        for pair in key_block_pairs:
-            if not pair["collected"]:  # Only active locked blocks
-                block = pair["block"]
-                if player_rect.colliderect(block):
-            # Falling onto a block
-                    if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
-                        player_y = block.y - img_height
-                        velocity_y = 0
-                        on_ground = True
-
-            # Hitting the bottom of a block
-                    elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
-                        player_y = block.y + block.height
-                        velocity_y = 0
-
-            # Horizontal collisions
-                    elif player_x + img_width > block.x and player_x < block.x + block.width:
-                        if player_x < block.x:
-                            player_x = block.x - img_width
-                        elif player_x + img_width > block.x + block.width:
-                            player_x = block.x + block.width
-
-        for pair in key_block_pairs:
-            key_x, key_y, key_r, key_color = pair["key"]
-            block = pair["block"]
-
-            # Check collision if not yet collected
-            if not pair["collected"]:
-                key_rect = pygame.Rect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
-            if player_rect.colliderect(key_rect):
-                if not pair["collected"] and not is_mute:
-                    open_sound.play()
-                pair["collected"] = True
-            
-            if not pair["collected"]:
-                pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
-
-            # Draw block only if key is not collected
-            if not pair["collected"]:
-                pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
         if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
@@ -7953,7 +7983,7 @@ while running:
         elif current_page == "levels":
             screen.blit(green_background, (0, 0))
             # Fetch the localized "Select a Level" text dynamically
-            select_text = current_lang.get("select_level", "Select a Level")
+            select_text = current_lang.get("level_display", "Select a Level")
             rendered_select_text = font.render(select_text, True, (255, 255, 255))
             select_text_rect = rendered_select_text.get_rect(center=(SCREEN_WIDTH // 2, 50))
 
@@ -8167,10 +8197,22 @@ while running:
         elif current_page == "ice_levels":
             screen.blit(ice_background, (0, 0))
             # Fetch the localized "Select a Level" text dynamically
-            select_text = current_lang.get("select_level", "Select a Level")
+            select_text = current_lang.get("level_display", "Select a Level")
             rendered_select_text = font.render(select_text, True, (0, 0, 0))
             select_text_rect = rendered_select_text.get_rect(center=(SCREEN_WIDTH // 2, 50))
             screen.blit(rendered_select_text, select_text_rect)
+
+            for _ in range(2):
+                px = random.randint(-200, SCREEN_WIDTH + 200)
+                py = -300
+                snow.append(Particle(px, py, color=(255, 255, 255), size=3, lifetime=1400))
+
+            # Update and draw particles
+            for particle in snow[:]:
+                particle.update()
+                particle.draw(screen)
+                if particle.lifetime <= 0:
+                    snow.remove(particle)
 
     # Render buttons for ice world levels
             for rendered, rect, key in buttons:
