@@ -180,8 +180,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.20", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 144)
+ver_text = font_def.render("Version 1.2.21", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 176, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -201,25 +201,6 @@ def loading_screen():
     screen.blit(rendered_loading, loading_rect)
     pygame.display.flip()
     pygame.time.delay(1300)  # Delay to show the loading screen
-
-# Particles
-class Particle:
-    def __init__(self, x, y, color=(255,255,255), size=5, lifetime=30, vx = None, vy = None):
-        self.x = x
-        self.y = y
-        self.vx = random.uniform(-2, 2) if vx is None else vx
-        self.vy = random.uniform(-2, 2) if vy is None else vy
-        self.color = color
-        self.size = size
-        self.lifetime = lifetime
-
-    def update(self):
-        self.x += self.vx
-        self.y += self.vy
-        self.lifetime -= 1
-
-    def draw(self, surface):
-        pygame.draw.circle(surface, self.color, (int(self.x), int(self.y)), self.size)
 
 # Page states
 current_page = 'main_menu'
@@ -641,10 +622,8 @@ def create_quit_confirm_buttons():
 
     pygame.display.flip()  # Update the display to show the quit confirmation screen
 
-particles = []
-
 def create_lvl1_screen():
-    global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, particles
+    global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked
 
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -902,35 +881,6 @@ def create_lvl1_screen():
                         break
 
         pygame.draw.rect(screen, (129, 94, 123), (exit_portal.x - camera_x, exit_portal.y - camera_y, exit_portal.width, exit_portal.height))
-
-        if on_ground and moving:
-            # Only spawn one particle per frame for a smooth trail
-            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-                # Spawn at the left-back edge as player moves right
-                px = player_x - camera_x
-                py = random.randint(int(player_y + img_height * 0.7), int(player_y + img_height)- camera_y) 
-                particles.append(Particle(px, py, color=(0, 113, 22), size=3, lifetime=40, vy = 0))
-            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-                # Spawn at the right-back edge as player moves left
-                px = player_x + img_width - camera_x
-                py = random.randint(int(player_y + img_height * 0.7), int(player_y + img_height)- camera_y)
-                particles.append(Particle(px, py, color=(0, 113, 22), size=3, lifetime=40, vy = 0))
-
-        elif collided_with_block:
-            for _ in range(7):
-                px = random.randint(player_x, player_x + img_width)
-                py = player_y + img_height
-                particles.append(Particle(px - camera_x, py - camera_y, color=(0, 113, 22), size=3, lifetime=40))
-            collided_with_block = False
-            just_collided = False # Flag to prevent collided with block becoming True again
-
-            # Update and draw particles
-        for particle in particles[:]:
-            particle.update()
-            particle.draw(screen)
-            if particle.lifetime <= 0:
-                particles.remove(particle)
-
         screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
@@ -6128,11 +6078,6 @@ def create_lvl11_screen():
                     velocity_y = 0
                     on_ground = True
 
-                # Hitting the bottom of a block
-                elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
-                    player_y = block.y + block.height
-                    velocity_y = 0
-
                 # Horizontal collision (left or right side of the block)
                 elif player_x + img_width > block.x and player_x < block.x + block.width:
                     if player_x < block.x:  # Colliding with the left side of the block
@@ -6156,11 +6101,6 @@ def create_lvl11_screen():
                     if not is_mute:
                         bounce_sound.play()
 
-                # Hitting the bottom of a jump block
-                elif velocity_y < 0 and player_y >= jump_block.y + jump_block.height - velocity_y:
-                    player_y = jump_block.y + jump_block.height
-                    velocity_y = 0
-
                 # Horizontal collision (left or right side of the jump block)
                 elif player_x + img_width > jump_block.x and player_x < jump_block.x + jump_block.width:
                     if player_x < jump_block.x:  # Colliding with the left side of the jump block
@@ -6176,11 +6116,6 @@ def create_lvl11_screen():
                     player_y = rect.y - img_height
                     velocity_y = 0
                     on_ground = True
-
-                # Hitting the bottom of a block
-                elif velocity_y < 0 and player_y >= rect.y + rect.height - velocity_y:
-                    player_y = rect.y + rect.height
-                    velocity_y = 0
 
                 # Horizontal collision (left or right side of the block)
                 elif player_x + img_width > rect.x and player_x < rect.x + rect.width:
@@ -6199,11 +6134,6 @@ def create_lvl11_screen():
                         velocity_y = 0
                         on_ground = True
 
-            # Hitting the bottom of a block
-                    elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
-                        player_y = block.y + block.height
-                        velocity_y = 0
-
             # Horizontal collisions
                     elif player_x + img_width > block.x and player_x < block.x + block.width:
                         if player_x < block.x:
@@ -6218,6 +6148,7 @@ def create_lvl11_screen():
             epos_x, epos_y = espawn_x, espawn_y
             lights_off = True
             stamina = False
+            wait_time = pygame.time.get_ticks()
             if not is_mute:    
                 fall_sound.play()
             player_x, player_y = spawn_x, spawn_y  # Reset player position
@@ -6330,6 +6261,7 @@ def create_lvl11_screen():
                 velocity_y = 0
                 evilrobo_phase = 0
                 epos_x, epos_y = espawn_x, espawn_y
+                wait_time = pygame.time.get_ticks()
                 if not is_mute:
                     death_sound.play()
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
@@ -6359,6 +6291,7 @@ def create_lvl11_screen():
                 velocity_y = 0
                 evilrobo_phase = 0
                 epos_x, epos_y = espawn_x, espawn_y
+                wait_time = pygame.time.get_ticks()
                 if not is_mute:
                     death_sound.play()
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
@@ -6386,6 +6319,7 @@ def create_lvl11_screen():
                 stamina = False
                     # Trigger death logic
                 death_text = in_game.get("sawed_message", "Sawed to bits!")
+                wait_time = pygame.time.get_ticks()
                 velocity_y = 0
                 evilrobo_phase = 0
                 epos_x, epos_y = espawn_x, espawn_y
@@ -6441,6 +6375,7 @@ def create_lvl11_screen():
                 evilrobo_phase = 0
                 epos_x, epos_y = espawn_x, espawn_y
                 stamina = False
+                wait_time = pygame.time.get_ticks()
                 lights_off = True
                 if not is_mute:    
                     hit_sound.play()
@@ -6460,6 +6395,7 @@ def create_lvl11_screen():
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 death_text = in_game.get("hit_message", "Hit on the head!")
                 evilrobo_phase = 0
+                wait_time = pygame.time.get_ticks()
                 epos_x, epos_y = espawn_x, espawn_y
                 stamina = False
                 lights_off = True
@@ -6487,6 +6423,7 @@ def create_lvl11_screen():
                     stamina = False
                     player_x, player_y = spawn_x, spawn_y  # Reset player position
                     death_text = in_game.get("dead_message", "You Died")
+                    wait_time = pygame.time.get_ticks()
                     evilrobo_phase = 0
                     epos_x, epos_y = espawn_x, espawn_y
                     if not is_mute:
@@ -6516,6 +6453,7 @@ def create_lvl11_screen():
                     evilrobo_phase = 0
                     velocity_y = 0
                     epos_x, epos_y = espawn_x, espawn_y
+                    wait_time = pygame.time.get_ticks()
                     if not is_mute:
                         death_sound.play()
                     deathcount += 1
@@ -6580,7 +6518,7 @@ def create_lvl11_screen():
             screen.blit(evilrobo_mascot, (int(epos_x - camera_x), int(epos_y - camera_y)))
             if player_y > -300:
                 confused_text = font.render("WHERE DID HE GO????", True, (82, 0, 0))
-                screen.blit(confused_text, ((epos_x - camera_x), ((epos_y - 50) - camera_y)))
+                screen.blit(confused_text, ((epos_x - camera_x), (epos_y - camera_y)))
                 if not unlock:
                     if not is_mute:
                         notify_sound.play()
@@ -6612,6 +6550,17 @@ def create_lvl11_screen():
             if not is_mute:
                 hit_sound.play()
             deathcount += 1
+
+        if player_x > 4800 and player_y < -300 and not lights_off:
+            epos_x = 4799
+            epos_y = player_y
+            screen.blit(evilrobo_mascot, ((epos_x - camera_x), (epos_y - camera_y)))
+            if player_rect.colliderect(evilrobo_rect):
+                screen.fill((255, 255, 255))
+                epos_x, epos_y = espawn_x, espawn_y
+                player_x, player_y = spawn_x, spawn_y
+                hit_sound.play()
+                
 
         button4_text = in_game.get("button4_message", "Green buttons, upon activation, will give you a massive speed boost!")
         rendered_button4_text = font.render(button4_text, True, (51, 255, 51))
