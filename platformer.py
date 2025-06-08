@@ -115,6 +115,7 @@ level_thresholds = [
     {'level': 9 ,'gold': 60, 'silver': 80, 'bronze': 100},
     {'level': 10,'gold': 35, 'silver': 50, 'bronze': 60},
     {'level': 11,'gold': 35, 'silver': 55, 'bronze': 75},
+    {'level': 12,'gold': 45, 'silver': 60, 'bronze': 85},
 ]
 
 # Function to get medal based on time
@@ -180,8 +181,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.23", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 144)
+ver_text = font_def.render("Version 1.2.24", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -6200,7 +6201,7 @@ def create_lvl11_screen():
 
             save_progress(progress)  # Save progress to JSON file
             running = False
-            set_page('lvl12_screen')    
+            set_page('ice_levels')    
 
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
@@ -6666,7 +6667,9 @@ def create_lvl12_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, snow
 
     in_game = load_language(lang_code).get('in_game', {})
+    in_game_ice = load_language(lang_code).get('in_game_ice', {})
 
+    wait_time = None
     start_time = time.time()
 
     # Camera settings
@@ -6762,8 +6765,12 @@ def create_lvl12_screen():
     ]
 
     moving_saws_x = [
-        {'r': 30, 'speed': 9, 'cx': 6300, 'cy': 550, 'min': 6250, 'max': 7800},
-        {'r': 30, 'speed': 4, 'cx': 2100, 'cy': -130, 'min': 1750, 'max': 2100},
+        {'r': 50, 'speed': 11, 'cx': 6300, 'cy': 550, 'min': 6250, 'max': 7800},
+        {'r': 50, 'speed': 16, 'cx': 7100, 'cy': 550, 'min': 6500, 'max': 8300},
+        {'r': 50, 'speed': 13, 'cx': 6700, 'cy': 550, 'min': 6000, 'max': 8900},
+        {'r': 50, 'speed': 14, 'cx': 7800, 'cy': 550, 'min': 7300, 'max': 9700},
+        {'r': 50, 'speed': 17, 'cx': 8100, 'cy': 550, 'min': 7000, 'max': 10200},
+        {'r': 50, 'speed': 15, 'cx': 8700, 'cy': 550, 'min': 7800, 'max': 10800},
     ]
 
     rushing_saws = [
@@ -6795,7 +6802,7 @@ def create_lvl12_screen():
         pygame.Rect(5300, 200, 300, 100),
     ]
 
-    exit_portal = pygame.Rect(1200, 350, 50, 100)
+    exit_portal = pygame.Rect(11500, 450, 50, 100)
     clock = pygame.time.Clock()
 
     speedsters = [
@@ -7077,7 +7084,7 @@ def create_lvl12_screen():
             if current_time < progress["times"]["lvl12"] or progress["times"]["lvl12"] == 0:
                 progress["times"]["lvl12"] = round(current_time, 2)
             
-            progress["medals"]["lvl12"] = get_medal(1, progress["times"]["lvl12"])
+            progress["medals"]["lvl12"] = get_medal(12, progress["times"]["lvl12"])
 
             update_locked_levels()
             save_progress(progress)  # Save progress to JSON file
@@ -7193,15 +7200,23 @@ def create_lvl12_screen():
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
 
-        button4_text = in_game.get("button4_message", "Green buttons, upon activation, will give you a massive speed boost!")
-        rendered_button4_text = font.render(button4_text, True, (51, 255, 51))
-        screen.blit(rendered_button4_text, (-320 - camera_x, 300 - camera_y))
-
         if player_rect.colliderect(light_off_button):
             if not is_mute and lights_off:
                 button_sound.play()
             lights_off = False
 
+        ice_text = in_game_ice.get("ice_message", "Ice Blocks melt when you stand on them! But they also cool you down!")
+        rendered_ice_text = font.render(ice_text, True, (0, 0, 0))
+        screen.blit(rendered_ice_text, (2050 - camera_x, 560 - camera_y))
+        freeze_text = in_game_ice.get("freeze_message", "Just remember to get some warm ups and don't just freeze to death!")
+        rendered_freeze_text = font.render(freeze_text, True, (0, 0, 0))
+        screen.blit(rendered_freeze_text, (2055 - camera_x, 590 - camera_y))    
+        overheat_text1 = in_game_ice.get("overheat_message1", "Also remember to keep track of your temperature and if")    
+        rendered_overheat1_text = font.render(overheat_text1, True, (0, 0, 0))
+        screen.blit(rendered_overheat1_text, (4600 - camera_x, 300 - camera_y))
+        overheat_text2 = in_game_ice.get("overheat_message2", "you heat up too much, stand on an ice block nearby!")
+        rendered_overheat2_text = font.render(overheat_text2, True, (0, 0, 0))
+        screen.blit(rendered_overheat2_text, (4620 - camera_x, 340 - camera_y))
         if not lights_off:
             # Create a full dark surface
             pygame.draw.rect(screen, (0, 0, 0), (0, 0, SCREEN_WIDTH // 2 -  320 , SCREEN_HEIGHT ))
@@ -8189,13 +8204,10 @@ while running:
                         else:
                             lvl11_medal_text = font.render("Medal: None", True, (255, 255, 255))
                             screen.blit(lvl11_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100)) 
-                    elif key == "lvl12":
-                        lvl11_txt = font.render(f"Coming soon!", True, (255, 255, 0))
-                        screen.blit(lvl11_txt, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
 
                 else:
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((153, 51, 255, 0))  # RGBA: 100 is alpha (transparency)
+                    button_surface.fill((153, 51, 255, 0))
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)
                 screen.blit(rendered, rect)
 
@@ -8230,8 +8242,21 @@ while running:
                         hover_sound.play()
                     button_hovered_last_frame = hovered
                     if key == "lvl12":
-                        lvl12_txt = font.render(f"Coming soon!", True, (255, 255, 0))
-                        screen.blit(lvl12_txt, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
+                        lvl12_time_text = font.render(f"Best Time: {progress['times']['lvl12']}s", True, (255, 255, 0))
+                        screen.blit(lvl12_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
+                        if progress['medals']['lvl12'] == "Gold":
+                            lvl12_medal_text = font.render(f"Medal: {progress['medals']['lvl12']}", True, (255, 255, 0))
+                            screen.blit(lvl12_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
+                        elif progress['medals']['lvl12'] == "Silver":
+                            lvl12_medal_text = font.render(f"Medal: {progress['medals']['lvl12']}", True, (160, 160, 160))
+                            screen.blit(lvl12_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
+                        elif progress['medals']['lvl12'] == "Bronze":
+                            lvl12_medal_text = font.render(f"Medal: {progress['medals']['lvl12']}", True, (153, 76, 0))
+                            screen.blit(lvl12_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
+                        else:
+                            lvl12_medal_text = font.render("Medal: None", True, (255, 255, 255))
+                            screen.blit(lvl12_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100)) 
+
                     else:
                         lvl_txt = font.render(f"I don't even know if I'll make this...", True, (255, 0, 0))
                         screen.blit(lvl_txt, (SCREEN_WIDTH // 2 - lvl_txt.get_width() // 2, SCREEN_HEIGHT - 50))
