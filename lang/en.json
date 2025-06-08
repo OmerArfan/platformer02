@@ -60,6 +60,10 @@
   ,"clarify_message2": "They also affect your jumps on jump blocks!"
   ,"button3_message": "Purple buttons, upon activation, will turn out almost all the lights!"
   ,"button4_message": "Green buttons, upon activation, will give you a massive speed boost!"
-  ,"temp": "Temperature: {current_temp}"
 }
+  ,"in_game_ice":{
+    "temp": "Temperature: {current_temp}",
+    "ice_message": "Ice Blocks melt when you stand on them! But they also cool you down!"
+    ,"freeze_message": "But remember to get some warm ups and don't just freeze to death!"
+  }
 }
