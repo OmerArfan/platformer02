@@ -149,6 +149,8 @@ logo = pygame.image.load("logo.png").convert_alpha()
 # Load and scale backgrounds
 background_img = pygame.image.load("bgs/Background.png").convert()
 background = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+plain_background_img = pygame.image.load("bgs/PlainBackground.png").convert()
+plain_background = pygame.transform.scale(plain_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 ice_background_img = pygame.image.load("bgs/IceBackground.png").convert()
 ice_background = pygame.transform.scale(ice_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 green_background_img = pygame.image.load("bgs/GreenBackground.png").convert()
@@ -173,7 +175,7 @@ def render_text(text, color = (255, 255, 255)):
     if any('\u4e00' <= c <= '\u9fff' for c in text):
         return pygame.font.Font('NotoSansSC-SemiBold.ttf', 25).render(text, True, color)
     else:
-        return font.render(text, True, color)
+        return font_def.render(text, True, color)
 
 site_text = font_def.render("Sound effects from: pixabay.com", True, (255, 255, 255))
 site_pos = (SCREEN_WIDTH - 398, SCREEN_HEIGHT - 84)
@@ -181,7 +183,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.24", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.25", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -226,7 +228,7 @@ def create_main_menu_buttons():
 
     # Center buttons vertically and horizontally
     button_spacing = 60
-    start_y = (SCREEN_HEIGHT // 2) - (len(button_texts) * button_spacing // 2) + 230
+    start_y = (SCREEN_HEIGHT // 2) - (len(button_texts) * button_spacing // 2) + 250
 
     for i, key in enumerate(button_texts):
         text = current_lang[key]
@@ -7262,7 +7264,7 @@ def create_lvl12_screen():
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
 
-        temp_val = in_game.get("temp", "Temperature: {current_temp}").format(current_temp=current_temp)
+        temp_val = in_game_ice.get("temp", "Temperature: {current_temp}").format(current_temp=current_temp)
         if current_temp >= 4 and current_temp <= 13:
             screen.blit(font.render(temp_val, True, (0, 188, 255)), (20, 50))
         elif current_temp >= 13 and current_temp <= 20:
@@ -7666,6 +7668,7 @@ while running:
     # Clear screen!
     screen.blit(background, (0, 0))
     mouse_pos = pygame.mouse.get_pos()
+
     if SCREEN_WIDTH < MIN_WIDTH or SCREEN_HEIGHT < MIN_HEIGHT:
         countdown = 5  # seconds
         clock = pygame.time.Clock()
@@ -7735,6 +7738,10 @@ while running:
         # Render the main menu buttons
             for rendered, rect, key in buttons:
                 if rect.collidepoint(mouse_pos):
+                    button_surface = pygame.Surface(rect.inflate(30, 15).size, pygame.SRCALPHA)
+                    button_surface.fill((255, 255, 0, 255))  # RGBA: Hover color
+                    screen.blit(button_surface, rect.inflate(30, 15).topleft)
+                    pygame.draw.rect(screen, (74, 74, 74), rect.inflate(30, 15), 6)  # Border for hover effect
 
                     if key == "start":
                         menu_text = font.render("Play the game.", True, (255, 255, 0))
@@ -7753,12 +7760,14 @@ while running:
                         screen.blit(lang_text, (SCREEN_WIDTH // 2 - 120, SCREEN_HEIGHT - 50))
                 else:
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((153, 51, 255, 0))  # RGBA: 100 is alpha (transparency)
+                    button_surface.fill((140, 140, 0, 255))  # RGBA: 100 is alpha (transparency)
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)
+                    pygame.draw.rect(screen, (0, 0, 0), rect.inflate(30, 15), 6)
                 screen.blit(rendered, rect)
 
         if current_page == "character_select":
             # Initalize locked sound effect
+            screen.blit(plain_background, (0, 0))
             locked_sound_played = False
             messages = load_language(lang_code).get('messages', {})  # Fetch localized messages
             #Check if characters are locked
@@ -7888,7 +7897,11 @@ while running:
                     screen.blit(rendered_locked_text, ((SCREEN_WIDTH // 2 - rendered_locked_text.get_width() // 2), SCREEN_HEIGHT - 700))
                 else:
                     wait_time = None
+        if current_page == "language_select":
+            screen.blit(plain_background, (0, 0))
+
         if current_page == "quit_confirm":
+            screen.blit(plain_background, (0, 0))
             # Render the quit confirmation text
             screen.blit(quit_text, quit_text_rect)
             screen.blit(icerobot_img, (SCREEN_WIDTH // 2 - icerobot_img.get_width() // 2, SCREEN_HEIGHT // 2 - 200))
@@ -7896,17 +7909,19 @@ while running:
             # Render the "Yes" and "No" buttons
             for rendered, rect, key in buttons:
                 if rect.collidepoint(mouse_pos):
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
+                    button_surface = pygame.Surface(rect.inflate(30, 15).size, pygame.SRCALPHA)
+                    button_surface.fill((255, 255, 0, 255))  # RGBA: Hover color
+                    screen.blit(button_surface, rect.inflate(30, 15).topleft)
+                    pygame.draw.rect(screen, (74, 74, 74), rect.inflate(30, 15), 6)  # Border for hover effect        
                     hovered = rect.collidepoint(pygame.mouse.get_pos())
                     if hovered and not button_hovered_last_frame and not is_mute:
                         hover_sound.play()
                     button_hovered_last_frame = hovered
                 else:
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((153, 51, 255, 0))  # RGBA: 100 is alpha (transparency)
+                    button_surface.fill((140, 140, 0, 255))  # RGBA: 100 is alpha (transparency)
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)
+                    pygame.draw.rect(screen, (0, 0, 0), rect.inflate(30, 15), 6)
                 screen.blit(rendered, rect)
 
             # Allow returning to the main menu with ESC
