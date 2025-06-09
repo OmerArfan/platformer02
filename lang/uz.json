@@ -64,6 +64,13 @@
   ,"clarify_message2": "Ular shuningdek, sakrash bloklaridagi sakrashlaringizga ta'sir qiladi!"
   ,"button3_message": "Binafsha tugmalar, faollashtirilganda, deyarli barcha chiroqlarni o'chiradi!"
   ,"button4_message": "Yashil tugmalar, faollashtirilganda, sizga katta tezlikni oshiradi!" 
-  ,"temp": "Harorat: {current_temp}"
+  
+  }
+  ,"in_game_ice": {  
+  "temp": "Harorat: {current_temp}"
+  ,"ice_message": "Muz bloklari ustida turganingizda eriydi! Ammo ular sizni sovutadi ham!",
+  "freeze_message": "Lekin muzlab qolmaslik uchun biroz isinishni unutmang!",
+  "overheat_message1": "Shuningdek, haroratingizni nazorat qilishni unutmang, agar",
+  "overheat_message2": "juda qizib ketsangiz, yaqin atrofdagi muz blokida turing!"
 }
 }

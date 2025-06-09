@@ -64,6 +64,13 @@
   ,"clarify_message2": "Ils affectent également vos sauts sur les blocs de saut!"
   ,"button3_message": "Les boutons violets éteignent presque toutes les lumières lorsqu'ils sont activés!"
   ,"button4_message": "Les boutons verts, une fois activés, vous donneront un énorme coup de pouce de vitesse!"
-  ,"temp": "Température: {current_temp}"
+}
+,"in_game_ice":{
+"temp": "Température: {current_temp}"
+,"ice_message": "Les blocs de glace fondent quand tu restes dessus ! Mais ils te rafraîchissent aussi !",
+"freeze_message": "Mais pense à te réchauffer un peu, ne meurs pas de froid !",
+"overheat_message1": "Souviens-toi aussi de surveiller ta température, et si",
+"overheat_message2": "tu surchauffes trop, tiens-toi sur un bloc de glace à proximité !"
+
 }
 }

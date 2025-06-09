@@ -65,5 +65,7 @@
     "temp": "Temperature: {current_temp}",
     "ice_message": "Ice Blocks melt when you stand on them! But they also cool you down!"
     ,"freeze_message": "But remember to get some warm ups and don't just freeze to death!"
+    ,"overheat_message1": "Also remember to keep track of your temperature and if"
+    ,"overheat_message2": "you heat up too much, stand on an ice block nearby!"
   }
 }

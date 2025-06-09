@@ -64,6 +64,13 @@
   ,"clarify_message2": "¡También afectan tus saltos en bloques de salto!"
   ,"button3_message": "¡Los botones morados apagan casi todas las luces al activarse!"
   ,"button4_message": "¡Los botones verdes, al activarse, te darán un gran impulso de velocidad!"
-  ,"temp": "Temperatura: {current_temp}"
+  }
+  ,"in_game_ice":{
+  "temp": "Temperatura: {current_temp}"
+  ,"ice_message": "¡Los bloques de hielo se derriten cuando te paras sobre ellos! ¡Pero también te enfrían!",
+  "freeze_message": "¡Pero recuerda calentarte un poco o podrías congelarte!",
+  "overheat_message1": "Recuerda también vigilar tu temperatura, y si",
+  "overheat_message2": "te calientas demasiado, párate sobre un bloque de hielo cercano."
+
 }
 }

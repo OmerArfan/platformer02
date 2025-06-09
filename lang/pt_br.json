@@ -64,6 +64,13 @@
         ,"clarify_message2": "Eles também afetam seus saltos em blocos de salto!"
         ,"button3_message": "Botões roxos desligam quase todas as luzes ao serem ativados!"
         ,"button4_message": "Botões verdes, ao serem ativados, darão um grande impulso de velocidade!"
-        ,"temp": "Temperatura: {current_temp}"
     }
+    ,"in_game_ice": {
+    "temp": "Temperatura: {current_temp}"
+    ,"ice_message": "Blocos de gelo derretem quando você fica em cima deles! Mas também ajudam a esfriar!",
+    "freeze_message": "Mas lembre-se de se aquecer um pouco — não congele até morrer!",
+    "overheat_message1": "Lembre-se também de monitorar sua temperatura e, se",
+    "overheat_message2": "ficar quente demais, fique em um bloco de gelo próximo!"
+
+}
 }
