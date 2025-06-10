@@ -183,7 +183,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.25", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.26", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -234,7 +234,7 @@ def create_main_menu_buttons():
         text = current_lang[key]
         rendered = font.render(text, True, (255, 255, 255))
         rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, start_y + i * button_spacing)) 
-        buttons.append((rendered, rect, key))
+        buttons.append((rendered, rect, key, False))
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -276,7 +276,7 @@ def create_language_buttons():
         y = start_y + row * spacing_y
 
         rect = rendered.get_rect(center=(x, y))
-        buttons.append((rendered, rect, code))
+        buttons.append((rendered, rect, code, False))
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -286,7 +286,7 @@ def create_language_buttons():
     back_text = current_lang.get("back", "Back")
     rendered_back = font.render(back_text, True, (255, 255, 255))
     back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, y + spacing_y + 40))
-    buttons.append((rendered_back, back_rect, "back"))
+    buttons.append((rendered_back, back_rect, "back", False))
 
 def green_world_buttons():
     global current_lang, buttons
@@ -331,22 +331,89 @@ def green_world_buttons():
 
         # Add the button only if the level is not locked
         if not is_locked:
-            buttons.append((rendered, rect, level))
+            buttons.append((rendered, rect, level, is_locked))
         else:
             # Add the locked button for display purposes (no interaction)
-            buttons.append((rendered, rect, None))  # Use `None` as the key for locked levels
-
+            buttons.append((rendered, rect, None, False))  # Use None as the key for locked levels
+    
     # Back button at bottom center
     back_text = current_lang.get("back", "Back")
     rendered_back = font.render(back_text, True, (255, 255, 255))
     back_rect = rendered_back.get_rect(center=(90, SCREEN_HEIGHT // 2))
-    buttons.append((rendered_back, back_rect, "back"))
+    buttons.append((rendered_back, back_rect, "back", False))
 
         # Next button at bottom center
     next_text = current_lang.get("next", "next")
     rendered_next = font.render(next_text, True, (255, 255, 255))
     next_rect = rendered_next.get_rect(center=(SCREEN_WIDTH - 80, SCREEN_HEIGHT // 2))
-    buttons.append((rendered_next, next_rect, "next"))
+    buttons.append((rendered_next, next_rect, "next", False))
+
+greendisk_img = pygame.image.load("oimgs/disks/greendisk.png").convert_alpha()
+greendisk_img = pygame.transform.scale(greendisk_img, (100, 100))  # Resize as needed
+lockeddisk_img = pygame.image.load("oimgs/disks/lockeddisk.png").convert_alpha()
+lockeddisk_img = pygame.transform.scale(lockeddisk_img, (140, 140))  # Resize as needed
+
+def ph_green_world_buttons():
+    global current_lang, buttons
+    levels = load_language(lang_code).get('levels', {})
+    buttons.clear()
+
+    # Render "Select a Level" text
+    select_text = levels.get("level_display", "SELECT A LEVEL")
+    rendered_select_text = font.render(select_text, True, (255, 255, 255))
+    select_text_rect = rendered_select_text.get_rect(center=(SCREEN_WIDTH // 2, 50))
+
+    # Store for later drawing
+    global select_level_text, select_level_rect
+    select_level_text = rendered_select_text
+    select_level_rect = select_text_rect
+
+    level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11"]
+    buttons_per_row = 4
+    spacing_x = 160
+    spacing_y = 120
+
+    grid_width = (buttons_per_row - 1) * spacing_x
+    start_x = (SCREEN_WIDTH - grid_width) // 2
+    start_y = ((SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2))
+
+    for i, level in enumerate(level_options):
+        text = levels.get(level, level.capitalize())
+        is_locked = level in progress["locked_levels"]
+
+        color = (150, 150, 150) if is_locked else (255, 255, 255)
+
+        col = i % buttons_per_row
+        row = i // buttons_per_row
+
+        x = start_x + col * spacing_x
+        y = start_y + row * spacing_y
+
+        # Prepare image and text
+        disk_rect = greendisk_img.get_rect(center=(x, y))
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect(center=(x, y))
+
+        # Draw to screen (if this function is being called during drawing)
+        screen.blit(greendisk_img, disk_rect)
+        screen.blit(text_surface, text_rect)
+
+        # Store disk_rect for click detection
+        buttons.append((None, disk_rect, level if not is_locked else None, is_locked))  # First item is unused, just a placeholder
+
+    # Add Back button
+    back_text = current_lang.get("back", "Back")
+    rendered_back = font.render(back_text, True, (255, 255, 255))
+    back_rect = rendered_back.get_rect(center=(90, SCREEN_HEIGHT // 2))
+    screen.blit(rendered_back, back_rect)
+    buttons.append((rendered_back, back_rect, "back", False))
+
+    # Add Next button
+    next_text = current_lang.get("next", "Next", )
+    rendered_next = font.render(next_text, True, (255, 255, 255))
+    next_rect = rendered_next.get_rect(center=(SCREEN_WIDTH - 80, SCREEN_HEIGHT // 2))
+    screen.blit(rendered_next, next_rect)
+    buttons.append((rendered_next, next_rect, "next", False))
 
 def ice_world_buttons():
     global current_lang, buttons
@@ -389,16 +456,16 @@ def ice_world_buttons():
 
         # Add the button only if the level is not locked
         if not is_locked:
-            buttons.append((rendered, rect, level))
+            buttons.append((rendered, rect, level, is_locked))
         else:
             # Add the locked button for display purposes (no interaction)
-            buttons.append((rendered, rect, None))  # Use `None` as the key for locked levels
+            buttons.append((rendered, rect, None, is_locked))  # Use `None` as the key for locked levels
 
     # Back button at bottom center
     back_text = current_lang.get("back", "Back")
     rendered_back = font.render(back_text, True, (255, 255, 255))
     back_rect = rendered_back.get_rect(center=(50, SCREEN_HEIGHT // 2 - 50))
-    buttons.append((rendered_back, back_rect, "back"))
+    buttons.append((rendered_back, back_rect, "back", is_locked))
 
 def load_level(level_id):
     global current_page, buttons
@@ -423,7 +490,7 @@ def load_level(level_id):
     back_text = "Back"
     rendered_back = font.render(back_text, True, (255, 255, 255))
     back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100))  # Center at the bottom
-    buttons.append((rendered_back, back_rect, "back"))
+    buttons.append((rendered_back, back_rect, "back", False))
 
 def check_green_gold():
     global show_greenrobo_unlocked, greenrobo_unlocked_message_time
@@ -463,7 +530,7 @@ evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 200, SCREEN
 icerobot_rect = icerobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 - 50))
 lavarobot_rect = lavarobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 - 50))
 greenrobot_rect = greenrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 250, SCREEN_HEIGHT // 2 - 50))
-def open_achievements():
+def character_select():
     global selected_character, set_page, current_page
     
     # Clear screen
@@ -545,13 +612,13 @@ def set_page(page):
         current_lang = load_language(lang_code).get('main_menu', {})
         create_main_menu_buttons()
     elif page == 'character_select':
-        open_achievements()
+        character_select()
     elif page == 'language_select':
         current_lang = load_language(lang_code).get('language_select', {})
         create_language_buttons()
     elif page == 'levels':
         current_lang = load_language(lang_code).get('levels', {})
-        green_world_buttons()
+        ph_green_world_buttons()
         change_ambience("audio/amb/greenambience.wav")
     elif page == 'quit_confirm':
         current_lang = load_language(lang_code).get('messages', {})
@@ -613,13 +680,13 @@ def create_quit_confirm_buttons():
     yes_text = messages.get("yes", "Yes")
     rendered_yes = font.render(yes_text, True, (255, 255, 255))
     yes_rect = rendered_yes.get_rect(center=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 50))
-    buttons.append((rendered_yes, yes_rect, "yes"))
+    buttons.append((rendered_yes, yes_rect, "yes", False))
 
     # Create "No" button
     no_text = messages.get("no", "No")
     rendered_no = font.render(no_text, True, (255, 255, 255))
     no_rect = rendered_no.get_rect(center=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 + 50))
-    buttons.append((rendered_no, no_rect, "no"))
+    buttons.append((rendered_no, no_rect, "no", False))
 
     pygame.display.flip()  # Update the display to show the quit confirmation screen
 
@@ -7661,7 +7728,7 @@ set_page('main_menu')
 button_hovered_last_frame = False
 update_locked_levels() # Update locked levels every frame!
 wait_time = None
-
+disk_mode = True
 # Main loop
 running = True
 while running:
@@ -7719,14 +7786,15 @@ while running:
                 set_page("quit_confirm")
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                # Only process clicks if enough time has passed since last page change
-                if time.time() - last_page_change_time > click_delay:  
-                    for _, rect, key in buttons:
-                        if rect.collidepoint(event.pos):
-                            if key != "back" and not is_mute:
-                                click_sound.play()
-                            handle_action(key)
-                            last_page_change_time = time.time()  # Update the time after handling the click
+            # Only process clicks if enough time has passed since last page change
+                if time.time() - last_page_change_time > click_delay and current_page != "levels" or current_page != "quit_confirm":
+                        if is_locked is not None:
+                            for _, rect, key, is_locked in buttons:
+                                if rect.collidepoint(event.pos):
+                                    if key != "back" and not is_mute:
+                                        click_sound.play()
+                                    handle_action(key)
+                                    last_page_change_time = time.time()
 
         if current_page == "main_menu":
 
@@ -7736,7 +7804,7 @@ while running:
             screen.blit(credit_text, credit_pos)
             screen.blit(ver_text, ver_pos)
         # Render the main menu buttons
-            for rendered, rect, key in buttons:
+            for rendered, rect, key, is_locked in buttons:
                 if rect.collidepoint(mouse_pos):
                     button_surface = pygame.Surface(rect.inflate(30, 15).size, pygame.SRCALPHA)
                     button_surface.fill((255, 255, 0, 255))  # RGBA: Hover color
@@ -7907,12 +7975,15 @@ while running:
             screen.blit(icerobot_img, (SCREEN_WIDTH // 2 - icerobot_img.get_width() // 2, SCREEN_HEIGHT // 2 - 200))
 
             # Render the "Yes" and "No" buttons
-            for rendered, rect, key in buttons:
+            for rendered, rect, key, is_locked in buttons:
                 if rect.collidepoint(mouse_pos):
                     button_surface = pygame.Surface(rect.inflate(30, 15).size, pygame.SRCALPHA)
                     button_surface.fill((255, 255, 0, 255))  # RGBA: Hover color
                     screen.blit(button_surface, rect.inflate(30, 15).topleft)
-                    pygame.draw.rect(screen, (74, 74, 74), rect.inflate(30, 15), 6)  # Border for hover effect        
+                    pygame.draw.rect(screen, (74, 74, 74), rect.inflate(30, 15), 6)
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)      
                     hovered = rect.collidepoint(pygame.mouse.get_pos())
                     if hovered and not button_hovered_last_frame and not is_mute:
                         hover_sound.play()
@@ -8026,12 +8097,18 @@ while running:
             screen.blit(rendered_select_text, select_text_rect)
 
             # Render buttons for levels
-            for rendered, rect, key in buttons:
+            for rendered, rect, key, is_locked in buttons:
+                if not is_locked:
+                    screen.blit(greendisk_img, rect)
                 if rect.collidepoint(mouse_pos):
+                    if key is not None:
+                        # Unlocked level
+                        screen.blit(greendisk_img, rect)
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
                     button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
                     hovered = rect.collidepoint(pygame.mouse.get_pos())
+                    screen.blit(greendisk_img, rect)
                     if hovered and not button_hovered_last_frame and not is_mute:
                         hover_sound.play()
                     button_hovered_last_frame = hovered
@@ -8220,11 +8297,12 @@ while running:
                             lvl11_medal_text = font.render("Medal: None", True, (255, 255, 255))
                             screen.blit(lvl11_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100)) 
 
-                else:
+                else:    
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
                     button_surface.fill((153, 51, 255, 0))
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                screen.blit(rendered, rect)
+                if rendered:
+                    screen.blit(rendered, rect)
 
         elif current_page == "ice_levels":
             screen.blit(ice_background, (0, 0))
@@ -8247,7 +8325,7 @@ while running:
                     snow.remove(particle)
 
     # Render buttons for ice world levels
-            for rendered, rect, key in buttons:
+            for rendered, rect, key, is_locked in buttons:
                 if rect.collidepoint(mouse_pos):
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
                     button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
@@ -8284,7 +8362,7 @@ while running:
 
         else:
             # Render buttons for other pages
-            for rendered, rect, key in buttons:
+            for rendered, rect, key, is_locked in buttons:
                 if rect.collidepoint(mouse_pos):
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
                     button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
