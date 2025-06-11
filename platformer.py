@@ -45,7 +45,7 @@ def change_ambience(new_file):
     pygame.mixer.music.play(-1)
 
 # Save file name
-SAVE_FILE = "save_data.json"
+SAVE_FILE = "save_data_1.1.6.json"
 
 # Default progress dictionary
 default_progress = {
@@ -164,6 +164,7 @@ act_cp = pygame.image.load("oimgs/checkpoints/green_flag.png").convert_alpha()
 font_path_ch = 'NotoSansSC-SemiBold.ttf'
 font_path = 'NotoSansDisplay-SemiBold.ttf'
 font_def = pygame.font.Font(font_path, 25)
+font_text = pygame.font.Font(font_path, 55)
 
 if lang_code == "zh_cn":
     font = pygame.font.Font(font_path_ch, 25)
@@ -183,7 +184,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.26", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.27", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -299,43 +300,38 @@ def green_world_buttons():
     select_text_rect = rendered_select_text.get_rect(center=(SCREEN_WIDTH // 2, 50))  # Center at the top
 
     # Store the rendered text and its position for later drawing
-    global select_level_text, select_level_rect
+    global select_level_text, select_level_rect, text_rect
     select_level_text = rendered_select_text
     select_level_rect = select_text_rect
 
     level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11"]
+    level_no = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"]
     buttons_per_row = 4
-    spacing_x = 140
-    spacing_y = 70
+    spacing_x = 160
+    spacing_y = 120
 
-    # Calculate starting positions to center the grid
     grid_width = (buttons_per_row - 1) * spacing_x
-    start_x = (SCREEN_WIDTH - grid_width) // 2 
-    start_y = ((SCREEN_HEIGHT // 2) - (1.25*(len(level_options) // buttons_per_row * spacing_y // 2)))
+    start_x = (SCREEN_WIDTH - grid_width) // 2
+    start_y = ((SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2))
 
     for i, level in enumerate(level_options):
-        text = levels.get(level, level.capitalize())
-        is_locked = level in progress["locked_levels"]  # Check if the level is locked
+        text = level_no[i]
+        is_locked = level in progress["locked_levels"]
 
-        # Render the level text
-        color = (150, 150, 150) if is_locked else (255, 255, 255)  # Gray out locked levels
-        rendered = font.render(text, True, color)
-
+        color = (255, 255, 255)
         col = i % buttons_per_row
         row = i // buttons_per_row
 
         x = start_x + col * spacing_x
         y = start_y + row * spacing_y
 
-        rect = rendered.get_rect(center=(x, y))
+        disk_rect = greendisk_img.get_rect(center=(x, y))
+        text_surface = font_text.render(text, True, color)
+        
+        # In green_world_buttons()
+        text_rect = text_surface.get_rect(center=disk_rect.center)
+        buttons.append((text_surface, disk_rect, key, is_locked))
 
-        # Add the button only if the level is not locked
-        if not is_locked:
-            buttons.append((rendered, rect, level, is_locked))
-        else:
-            # Add the locked button for display purposes (no interaction)
-            buttons.append((rendered, rect, None, False))  # Use None as the key for locked levels
-    
     # Back button at bottom center
     back_text = current_lang.get("back", "Back")
     rendered_back = font.render(back_text, True, (255, 255, 255))
@@ -351,7 +347,7 @@ def green_world_buttons():
 greendisk_img = pygame.image.load("oimgs/disks/greendisk.png").convert_alpha()
 greendisk_img = pygame.transform.scale(greendisk_img, (100, 100))  # Resize as needed
 lockeddisk_img = pygame.image.load("oimgs/disks/lockeddisk.png").convert_alpha()
-lockeddisk_img = pygame.transform.scale(lockeddisk_img, (140, 140))  # Resize as needed
+lockeddisk_img = pygame.transform.scale(lockeddisk_img, (100, 100))  # Resize as needed
 
 def ph_green_world_buttons():
     global current_lang, buttons
@@ -390,12 +386,10 @@ def ph_green_world_buttons():
         y = start_y + row * spacing_y
 
         # Prepare image and text
-        disk_rect = greendisk_img.get_rect(center=(x, y))
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect(center=(x, y))
 
         # Draw to screen (if this function is being called during drawing)
-        screen.blit(greendisk_img, disk_rect)
         screen.blit(text_surface, text_rect)
 
         # Store disk_rect for click detection
@@ -618,7 +612,7 @@ def set_page(page):
         create_language_buttons()
     elif page == 'levels':
         current_lang = load_language(lang_code).get('levels', {})
-        ph_green_world_buttons()
+        green_world_buttons()
         change_ambience("audio/amb/greenambience.wav")
     elif page == 'quit_confirm':
         current_lang = load_language(lang_code).get('messages', {})
@@ -8097,18 +8091,18 @@ while running:
             screen.blit(rendered_select_text, select_text_rect)
 
             # Render buttons for levels
+
             for rendered, rect, key, is_locked in buttons:
-                if not is_locked:
-                    screen.blit(greendisk_img, rect)
                 if rect.collidepoint(mouse_pos):
                     if key is not None:
                         # Unlocked level
                         screen.blit(greendisk_img, rect)
+                    else:
+                        screen.blit(lockeddisk_img, rect)
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
                     button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
                     hovered = rect.collidepoint(pygame.mouse.get_pos())
-                    screen.blit(greendisk_img, rect)
                     if hovered and not button_hovered_last_frame and not is_mute:
                         hover_sound.play()
                     button_hovered_last_frame = hovered
@@ -8298,11 +8292,24 @@ while running:
                             screen.blit(lvl11_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100)) 
 
                 else:    
+                    if key is not None:
+                        # Unlocked level
+                        screen.blit(greendisk_img, rect)
+                    else:
+                        screen.blit(lockeddisk_img, rect)
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
                     button_surface.fill((153, 51, 255, 0))
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)
                 if rendered:
                     screen.blit(rendered, rect)
+            
+            for text_surface, disk_rect, key, is_locked in buttons: 
+                if key is not None:
+                    screen.blit(greendisk_img, disk_rect)
+                else:
+                    screen.blit(lockeddisk_img, disk_rect)
+                text_rect = text_surface.get_rect(center=(disk_rect.x + 50, disk_rect.y + 50))
+                screen.blit(text_surface, text_rect)
 
         elif current_page == "ice_levels":
             screen.blit(ice_background, (0, 0))
