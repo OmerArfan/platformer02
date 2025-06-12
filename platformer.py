@@ -184,7 +184,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.28", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.29", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -289,20 +289,19 @@ def create_language_buttons():
     back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, y + spacing_y + 40))
     buttons.append((rendered_back, back_rect, "back", False))
 
+greendisk_img = pygame.image.load("oimgs/disks/greendisk.png").convert_alpha()
+greendisk_img = pygame.transform.scale(greendisk_img, (100, 100))  # Resize as needed
+icedisk_img = pygame.image.load("oimgs/disks/icedisk.png").convert_alpha()
+icedisk_img = pygame.transform.scale(icedisk_img, (100, 100))  # Resize as needed
+lockeddisk_img = pygame.image.load("oimgs/disks/lockeddisk.png").convert_alpha()
+lockeddisk_img = pygame.transform.scale(lockeddisk_img, (100, 100))  # Resize as needed
+
 def green_world_buttons():
     global current_lang, buttons
-    levels = load_language(lang_code).get('levels', {})
     buttons.clear()
 
-    # Render "Select a Level" text
-    select_text = levels.get("level_display", "SELECT A LEVEL")
-    rendered_select_text = font.render(select_text, True, (255, 255, 255))
-    select_text_rect = rendered_select_text.get_rect(center=(SCREEN_WIDTH // 2, 50))  # Center at the top
-
     # Store the rendered text and its position for later drawing
-    global select_level_text, select_level_rect, text_rect, level_key
-    select_level_text = rendered_select_text
-    select_level_rect = select_text_rect
+    global text_rect, level_key
 
     level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11"]
     level_no = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"]
@@ -315,25 +314,15 @@ def green_world_buttons():
     start_y = ((SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2))
 
     for i, level in enumerate(level_options):
-        color = (255, 255, 255)
         col = i % buttons_per_row
         row = i // buttons_per_row
-
         x = start_x + col * spacing_x
         y = start_y + row * spacing_y
-    
-        text = level_no[i]
+
         is_locked = level in progress["locked_levels"]
-        text_surface = font_text.render(text, True, (255, 255, 255))
+        text_surface = font_text.render(level_no[i], True, (255, 255, 255))
         disk_rect = greendisk_img.get_rect(center=(x, y))
         buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
-
-        disk_rect = greendisk_img.get_rect(center=(x, y))
-        text_surface = font_text.render(text, True, color)
-        
-        # In green_world_buttons()
-        text_rect = text_surface.get_rect(center=disk_rect.center)
-        buttons.append((text_surface, disk_rect, key, is_locked))
 
     # Back button at bottom center
     back_text = current_lang.get("back", "Back")
@@ -347,27 +336,15 @@ def green_world_buttons():
     next_rect = rendered_next.get_rect(center=(SCREEN_WIDTH - 80, SCREEN_HEIGHT // 2))
     buttons.append((rendered_next, next_rect, "next", False))
 
-greendisk_img = pygame.image.load("oimgs/disks/greendisk.png").convert_alpha()
-greendisk_img = pygame.transform.scale(greendisk_img, (100, 100))  # Resize as needed
-lockeddisk_img = pygame.image.load("oimgs/disks/lockeddisk.png").convert_alpha()
-lockeddisk_img = pygame.transform.scale(lockeddisk_img, (100, 100))  # Resize as needed
-
-def ph_green_world_buttons():
+def ph_ice_world_buttons():
     global current_lang, buttons
-    levels = load_language(lang_code).get('levels', {})
     buttons.clear()
 
-    # Render "Select a Level" text
-    select_text = levels.get("level_display", "SELECT A LEVEL")
-    rendered_select_text = font.render(select_text, True, (255, 255, 255))
-    select_text_rect = rendered_select_text.get_rect(center=(SCREEN_WIDTH // 2, 50))
+    # Store the rendered text and its position for later drawing
+    global text_rect, level_key
 
-    # Store for later drawing
-    global select_level_text, select_level_rect
-    select_level_text = rendered_select_text
-    select_level_rect = select_text_rect
-
-    level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11"]
+    level_options = ["lvl12", "lvl13", "lvl14", "lvl15"]
+    level_no = ["12", "13", "14", "15"]
     buttons_per_row = 4
     spacing_x = 160
     spacing_y = 120
@@ -377,40 +354,25 @@ def ph_green_world_buttons():
     start_y = ((SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2))
 
     for i, level in enumerate(level_options):
-        text = levels.get(level, level.capitalize())
-        is_locked = level in progress["locked_levels"]
-
-        color = (150, 150, 150) if is_locked else (255, 255, 255)
-
         col = i % buttons_per_row
         row = i // buttons_per_row
-
         x = start_x + col * spacing_x
         y = start_y + row * spacing_y
 
-        # Prepare image and text
-        text_surface = font.render(text, True, color)
-        text_rect = text_surface.get_rect(center=(x, y))
+        is_locked = level in progress["locked_levels"]
+        if not is_locked:
+            color = (0, 0, 0)
+        else:
+            color = (255, 255, 255)
+        text_surface = font_text.render(level_no[i], True, color)
+        disk_rect = icedisk_img.get_rect(center=(x, y))
+        buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
 
-        # Draw to screen (if this function is being called during drawing)
-        screen.blit(text_surface, text_rect)
-
-        # Store disk_rect for click detection
-        buttons.append((None, disk_rect, level if not is_locked else None, is_locked))  # First item is unused, just a placeholder
-
-    # Add Back button
+    # Back button at bottom center
     back_text = current_lang.get("back", "Back")
     rendered_back = font.render(back_text, True, (255, 255, 255))
     back_rect = rendered_back.get_rect(center=(90, SCREEN_HEIGHT // 2))
-    screen.blit(rendered_back, back_rect)
     buttons.append((rendered_back, back_rect, "back", False))
-
-    # Add Next button
-    next_text = current_lang.get("next", "Next", )
-    rendered_next = font.render(next_text, True, (255, 255, 255))
-    next_rect = rendered_next.get_rect(center=(SCREEN_WIDTH - 80, SCREEN_HEIGHT // 2))
-    screen.blit(rendered_next, next_rect)
-    buttons.append((rendered_next, next_rect, "next", False))
 
 def ice_world_buttons():
     global current_lang, buttons
@@ -658,7 +620,7 @@ def set_page(page):
         create_lvl12_screen()   
     elif page == 'ice_levels':
         current_lang = load_language(lang_code).get('levels', {})
-        ice_world_buttons()
+        ph_ice_world_buttons()
         change_ambience("audio/amb/iceambience.wav")
 
 def create_quit_confirm_buttons():
@@ -6624,6 +6586,8 @@ def create_lvl11_screen():
                 screen.fill((255, 255, 255))
                 epos_x, epos_y = espawn_x, espawn_y
                 player_x, player_y = spawn_x, spawn_y
+                stamina = False
+                lights_off = True
                 hit_sound.play()
                 
 
@@ -8118,200 +8082,30 @@ while running:
             if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
                 for text_surface, disk_rect, key, is_locked in buttons:
                     if disk_rect.collidepoint(event.pos):
-                        if key == "lvl1":
-                            lvl1_time_text = font.render(f"Best Time: {progress['times']['lvl1']}s", True, (255, 255, 0))
+                        if key != "next" and key != "back":
+                            lvl_time_text = font.render(f"Best Time: {progress['times'][key]}s", True, (255, 255, 0))
                             # Adjust position as needed
-                            screen.blit(lvl1_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                            if progress['medals']['lvl1'] == "Gold":
-                                lvl1_medal_text = font.render(f"Medal: {progress['medals']['lvl1']}", True, (255, 255, 0))
-                                screen.blit(lvl1_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl1'] == "Silver":
-                                lvl1_medal_text = font.render(f"Medal: {progress['medals']['lvl1']}", True, (160, 160, 160))
-                                screen.blit(lvl1_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl1'] == "Bronze":
-                                lvl1_medal_text = font.render(f"Medal: {progress['medals']['lvl1']}", True, (153, 76, 0))
-                                screen.blit(lvl1_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
+                            screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
+                            if progress['medals'][key] == "Gold":
+                                lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (255, 255, 0))
+                                screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
+                            elif progress['medals'][key] == "Silver":
+                                lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (160, 160, 160))
+                                screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
+                            elif progress['medals'][key] == "Bronze":
+                                lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (153, 76, 0))
+                                screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
                             else:
-                                lvl1_medal_text = font.render(f"Medal: {progress['medals']['lvl1']}", True, (255, 255, 255))
-                                screen.blit(lvl1_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-
-                        elif key == "lvl2":
-                            lvl2_time_text = font.render(f"Best Time: {progress['times']['lvl2']}s", True, (255, 255, 0))
-                            # Adjust position as needed
-                            screen.blit(lvl2_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                            if progress['medals']['lvl2'] == "Gold":
-                                lvl2_medal_text = font.render(f"Medal: {progress['medals']['lvl2']}", True, (255, 255, 0))
-                                screen.blit(lvl2_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl2'] == "Silver":
-                                lvl2_medal_text = font.render(f"Medal: {progress['medals']['lvl2']}", True, (160, 160, 160))
-                                screen.blit(lvl2_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl2'] == "Bronze":
-                                lvl2_medal_text = font.render(f"Medal: {progress['medals']['lvl2']}", True, (153, 76, 0))
-                                screen.blit(lvl2_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            else:
-                                lvl2_medal_text = font.render("Medal: None", True, (255, 255, 255))
-                                screen.blit(lvl2_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                    
-                        elif key == "lvl3":
-                            lvl3_time_text = font.render(f"Best Time: {progress['times']['lvl3']}s", True, (255, 255, 0))
-                            # Adjust position as needed
-                            screen.blit(lvl3_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                            if progress['medals']['lvl3'] == "Gold":
-                                lvl3_medal_text = font.render(f"Medal: {progress['medals']['lvl3']}", True, (255, 255, 0))
-                                screen.blit(lvl3_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl3'] == "Silver":
-                                lvl3_medal_text = font.render(f"Medal: {progress['medals']['lvl3']}", True, (160, 160, 160))
-                                screen.blit(lvl3_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl3'] == "Bronze":
-                                lvl3_medal_text = font.render(f"Medal: {progress['medals']['lvl3']}", True, (153, 76, 0))
-                                screen.blit(lvl3_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            else:
-                                lvl3_medal_text = font.render("Medal: None", True, (255, 255, 255))
-                                screen.blit(lvl3_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                    
-                        elif key == "lvl4":
-                            lvl4_time_text = font.render(f"Best Time: {progress['times']['lvl4']}s", True, (255, 255, 0))
-                            # Adjust position as needed
-                            screen.blit(lvl4_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                            if progress['medals']['lvl4'] == "Gold":
-                                lvl4_medal_text = font.render(f"Medal: {progress['medals']['lvl4']}", True, (255, 255, 0))
-                                screen.blit(lvl4_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl4'] == "Silver":
-                                lvl4_medal_text = font.render(f"Medal: {progress['medals']['lvl4']}", True, (160, 160, 160))
-                                screen.blit(lvl4_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl4'] == "Bronze":
-                                lvl4_medal_text = font.render(f"Medal: {progress['medals']['lvl4']}", True, (153, 76, 0))
-                                screen.blit(lvl4_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            else:
-                                lvl4_medal_text = font.render("Medal: None", True, (255, 255, 255))
-                                screen.blit(lvl4_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))                    
-                    
-                        elif key == "lvl5":
-                            lvl5_time_text = font.render(f"Best Time: {progress['times']['lvl5']}s", True, (255, 255, 0))
-                            # Adjust position as needed
-                            screen.blit(lvl5_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                            if progress['medals']['lvl5'] == "Gold":
-                                lvl5_medal_text = font.render(f"Medal: {progress['medals']['lvl5']}", True, (255, 255, 0))
-                                screen.blit(lvl5_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl5'] == "Silver":
-                                lvl5_medal_text = font.render(f"Medal: {progress['medals']['lvl5']}", True, (160, 160, 160))
-                                screen.blit(lvl5_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl5'] == "Bronze":
-                                lvl5_medal_text = font.render(f"Medal: {progress['medals']['lvl5']}", True, (153, 76, 0))
-                                screen.blit(lvl5_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            else:
-                                lvl5_medal_text = font.render("Medal: None", True, (255, 255, 255))
-                                screen.blit(lvl5_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100)) 
-                    
-                        elif key == "lvl6":
-                            lvl6_time_text = font.render(f"Best Time: {progress['times']['lvl6']}s", True, (255, 255, 0))
-                            # Adjust position as needed
-                            screen.blit(lvl6_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                            if progress['medals']['lvl6'] == "Gold":
-                                lvl6_medal_text = font.render(f"Medal: {progress['medals']['lvl6']}", True, (255, 255, 0))
-                                screen.blit(lvl6_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl6'] == "Silver":
-                                lvl6_medal_text = font.render(f"Medal: {progress['medals']['lvl6']}", True, (160, 160, 160))
-                                screen.blit(lvl6_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl6'] == "Bronze":
-                                lvl6_medal_text = font.render(f"Medal: {progress['medals']['lvl6']}", True, (153, 76, 0))
-                                screen.blit(lvl6_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            else:
-                                lvl6_medal_text = font.render("Medal: None", True, (255, 255, 255))
-                                screen.blit(lvl6_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100)) 
-                    
-                        elif key == "lvl7":
-                            lvl7_time_text = font.render(f"Best Time: {progress['times']['lvl7']}s", True, (255, 255, 0))
-                            # Adjust position as needed
-                            screen.blit(lvl7_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                            if progress['medals']['lvl7'] == "Gold":
-                                lvl7_medal_text = font.render(f"Medal: {progress['medals']['lvl7']}", True, (255, 255, 0))
-                                screen.blit(lvl7_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl7'] == "Silver":
-                                lvl7_medal_text = font.render(f"Medal: {progress['medals']['lvl7']}", True, (160, 160, 160))
-                                screen.blit(lvl7_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl7'] == "Bronze":
-                                lvl7_medal_text = font.render(f"Medal: {progress['medals']['lvl7']}", True, (153, 76, 0))
-                                screen.blit(lvl7_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            else:
-                                lvl7_medal_text = font.render("Medal: None", True, (255, 255, 255))
-                                screen.blit(lvl7_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-
-                        elif key == "lvl8":
-                            lvl8_time_text = font.render(f"Best Time: {progress['times']['lvl8']}s", True, (255, 255, 0))
-                            # Adjust position as needed
-                            screen.blit(lvl8_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                            if progress['medals']['lvl8'] == "Gold":
-                                lvl8_medal_text = font.render(f"Medal: {progress['medals']['lvl8']}", True, (255, 255, 0))
-                                screen.blit(lvl8_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl8'] == "Silver":
-                                lvl8_medal_text = font.render(f"Medal: {progress['medals']['lvl8']}", True, (160, 160, 160))
-                                screen.blit(lvl8_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl8'] == "Bronze":
-                                lvl8_medal_text = font.render(f"Medal: {progress['medals']['lvl8']}", True, (153, 76, 0))
-                                screen.blit(lvl8_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            else:
-                                lvl8_medal_text = font.render("Medal: None", True, (255, 255, 255))
-                                screen.blit(lvl8_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100)) 
-                    
-                        elif key == "lvl9":
-                            lvl9_time_text = font.render(f"Best Time: {progress['times']['lvl9']}s", True, (255, 255, 0))
-                            # Adjust position as needed
-                            screen.blit(lvl9_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                            if progress['medals']['lvl9'] == "Gold":
-                                lvl9_medal_text = font.render(f"Medal: {progress['medals']['lvl9']}", True, (255, 255, 0))
-                                screen.blit(lvl9_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl9'] == "Silver":
-                                lvl9_medal_text = font.render(f"Medal: {progress['medals']['lvl9']}", True, (160, 160, 160))
-                                screen.blit(lvl9_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl9'] == "Bronze":
-                                lvl9_medal_text = font.render(f"Medal: {progress['medals']['lvl9']}", True, (153, 76, 0))
-                                screen.blit(lvl9_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            else:
-                                lvl9_medal_text = font.render("Medal: None", True, (255, 255, 255))
-                                screen.blit(lvl9_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100)) 
-                        elif key == "lvl10":
-                            lvl10_time_text = font.render(f"Best Time: {progress['times']['lvl10']}s", True, (255, 255, 0))
-                            # Adjust position as needed
-                            screen.blit(lvl10_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                            if progress['medals']['lvl10'] == "Gold":
-                                lvl10_medal_text = font.render(f"Medal: {progress['medals']['lvl10']}", True, (255, 255, 0))
-                                screen.blit(lvl10_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl10'] == "Silver":
-                                lvl10_medal_text = font.render(f"Medal: {progress['medals']['lvl10']}", True, (160, 160, 160))
-                                screen.blit(lvl10_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl10'] == "Bronze":
-                                lvl10_medal_text = font.render(f"Medal: {progress['medals']['lvl10']}", True, (153, 76, 0))
-                                screen.blit(lvl10_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            else:
-                                lvl10_medal_text = font.render("Medal: None", True, (255, 255, 255))
-                                screen.blit(lvl10_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100)) 
-                    
-                        elif key == "lvl11":
-                            lvl11_time_text = font.render(f"Best Time: {progress['times']['lvl11']}s", True, (255, 255, 0))
-                            screen.blit(lvl11_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                            if progress['medals']['lvl11'] == "Gold":
-                                lvl11_medal_text = font.render(f"Medal: {progress['medals']['lvl11']}", True, (255, 255, 0))
-                                screen.blit(lvl11_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl11'] == "Silver":
-                                lvl11_medal_text = font.render(f"Medal: {progress['medals']['lvl11']}", True, (160, 160, 160))
-                                screen.blit(lvl11_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals']['lvl11'] == "Bronze":
-                                lvl11_medal_text = font.render(f"Medal: {progress['medals']['lvl11']}", True, (153, 76, 0))
-                                screen.blit(lvl11_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            else:
-                                lvl11_medal_text = font.render("Medal: None", True, (255, 255, 255))
-                                screen.blit(lvl11_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100)) 
-
+                                lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (255, 255, 255))
+                                screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
                     else:    
                         if key is not None:
                             # Unlocked level
                             screen.blit(greendisk_img, rect)
                         else:
                             screen.blit(lockeddisk_img, rect)
-                        button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                        button_surface.fill((153, 51, 255, 0))
-                        screen.blit(button_surface, rect.inflate(20, 10).topleft)
+                        text_rect = text_surface.get_rect(center=(disk_rect.x + 50, disk_rect.y + 50))
+                        screen.blit(text_surface, text_rect)
                     if rendered:
                         screen.blit(rendered, rect)
             
@@ -8343,41 +8137,58 @@ while running:
                 if particle.lifetime <= 0:
                     snow.remove(particle)
 
-    # Render buttons for ice world levels
-            for rendered, rect, key, is_locked in buttons:
-                if rect.collidepoint(mouse_pos):
+            if rect.collidepoint(mouse_pos):
+                    if key is not None:
+                        # Unlocked level
+                        screen.blit(icedisk_img, rect)
+                    else:
+                        screen.blit(lockeddisk_img, rect)
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
                     button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
                     hovered = rect.collidepoint(pygame.mouse.get_pos())
                     if hovered and not button_hovered_last_frame and not is_mute:
                         hover_sound.play()
                     button_hovered_last_frame = hovered
-                    if key == "lvl12":
-                        lvl12_time_text = font.render(f"Best Time: {progress['times']['lvl12']}s", True, (255, 255, 0))
-                        screen.blit(lvl12_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                        if progress['medals']['lvl12'] == "Gold":
-                            lvl12_medal_text = font.render(f"Medal: {progress['medals']['lvl12']}", True, (255, 255, 0))
-                            screen.blit(lvl12_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif progress['medals']['lvl12'] == "Silver":
-                            lvl12_medal_text = font.render(f"Medal: {progress['medals']['lvl12']}", True, (160, 160, 160))
-                            screen.blit(lvl12_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        elif progress['medals']['lvl12'] == "Bronze":
-                            lvl12_medal_text = font.render(f"Medal: {progress['medals']['lvl12']}", True, (153, 76, 0))
-                            screen.blit(lvl12_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                        else:
-                            lvl12_medal_text = font.render("Medal: None", True, (255, 255, 255))
-                            screen.blit(lvl12_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100)) 
 
-                    else:
-                        lvl_txt = font.render(f"I don't even know if I'll make this...", True, (255, 0, 0))
-                        screen.blit(lvl_txt, (SCREEN_WIDTH // 2 - lvl_txt.get_width() // 2, SCREEN_HEIGHT - 50))
+    # Render buttons for ice world levels
+            if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
+                for text_surface, disk_rect, key, is_locked in buttons:
+                    if disk_rect.collidepoint(event.pos):
+                        if not key == "next" and not key == "back" and not is_locked:
+                            lvl_time_text = font.render(f"Best Time: {progress['times'][key]}s", True, (255, 255, 0))
+                            # Adjust position as needed
+                            screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
+                            if progress['medals'][key] == "Gold":
+                                lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (255, 255, 0))
+                                screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
+                            elif progress['medals'][key] == "Silver":
+                                lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (160, 160, 160))
+                                screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
+                            elif progress['medals'][key] == "Bronze":
+                                lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (153, 76, 0))
+                                screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
+                            else:
+                                lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (255, 255, 255))
+                                screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
+                    else:    
+                        if key is not None:
+                            # Unlocked level
+                            screen.blit(icedisk_img, rect)
+                        else:
+                            screen.blit(lockeddisk_img, rect)
+                        text_rect = text_surface.get_rect(center=(disk_rect.x + 50, disk_rect.y + 50))
+                        screen.blit(text_surface, text_rect)
+                    if rendered:
+                        screen.blit(rendered, rect)
+            
+            for text_surface, disk_rect, key, is_locked in buttons: 
+                if key is not None:
+                    screen.blit(icedisk_img, disk_rect)
                 else:
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((153, 51, 255, 0))  # RGBA: 100 is alpha (transparency)
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                screen.blit(rendered, rect)
-        
+                    screen.blit(lockeddisk_img, disk_rect)
+                text_rect = text_surface.get_rect(center=(disk_rect.x + 47, disk_rect.y + 50))
+                screen.blit(text_surface, text_rect)
 
         else:
             # Render buttons for other pages
