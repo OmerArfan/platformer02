@@ -5,6 +5,7 @@ import math
 import sys
 import time  # Import time to track time(for future use in scoring)
 import random
+import webbrowser
 
 # Path to sound folder
 SOUND_FOLDER = os.path.join("audio")
@@ -143,6 +144,9 @@ if SCREEN_WIDTH < 1300:
 else:
     MIN_HEIGHT = 760
 
+pygame.mouse.set_visible(False)  # Hide the system cursor
+cursor_img = pygame.image.load("oimgs/cursor/cursor.png").convert_alpha()
+
 # Load logo images
 logo = pygame.image.load("oimgs/logos/logo.png").convert_alpha()
 studio_logo = pygame.image.load("oimgs/logos/studiologodef.png").convert_alpha()
@@ -190,8 +194,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.30", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 179, SCREEN_HEIGHT - 144)
+ver_text = font_def.render("Version 1.2.31", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -7699,6 +7703,7 @@ update_locked_levels() # Update locked levels every frame!
 wait_time = None
 disk_mode = True
 logo_hover = False
+logo_click = False
 # Main loop
 running = True
 while running:
@@ -7751,6 +7756,7 @@ while running:
         sys.exit()
 
     else:
+    
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 set_page("quit_confirm")
@@ -7787,9 +7793,15 @@ while running:
                     if not logo_hover:
                         hover_sound.play()
                         logo_hover = True
+                    if event.type == pygame.MOUSEBUTTONDOWN and not logo_click:    
+                        if not is_mute:
+                            click_sound.play()    
+                        webbrowser.open("https://omerarfan.github.io/lilrobowebsite/index.html") 
+                        logo_click = True
                 else:
                     screen.blit(studio_logo, studio_logo_rect.topleft)
                     logo_hover = False
+                    logo_click = False
 
                 if rect.collidepoint(mouse_pos):
                     hovered_key = key
@@ -8246,6 +8258,9 @@ while running:
         else:
             show_greenrobo_unlocked = False
         
+        mouse_pos = pygame.mouse.get_pos()
+        screen.blit(cursor_img, mouse_pos)
+
         pygame.display.flip()
 
 pygame.quit()
