@@ -143,8 +143,14 @@ if SCREEN_WIDTH < 1300:
 else:
     MIN_HEIGHT = 760
 
-# Load logo image
-logo = pygame.image.load("logo.png").convert_alpha()
+# Load logo images
+logo = pygame.image.load("oimgs/logos/logo.png").convert_alpha()
+studio_logo = pygame.image.load("oimgs/logos/studiologodef.png").convert_alpha()
+studio_logo = pygame.transform.scale(studio_logo, (390, 150))
+studio_logo_rect = studio_logo.get_rect(topleft=(20, SCREEN_HEIGHT - 170))
+studio_glow = pygame.image.load("oimgs/logos/studiologoglow.png").convert_alpha()
+studio_glow = pygame.transform.scale(studio_glow, (420, 170))
+studio_glow_rect = studio_glow.get_rect(topleft=(20, SCREEN_HEIGHT - 190))
 
 # Load and scale backgrounds
 background_img = pygame.image.load("bgs/Background.png").convert()
@@ -184,8 +190,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.29", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
+ver_text = font_def.render("Version 1.2.30", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 179, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -7687,9 +7693,12 @@ def handle_action(key):
 # Start with main menu
 set_page('main_menu')
 button_hovered_last_frame = False
+last_hovered_key = None
+main_menu_hover = None
 update_locked_levels() # Update locked levels every frame!
 wait_time = None
 disk_mode = True
+logo_hover = False
 # Main loop
 running = True
 while running:
@@ -7770,8 +7779,20 @@ while running:
             screen.blit(credit_text, credit_pos)
             screen.blit(ver_text, ver_pos)
         # Render the main menu buttons
+            hovered_key = None
             for rendered, rect, key, is_locked in buttons:
+                mouse_pos = pygame.mouse.get_pos()
+                if studio_logo_rect.collidepoint(mouse_pos):
+                    screen.blit(studio_glow, studio_glow_rect.topleft)
+                    if not logo_hover:
+                        hover_sound.play()
+                        logo_hover = True
+                else:
+                    screen.blit(studio_logo, studio_logo_rect.topleft)
+                    logo_hover = False
+
                 if rect.collidepoint(mouse_pos):
+                    hovered_key = key
                     button_surface = pygame.Surface(rect.inflate(30, 15).size, pygame.SRCALPHA)
                     button_surface.fill((255, 255, 0, 255))  # RGBA: Hover color
                     screen.blit(button_surface, rect.inflate(30, 15).topleft)
@@ -7792,12 +7813,18 @@ while running:
                     elif key == "language":
                         lang_text = font.render("Select your language.", True, (255, 255, 0))
                         screen.blit(lang_text, (SCREEN_WIDTH // 2 - 120, SCREEN_HEIGHT - 50))
+
+                    if hovered_key != last_hovered_key and not is_mute:
+                        hover_sound.play()
+
                 else:
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
                     button_surface.fill((140, 140, 0, 255))  # RGBA: 100 is alpha (transparency)
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)
                     pygame.draw.rect(screen, (0, 0, 0), rect.inflate(30, 15), 6)
+
                 screen.blit(rendered, rect)
+            last_hovered_key = hovered_key
 
         if current_page == "character_select":
             # Initalize locked sound effect
