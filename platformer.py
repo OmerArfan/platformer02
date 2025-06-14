@@ -194,8 +194,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.31", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 144)
+ver_text = font_def.render("Version 1.2.32", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -382,7 +382,7 @@ def ph_ice_world_buttons():
     back_text = current_lang.get("back", "Back")
     rendered_back = font.render(back_text, True, (255, 255, 255))
     back_rect = rendered_back.get_rect(center=(90, SCREEN_HEIGHT // 2))
-    buttons.append((rendered_back, back_rect, "back", False))
+    buttons.append((rendered_back, back_rect, "back", is_locked))
 
 def ice_world_buttons():
     global current_lang, buttons
@@ -735,8 +735,6 @@ def create_lvl1_screen():
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
-        print(wait_time)
-
         current_time = time.time() - start_time
         formatted_time = "{:.2f}".format(current_time)
 
@@ -1056,8 +1054,6 @@ def create_lvl2_screen():
     while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
-        if wait_time is not None:
-            print(pygame.time.get_ticks() - wait_time)
 
         current_time = time.time() - start_time
         formatted_time = "{:.2f}".format(current_time)
@@ -7677,12 +7673,11 @@ def handle_action(key):
         elif key == "back":
             set_page("main_menu")
         elif key == "next":
+            buttons.clear()
             set_page("ice_levels")
     elif current_page.startswith("lvl"):
         if key == "back":
             set_page("levels")
-        else:
-            print(f"Action in {current_page}: {key}")
     elif current_page == "quit_confirm":
         if key == "yes":
             quit_game()
@@ -7756,7 +7751,7 @@ while running:
         sys.exit()
 
     else:
-    
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 set_page("quit_confirm")
@@ -8117,7 +8112,7 @@ while running:
                     if hovered and not button_hovered_last_frame and not is_mute:
                         hover_sound.play()
                     button_hovered_last_frame = hovered
-                # Show lvl1_time if hovering Level 1 button
+            # SHow Level stats
             if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
                 for text_surface, disk_rect, key, is_locked in buttons:
                     if disk_rect.collidepoint(event.pos):
@@ -8175,10 +8170,11 @@ while running:
                 particle.draw(screen)
                 if particle.lifetime <= 0:
                     snow.remove(particle)
-
-            if rect.collidepoint(mouse_pos):
+            
+            for rendered, rect, key, is_locked in buttons:
+                if rect.collidepoint(mouse_pos):
                     if key is not None:
-                        # Unlocked level
+                         # Unlocked level
                         screen.blit(icedisk_img, rect)
                     else:
                         screen.blit(lockeddisk_img, rect)
@@ -8193,8 +8189,9 @@ while running:
     # Render buttons for ice world levels
             if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
                 for text_surface, disk_rect, key, is_locked in buttons:
+                    
                     if disk_rect.collidepoint(event.pos):
-                        if not key == "next" and not key == "back" and not is_locked:
+                        if not key == "back" and not is_locked:
                             lvl_time_text = font.render(f"Best Time: {progress['times'][key]}s", True, (255, 255, 0))
                             # Adjust position as needed
                             screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
@@ -8222,11 +8219,12 @@ while running:
                         screen.blit(rendered, rect)
             
             for text_surface, disk_rect, key, is_locked in buttons: 
+                
                 if key is not None:
                     screen.blit(icedisk_img, disk_rect)
                 else:
                     screen.blit(lockeddisk_img, disk_rect)
-                text_rect = text_surface.get_rect(center=(disk_rect.x + 47, disk_rect.y + 50))
+                text_rect = text_surface.get_rect(center=(disk_rect.x + 50, disk_rect.y + 50))
                 screen.blit(text_surface, text_rect)
 
         else:
