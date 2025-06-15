@@ -194,8 +194,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.32", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
+ver_text = font_def.render("Version 1.2.33", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -334,16 +334,31 @@ def green_world_buttons():
         disk_rect = greendisk_img.get_rect(center=(x, y))
         buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
 
-    # Back button at bottom center
-    back_text = current_lang.get("back", "Back")
+    # Get the text
+    back_text = current_lang.get("back", "Back")        
     rendered_back = font.render(back_text, True, (255, 255, 255))
-    back_rect = rendered_back.get_rect(center=(90, SCREEN_HEIGHT // 2))
+
+
+    # Create a fixed 100x100 hitbox centered at the right location
+    back_rect = pygame.Rect(0, 0, 100, 100)
+    back_rect.center = (90, SCREEN_HEIGHT // 2)
+
+    # Then during draw phase: center the text inside that fixed rect
+    text_rect = rendered_back.get_rect(center=back_rect.center)
+    screen.blit(rendered_back, text_rect)
+
+    # Add the button
     buttons.append((rendered_back, back_rect, "back", False))
 
-        # Next button at bottom center
     next_text = current_lang.get("next", "next")
     rendered_next = font.render(next_text, True, (255, 255, 255))
-    next_rect = rendered_next.get_rect(center=(SCREEN_WIDTH - 80, SCREEN_HEIGHT // 2))
+
+    next_rect = pygame.Rect(0, 0, 100, 100)
+    next_rect.center = (SCREEN_WIDTH - 80, SCREEN_HEIGHT // 2)
+
+    text_rect = rendered_next.get_rect(center=next_rect.center)
+    screen.blit(rendered_next, text_rect)
+
     buttons.append((rendered_next, next_rect, "next", False))
 
 def ph_ice_world_buttons():
@@ -379,10 +394,22 @@ def ph_ice_world_buttons():
         buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
 
     # Back button at bottom center
-    back_text = current_lang.get("back", "Back")
+
+    # Get the text
+    back_text = current_lang.get("back", "Back")        
     rendered_back = font.render(back_text, True, (255, 255, 255))
-    back_rect = rendered_back.get_rect(center=(90, SCREEN_HEIGHT // 2))
-    buttons.append((rendered_back, back_rect, "back", is_locked))
+
+
+    # Create a fixed 100x100 hitbox centered at the right location
+    back_rect = pygame.Rect(0, 0, 100, 100)
+    back_rect.center = (90, SCREEN_HEIGHT // 2)
+
+    # Then during draw phase: center the text inside that fixed rect
+    text_rect = rendered_back.get_rect(center=back_rect.center)
+    screen.blit(rendered_back, text_rect)
+
+    # Add the button
+    buttons.append((rendered_back, back_rect, "back", False))
 
 def ice_world_buttons():
     global current_lang, buttons
@@ -7675,6 +7702,9 @@ def handle_action(key):
         elif key == "next":
             buttons.clear()
             set_page("ice_levels")
+    elif current_page == "ice_levels":
+        if key in ["lvl12", "lvl13", "lvl14", "lvl15"]:
+            set_page(f"{key}_screen")
     elif current_page.startswith("lvl"):
         if key == "back":
             set_page("levels")
@@ -7683,11 +7713,6 @@ def handle_action(key):
             quit_game()
         elif key == "no":
             set_page("main_menu")
-    elif current_page == "ice_levels":
-        if key == "back":
-            set_page("levels")
-        elif key in ["lvl12", "lvl13", "lvl14", "lvl15"]:
-            set_page(f"{key}_screen")
 
 # Start with main menu
 set_page('main_menu')
@@ -7762,7 +7787,7 @@ while running:
                         if is_locked is not None:
                             for _, rect, key, is_locked in buttons:
                                 if rect.collidepoint(event.pos):
-                                    if key != "back" and not is_mute:
+                                    if key is not None and not is_mute:
                                         click_sound.play()
                                     handle_action(key)
                                     last_page_change_time = time.time()
@@ -8116,7 +8141,7 @@ while running:
             if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
                 for text_surface, disk_rect, key, is_locked in buttons:
                     if disk_rect.collidepoint(event.pos):
-                        if key != "next" and key != "back":
+                        if key != "next" and key != "back" and not is_locked:
                             lvl_time_text = font.render(f"Best Time: {progress['times'][key]}s", True, (255, 255, 0))
                             # Adjust position as needed
                             screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
@@ -8189,7 +8214,6 @@ while running:
     # Render buttons for ice world levels
             if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
                 for text_surface, disk_rect, key, is_locked in buttons:
-                    
                     if disk_rect.collidepoint(event.pos):
                         if not key == "back" and not is_locked:
                             lvl_time_text = font.render(f"Best Time: {progress['times'][key]}s", True, (255, 255, 0))
@@ -8207,6 +8231,8 @@ while running:
                             else:
                                 lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (255, 255, 255))
                                 screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
+                        elif key == "back" and (pygame.mouse.get_pressed()[0]):
+                            set_page("levels")
                     else:    
                         if key is not None:
                             # Unlocked level
@@ -8219,7 +8245,6 @@ while running:
                         screen.blit(rendered, rect)
             
             for text_surface, disk_rect, key, is_locked in buttons: 
-                
                 if key is not None:
                     screen.blit(icedisk_img, disk_rect)
                 else:
