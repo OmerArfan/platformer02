@@ -194,8 +194,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.33", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 144)
+ver_text = font_def.render("Version 1.2.34", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -354,7 +354,7 @@ def green_world_buttons():
     rendered_next = font.render(next_text, True, (255, 255, 255))
 
     next_rect = pygame.Rect(0, 0, 100, 100)
-    next_rect.center = (SCREEN_WIDTH - 80, SCREEN_HEIGHT // 2)
+    next_rect.center = (SCREEN_WIDTH - 90, SCREEN_HEIGHT // 2)
 
     text_rect = rendered_next.get_rect(center=next_rect.center)
     screen.blit(rendered_next, text_rect)
@@ -508,11 +508,11 @@ def start_game():
     set_page('levels')
 
 # Load character images
-robot_img = pygame.image.load("char/robot.png").convert_alpha()
-evilrobot_img = pygame.image.load("char/evilrobot.png").convert_alpha()
-icerobot_img = pygame.image.load("char/icerobot.png").convert_alpha()
-lavarobot_img = pygame.image.load("char/lavarobot.png").convert_alpha()
-greenrobot_img = pygame.image.load("char/greenrobot.png").convert_alpha()
+robot_img = pygame.image.load("char/robot/robot.png").convert_alpha()
+evilrobot_img = pygame.image.load("char/evilrobot/evilrobot.png").convert_alpha()
+icerobot_img = pygame.image.load("char/icerobot/icerobot.png").convert_alpha()
+lavarobot_img = pygame.image.load("char/lavarobot/lavarobot.png").convert_alpha()
+greenrobot_img = pygame.image.load("char/greenrobot/greenrobot.png").convert_alpha()
 locked_img = pygame.image.load("char/lockedrobot.png").convert_alpha()
 
 #Initialize default character
@@ -707,10 +707,20 @@ def create_lvl1_screen():
     camera_speed = 0.05
     deathcount = 0
     was_moving = False
-    just_collided = False
     
     # Load player image
-    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
+    if selected_character == "robot": 
+        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
+    elif selected_character == "evilrobot":
+        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
+    elif selected_character == "greenrobot":
+        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
     blocks = [
@@ -773,8 +783,6 @@ def create_lvl1_screen():
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
-            collided_with_block = False
-            just_collided = True
             if not is_mute:
                 jump_sound.play()
         
@@ -808,7 +816,6 @@ def create_lvl1_screen():
         # Collisions and Ground Detection
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
         on_ground = False
-        collided_with_block = False
 
         for block in blocks + [moving_block]:
             if player_rect.colliderect(block):
@@ -817,9 +824,6 @@ def create_lvl1_screen():
                     player_y = block.y - img_height
                     velocity_y = 0
                     on_ground = True
-                    if just_collided:
-                        collided_with_block = True
-                        just_collided = False
 
                 # Hitting the bottom of a block
                 elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
@@ -943,7 +947,13 @@ def create_lvl1_screen():
                         break
 
         pygame.draw.rect(screen, (129, 94, 123), (exit_portal.x - camera_x, exit_portal.y - camera_y, exit_portal.width, exit_portal.height))
-        screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        
+        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        else:
+            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -1007,7 +1017,18 @@ def create_lvl2_screen():
     was_moving = False
 
     # Load player image
-    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
+    if selected_character == "robot": 
+        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
+    elif selected_character == "evilrobot":
+        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
+    elif selected_character == "greenrobot":
+        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -1299,7 +1320,13 @@ def create_lvl2_screen():
             pygame.draw.rect(screen, (255, 128, 0), (jump_block.x - camera_x, jump_block.y - camera_y, jump_block.width, jump_block.height))
 
         pygame.draw.rect(screen, (129, 94, 123), (exit_portal.x - camera_x, exit_portal.y - camera_y, exit_portal.width, exit_portal.height))
-        screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        
+        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        else:
+            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -1364,7 +1391,18 @@ def create_lvl3_screen():
     was_moving = False
 
     # Load player image
-    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
+    if selected_character == "robot": 
+        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
+    elif selected_character == "evilrobot":
+        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
+    elif selected_character == "greenrobot":
+        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -1745,7 +1783,13 @@ def create_lvl3_screen():
                 pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
-        screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
+        
+        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        else:
+            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -1811,7 +1855,18 @@ def create_lvl4_screen():
     was_moving = False
 
     # Load player image
-    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
+    if selected_character == "robot": 
+        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
+    elif selected_character == "evilrobot":
+        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
+    elif selected_character == "greenrobot":
+        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -2359,8 +2414,13 @@ def create_lvl4_screen():
 
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
-        screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
-
+        
+        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        else:
+            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -2424,7 +2484,18 @@ def create_lvl5_screen():
     was_moving = False
 
     # Load player image
-    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
+    if selected_character == "robot": 
+        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
+    elif selected_character == "evilrobot":
+        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
+    elif selected_character == "greenrobot":
+        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -2972,7 +3043,13 @@ def create_lvl5_screen():
 
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
-        screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
+       
+        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        else:
+            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -3035,7 +3112,18 @@ def create_lvl6_screen():
     was_moving = False
 
     # Load player image
-    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
+    if selected_character == "robot": 
+        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
+    elif selected_character == "evilrobot":
+        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
+    elif selected_character == "greenrobot":
+        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -3582,7 +3670,13 @@ def create_lvl6_screen():
                 pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
-        screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
+        
+        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        else:
+            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -3648,7 +3742,18 @@ def create_lvl7_screen():
     was_moving = False
 
     # Load player image
-    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
+    if selected_character == "robot": 
+        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
+    elif selected_character == "evilrobot":
+        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
+    elif selected_character == "greenrobot":
+        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -4072,7 +4177,12 @@ def create_lvl7_screen():
                     break
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
-        screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
+        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        else:
+            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -4142,7 +4252,18 @@ def create_lvl8_screen():
     was_moving = False
 
     # Load player image
-    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
+    if selected_character == "robot": 
+        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
+    elif selected_character == "evilrobot":
+        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
+    elif selected_character == "greenrobot":
+        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -4602,7 +4723,13 @@ def create_lvl8_screen():
 
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
-        screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
+        
+        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        else:
+            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -4681,7 +4808,18 @@ def create_lvl9_screen():
     on_ground = False
 
     # Load player image
-    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
+    if selected_character == "robot": 
+        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
+    elif selected_character == "evilrobot":
+        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
+    elif selected_character == "greenrobot":
+        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -5267,7 +5405,12 @@ def create_lvl9_screen():
             pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
-        screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
+        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        else:
+            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -5343,7 +5486,18 @@ def create_lvl10_screen():
     lights_off = True
 
     # Load player image
-    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
+    if selected_character == "robot": 
+        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
+    elif selected_character == "evilrobot":
+        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
+    elif selected_character == "greenrobot":
+        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -5837,7 +5991,13 @@ def create_lvl10_screen():
             pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
-        screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
+        
+        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        else:
+            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         # Draw the texts
 
@@ -5960,7 +6120,7 @@ def create_lvl11_screen():
     trigger_x = 4650
     espawn_x, espawn_y = 5200, -400
     epos_x, epos_y = espawn_x, espawn_y
-    evilrobo_mascot = pygame.image.load(f"char/evilrobot.png").convert_alpha()
+    evilrobo_mascot = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
     evilrobo_phase = 0    
 
     # Logic for unlocking Evil Robo
@@ -5968,7 +6128,18 @@ def create_lvl11_screen():
     unlock_time = None
 
     # Load player image
-    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
+    if selected_character == "robot": 
+        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
+    elif selected_character == "evilrobot":
+        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
+    elif selected_character == "greenrobot":
+        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -6667,7 +6838,12 @@ def create_lvl11_screen():
                             player_x = block.x + block.width
 
 
-        screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
+        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        else:
+            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         levels = load_language(lang_code).get('levels', {})
         lvl11_text = levels.get("lvl11", "Level 11")  # Render the level text
@@ -6781,7 +6957,18 @@ def create_lvl12_screen():
     on_ice = False
 
     # Load player image
-    player_img = pygame.image.load(f"char/{selected_character}.png").convert_alpha()
+    if selected_character == "robot": 
+        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
+    elif selected_character == "evilrobot":
+        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
+    elif selected_character == "greenrobot":
+        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
     # Draw flag
@@ -7644,7 +7831,12 @@ def create_lvl12_screen():
             show_greenrobo_unlocked = False
 
         # Player Image
-        screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
+        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+        else:
+            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         pygame.display.update() 
 
