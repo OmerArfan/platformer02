@@ -13,6 +13,9 @@ SOUND_FOLDER = os.path.join("audio")
 # Initialize audio
 pygame.mixer.init()
 
+# Initialize pygame
+pygame.init()
+
 # Load sounds using the path
 click_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "click.wav"))
 hover_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hover.wav"))
@@ -87,10 +90,34 @@ def load_progress():
     else:
         return default_progress.copy()
 
+# Load the Chinese font (ensure the font file path is correct)
+font_path_ch = 'NotoSansSC-SemiBold.ttf'
+font_path = 'NotoSansDisplay-SemiBold.ttf'
+font_def = pygame.font.Font(font_path, 25)
+font_text = pygame.font.Font(font_path, 55)
+
+# Initializing screen resolution
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+SCREEN_WIDTH, SCREEN_HEIGHT = screen.get_size()
+pygame.display.set_caption("Platformer 02!")
+MIN_WIDTH = 1000
+if SCREEN_WIDTH < 1300:
+    MIN_HEIGHT = 800
+else:
+    MIN_HEIGHT = 760
+
+
 # Save progress to file
 def save_progress(data):
-    with open(SAVE_FILE, "w", encoding="utf-8" ) as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+    try:
+        with open(SAVE_FILE, "w", encoding="utf-8" ) as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+    except PermissionError:
+        print("Error: Unable to save progress.")
+        hit_sound.play()
+        screen.blit(font_def.render("Error: Unable to save progress.", True, (255, 0, 0)), (SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT - 50))
+    except Exception as e:
+        screen.blit(font_def.render(f"An unexpected error occurred: {e}", True, (255, 0, 0)), (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 50))
 
 # Load progress at start
 progress = load_progress()
@@ -133,17 +160,6 @@ def get_medal(level, time_taken):
     else:
         return None
 
-# Initializing screen resolution
-pygame.init()
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-SCREEN_WIDTH, SCREEN_HEIGHT = screen.get_size()
-pygame.display.set_caption("Platformer 02!")
-MIN_WIDTH = 1000
-if SCREEN_WIDTH < 1300:
-    MIN_HEIGHT = 800
-else:
-    MIN_HEIGHT = 760
-
 pygame.mouse.set_visible(False)  # Hide the system cursor
 cursor_img = pygame.image.load("oimgs/cursor/cursor.png").convert_alpha()
 
@@ -170,12 +186,6 @@ green_background = pygame.transform.scale(green_background_img, (SCREEN_WIDTH, S
 nact_cp = pygame.image.load("oimgs/checkpoints/yellow_flag.png").convert_alpha()
 act_cp = pygame.image.load("oimgs/checkpoints/green_flag.png").convert_alpha()
 
-# Load the Chinese font (ensure the font file path is correct)
-font_path_ch = 'NotoSansSC-SemiBold.ttf'
-font_path = 'NotoSansDisplay-SemiBold.ttf'
-font_def = pygame.font.Font(font_path, 25)
-font_text = pygame.font.Font(font_path, 55)
-
 if lang_code == "zh_cn":
     font = pygame.font.Font(font_path_ch, 25)
 else:
@@ -194,8 +204,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.34", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
+ver_text = font_def.render("Version 1.2.35", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -1040,14 +1050,14 @@ def create_lvl2_screen():
         pygame.Rect(100, 650, 1000, 50),
         pygame.Rect(500, 500, 200, 50),
         pygame.Rect(1900, 200, 200, 50),
-        pygame.Rect(2900, 450, 500, 50),
-        pygame.Rect(2150, 530, 250, 50),
-        pygame.Rect(2080, 750, 620, 50),
-        pygame.Rect(2400, 50, 50, 530),
+        pygame.Rect(2080, 750, 620, 50),        
+        pygame.Rect(2150, 530, 300, 50),
+        pygame.Rect(2400, 50, 50, 500),
+        pygame.Rect(2900, 450, 400, 50),
         pygame.Rect(3300, 650, 260, 50),
         pygame.Rect(3800, 650, 220, 50),
         pygame.Rect(4260, 650, 220, 50),
-        pygame.Rect(3300, 200, 1000, 50),
+        pygame.Rect(3300, 200, 1300, 50),
     ]
 
     jump_blocks = [
@@ -1082,7 +1092,10 @@ def create_lvl2_screen():
         [(4000, 250), (4050, 300), (4100, 250)],
         [(4100, 250), (4150, 300), (4200, 250)],
         [(4200, 250), (4250, 300), (4300, 250)],
-    ]
+        [(4300, 250), (4350, 300), (4400, 250)],
+        [(4400, 250), (4450, 300), (4500, 250)],
+        [(4500, 250), (4550, 300), (4600, 250)],        
+        ]
 
     exit_portal = pygame.Rect(4400, 550, 50, 100)
     clock = pygame.time.Clock()
@@ -1301,11 +1314,12 @@ def create_lvl2_screen():
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-            if block.width <= 100:
-                laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
-            else:
+            if block.x != 2400:
+             if block.width <= 100:
+               laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
+             else:
                 laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
-            if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
+             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 death_text = in_game.get("hit_message", "Hit on the head!")
                 wait_time = pygame.time.get_ticks()
@@ -2514,6 +2528,11 @@ def create_lvl5_screen():
         },
     ]
 
+    walls = [        
+        pygame.Rect(2700, -310, 50, 91),
+        pygame.Rect(2880, -310, 50, 140)
+        ]
+
     blocks = [
         pygame.Rect(-50, 650, 1000, 100),
         pygame.Rect(900, 510, 100, 100),
@@ -2521,22 +2540,20 @@ def create_lvl5_screen():
         pygame.Rect(1500, -50, 700, 50),
         pygame.Rect(1700, -350, 1050, 50),
         pygame.Rect(1500, -250, 50, 200),
-        pygame.Rect(2700, -310, 50, 91),
         pygame.Rect(2700, -220, 200, 50),
-        pygame.Rect(2880, -310, 50, 140),
         pygame.Rect(2880, -350, 700, 50),
-        pygame.Rect(3700, -350, 100, 30),
-        pygame.Rect(3700, -50, 100, 30),
-        pygame.Rect(3700, -650, 100, 30),
-        pygame.Rect(4000, -150, 100, 30),
-        pygame.Rect(4000, -750, 100, 30),
-        pygame.Rect(4000, -450, 100, 30),
-        pygame.Rect(4300, -50, 100, 30),
-        pygame.Rect(4300, -350, 100, 30),
-        pygame.Rect(4300, -650, 100, 30),
-        pygame.Rect(4600, -150, 100, 30),
-        pygame.Rect(4600, -750, 100, 30),
-        pygame.Rect(4600, -450, 100, 30),        
+        pygame.Rect(3900, -350, 100, 30),
+        pygame.Rect(3900, -50, 100, 30),
+        pygame.Rect(3900, -650, 100, 30),
+        pygame.Rect(4200, -150, 100, 30),
+        pygame.Rect(4200, -750, 100, 30),
+        pygame.Rect(4200, -450, 100, 30),
+        pygame.Rect(4500, -50, 100, 30),
+        pygame.Rect(4500, -350, 100, 30),
+        pygame.Rect(4500, -650, 100, 30),
+        pygame.Rect(4800, -150, 100, 30),
+        pygame.Rect(4800, -750, 100, 30),
+        pygame.Rect(4800, -450, 100, 30),        
     ]
     
     moving_saws = [ 
@@ -2569,20 +2586,19 @@ def create_lvl5_screen():
         [(1660, 650), (1710, 600), (1760, 650)],
         [(2000, 650), (2050, 600), (2100, 650)],
         [(3300,-350), (3350, -400), (3400, -350)],
-        [(3700, -50), (3750, -100), (3800, -50)],
-        [(3700, -650), (3750, -700), (3800, -650)],
-        [(4000, -450), (4050, -500), (4100, -450)],
-        [(4300, -50), (4350, -100), (4400, -50)],
-        [(4600, -750), (4650, -800), (4700, -750)],
-        [(4600, -150), (4650, -200), (4700, -150)],
+        [(3900, -50), (3950, -100), (4000, -50)],
+        [(3900, -650), (3950, -700), (4000, -650)],
+        [(4200, -450), (4250, -500), (4300, -450)],
+        [(4500, -50), (4550, -100), (4600, -50)],
+        [(4800, -750), (4850, -800), (4900, -750)],
+        [(4800, -150), (4850, -200), (4900, -150)],
     ]
 
     spikes_01 = [
-    [(3700, -350), (3750, -400), (3800, -350)],
-    [(4000, -150), (4050, -200), (4100, -150)],
-    [(4300, -350), (4350, -400), (4400, -350)],
-    [(4300, -650), (4350, -700), (4400, -650)],
-    [(4600, -450), (4650, -500), (4700, -450)],
+    [(4200, -150), (4250, -200), (4300, -150)],
+    [(4500, -350), (4550, -400), (4600, -350)],
+    [(4500, -650), (4550, -700), (4600, -650)],
+    [(4800, -450), (4850, -500), (4900, -450)],
     ]
 
     exit_portal = pygame.Rect(1375, 0, 50, 100)
@@ -2668,6 +2684,15 @@ def create_lvl5_screen():
 
                 # Horizontal collision (left or right side of the block)
                 elif player_x + img_width > block.x and player_x < block.x + block.width:
+                    if player_x < block.x:  # Colliding with the left side of the block
+                        player_x = block.x - img_width
+                    elif player_x + img_width > block.x + block.width:  # Colliding with the right side
+                        player_x = block.x + block.width
+
+        for block in walls:
+            if player_rect.colliderect(block):
+                # Horizontal collision (left or right side of the block)
+                if player_x + img_width > block.x and player_x < block.x + block.width:
                     if player_x < block.x:  # Colliding with the left side of the block
                         player_x = block.x - img_width
                     elif player_x + img_width > block.x + block.width:  # Colliding with the right side
@@ -2926,6 +2951,10 @@ def create_lvl5_screen():
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
 
+
+        for block in walls:
+            pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
             if block.width <= 100:
@@ -3157,9 +3186,9 @@ def create_lvl6_screen():
         pygame.Rect(800, 400, 100, 100),
         pygame.Rect(2300, 500, 450, 50),
         pygame.Rect(2900, 10, 50, 540),
-        pygame.Rect(3150, 10, 50, 120),
+        pygame.Rect(3150, 10, 50, 170),
         pygame.Rect(2900, 530, 3000, 50),
-        pygame.Rect(3150, 130, 2750, 50)
+        pygame.Rect(3200, 130, 2700, 50)
     ]
 
 
@@ -3197,6 +3226,8 @@ def create_lvl6_screen():
     [(500, 700), (545, 600), (590, 700)],
     [(600,700), (645, 600), (690, 700)],
     [(700, 700), (745, 600), (790, 700)],
+    [(800, 700), (845, 600), (890, 700)],
+    [(900,700), (945, 600), (990, 700)],
     [(4100, 130), (4150, 80), (4200, 130)],
     [(4610, 130),(4660, 80),(4710, 130)],
     [(4300, 530),(4345, 480), (4390, 530)],
@@ -3577,15 +3608,10 @@ def create_lvl6_screen():
                 deathcount += 1
                 velocity_y = 0
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
-
+        
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-        for block in blocks:
-            pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-            if block.width <= 100:
-                laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
-            else:
-                laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
+            laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 death_text = in_game.get("hit_message", "Hit on the head!")
@@ -4236,7 +4262,7 @@ def create_lvl8_screen():
     # Camera settings
     camera_x = 300
     camera_y = -500
-    spawn_x, spawn_y = -25, 260
+    spawn_x, spawn_y = 0, 260
     player_x, player_y = spawn_x, spawn_y
     running = True
     gravity = 1
