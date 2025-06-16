@@ -204,8 +204,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.35", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 144)
+ver_text = font_def.render("Version 1.2.36", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -215,27 +215,11 @@ def load_language(lang_code):
 # Load the actual language strings from file
 current_lang = load_language(lang_code)
 
-def loading_screen():
-    global lang_code
-    screen.fill((30, 30, 30))
-    messages = load_language(lang_code).get('messages', {})  # Fetch localized messages
-    loading_text = messages.get("loading", "Loading...")  # Get the localized "Loading..." text
-    rendered_loading = font.render(loading_text, True, (255, 255, 255))
-    loading_rect = rendered_loading.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
-    screen.blit(rendered_loading, loading_rect)
-    pygame.display.flip()
-    pygame.time.delay(1300)  # Delay to show the loading screen
-
 # Page states
 current_page = 'main_menu'
 buttons = []
 progress["language"] = lang_code
 
-# New variable to track last page change time
-pending_level = None
-level_load_time = 0
-click_delay = 1  # Delay between clicks isn seconds
-last_page_change_time = 0  # Initialize the last page change time
 # Display Green Robo Unlocked for a limited time
 greenrobo_unlocked_message_time = 0
 show_greenrobo_unlocked = False
@@ -7111,6 +7095,8 @@ def create_lvl12_screen():
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount = 0
+            for pair in key_block_pairs:
+                pair["collected"] = False  # Reset the collected status for all keys
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
@@ -7132,6 +7118,8 @@ def create_lvl12_screen():
             if not is_mute:
                 overheat_sound.play()
             current_temp = start_temp
+            death_text = in_game_ice.get("overheat_death_message", "Overheated!")
+            wait_time = pygame.time.get_ticks()
             for ice in ice_blocks:
                 ice.float_height = ice.initial_height
                 ice.rect.height = int(ice.float_height)
@@ -7139,7 +7127,9 @@ def create_lvl12_screen():
             player_x, player_y = spawn_x, spawn_y
             if not is_mute:
                 freeze_sound.play()
-            current_temp = start_temp            
+            current_temp = start_temp
+            death_text = in_game_ice.get("freeze_death_message", "Frozen and malfunctioned!")
+            wait_time = pygame.time.get_ticks()            
             for ice in ice_blocks:
                 ice.float_height = ice.initial_height
                 ice.rect.height = int(ice.float_height)
@@ -7616,14 +7606,13 @@ def create_lvl12_screen():
                 laser_rect = pygame.Rect(block['x'] + 4, block['y'] + block['height'] + 5, block['width'] - 8 , 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground and player_x != block['x']:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                fall_text = in_game.get("hit_message", "Hit on the head!")
-                screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 80))
+                death_text = in_game.get("hit_message", "Hit on the head!")
                 stamina = False
                 lights_off = True
                 if not is_mute:    
                     hit_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
+                key_block_pairs[0]["collected"] = False  # Reset key block status
+                wait_time = pygame.time.get_ticks()  # Start the wait time
                 velocity_y = 0
                 deathcount += 1
                 for ice in ice_blocks:
@@ -7647,14 +7636,14 @@ def create_lvl12_screen():
                 lights_off = True
                 stamina = False
                     # Trigger death logic
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 80))
+                death_text = in_game.get("sawed_message", "Sawed to bits!")
+                wait_time = pygame.time.get_ticks()  # Start the wait time
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
                 if not is_mute:
                     death_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300) 
+                key_block_pairs[0]["collected"] = False  # Reset key block status
+                velocity_y = 0
                 for ice in ice_blocks:
                     ice.float_height = ice.initial_height
                     ice.rect.height = int(ice.float_height)
@@ -7675,15 +7664,15 @@ def create_lvl12_screen():
             if distance < saw['r']:
                 lights_off = True
                 stamina = False
+                velocity_y = 0
                     # Trigger death logic
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 80))
+                death_text = in_game.get("sawed_message", "Sawed to bits!")
+                wait_time = pygame.time.get_ticks()  # Start the wait time
+                key_block_pairs[0]["collected"] = False  # Reset key block status
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
                 if not is_mute:
                     death_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300) 
                 for ice in ice_blocks:
                     ice.float_height = ice.initial_height
                     ice.rect.height = int(ice.float_height)
@@ -7706,12 +7695,11 @@ def create_lvl12_screen():
         # Trigger death logic
                 lights_off = True
                 stamina = False
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 80))
+                velocity_y = 0
+                death_text = in_game.get("sawed_message", "Sawed to bits!")
+                wait_time = pygame.time.get_ticks()  # Start the wait time
                 if not is_mute:
                     death_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
                 for ice in ice_blocks:
@@ -7737,12 +7725,12 @@ def create_lvl12_screen():
         # Trigger death logic
                 lights_off = True
                 stamina = False
-                sawed_text = in_game.get("sawed_message", "Sawed to bits!")
-                screen.blit(font.render(sawed_text, True, (255, 0, 0)), (20, 80))
+                velocity_y = 0
+                death_text = in_game.get("sawed_message", "Sawed to bits!")
+                wait_time = pygame.time.get_ticks()  # Start the wait time
+                key_block_pairs[0]["collected"] = False  # Reset key block status
                 if not is_mute:
                     death_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
                 for ice in ice_blocks:
@@ -7757,15 +7745,14 @@ def create_lvl12_screen():
                 laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                fall_text = in_game.get("hit_message", "Hit on the head!")
-                screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 80))
+                death_text = in_game.get("hit_message", "Hit on the head!")
                 stamina = False
                 lights_off = True
                 if not is_mute:    
                     hit_sound.play()
-                pygame.display.update()
-                pygame.time.delay(300)
+                key_block_pairs[0]["collected"] = False  # Reset key block status
                 velocity_y = 0
+                wait_time = pygame.time.get_ticks()  # Start the wait time
                 deathcount += 1
                 for ice in ice_blocks:
                     ice.float_height = ice.initial_height
@@ -7788,11 +7775,10 @@ def create_lvl12_screen():
                     stamina = False
                     player_x, player_y = spawn_x, spawn_y  # Reset player position
                     death_text = in_game.get("dead_message", "You Died")
-                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 80))
+                    wait_time = pygame.time.get_ticks()  # Start the wait time
                     if not is_mute:
                         death_sound.play()
-                    pygame.display.update()
-                    pygame.time.delay(300)
+                    key_block_pairs[0]["collected"] = False  # Reset key block status
                     velocity_y = 0
                     deathcount += 1
                     collision_detected = True  # Set the flag to stop further checks
@@ -7818,11 +7804,10 @@ def create_lvl12_screen():
             # Trigger death logic
                     player_x, player_y = spawn_x, spawn_y  # Reset player position
                     death_text = in_game.get("dead_message", "You Died")
-                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 80))
+                    wait_time = pygame.time.get_ticks()  # Start the wait time
                     if not is_mute:
                         death_sound.play()
-                    pygame.display.update()
-                    pygame.time.delay(300)
+                    key_block_pairs[0]["collected"] = False  # Reset key block status
                     velocity_y = 0
                     deathcount += 1
                     collision_detected = True  # Set the flag to stop further checks
@@ -7832,14 +7817,13 @@ def create_lvl12_screen():
                     break
 
         if player_y > 1100:
-            fall_text = in_game.get("fall_message", "Fell too far!")
-            screen.blit(font.render(fall_text, True, (255, 0, 0)), (20, 80))
+            death_text = in_game.get("fall_message", "Fell too far!")
+            wait_time = pygame.time.get_ticks()  # Start the wait time
             lights_off = True
             stamina = False
+            key_block_pairs[0]["collected"] = False  # Reset key block status
             if not is_mute:    
                 fall_sound.play()
-            pygame.display.update()
-            pygame.time.delay(300)
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount += 1
@@ -7863,6 +7847,12 @@ def create_lvl12_screen():
             screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
         else:
             screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+
+        if wait_time is not None:
+            if pygame.time.get_ticks() - wait_time < 2500:
+                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 80))
+            else:
+                wait_time = None
 
         pygame.display.update() 
 
@@ -8001,7 +7991,7 @@ while running:
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
             # Only process clicks if enough time has passed since last page change
-                if time.time() - last_page_change_time > click_delay and current_page != "levels" or current_page != "quit_confirm":
+                if current_page != "levels" or current_page != "quit_confirm":
                         if is_locked is not None:
                             for _, rect, key, is_locked in buttons:
                                 if rect.collidepoint(event.pos):
@@ -8486,11 +8476,6 @@ while running:
                     button_surface.fill((153, 51, 255, 0))  # RGBA: 100 is alpha (transparency)
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)
                 screen.blit(rendered, rect)
-
-        # Handle delayed level load
-        if pending_level and time.time() >= level_load_time:
-            load_level(pending_level)
-            pending_level = None
 
         if show_greenrobo_unlocked:
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
