@@ -204,7 +204,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.37", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.38", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -998,7 +998,7 @@ def create_lvl2_screen():
     # Camera settings
     camera_x = 0  
     camera_y = 0
-    player_x, player_y = 150, 500
+    player_x, player_y = 850, 200
     spawn_x, spawn_y = player_x, player_y  # Set the spawn point
     running = True
     gravity = 1
@@ -7228,12 +7228,7 @@ def create_lvl12_screen():
                 # Falling onto a jump block
                 if velocity_y > 0 and player_y + img_height - velocity_y <= jump_block.y:
                     player_y = jump_block.y - img_height
-                    if strong_grav:
-                        velocity_y = -21
-                    elif weak_grav:
-                        velocity_y = -54
-                    else:
-                        velocity_y = -33  # Apply upward velocity for the jump
+                    velocity_y = -33  # Apply upward velocity for the jump
                     on_ground = True
                     if not is_mute:
                         bounce_sound.play()
@@ -7410,9 +7405,7 @@ def create_lvl12_screen():
             if distance < speedster_radius and not stamina:
                 if not is_mute:
                     button_sound.play()
-                strong_grav = False
                 stamina = True
-                weak_grav = False
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
 
