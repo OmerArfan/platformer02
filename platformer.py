@@ -204,7 +204,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.38", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.39", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -499,7 +499,12 @@ def check_green_gold():
 # Button actions
 def start_game():
     pygame.time.delay(200)  # Delay 200 ms to avoid click pass-through
-    set_page('levels')
+    complete_levels = progress.get("complete_levels", 0)
+    if complete_levels < 11:
+        set_page('levels')
+    else:
+        set_page('ice_levels')
+
 
 # Load character images
 robot_img = pygame.image.load("char/robot/robot.png").convert_alpha()
@@ -7019,10 +7024,8 @@ def create_lvl12_screen():
 
     moving_saws_x = [
         {'r': 50, 'speed': 11, 'cx': 6300, 'cy': 550, 'min': 6250, 'max': 7800},
-        {'r': 50, 'speed': 16, 'cx': 7100, 'cy': 550, 'min': 6500, 'max': 8300},
         {'r': 50, 'speed': 13, 'cx': 6700, 'cy': 550, 'min': 6000, 'max': 8900},
         {'r': 50, 'speed': 14, 'cx': 7800, 'cy': 550, 'min': 7300, 'max': 9700},
-        {'r': 50, 'speed': 17, 'cx': 8100, 'cy': 550, 'min': 7000, 'max': 10200},
         {'r': 50, 'speed': 15, 'cx': 8700, 'cy': 550, 'min': 7800, 'max': 10800},
     ]
 
@@ -7101,7 +7104,7 @@ def create_lvl12_screen():
                 overheat_sound.play()
             current_temp = start_temp
             stamina = False
-            lights_off = True
+            deathcount += 1
             key_block_pairs[0]["collected"] = False  # Reset the key collection status
             death_text = in_game_ice.get("overheat_death_message", "Overheated!")
             wait_time = pygame.time.get_ticks()
@@ -7114,7 +7117,7 @@ def create_lvl12_screen():
                 freeze_sound.play()
             current_temp = start_temp
             stamina = False
-            lights_off = True
+            deathcount += 1
             key_block_pairs[0]["collected"] = False  # Reset the key collection status
             death_text = in_game_ice.get("freeze_death_message", "Frozen and malfunctioned!")
             wait_time = pygame.time.get_ticks()            
@@ -7756,7 +7759,7 @@ def create_lvl13_screen():
     # Camera settings
     camera_x = 300
     camera_y = -500
-    spawn_x, spawn_y =  2100, 400
+    spawn_x, spawn_y =  100, 0
     player_x, player_y = spawn_x, spawn_y
     running = True
     gravity = 1
@@ -7829,9 +7832,20 @@ def create_lvl13_screen():
         },
     ]
 
+    key_block_pairs_timed = [
+        {
+            "key": (300, 100, 30, (255, 119, 0)),
+            "block": pygame.Rect(1800, 0, 200, 200),
+            "collected": False,
+            "timer": 0,  # Timer for the key block
+            "duration": 5000,  # Duration for which the block is active
+            "locked_time": None
+        }
+    ]
+
     blocks = [
-        pygame.Rect(4200, 550, 1200, 100),
-        pygame.Rect(3100, 50, 125, 125),
+        pygame.Rect(0, 200, 2000, 100),
+        pygame.Rect(11100, 50, 125, 125),
         pygame.Rect(3800, 50, 125, 125),
         pygame.Rect(4200, -100, 200, 450)
     ]
@@ -7852,17 +7866,12 @@ def create_lvl13_screen():
     ]
 
     moving_saws = [ 
-        {'r': 70, 'speed': 4, 'cx': 2870, 'cy': 350, 'max': 750, 'min': 200},
-        {'r': 70, 'speed': 6, 'cx': 3230, 'cy': 600, 'max': 850, 'min': 200},
+        {'r': 70, 'speed': 4, 'cx': 800, 'cy': 0, 'max': 500, 'min': -100},
+        {'r': 70, 'speed': 5, 'cx': 1400, 'cy': 300, 'max': 600, 'min': 0},
     ]
 
     moving_saws_x = [
         {'r': 50, 'speed': 11, 'cx': 6300, 'cy': 550, 'min': 6250, 'max': 7800},
-        {'r': 50, 'speed': 16, 'cx': 7100, 'cy': 550, 'min': 6500, 'max': 8300},
-        {'r': 50, 'speed': 13, 'cx': 6700, 'cy': 550, 'min': 6000, 'max': 8900},
-        {'r': 50, 'speed': 14, 'cx': 7800, 'cy': 550, 'min': 7300, 'max': 9700},
-        {'r': 50, 'speed': 17, 'cx': 8100, 'cy': 550, 'min': 7000, 'max': 10200},
-        {'r': 50, 'speed': 15, 'cx': 8700, 'cy': 550, 'min': 7800, 'max': 10800},
     ]
 
     rushing_saws = [
@@ -7880,12 +7889,8 @@ def create_lvl13_screen():
     ]
 
     spikes = [
-    [(2600, 550), (2645, 500), (2690, 550)],
-    [(2700, 550), (2745, 500), (2790, 550)],
-    [(3300, 550), (3345, 500), (3390, 550)],
-    [(3400, 550), (3445, 500), (3490, 550)],
-    [(3100, 50), (3162, -100), (3225, 50)],
-    [(3800, 50), (3862, -100), (3925, 50)],
+    [(1000, 200), (1050, 150), (1100, 200)],
+
     ]
 
     light_off_button = pygame.Rect(2350, -425, 50, 50)
@@ -8435,6 +8440,80 @@ def create_lvl13_screen():
             # Draw block only if key is not collected
             if not pair["collected"]:
                 pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
+
+
+        # Locked blocks logic!
+        for pair in key_block_pairs:
+            if not pair["collected"]:  # Only active locked blocks
+                block = pair["block"]
+                if player_rect.colliderect(block):
+            # Falling onto a block
+                    if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
+                        player_y = block.y - img_height
+                        velocity_y = 0
+                        on_ground = True
+
+            # Hitting the bottom of a block
+                    elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
+                        player_y = block.y + block.height
+                        velocity_y = 0
+
+            # Horizontal collisions
+                    elif player_x + img_width > block.x and player_x < block.x + block.width:
+                        if player_x < block.x:
+                            player_x = block.x - img_width
+                        elif player_x + img_width > block.x + block.width:
+                            player_x = block.x + block.width
+
+        for pair in key_block_pairs_timed:
+            key_x, key_y, key_r, key_color = pair["key"]
+            block = pair["block"]
+
+            key_rect = pygame.Rect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
+
+            if player_rect.colliderect(key_rect):
+                if not pair["collected"]:
+                    pair["locked_time"] = pygame.time.get_ticks()
+                    pair["collected"] = True
+                    if not is_mute:
+                        open_sound.play()
+
+            # Draw key and block only if not collected
+            if not pair["collected"]:
+                pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
+                pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
+
+            # Reset after duration
+            if pair["locked_time"] is not None:
+                if pair["collected"] and (pygame.time.get_ticks() - pair["locked_time"]) > pair["duration"]:
+                    pair["collected"] = False
+                    pair["locked_time"] = None  # Reset timer
+                    # Check if player is inside block when it reappears
+            
+                    if player_rect.colliderect(pair["block"]):
+                        hit_sound.play()
+                        deathcount += 1
+                        player_x, player_y = spawn_x, spawn_y
+                        velocity_y = 0  # Reset vertical speed
+                        wait_time = pygame.time.get_ticks()  # Start the wait time
+                        death_text = in_game_ice.get("crushed_message", "Crushed!")
+
+        for pair in key_block_pairs_timed:
+            if not pair["collected"]:  # Only active locked blocks
+                block = pair["block"]
+                if player_rect.colliderect(block):
+            # Falling onto a block
+                    if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
+                        player_y = block.y - img_height
+                        velocity_y = 0
+                        on_ground = True
+
+            # Horizontal collisions
+                    elif player_x + img_width > block.x and player_x < block.x + block.width:
+                        if player_x < block.x:
+                            player_x = block.x - img_width
+                        elif player_x + img_width > block.x + block.width:
+                            player_x = block.x + block.width
 
         # DEATH LOGICS
         for block in moving_block:
