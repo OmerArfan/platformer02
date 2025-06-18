@@ -204,8 +204,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.39", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
+ver_text = font_def.render("Version 1.2.40", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -7845,13 +7845,12 @@ def create_lvl13_screen():
 
     blocks = [
         pygame.Rect(0, 200, 2000, 100),
-        pygame.Rect(11100, 50, 125, 125),
-        pygame.Rect(3800, 50, 125, 125),
-        pygame.Rect(4200, -100, 200, 450)
+        pygame.Rect(1800, -1000, 100, 1000),
+        pygame.Rect(3200, -50, 800, 100),
     ]
 
     jump_blocks = [
-        pygame.Rect(3700, 450, 100, 100),
+        pygame.Rect(3000, 250, 100, 100),
     ]
 
     class IceBlock:
@@ -7861,8 +7860,9 @@ def create_lvl13_screen():
             self.float_height = self.initial_height
 
     ice_blocks = [
-        IceBlock(pygame.Rect(2000, 550, 2000, 150)),
-        IceBlock(pygame.Rect(5670, 550, 6000, 50))
+        IceBlock(pygame.Rect(-200, 200, 100, 100)),
+        IceBlock(pygame.Rect(2300, 200, 150, 100)),
+        IceBlock(pygame.Rect(2600, 20, 200, 100)),
     ]
 
     moving_saws = [ 
@@ -7871,7 +7871,7 @@ def create_lvl13_screen():
     ]
 
     moving_saws_x = [
-        {'r': 50, 'speed': 11, 'cx': 6300, 'cy': 550, 'min': 6250, 'max': 7800},
+        {'r': 100, 'speed': 6, 'cx': 3350, 'cy': -50, 'min': 3300, 'max': 3900},
     ]
 
     rushing_saws = [
@@ -7879,8 +7879,8 @@ def create_lvl13_screen():
     ]
 
     moving_block = [
-        {'x': 1700, 'y': 270, 'width': 110, 'height': 100, 'direction': 1, 'speed': 3, 'left_limit': 1650, 'right_limit': 1900 },
-        {'x': 2100, 'y': -180, 'width': 110, 'height': 100, 'direction': 1, 'speed': 4, 'left_limit': 1750, 'right_limit': 2100 },
+        {'x': 17000, 'y': 270, 'width': 110, 'height': 100, 'direction': 1, 'speed': 3, 'left_limit': 1650, 'right_limit': 1900 },
+        {'x': 21000, 'y': -180, 'width': 110, 'height': 100, 'direction': 1, 'speed': 4, 'left_limit': 1750, 'right_limit': 2100 },
     ]
 
     saws = [
@@ -7890,7 +7890,7 @@ def create_lvl13_screen():
 
     spikes = [
     [(1000, 200), (1050, 150), (1100, 200)],
-
+    [(2710, 20), (2755, -30), (2800, 20)],
     ]
 
     light_off_button = pygame.Rect(2350, -425, 50, 50)
@@ -7928,12 +7928,15 @@ def create_lvl13_screen():
             checkpoint_reached = False  # Reset checkpoint status
             checkpoint_reached2 = False  # Reset checkpoint status
             current_temp = start_temp
-            spawn_x, spawn_y = 2100, 400
+            spawn_x, spawn_y = 100, 0
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount = 0
             for pair in key_block_pairs:
                 pair["collected"] = False  # Reset the collected status for all keys
+            for pair in key_block_pairs_timed:
+                pair["collected"] = False  # Reset the collected status for all keys
+                pair["timer"] = 0  # Reset the timer for all key blocks
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
@@ -7957,7 +7960,11 @@ def create_lvl13_screen():
             current_temp = start_temp
             stamina = False
             lights_off = True
-            key_block_pairs[0]["collected"] = False  # Reset the key collection status
+            for pair in key_block_pairs:
+                pair["collected"] = False  # Reset the collected status for all keys
+            for pair in key_block_pairs_timed:
+                pair["collected"] = False  # Reset the collected status for all keys
+                pair["timer"] = 0  # Reset the timer for all key blocks
             death_text = in_game_ice.get("overheat_death_message", "Overheated!")
             wait_time = pygame.time.get_ticks()
             for ice in ice_blocks:
@@ -7970,7 +7977,11 @@ def create_lvl13_screen():
             current_temp = start_temp
             stamina = False
             lights_off = True
-            key_block_pairs[0]["collected"] = False  # Reset the key collection status
+            for pair in key_block_pairs:
+                pair["collected"] = False  # Reset the collected status for all keys
+            for pair in key_block_pairs_timed:
+                pair["collected"] = False  # Reset the collected status for all keys
+                pair["timer"] = 0  # Reset the timer for all key blocks
             death_text = in_game_ice.get("freeze_death_message", "Frozen and malfunctioned!")
             wait_time = pygame.time.get_ticks()            
             for ice in ice_blocks:
@@ -8047,11 +8058,6 @@ def create_lvl13_screen():
                     velocity_y = 0
                     on_ground = True
 
-                # Hitting the bottom of a block
-                elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
-                    player_y = block.y + block.height
-                    velocity_y = 0
-
                 # Horizontal collision (left or right side of the block)
                 elif player_x + img_width > block.x and player_x < block.x + block.width:
                     if player_x < block.x:  # Colliding with the left side of the block
@@ -8069,11 +8075,6 @@ def create_lvl13_screen():
                     on_ice = True
                     ice.float_height -= ice_melt
                     block.height = int(ice.float_height)
-
-                # Hitting the bottom of a block
-                elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
-                    player_y = block.y + block.height
-                    velocity_y = 0
 
                 # Horizontal collision (left or right side of the block)
                 elif player_x + img_width > block.x and player_x < block.x + block.width:
@@ -8098,10 +8099,6 @@ def create_lvl13_screen():
                     if not is_mute:
                         bounce_sound.play()
 
-                # Hitting the bottom of a jump block
-                elif velocity_y < 0 and player_y >= jump_block.y + jump_block.height - velocity_y:
-                    player_y = jump_block.y + jump_block.height
-                    velocity_y = 0
 
                 # Horizontal collision (left or right side of the jump block)
                 elif player_x + img_width > jump_block.x and player_x < jump_block.x + jump_block.width:
@@ -8359,46 +8356,6 @@ def create_lvl13_screen():
                         elif player_x + img_width > block.x + block.width:  # Colliding with the right side
                             player_x = block.x + block.width
 
-        pygame.draw.rect(screen, (96, 96, 96), (0, 0, 300 , 130 ))
-        pygame.draw.rect(screen, (96, 96, 96), (SCREEN_WIDTH // 2 - 80, 0, 160 , 70))
-        pygame.draw.rect(screen, (96, 96, 96), (SCREEN_WIDTH - 250, 0, 250 , 80 ))
-
-        levels = load_language(lang_code).get('levels', {})
-        lvl_text = levels.get("lvl13", "Level 13")  # Render the level text
-        rendered_lvl_text = font.render(lvl_text, True, (255, 255, 255))
-        screen.blit(rendered_lvl_text, (SCREEN_WIDTH //2 - rendered_lvl_text.get_width() // 2, 20)) # Draws the level text
-
-        deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
-
-        temp_val = in_game_ice.get("temp", "Temperature: {current_temp}").format(current_temp=current_temp)
-        if current_temp >= 4 and current_temp <= 13:
-            screen.blit(font.render(temp_val, True, (0, 188, 255)), (20, 50))
-        elif current_temp >= 13 and current_temp <= 20:
-            screen.blit(font.render(temp_val, True, (0, 255, 239)), (20, 50))
-        elif current_temp >= 20 and current_temp <= 27:
-            screen.blit(font.render(temp_val, True, (0, 255, 43)), (20, 50))
-        elif current_temp >= 27 and current_temp <= 35:
-            screen.blit(font.render(temp_val, True, (205, 255, 0)), (20, 50))
-        elif current_temp >= 35 and current_temp <= 43:             
-            screen.blit(font.render(temp_val, True, (255, 162, 0)), (20, 50))
-        elif current_temp >= 43 and current_temp <= 50: 
-            screen.blit(font.render(temp_val, True, (230, 105, 0)), (20, 50))
-        elif current_temp >= 50:
-            screen.blit(font.render(temp_val, True, (255, 0, 0)), (20, 50))
-
-        # Initialize and draw the reset and quit text
-        reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
-        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
-
-        quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
-        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
-
-        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
-
         # Locked blocks logic!
         for pair in key_block_pairs:
             if not pair["collected"]:  # Only active locked blocks
@@ -8453,11 +8410,6 @@ def create_lvl13_screen():
                         velocity_y = 0
                         on_ground = True
 
-            # Hitting the bottom of a block
-                    elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
-                        player_y = block.y + block.height
-                        velocity_y = 0
-
             # Horizontal collisions
                     elif player_x + img_width > block.x and player_x < block.x + block.width:
                         if player_x < block.x:
@@ -8494,6 +8446,11 @@ def create_lvl13_screen():
                         hit_sound.play()
                         deathcount += 1
                         player_x, player_y = spawn_x, spawn_y
+                        for pair in key_block_pairs:
+                            pair["collected"] = False  # Reset the collected status for all keys
+                        for pair in key_block_pairs_timed:
+                            pair["collected"] = False  # Reset the collected status for all keys
+                            pair["timer"] = 0  # Reset the timer for all key blocks
                         velocity_y = 0  # Reset vertical speed
                         wait_time = pygame.time.get_ticks()  # Start the wait time
                         death_text = in_game_ice.get("crushed_message", "Crushed!")
@@ -8515,6 +8472,47 @@ def create_lvl13_screen():
                         elif player_x + img_width > block.x + block.width:
                             player_x = block.x + block.width
 
+
+        pygame.draw.rect(screen, (96, 96, 96), (0, 0, 300 , 130 ))
+        pygame.draw.rect(screen, (96, 96, 96), (SCREEN_WIDTH // 2 - 80, 0, 160 , 70))
+        pygame.draw.rect(screen, (96, 96, 96), (SCREEN_WIDTH - 250, 0, 250 , 80 ))
+
+        levels = load_language(lang_code).get('levels', {})
+        lvl_text = levels.get("lvl13", "Level 13")  # Render the level text
+        rendered_lvl_text = font.render(lvl_text, True, (255, 255, 255))
+        screen.blit(rendered_lvl_text, (SCREEN_WIDTH //2 - rendered_lvl_text.get_width() // 2, 20)) # Draws the level text
+
+        deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
+        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+
+        temp_val = in_game_ice.get("temp", "Temperature: {current_temp}").format(current_temp=current_temp)
+        if current_temp >= 4 and current_temp <= 13:
+            screen.blit(font.render(temp_val, True, (0, 188, 255)), (20, 50))
+        elif current_temp >= 13 and current_temp <= 20:
+            screen.blit(font.render(temp_val, True, (0, 255, 239)), (20, 50))
+        elif current_temp >= 20 and current_temp <= 27:
+            screen.blit(font.render(temp_val, True, (0, 255, 43)), (20, 50))
+        elif current_temp >= 27 and current_temp <= 35:
+            screen.blit(font.render(temp_val, True, (205, 255, 0)), (20, 50))
+        elif current_temp >= 35 and current_temp <= 43:             
+            screen.blit(font.render(temp_val, True, (255, 162, 0)), (20, 50))
+        elif current_temp >= 43 and current_temp <= 50: 
+            screen.blit(font.render(temp_val, True, (230, 105, 0)), (20, 50))
+        elif current_temp >= 50:
+            screen.blit(font.render(temp_val, True, (255, 0, 0)), (20, 50))
+
+        # Initialize and draw the reset and quit text
+        reset_text = in_game.get("reset_message", "Press R to reset")
+        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
+
+        quit_text = in_game.get("quit_message", "Press Q to quit")
+        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
+
+        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+
         # DEATH LOGICS
         for block in moving_block:
             if block['width'] < 100:
@@ -8528,7 +8526,11 @@ def create_lvl13_screen():
                 lights_off = True
                 if not is_mute:    
                     hit_sound.play()
-                key_block_pairs[0]["collected"] = False  # Reset key block status
+                for pair in key_block_pairs:
+                    pair["collected"] = False  # Reset the collected status for all keys
+                for pair in key_block_pairs_timed:
+                    pair["collected"] = False  # Reset the collected status for all keys
+                    pair["timer"] = 0  # Reset the timer for all key blocks
                 wait_time = pygame.time.get_ticks()  # Start the wait time
                 velocity_y = 0
                 deathcount += 1
@@ -8559,7 +8561,11 @@ def create_lvl13_screen():
                 deathcount += 1
                 if not is_mute:
                     death_sound.play()
-                key_block_pairs[0]["collected"] = False  # Reset key block status
+                for pair in key_block_pairs:
+                    pair["collected"] = False  # Reset the collected status for all keys
+                for pair in key_block_pairs_timed:
+                    pair["collected"] = False  # Reset the collected status for all keys
+                    pair["timer"] = 0  # Reset the timer for all key blocks
                 velocity_y = 0
                 for ice in ice_blocks:
                     ice.float_height = ice.initial_height
@@ -8585,7 +8591,11 @@ def create_lvl13_screen():
                     # Trigger death logic
                 death_text = in_game.get("sawed_message", "Sawed to bits!")
                 wait_time = pygame.time.get_ticks()  # Start the wait time
-                key_block_pairs[0]["collected"] = False  # Reset key block status
+                for pair in key_block_pairs:
+                    pair["collected"] = False  # Reset the collected status for all keys
+                for pair in key_block_pairs_timed:
+                    pair["collected"] = False  # Reset the collected status for all keys
+                    pair["timer"] = 0  # Reset the timer for all key blocks
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
                 if not is_mute:
@@ -8615,6 +8625,11 @@ def create_lvl13_screen():
                 velocity_y = 0
                 death_text = in_game.get("sawed_message", "Sawed to bits!")
                 wait_time = pygame.time.get_ticks()  # Start the wait time
+                for pair in key_block_pairs:
+                    pair["collected"] = False  # Reset the collected status for all keys
+                for pair in key_block_pairs_timed:
+                    pair["collected"] = False  # Reset the collected status for all keys
+                    pair["timer"] = 0  # Reset the timer for all key blocks
                 if not is_mute:
                     death_sound.play()
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
@@ -8645,7 +8660,11 @@ def create_lvl13_screen():
                 velocity_y = 0
                 death_text = in_game.get("sawed_message", "Sawed to bits!")
                 wait_time = pygame.time.get_ticks()  # Start the wait time
-                key_block_pairs[0]["collected"] = False  # Reset key block status
+                for pair in key_block_pairs:
+                    pair["collected"] = False  # Reset the collected status for all keys
+                for pair in key_block_pairs_timed:
+                    pair["collected"] = False  # Reset the collected status for all keys
+                    pair["timer"] = 0  # Reset the timer for all key blocks
                 if not is_mute:
                     death_sound.play()
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
@@ -8667,7 +8686,11 @@ def create_lvl13_screen():
                 lights_off = True
                 if not is_mute:    
                     hit_sound.play()
-                key_block_pairs[0]["collected"] = False  # Reset key block status
+                for pair in key_block_pairs:
+                    pair["collected"] = False  # Reset the collected status for all keys
+                for pair in key_block_pairs_timed:
+                    pair["collected"] = False  # Reset the collected status for all keys
+                    pair["timer"] = 0  # Reset the timer for all key blocks
                 velocity_y = 0
                 wait_time = pygame.time.get_ticks()  # Start the wait time
                 deathcount += 1
@@ -8695,7 +8718,11 @@ def create_lvl13_screen():
                     wait_time = pygame.time.get_ticks()  # Start the wait time
                     if not is_mute:
                         death_sound.play()
-                    key_block_pairs[0]["collected"] = False  # Reset key block status
+                    for pair in key_block_pairs:
+                        pair["collected"] = False  # Reset the collected status for all keys
+                    for pair in key_block_pairs_timed:
+                        pair["collected"] = False  # Reset the collected status for all keys
+                        pair["timer"] = 0  # Reset the timer for all key blocks
                     velocity_y = 0
                     deathcount += 1
                     collision_detected = True  # Set the flag to stop further checks
@@ -8724,7 +8751,11 @@ def create_lvl13_screen():
                     wait_time = pygame.time.get_ticks()  # Start the wait time
                     if not is_mute:
                         death_sound.play()
-                    key_block_pairs[0]["collected"] = False  # Reset key block status
+                    for pair in key_block_pairs:
+                        pair["collected"] = False  # Reset the collected status for all keys
+                    for pair in key_block_pairs_timed:
+                        pair["collected"] = False  # Reset the collected status for all keys
+                        pair["timer"] = 0  # Reset the timer for all key blocks
                     velocity_y = 0
                     deathcount += 1
                     collision_detected = True  # Set the flag to stop further checks
@@ -8738,7 +8769,11 @@ def create_lvl13_screen():
             wait_time = pygame.time.get_ticks()  # Start the wait time
             lights_off = True
             stamina = False
-            key_block_pairs[0]["collected"] = False  # Reset key block status
+            for pair in key_block_pairs:
+                pair["collected"] = False  # Reset the collected status for all keys
+            for pair in key_block_pairs_timed:
+                pair["collected"] = False  # Reset the collected status for all keys
+                pair["timer"] = 0  # Reset the timer for all key blocks
             if not is_mute:    
                 fall_sound.play()
             player_x, player_y = spawn_x, spawn_y  # Reset player position
