@@ -144,6 +144,7 @@ level_thresholds = [
     {'level': 10,'gold': 35, 'silver': 50, 'bronze': 60},
     {'level': 11,'gold': 35, 'silver': 55, 'bronze': 75},
     {'level': 12,'gold': 45, 'silver': 60, 'bronze': 85},
+    {'level': 13,'gold': 30, 'silver': 55, 'bronze': 80},
 ]
 
 # Function to get medal based on time
@@ -204,8 +205,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.40", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 144)
+ver_text = font_def.render("Version 1.2.41", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -1003,7 +1004,7 @@ def create_lvl2_screen():
     # Camera settings
     camera_x = 0  
     camera_y = 0
-    player_x, player_y = 850, 200
+    player_x, player_y = 150, 500
     spawn_x, spawn_y = player_x, player_y  # Set the spawn point
     running = True
     gravity = 1
@@ -7816,18 +7817,30 @@ def create_lvl13_screen():
         moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
+
+    ice_robo = pygame.image.load(f"char/icerobot/moveicerobotL.png").convert_alpha()
+    ice_robo_x, ice_robo_y = 66000, 650
+
     # Draw flag
-    flag = pygame.Rect(5250, 460, 100, 125)  # x, y, width, height
+    flag = pygame.Rect(3900, 200, 100, 125)  # x, y, width, height
     checkpoint_reached = False
     flag2 = pygame.Rect(54000, 300, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
-    flag_1_x, flag_1_y = 5250, 460
+    flag_1_x, flag_1_y = 3900, 200
     flag_2_x, flag_2_y = 54900, 300
+
+    gravity_strongers = [
+        (3800, 250, 30, (204, 102, 204)),  # Strong gravity button
+    ]
+
+    gravity_weakers = [
+        (5000, 700, 30, (0, 102, 204)),
+    ]
 
     key_block_pairs = [
         {
-            "key": (3650, -50, 30, (255, 255, 0)),
-            "block": pygame.Rect(4200, 350, 200, 200),
+            "key": (36500, -50, 30, (255, 255, 0)),
+            "block": pygame.Rect(40200, 350, 200, 200),
             "collected": False
         },
     ]
@@ -7835,22 +7848,35 @@ def create_lvl13_screen():
     key_block_pairs_timed = [
         {
             "key": (300, 100, 30, (255, 119, 0)),
-            "block": pygame.Rect(1800, 0, 200, 200),
+            "block": pygame.Rect(1900, 0, 100, 200),
             "collected": False,
             "timer": 0,  # Timer for the key block
             "duration": 5000,  # Duration for which the block is active
+            "locked_time": None
+        },
+        {
+            "key": (4000, 250, 30, (255, 119, 0)),
+            "block": pygame.Rect(4150, 400, 50, 250),
+            "collected": False,
+            "timer": 0,  # Timer for the key block
+            "duration": 3500,  # Duration for which the block is active
             "locked_time": None
         }
     ]
 
     blocks = [
         pygame.Rect(0, 200, 2000, 100),
-        pygame.Rect(1800, -1000, 100, 1000),
+        pygame.Rect(1900, -1000, 100, 1000),
         pygame.Rect(3200, -50, 800, 100),
+        pygame.Rect(3600, 300, 600, 100),
+        pygame.Rect(4100, -700, 100, 1000),
+        pygame.Rect(3450, 650, 1000, 100),
+        pygame.Rect(3350, 0, 100, 750),
     ]
 
     jump_blocks = [
         pygame.Rect(3000, 250, 100, 100),
+        pygame.Rect(4300, 550, 100, 100),
     ]
 
     class IceBlock:
@@ -7863,6 +7889,7 @@ def create_lvl13_screen():
         IceBlock(pygame.Rect(-200, 200, 100, 100)),
         IceBlock(pygame.Rect(2300, 200, 150, 100)),
         IceBlock(pygame.Rect(2600, 20, 200, 100)),
+        IceBlock(pygame.Rect(4500, 750, 60000, 200)),
     ]
 
     moving_saws = [ 
@@ -7871,11 +7898,11 @@ def create_lvl13_screen():
     ]
 
     moving_saws_x = [
-        {'r': 100, 'speed': 6, 'cx': 3350, 'cy': -50, 'min': 3300, 'max': 3900},
+        {'r': 95, 'speed': 6, 'cx': 3350, 'cy': -50, 'min': 3300, 'max': 3900},
     ]
 
     rushing_saws = [
-        {'r': 50, 'speed': 12, 'cx': 3150, 'cy': 120 ,'max': 3850},
+        {'r': 50, 'speed': 12, 'cx': 3050, 'cy': 120 ,'max': 300850},
     ]
 
     moving_block = [
@@ -7885,12 +7912,14 @@ def create_lvl13_screen():
 
     saws = [
         (4600, 550, 80, (255, 0, 0)),
-        (5000, 550, 80, (255, 0, 0)),
     ]
 
     spikes = [
     [(1000, 200), (1050, 150), (1100, 200)],
     [(2710, 20), (2755, -30), (2800, 20)],
+    [(3600, 300), (3650, 250), (3700, 300)],
+    [(3650, 650), (3700, 600), (3750, 650)],
+    [(3900, 650), (3950, 600), (4000, 650)]
     ]
 
     light_off_button = pygame.Rect(2350, -425, 50, 50)
@@ -7899,7 +7928,7 @@ def create_lvl13_screen():
         pygame.Rect(5300, 200, 300, 100),
     ]
 
-    exit_portal = pygame.Rect(11500, 450, 50, 100)
+    exit_portal = pygame.Rect(4125, -800, 50, 100)
     clock = pygame.time.Clock()
 
     speedsters = [
@@ -7925,6 +7954,8 @@ def create_lvl13_screen():
             start_time = time.time()
             lights_off = True
             stamina = False
+            weak_grav = False
+            strong_grav = False
             checkpoint_reached = False  # Reset checkpoint status
             checkpoint_reached2 = False  # Reset checkpoint status
             current_temp = start_temp
@@ -8163,7 +8194,9 @@ def create_lvl13_screen():
             checkpoint_reached = True
             stamina = False  # Reset stamina status
             lights_off = True
-            spawn_x, spawn_y = 5300, 400  # Store checkpoint position
+            weak_grav = False
+            strong_grav = False
+            spawn_x, spawn_y = 3900, 150  # Store checkpoint position
             if not is_mute:
                 checkpoint_sound.play()
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
@@ -8172,6 +8205,8 @@ def create_lvl13_screen():
             checkpoint_reached2 = True
             lights_off = True
             stamina = False
+            weak_grav = False
+            strong_grav = False
             pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
             spawn_x, spawn_y = 5400, 280  # Checkpoint position
@@ -8190,7 +8225,7 @@ def create_lvl13_screen():
             if current_time < progress["times"]["lvl13"] or progress["times"]["lvl13"] == 0:
                 progress["times"]["lvl13"] = round(current_time, 2)
             
-            progress["medals"]["lvl13"] = get_medal(12, progress["times"]["lvl13"])
+            progress["medals"]["lvl13"] = get_medal(13, progress["times"]["lvl13"])
 
             update_locked_levels()
             save_progress(progress)  # Save progress to JSON file
@@ -8311,18 +8346,15 @@ def create_lvl13_screen():
                 button_sound.play()
             lights_off = False
 
-        ice_text = in_game_ice.get("ice_message", "Ice Blocks melt when you stand on them! But they also cool you down!")
-        rendered_ice_text = font.render(ice_text, True, (0, 0, 0))
-        screen.blit(rendered_ice_text, (2050 - camera_x, 560 - camera_y))
-        freeze_text = in_game_ice.get("freeze_message", "Just remember to get some warm ups and don't just freeze to death!")
-        rendered_freeze_text = font.render(freeze_text, True, (0, 0, 0))
-        screen.blit(rendered_freeze_text, (2055 - camera_x, 590 - camera_y))    
-        overheat_text1 = in_game_ice.get("overheat_message1", "Also remember to keep track of your temperature and if")    
-        rendered_overheat1_text = font.render(overheat_text1, True, (0, 0, 0))
-        screen.blit(rendered_overheat1_text, (4600 - camera_x, 300 - camera_y))
-        overheat_text2 = in_game_ice.get("overheat_message2", "you heat up too much, stand on an ice block nearby!")
-        rendered_overheat2_text = font.render(overheat_text2, True, (0, 0, 0))
-        screen.blit(rendered_overheat2_text, (4620 - camera_x, 340 - camera_y))
+        timed_coin_text = in_game_ice.get("timed_coin_message", "Orange coins are timed! They open blocks for a limited")
+        rendered_timed_text = font.render(timed_coin_text, True, (0, 0, 0))
+        screen.blit(rendered_timed_text, (0 - camera_x, -80 - camera_y))
+        timed_coin_text_2 = in_game_ice.get("timed_coin_message_2", "time. Run before they close again, or at worst, crush you...")
+        rendered_timed_text_2 = font.render(timed_coin_text_2, True, (0, 0, 0))
+        screen.blit(rendered_timed_text_2, (-20 - camera_x, -30 - camera_y))
+        ice_friendly = in_game_ice.get("ice_friendly", "Here's a ice block in case you need it!")
+        ice_friendly_text = font.render(ice_friendly, True, (0, 0, 0))
+        screen.blit(ice_friendly_text, (-450 - camera_x, 80 - camera_y))
         if not lights_off:
             # Create a full dark surface
             pygame.draw.rect(screen, (0, 0, 0), (0, 0, SCREEN_WIDTH // 2 -  320 , SCREEN_HEIGHT ))
@@ -8445,6 +8477,10 @@ def create_lvl13_screen():
                     if player_rect.colliderect(pair["block"]):
                         hit_sound.play()
                         deathcount += 1
+                        stamina = False  # Reset stamina status
+                        lights_off = True
+                        weak_grav = False
+                        strong_grav = False
                         player_x, player_y = spawn_x, spawn_y
                         for pair in key_block_pairs:
                             pair["collected"] = False  # Reset the collected status for all keys
@@ -8472,6 +8508,53 @@ def create_lvl13_screen():
                         elif player_x + img_width > block.x + block.width:
                             player_x = block.x + block.width
 
+        for x, y, r, color in gravity_strongers:
+            # Draw the button as a circle
+            if not strong_grav:
+                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+        for gravity_stronger in gravity_strongers:
+            gravity_stronger_x, gravity_stronger_y, gravity_stronger_radius, _ = gravity_stronger
+
+        # Find the closest point on the player's rectangle to the button's center
+            closest_x = max(player_rect.left, min(gravity_stronger_x, player_rect.right))
+            closest_y = max(player_rect.top, min(gravity_stronger_y, player_rect.bottom))
+
+            # Calculate the distance between the closest point and the button's center
+            dx = closest_x - gravity_stronger_x
+            dy = closest_y - gravity_stronger_y
+            distance = (dx**2 + dy**2)**0.5
+
+            # If distance is less than radius, stronger gravity activated
+            if distance < gravity_stronger_radius and not strong_grav:
+                if not is_mute:
+                    button_sound.play()
+                strong_grav = True
+                weak_grav = False
+
+        for x, y, r, color in gravity_weakers:
+            # Draw the button as a circle
+            if not weak_grav:
+                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+        for gravity_weaker in gravity_weakers:
+            gravity_weaker_x, gravity_weaker_y, gravity_weaker_radius, _ = gravity_weaker
+
+        # Find the closest point on the player's rectangle to the button's center
+            closest_x = max(player_rect.left, min(gravity_weaker_x, player_rect.right))
+            closest_y = max(player_rect.top, min(gravity_weaker_y, player_rect.bottom))
+
+            # Calculate the distance between the closest point and the button's center
+            dx = closest_x - gravity_weaker_x
+            dy = closest_y - gravity_weaker_y
+            distance = (dx**2 + dy**2)**0.5
+
+            # If distance is less than radius, weaker gravity activated
+            if distance < gravity_weaker_radius and not weak_grav:
+                if not is_mute:
+                    button_sound.play()
+                weak_grav = True
+                strong_grav = False
 
         pygame.draw.rect(screen, (96, 96, 96), (0, 0, 300 , 130 ))
         pygame.draw.rect(screen, (96, 96, 96), (SCREEN_WIDTH // 2 - 80, 0, 160 , 70))
@@ -8522,8 +8605,10 @@ def create_lvl13_screen():
             if player_rect.colliderect(laser_rect) and not on_ground and player_x != block['x']:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 death_text = in_game.get("hit_message", "Hit on the head!")
-                stamina = False
+                stamina = False  # Reset stamina status
                 lights_off = True
+                weak_grav = False
+                strong_grav = False
                 if not is_mute:    
                     hit_sound.play()
                 for pair in key_block_pairs:
@@ -8552,8 +8637,10 @@ def create_lvl13_screen():
 
             # Check if the distance is less than the saw's radius
             if distance < saw_radius:
+                stamina = False  # Reset stamina status
                 lights_off = True
-                stamina = False
+                weak_grav = False
+                strong_grav = False
                     # Trigger death logic
                 death_text = in_game.get("sawed_message", "Sawed to bits!")
                 wait_time = pygame.time.get_ticks()  # Start the wait time
@@ -8585,8 +8672,10 @@ def create_lvl13_screen():
             distance = (dx**2 + dy**2)**0.5
 
             if distance < saw['r']:
+                stamina = False  # Reset stamina status
                 lights_off = True
-                stamina = False
+                weak_grav = False
+                strong_grav = False
                 velocity_y = 0
                     # Trigger death logic
                 death_text = in_game.get("sawed_message", "Sawed to bits!")
@@ -8620,8 +8709,10 @@ def create_lvl13_screen():
             distance = (dx**2 + dy**2)**0.5
             if distance < saw['r']:
         # Trigger death logic
+                stamina = False  # Reset stamina status
                 lights_off = True
-                stamina = False
+                weak_grav = False
+                strong_grav = False
                 velocity_y = 0
                 death_text = in_game.get("sawed_message", "Sawed to bits!")
                 wait_time = pygame.time.get_ticks()  # Start the wait time
@@ -8655,8 +8746,10 @@ def create_lvl13_screen():
             
             if distance < saw['r']:
         # Trigger death logic
+                stamina = False  # Reset stamina status
                 lights_off = True
-                stamina = False
+                weak_grav = False
+                strong_grav = False
                 velocity_y = 0
                 death_text = in_game.get("sawed_message", "Sawed to bits!")
                 wait_time = pygame.time.get_ticks()  # Start the wait time
@@ -8711,8 +8804,10 @@ def create_lvl13_screen():
                 break  # Exit the outer loop if a collision has already been detected
             for point in bottom_points:
                 if point_in_triangle(point[0], point[1], *spike):
+                    stamina = False  # Reset stamina status
                     lights_off = True
-                    stamina = False
+                    weak_grav = False
+                    strong_grav = False
                     player_x, player_y = spawn_x, spawn_y  # Reset player position
                     death_text = in_game.get("dead_message", "You Died")
                     wait_time = pygame.time.get_ticks()  # Start the wait time
@@ -8758,6 +8853,10 @@ def create_lvl13_screen():
                         pair["timer"] = 0  # Reset the timer for all key blocks
                     velocity_y = 0
                     deathcount += 1
+                    stamina = False  # Reset stamina status
+                    lights_off = True
+                    weak_grav = False
+                    strong_grav = False
                     collision_detected = True  # Set the flag to stop further checks
                     for ice in ice_blocks:
                         ice.float_height = ice.initial_height
@@ -8767,8 +8866,10 @@ def create_lvl13_screen():
         if player_y > 1100:
             death_text = in_game.get("fall_message", "Fell too far!")
             wait_time = pygame.time.get_ticks()  # Start the wait time
+            stamina = False  # Reset stamina status
             lights_off = True
-            stamina = False
+            weak_grav = False
+            strong_grav = False
             for pair in key_block_pairs:
                 pair["collected"] = False  # Reset the collected status for all keys
             for pair in key_block_pairs_timed:
