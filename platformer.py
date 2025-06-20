@@ -183,6 +183,8 @@ ice_background_img = pygame.image.load("bgs/IceBackground.png").convert()
 ice_background = pygame.transform.scale(ice_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 green_background_img = pygame.image.load("bgs/GreenBackground.png").convert()
 green_background = pygame.transform.scale(green_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+trans = pygame.image.load("bgs/trans.png").convert()
+trans = pygame.transform.scale(trans, ((SCREEN_WIDTH), (SCREEN_HEIGHT)))
 
 # Load and initalize Images!
 nact_cp = pygame.image.load("oimgs/checkpoints/yellow_flag.png").convert_alpha()
@@ -201,9 +203,9 @@ def render_text(text, color = (255, 255, 255)):
         return font_def.render(text, True, color)
 
 class TransitionManager:
-    def __init__(self, screen, color=(0, 0, 0), speed=40):
+    def __init__(self, screen, image, speed=40):
         self.screen = screen
-        self.color = color
+        self.image = image
         self.speed = speed
         self.active = False
         self.direction = 1  # 1 for slide-in, -1 for slide-out
@@ -231,10 +233,10 @@ class TransitionManager:
         elif self.direction == -1 and self.x >= self.screen.get_width():
             self.active = False  # Done with transition
 
-        # Draw the rectangle
-        pygame.draw.rect(self.screen, self.color, (self.x, 0, self.screen.get_width(), self.screen.get_height()))
+        # Draw the image
+        self.screen.blit(self.image, (self.x, 0))
 
-transition = TransitionManager(screen)
+transition = TransitionManager(screen, trans)
 
 site_text = font_def.render("Sound effects from: pixabay.com", True, (255, 255, 255))
 site_pos = (SCREEN_WIDTH - 398, SCREEN_HEIGHT - 84)
@@ -242,8 +244,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.42", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
+ver_text = font_def.render("Version 1.2.43", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 179, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -10142,44 +10144,72 @@ def handle_action(key):
             progress["is_mute"] = is_mute
             save_progress(progress)
         elif key == "quit":
-            set_page("quit_confirm")
+            if not is_transitioning:
+                transition.start("quit_confirm")
+                transition_time = pygame.time.get_ticks()  # Start the wait time
+                is_transitioning = True
+            if is_transitioning and transition_time is not None:
+                if transition_time - pygame.time.get_ticks() > 2000:
+                    set_page("quit_confirm")
+                    is_transitioning = False
+                    transition_time = None
         elif key == "language":
-            set_page('language_select')
+            if not is_transitioning:
+                transition.start("language_select")
+                transition_time = pygame.time.get_ticks()  # Start the wait time
+                is_transitioning = True
+            if is_transitioning and transition_time is not None:
+                if transition_time - pygame.time.get_ticks() > 2000:
+                    set_page("language_select")
+                    is_transitioning = False
+                    transition_time = None
     elif current_page == 'language_select':
         if key == "back":
-            go_back()
+            if not is_transitioning:
+                transition.start("main_menu")
+                transition_time = pygame.time.get_ticks()  # Start the wait time
+                is_transitioning = True
+            if is_transitioning and transition_time is not None:
+                if transition_time - pygame.time.get_ticks() > 2000:
+                    set_page("main_menu")
+                    is_transitioning = False
+                    transition_time = None
         elif key in ["en", "fr", "es", "de", "zh_cn", "uz", "pt_br", "ru"]:
-            change_language(key)
+            if not is_transitioning:
+                transition.start("main_menu")
+                transition_time = pygame.time.get_ticks()  # Start the wait time
+                is_transitioning = True
+            if is_transitioning and transition_time is not None:
+                if transition_time - pygame.time.get_ticks() > 2000:
+                    set_page("main_menu")
+                    is_transitioning = False
+                    transition_time = None
     elif current_page == 'levels':
         if key is None:  # Ignore clicks on locked levels
             return
-        if key == "lvl1":  # Trigger the Level 1 screen
-            set_page("lvl1_screen")
-        elif key == "lvl2":
-            set_page("lvl2_screen")
-        elif key == "lvl3":
-            set_page("lvl3_screen")
-        elif key == "lvl4":
-            set_page("lvl4_screen")
-        elif key == "lvl5":
-            set_page("lvl5_screen")
-        elif key == "lvl6":
-            set_page("lvl6_screen")
-        elif key == "lvl7":
-            set_page("lvl7_screen")
-        elif key == "lvl8":
-            set_page("lvl8_screen")
-        elif key == "lvl9":
-            set_page("lvl9_screen")
-        elif key == "lvl10":
-            set_page("lvl10_screen")
-        elif key == "lvl11":
-            set_page("lvl11_screen")
         elif key == "back":
-            set_page("main_menu")
+            if not is_transitioning:
+                transition.start("main_menu")
+                transition_time = pygame.time.get_ticks()  # Start the wait time
+                is_transitioning = True
+            if is_transitioning and transition_time is not None:
+                if transition_time - pygame.time.get_ticks() > 2000:
+                    set_page("main_menu")
+                    is_transitioning = False
+                    transition_time = None
         elif key == "next":
             buttons.clear()
             set_page("ice_levels")
+        else:  # Trigger the Level 1 screen
+            if not is_transitioning:
+                transition.start(f"{key}_screen")
+                transition_time = pygame.time.get_ticks()  # Start the wait time
+                is_transitioning = True
+            if is_transitioning and transition_time is not None:
+                if transition_time - pygame.time.get_ticks() > 2000:
+                    set_page(f"{key}_screen")
+                    is_transitioning = False
+                    transition_time = None
     elif current_page == "ice_levels":
         if key in ["lvl12", "lvl13", "lvl14", "lvl15"]:
             set_page(f"{key}_screen")
@@ -10208,7 +10238,12 @@ while running:
     # Clear screen!
     screen.blit(background, (0, 0))
     mouse_pos = pygame.mouse.get_pos()
-    
+
+    print(transition_time, is_transitioning)
+    if transition_time is not None and pygame.time.get_ticks() - transition_time > 1000:
+        transition_time = None
+        is_transitioning = False
+
     if SCREEN_WIDTH < MIN_WIDTH or SCREEN_HEIGHT < MIN_HEIGHT:
         countdown = 5  # seconds
         clock = pygame.time.Clock()
