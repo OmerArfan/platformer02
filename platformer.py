@@ -243,7 +243,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.45", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.46", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -394,7 +394,7 @@ def green_world_buttons():
 
     buttons.append((rendered_next, next_rect, "next", False))
 
-def ph_ice_world_buttons():
+def ice_world_buttons():
     global current_lang, buttons
     buttons.clear()
 
@@ -443,58 +443,6 @@ def ph_ice_world_buttons():
 
     # Add the button
     buttons.append((rendered_back, back_rect, "back", False))
-
-def ice_world_buttons():
-    global current_lang, buttons
-    levels = load_language(lang_code).get('levels', {})
-    buttons.clear()
-
-    rendered_select_text = font.render(select_text, True, (0, 0, 0))
-    select_text_rect = rendered_select_text.get_rect(center=(SCREEN_WIDTH // 2, 50))  # Center at the top
-
-    # Store the rendered text and its position for later drawing
-    global select_level_text, select_level_rect
-    select_level_text = rendered_select_text
-    select_level_rect = select_text_rect
-
-    level_options = ["lvl12", "lvl13", "lvl14", "lvl15"]
-    buttons_per_row = 4
-    spacing_x = 140
-    spacing_y = 70
-
-    # Calculate starting positions to center the grid
-    grid_width = (buttons_per_row - 1) * spacing_x
-    start_x = (SCREEN_WIDTH - grid_width) // 2
-    start_y = (SCREEN_HEIGHT // 2) - (len(level_options) // buttons_per_row * spacing_y // 2)
-
-    for i, level in enumerate(level_options):
-        text = levels.get(level, level.capitalize())
-        is_locked = level in progress["locked_levels"]  # Check if the level is locked
-
-        # Render the level text
-        color = (79, 79, 79) if is_locked else (0, 0, 0)  # Gray out locked levels
-        rendered = font.render(text, True, color)
-
-        col = i % buttons_per_row
-        row = i // buttons_per_row
-
-        x = start_x + col * spacing_x
-        y = start_y + row * spacing_y
-
-        rect = rendered.get_rect(center=(x, y))
-
-        # Add the button only if the level is not locked
-        if not is_locked:
-            buttons.append((rendered, rect, level, is_locked))
-        else:
-            # Add the locked button for display purposes (no interaction)
-            buttons.append((rendered, rect, None, is_locked))  # Use `None` as the key for locked levels
-
-    # Back button at bottom center
-    back_text = current_lang.get("back", "Back")
-    rendered_back = font.render(back_text, True, (255, 255, 255))
-    back_rect = rendered_back.get_rect(center=(50, SCREEN_HEIGHT // 2 - 50))
-    buttons.append((rendered_back, back_rect, "back", is_locked))
 
 def load_level(level_id):
     global current_page, buttons
@@ -604,7 +552,6 @@ def change_language(lang):
         font = pygame.font.Font(font_path_ch, 25)
     else:
         font = pygame.font.Font(font_path, 25)
-    set_page('main_menu')
 
 def go_back():
     global last_page_change_time
@@ -685,7 +632,7 @@ def set_page(page):
         create_lvl12_screen()   
     elif page == 'ice_levels':
         current_lang = load_language(lang_code).get('levels', {})
-        ph_ice_world_buttons()
+        ice_world_buttons()
         change_ambience("audio/amb/iceambience.wav")
 
 def create_quit_confirm_buttons():
@@ -10184,6 +10131,7 @@ def handle_action(key):
                     is_transitioning = False
                     transition_time = None
         elif key in ["en", "fr", "es", "de", "zh_cn", "uz", "pt_br", "ru"]:
+            change_language(key)
             if not is_transitioning:
                 transition.start("main_menu")
                 transition_time = pygame.time.get_ticks()  # Start the wait time
@@ -10209,7 +10157,7 @@ def handle_action(key):
         elif key == "next":
             buttons.clear()
             set_page("ice_levels")
-        else:  # Trigger the Level 1 screen
+        else:  # Trigger a level's screen
             if not is_transitioning:
                 transition.start(f"{key}_screen")
                 transition_time = pygame.time.get_ticks()  # Start the wait time
