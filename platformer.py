@@ -114,7 +114,6 @@ def save_progress(data):
         with open(SAVE_FILE, "w", encoding="utf-8" ) as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
     except PermissionError:
-        print("Error: Unable to save progress.")
         hit_sound.play()
         screen.blit(font_def.render("Error: Unable to save progress.", True, (255, 0, 0)), (SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT - 50))
     except Exception as e:
@@ -244,8 +243,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.43", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 179, SCREEN_HEIGHT - 144)
+ver_text = font_def.render("Version 1.2.44", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -7799,7 +7798,7 @@ def create_lvl13_screen():
     # Camera settings
     camera_x = 300
     camera_y = -500
-    spawn_x, spawn_y =  100, 0
+    spawn_x, spawn_y =  65000, 0
     player_x, player_y = spawn_x, spawn_y
     running = True
     gravity = 1
@@ -7829,7 +7828,9 @@ def create_lvl13_screen():
     deathcount = 0
     was_moving = False
     lights_off = True
-    
+    visibility = 0
+    fade_time = None
+
     # Robo Temperature and Ice
     start_temp = 24.0
     on_ground_heatup = 0.08
@@ -7858,7 +7859,7 @@ def create_lvl13_screen():
 
 
     ice_robo = pygame.image.load(f"char/icerobot/moveicerobotL.png").convert_alpha()
-    ice_robo_x, ice_robo_y = 66000, 650
+    ice_robo_x, ice_robo_y = 66200, 650
     ice_robo_move = pygame.image.load(f"char/icerobot/moveicerobot.png").convert_alpha()
 
     # Draw flag
@@ -7867,7 +7868,7 @@ def create_lvl13_screen():
     flag2 = pygame.Rect(54000, 300, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
     flag_1_x, flag_1_y = 3900, 200
-    flag_2_x, flag_2_y = 54900, 300
+    flag_2_x, flag_2_y = 54900, 3000
 
     gravity_strongers = [
         (3800, 250, 30, (204, 102, 204)),  # Strong gravity button
@@ -7912,7 +7913,7 @@ def create_lvl13_screen():
         pygame.Rect(4100, -700, 100, 1000),
         pygame.Rect(3450, 650, 1000, 100),
         pygame.Rect(3350, 0, 100, 750),
-        pygame.Rect(65000, 750, 5000, 200),
+        pygame.Rect(65000, 750, 70000, 200),
     ]
 
     jump_blocks = [
@@ -7988,6 +7989,8 @@ def create_lvl13_screen():
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
+        print(visibility)
+
         current_time = time.time() - start_time
         formatted_time = "{:.2f}".format(current_time)
 
@@ -8016,7 +8019,7 @@ def create_lvl13_screen():
                 set_page("ice_levels")
 
         # Ice and Ground temeprature logic
-        if not keys[pygame.K_r]:
+        if not keys[pygame.K_r] and player_x < 65500:
             if not on_ice and on_ground:
                 current_temp += on_ground_heatup
             elif not on_ice and not on_ground:
@@ -8064,7 +8067,7 @@ def create_lvl13_screen():
         current_temp = round(current_temp, 2)
         
         # Input
-        if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
+        if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground and player_x <= 65500:
             if strong_grav:
                 velocity_y = -strong_jump_strength
             elif weak_grav:
@@ -8078,7 +8081,7 @@ def create_lvl13_screen():
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
                   keys[pygame.K_RIGHT] or keys[pygame.K_d])
 
-        if moving:
+        if moving and player_x <= 65500:
             if keys[pygame.K_LEFT] or keys[pygame.K_a]:
                 if stamina:
                     velocity_x = stamina_speed
@@ -8597,48 +8600,52 @@ def create_lvl13_screen():
                 weak_grav = True
                 strong_grav = False
 
-        screen.blit(ice_robo, (ice_robo_x - camera_x, ice_robo_y - camera_y))
+        if player_x < 65500:
+         screen.blit(ice_robo, (ice_robo_x - camera_x, ice_robo_y - camera_y))
+         pygame.draw.rect(screen, (96, 96, 96), (0, 0, 300 , 130 ))
+         pygame.draw.rect(screen, (96, 96, 96), (SCREEN_WIDTH // 2 - 80, 0, 160 , 70))
+         pygame.draw.rect(screen, (96, 96, 96), (SCREEN_WIDTH - 250, 0, 250 , 80 ))
 
+         levels = load_language(lang_code).get('levels', {})
+         lvl_text = levels.get("lvl13", "Level 13")  # Render the level text
+         rendered_lvl_text = font.render(lvl_text, True, (255, 255, 255))
+         screen.blit(rendered_lvl_text, (SCREEN_WIDTH //2 - rendered_lvl_text.get_width() // 2, 20)) # Draws the level text
 
-        pygame.draw.rect(screen, (96, 96, 96), (0, 0, 300 , 130 ))
-        pygame.draw.rect(screen, (96, 96, 96), (SCREEN_WIDTH // 2 - 80, 0, 160 , 70))
-        pygame.draw.rect(screen, (96, 96, 96), (SCREEN_WIDTH - 250, 0, 250 , 80 ))
+         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
+         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
 
-        levels = load_language(lang_code).get('levels', {})
-        lvl_text = levels.get("lvl13", "Level 13")  # Render the level text
-        rendered_lvl_text = font.render(lvl_text, True, (255, 255, 255))
-        screen.blit(rendered_lvl_text, (SCREEN_WIDTH //2 - rendered_lvl_text.get_width() // 2, 20)) # Draws the level text
-
-        deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
-
-        temp_val = in_game_ice.get("temp", "Temperature: {current_temp}").format(current_temp=current_temp)
-        if current_temp >= 4 and current_temp <= 13:
+         temp_val = in_game_ice.get("temp", "Temperature: {current_temp}").format(current_temp=current_temp)
+         if current_temp >= 4 and current_temp <= 13:
             screen.blit(font.render(temp_val, True, (0, 188, 255)), (20, 50))
-        elif current_temp >= 13 and current_temp <= 20:
+         elif current_temp >= 13 and current_temp <= 20:
             screen.blit(font.render(temp_val, True, (0, 255, 239)), (20, 50))
-        elif current_temp >= 20 and current_temp <= 27:
+         elif current_temp >= 20 and current_temp <= 27:
             screen.blit(font.render(temp_val, True, (0, 255, 43)), (20, 50))
-        elif current_temp >= 27 and current_temp <= 35:
+         elif current_temp >= 27 and current_temp <= 35:
             screen.blit(font.render(temp_val, True, (205, 255, 0)), (20, 50))
-        elif current_temp >= 35 and current_temp <= 43:             
-            screen.blit(font.render(temp_val, True, (255, 162, 0)), (20, 50))
-        elif current_temp >= 43 and current_temp <= 50: 
+         elif current_temp >= 35 and current_temp <= 43:             
+           screen.blit(font.render(temp_val, True, (255, 162, 0)), (20, 50))
+         elif current_temp >= 43 and current_temp <= 50: 
             screen.blit(font.render(temp_val, True, (230, 105, 0)), (20, 50))
-        elif current_temp >= 50:
+         elif current_temp >= 50:
             screen.blit(font.render(temp_val, True, (255, 0, 0)), (20, 50))
 
         # Initialize and draw the reset and quit text
-        reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
-        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
+         reset_text = in_game.get("reset_message", "Press R to reset")
+         rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+         screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
-        quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
-        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
+         quit_text = in_game.get("quit_message", "Press Q to quit")
+         rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+         timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+        else:
+            screen.blit(ice_robo_move, (ice_robo_x - camera_x, ice_robo_y - camera_y))
+            ice_robo_x += 51
+            player_x += 52
+            on_ground = True
 
         # DEATH LOGICS
         for block in moving_block:
@@ -8928,28 +8935,35 @@ def create_lvl13_screen():
                 ice.float_height = ice.initial_height
                 ice.rect.height = int(ice.float_height)
 
-        if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-        else:
-            show_greenrobo_unlocked = False
-
         # Player Image
-        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+        if player_x < 65500:
+         if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
             screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+         elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
             screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        else:
+         else:
             screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        else:
+            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
                 screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 80))
             else:
                 wait_time = None
+
+        if player_x > 66000:
+            fade_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            fade_surface.set_alpha(visibility)
+            fade_surface.fill((0, 0, 0))
+            screen.blit(fade_surface, (0, 0))
+            if visibility < 255:
+                if fade_time is None:
+                    fade_time = pygame.time.get_ticks()
+                else:
+                    if pygame.time.get_ticks() - fade_time > 1:
+                        visibility += 1
+                        fade_time = None
 
         pygame.display.update() 
 
@@ -9024,7 +9038,7 @@ def create_secret1_screen():
 
 
     ice_robo = pygame.image.load(f"char/icerobot/moveicerobotL.png").convert_alpha()
-    ice_robo_x, ice_robo_y = 66000, 650
+    ice_robo_x, ice_robo_y = 67000, 650
     ice_robo_move = pygame.image.load(f"char/icerobot/moveicerobot.png").convert_alpha()
 
     # Draw flag
@@ -10239,7 +10253,6 @@ while running:
     screen.blit(background, (0, 0))
     mouse_pos = pygame.mouse.get_pos()
 
-    print(transition_time, is_transitioning)
     if transition_time is not None and pygame.time.get_ticks() - transition_time > 1000:
         transition_time = None
         is_transitioning = False
@@ -10455,7 +10468,7 @@ while running:
                         # Initialize the time
                         if wait_time is None:
                             wait_time = pygame.time.get_ticks()
-                        locked_text = messages.get("icelocked_message", "This robot is coming soon!")
+                        locked_text = messages.get("icelock_message", "This robot is hiding in the mountains...")
                 
                 elif lavarobot_rect.collidepoint(mouse_pos):
                     if lavarobo_unlock:
