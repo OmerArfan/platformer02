@@ -151,7 +151,7 @@ level_thresholds = [
 def get_medal(level, time_taken):
     thresholds = next((t for t in level_thresholds if t['level'] == level), None)
     if not thresholds:
-        return None
+        return "None"
     if time_taken <= thresholds['gold']:
         return "Gold"
     elif time_taken <= thresholds['silver']:
@@ -159,7 +159,7 @@ def get_medal(level, time_taken):
     elif time_taken <= thresholds['bronze']:
         return "Bronze"
     else:
-        return None
+        return "None"
 
 pygame.mouse.set_visible(False)  # Hide the system cursor
 cursor_img = pygame.image.load("oimgs/cursor/cursor.png").convert_alpha()
@@ -243,7 +243,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.44", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.45", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 144)
 
 # Load language function and rendering part remain the same
@@ -534,16 +534,6 @@ def check_green_gold():
             save_progress(progress)
             show_greenrobo_unlocked = True
             greenrobo_unlocked_message_time = time.time()
-
-# Button actions
-def start_game():
-    pygame.time.delay(200)  # Delay 200 ms to avoid click pass-through
-    complete_levels = progress.get("complete_levels", 0)
-    if complete_levels < 11:
-        set_page('levels')
-    else:
-        set_page('ice_levels')
-
 
 # Load character images
 robot_img = pygame.image.load("char/robot/robot.png").convert_alpha()
@@ -10133,15 +10123,20 @@ def handle_action(key):
     
     if current_page == 'main_menu':
         if key == "start":
+            complete = progress["complete_levels"]
+            if complete < 11:
+                level_page = "levels"
+            else:
+                level_page = "ice_levels"
             if not is_transitioning:
-                transition.start("levels")
+                transition.start(level_page)
                 transition_time = pygame.time.get_ticks()  # Start the wait time
                 is_transitioning = True
                 if is_transitioning and transition_time is not None:
                     if pygame.time.get_ticks() - transition_time  > 2000:
                         is_transitioning = False
                         transition_time = None
-                        set_page("levels")
+                        set_page(level_page)
                         
         elif key == "achievements":
             if not is_transitioning:
@@ -10238,14 +10233,15 @@ def handle_action(key):
 
 # Start with main menu
 set_page('main_menu')
+update_locked_levels() # Update locked levels every frame!
 button_hovered_last_frame = False
 last_hovered_key = None
 main_menu_hover = None
-update_locked_levels() # Update locked levels every frame!
 wait_time = None
 disk_mode = True
 logo_hover = False
 logo_click = False
+
 # Main loop
 running = True
 while running:
