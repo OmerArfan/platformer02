@@ -238,13 +238,13 @@ class TransitionManager:
 transition = TransitionManager(screen, trans)
 
 site_text = font_def.render("Sound effects from: pixabay.com", True, (255, 255, 255))
-site_pos = (SCREEN_WIDTH - 398, SCREEN_HEIGHT - 84)
+site_pos = (SCREEN_WIDTH - 398, SCREEN_HEIGHT - 98)
 logo_text = font_def.render("Logo and Background made with: canva.com", True, (255, 255, 255))
-logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 54)
+logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
-credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 114)
-ver_text = font_def.render("Version 1.2.47", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 144)
+credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.48", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -654,6 +654,13 @@ def create_quit_confirm_buttons():
 
     pygame.display.flip()  # Update the display to show the quit confirmation screen
 
+def low_detail():
+    global LDM
+    if LDM:
+        LDM = False
+    else:
+        LDM = True
+
 def create_lvl1_screen():
     global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, is_transitioning, transition_time
 
@@ -747,23 +754,11 @@ def create_lvl1_screen():
 
     pygame.draw.rect(screen, (129, 94, 123), (exit_portal.x - camera_x, exit_portal.y - camera_y, exit_portal.width, exit_portal.height))
 
-    deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-    screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
-
             # Inside the game loop:
     screen.blit(rendered_up_text, (700 - camera_x, 200 - camera_y))  # Draws the rendered up text
     screen.blit(rendered_warning_text, (1900 - camera_x, 150 - camera_y))  # Draws the rendered warning text
     screen.blit(rendered_moving_text, (1350 - camera_x, 170 - camera_y))  # Draws the rendered moving text
     screen.blit(rendered_exit_text, (2400 - camera_x, 300 - camera_y))  # Draws the rendered exit text
-
-        # Initialize and draw the quit text
-    quit_text = in_game.get("quit_message", "Press Q to quit")
-    rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
-    screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
-
-    levels = load_language(lang_code).get('levels', {})
-    lvl1_text = levels.get("lvl1", "Level 1")  # Render the level text
-    screen.blit(render_text(lvl1_text, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
     if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
@@ -774,10 +769,8 @@ def create_lvl1_screen():
     else:
         show_greenrobo_unlocked = False
 
-
-    if transition_time is not None:
-     if pygame.time.get_ticks() - transition_time > 650:
-      while running:
+    if transition.x <= -transition.image.get_width():
+       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
@@ -1129,25 +1122,9 @@ def create_lvl2_screen():
             pygame.draw.rect(screen, (255, 128, 0), (jump_block.x - camera_x, jump_block.y - camera_y, jump_block.width, jump_block.height))
 
     pygame.draw.rect(screen, (129, 94, 123), (exit_portal.x - camera_x, exit_portal.y - camera_y, exit_portal.width, exit_portal.height))
-        
-    deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-    screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
 
             # Inside the game loop:
     screen.blit(rendered_jump_text, (900 - camera_x, 500 - camera_y))  # Draws the rendered up text
-
-        # Initialize and draw the reset and quit text
-    reset_text = in_game.get("reset_message", "Press R to reset")
-    rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
-    screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
-
-    quit_text = in_game.get("quit_message", "Press Q to quit")
-    rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
-    screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
-
-    levels = load_language(lang_code).get('levels', {})
-    lvl2_text = levels.get("lvl2", "Level 2")  # Render the level text
-    screen.blit(font.render(lvl2_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
     if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
@@ -1158,8 +1135,7 @@ def create_lvl2_screen():
     else:
             show_greenrobo_unlocked = False
 
-    if transition_time is not None:
-     if pygame.time.get_ticks() - transition_time > 650: 
+    if transition.x <= -transition.image.get_width():
       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -1536,8 +1512,8 @@ def create_lvl3_screen():
 
     key_text = in_game.get("key_message", "Grab the coin and open the block!")
     rendered_key_text = font.render(key_text, True, (255, 255, 0))  # Render the key text
-
-    while running:
+    if transition.x <= -transition.image.get_width():
+      while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
@@ -7392,15 +7368,18 @@ def create_lvl12_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(ice_background, (0, 0))
+        if LDM:
+            screen.fill((0, 146, 230))
+        else:
+         screen.blit(ice_background, (0, 0))
 
-        for _ in range(2):
+         for _ in range(2):
             px = random.randint(-200, SCREEN_WIDTH + 200)
             py = -300
             snow.append(Particle(px, py, color=(255, 255, 255), size=3, lifetime=1400))
 
         # Update and draw particles
-        for particle in snow[:]:
+         for particle in snow[:]:
             particle.update()
             particle.draw(screen)
             if particle.lifetime <= 0:
@@ -8318,15 +8297,18 @@ def create_lvl13_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(ice_background, (0, 0))
+        if LDM:
+            screen.fill((0, 146, 230))
+        else:
+         screen.blit(ice_background, (0, 0))
 
-        for _ in range(2):
+         for _ in range(2):
             px = random.randint(-200, SCREEN_WIDTH + 200)
             py = -300
             snow.append(Particle(px, py, color=(255, 255, 255), size=3, lifetime=1400))
 
         # Update and draw particles
-        for particle in snow[:]:
+         for particle in snow[:]:
             particle.update()
             particle.draw(screen)
             if particle.lifetime <= 0:
@@ -10187,6 +10169,7 @@ def handle_action(key):
                     transition_time = None
         elif key == "settings":
             open_settings()
+            low_detail()
             progress["is_mute"] = is_mute
             save_progress(progress)
         elif key == "quit":
@@ -10279,6 +10262,7 @@ wait_time = None
 disk_mode = True
 logo_hover = False
 logo_click = False
+LDM = False
 
 # Main loop
 running = True
@@ -10601,10 +10585,6 @@ while running:
         elif current_page == "lvl3_screen":
             create_lvl3_screen()
 
-            for rendered, rect, key in buttons:
-                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-                screen.blit(rendered, rect)
-
         elif current_page == "lvl4_screen":
             create_lvl4_screen()
 
@@ -10735,20 +10715,24 @@ while running:
                 screen.blit(text_surface, text_rect)
 
         elif current_page == "ice_levels":
-            screen.blit(ice_background, (0, 0))
+            if LDM:
+                screen.fill((0, 146, 230))
+            else:
+                screen.blit(ice_background, (0, 0))
             # Fetch the localized "Select a Level" text dynamically
             select_text = current_lang.get("level_display", "Select a Level")
             rendered_select_text = font.render(select_text, True, (0, 0, 0))
             select_text_rect = rendered_select_text.get_rect(center=(SCREEN_WIDTH // 2, 50))
             screen.blit(rendered_select_text, select_text_rect)
 
-            for _ in range(2):
+            if not LDM:
+             for _ in range(2):
                 px = random.randint(-200, SCREEN_WIDTH + 200)
                 py = -300
                 snow.append(Particle(px, py, color=(255, 255, 255), size=3, lifetime=1400))
 
             # Update and draw particles
-            for particle in snow[:]:
+             for particle in snow[:]:
                 particle.update()
                 particle.draw(screen)
                 if particle.lifetime <= 0:
