@@ -110,6 +110,9 @@ else:
 
 # Save progress to file
 def save_progress(data):
+    if not data or "complete_levels" not in data:
+        print("Refusing to save empty or invalid progress!")
+        return
     try:
         with open(SAVE_FILE, "w", encoding="utf-8" ) as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
@@ -118,6 +121,10 @@ def save_progress(data):
         screen.blit(font_def.render("Error: Unable to save progress.", True, (255, 0, 0)), (SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT - 50))
     except Exception as e:
         screen.blit(font_def.render(f"An unexpected error occurred: {e}", True, (255, 0, 0)), (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 50))
+
+import shutil
+if os.path.exists(SAVE_FILE):
+    shutil.copy(SAVE_FILE, SAVE_FILE + ".bak")
 
 # Load progress at start
 progress = load_progress()
@@ -243,7 +250,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.48", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.49", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
@@ -1408,6 +1415,7 @@ def create_lvl2_screen():
 def create_lvl3_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
 
+    screen.blit(green_background, (0, 0))
     wait_time = None
     start_time = time.time()
 
@@ -1872,6 +1880,8 @@ def create_lvl3_screen():
 def create_lvl4_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
 
+    buttons.clear()
+    screen.blit(green_background, (0, 0))
     wait_time = None
     start_time = time.time()
 
@@ -2000,7 +2010,8 @@ def create_lvl4_screen():
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
 
-    while running:
+    if transition.x <= -transition.image.get_width():
+       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
@@ -2501,6 +2512,8 @@ def create_lvl4_screen():
 def create_lvl5_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
 
+    buttons.clear()
+    screen.blit(green_background, (0, 0))
     wait_time = None
     start_time = time.time()
 
@@ -2638,7 +2651,8 @@ def create_lvl5_screen():
     
     # Render the texts
 
-    while running:
+    if transition.x <= -transition.image.get_width():
+      while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
@@ -3146,6 +3160,9 @@ def create_lvl6_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
     start_time = time.time()
 
+    buttons.clear()
+    screen.blit(green_background, (0, 0))
+
     wait_time = None
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -3269,7 +3286,8 @@ def create_lvl6_screen():
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
 
-    while running:
+    if transition.x <= -transition.image.get_width():
+      while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
@@ -3773,6 +3791,9 @@ def create_lvl7_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
     start_time = time.time()
 
+    buttons.clear()
+    screen.blit(green_background, (0, 0))
+
     wait_time = None
     in_game = load_language(lang_code).get('in_game', {})
 
@@ -3874,7 +3895,8 @@ def create_lvl7_screen():
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
 
-    while running:
+    if transition.x <= -transition.image.get_width():
+       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
@@ -4277,7 +4299,10 @@ def create_lvl7_screen():
 
 def create_lvl8_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
-    
+
+    buttons.clear()
+    screen.blit(green_background, (0, 0))
+
     wait_time = None
     start_time = time.time()
 
@@ -4398,7 +4423,8 @@ def create_lvl8_screen():
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
 
-    while running:
+    if transition.x <= -transition.image.get_width():
+       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
         current_time = time.time() - start_time
@@ -4831,6 +4857,9 @@ def create_lvl8_screen():
 def create_lvl9_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
     
+    buttons.clear()
+    screen.blit(green_background, (0, 0))
+    
     wait_time = None
     start_time = time.time()
 
@@ -4999,7 +5028,8 @@ def create_lvl9_screen():
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
 
-    while running:
+    if transition.x <= -transition.image.get_width():
+       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
         current_time = time.time() - start_time
@@ -5509,6 +5539,9 @@ def create_lvl9_screen():
 def create_lvl10_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
     
+    buttons.clear()
+    screen.blit(green_background, (0, 0))
+
     wait_time = None
     start_time = time.time()
 
@@ -5633,7 +5666,8 @@ def create_lvl10_screen():
     moving_limit_left1 = 2200
     moving_limit_right1 = 2800
 
-    while running:
+    if transition.x <= -transition.image.get_width():
+       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
         current_time = time.time() - start_time
@@ -6131,6 +6165,9 @@ def create_lvl10_screen():
 def create_lvl11_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
 
+    buttons.clear()
+    screen.blit(green_background, (0, 0))
+
     in_game = load_language(lang_code).get('in_game', {})
     messages = load_language(lang_code).get('messages', {})
 
@@ -6286,7 +6323,8 @@ def create_lvl11_screen():
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
 
-    while running:
+    if transition.x <= -transition.image.get_width():
+       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
@@ -6955,6 +6993,8 @@ snow = []
 def create_lvl12_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, snow
 
+    buttons.clear()
+    screen.blit(ice_background, (0, 0))
     in_game = load_language(lang_code).get('in_game', {})
     in_game_ice = load_language(lang_code).get('in_game_ice', {})
 
@@ -7097,7 +7137,8 @@ def create_lvl12_screen():
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
 
-    while running:
+    if transition.x <= -transition.image.get_width():
+       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
@@ -7788,6 +7829,8 @@ def create_lvl12_screen():
 def create_lvl13_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, snow
 
+    buttons.clear()
+    screen.blit(ice_background, (0, 0))
     in_game = load_language(lang_code).get('in_game', {})
     in_game_ice = load_language(lang_code).get('in_game_ice', {})
 
@@ -7984,7 +8027,8 @@ def create_lvl13_screen():
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
 
-    while running:
+    if transition.x <= -transition.image.get_width():
+       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
@@ -10241,16 +10285,39 @@ def handle_action(key):
                     is_transitioning = False
                     transition_time = None
     elif current_page == "ice_levels":
-        if key in ["lvl12", "lvl13", "lvl14", "lvl15"]:
-            set_page(f"{key}_screen")
-    elif current_page.startswith("lvl"):
-        if key == "back":
-            set_page("levels")
+        if key is None:  # Ignore clicks on locked levels
+            return
+        elif key == "back":
+            if not is_transitioning:
+                transition.start("levels")
+                transition_time = pygame.time.get_ticks()  # Start the wait time
+                is_transitioning = True
+            if is_transitioning and transition_time is not None:
+                if transition_time - pygame.time.get_ticks() > 2000:
+                    set_page("levels")
+                    is_transitioning = False
+                    transition_time = None
+        else:  # Trigger a level's screen
+          if not key == "lvl14":
+            if not is_transitioning:
+                transition.start(f"{key}_screen")
+                transition_time = pygame.time.get_ticks()  # Start the wait time
+                is_transitioning = True
+            if is_transitioning and transition_time is not None:
+                if transition_time - pygame.time.get_ticks() > 2000:
+                    set_page(f"{key}_screen")
+                    is_transitioning = False
+                    transition_time = None
+          else:
+            death_sound.play()
     elif current_page == "quit_confirm":
         if key == "yes":
             quit_game()
         elif key == "no":
             set_page("main_menu")
+    elif current_page == "achievements":
+        if key == "locked":
+         death_sound.play()
 
 # Start with main menu
 set_page('main_menu')
@@ -10463,10 +10530,7 @@ while running:
                             click_sound.play()
                         set_page("main_menu")
                     else:
-                        if not is_mute and not locked_sound_played:
-                            death_sound.play()
-                            locked_sound_played = True
-                            # Initialize the time
+                        handle_action("locked")
                         if wait_time is None:
                             wait_time = pygame.time.get_ticks()                            
                         locked_text = messages.get("evillocked_message", "Encounter this robot in an alternative route to unlock him!")
@@ -10480,10 +10544,7 @@ while running:
                             click_sound.play()
                         set_page("main_menu")
                     else:
-                        if not is_mute and not locked_sound_played:
-                            death_sound.play()
-                            locked_sound_played = True
-                        # Initialize the time
+                        handle_action("locked")
                         if wait_time is None:
                             wait_time = pygame.time.get_ticks()
                         locked_text = messages.get("icelock_message", "This robot is hiding in the mountains...")
@@ -10573,11 +10634,6 @@ while running:
             # Render the Level 1 screen
             create_lvl1_screen()
 
-        # Render the "Back" button
-            for rendered, rect, key, is_locked in buttons:
-                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-                screen.blit(rendered, rect)
-
         elif current_page == "lvl2_screen":
             create_lvl2_screen()
 
@@ -10588,66 +10644,30 @@ while running:
         elif current_page == "lvl4_screen":
             create_lvl4_screen()
 
-            for rendered, rect, key in buttons:
-                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-                screen.blit(rendered, rect)
-
         elif current_page == "lvl5_screen":
             create_lvl5_screen()
-        
-            for rendered, rect, key in buttons:
-                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-                screen.blit(rendered, rect)
 
         elif current_page == "lvl6_screen":
             create_lvl6_screen()
 
-            for rendered, rect, key in buttons:
-                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-                screen.blit(rendered, rect)
-
         elif current_page == "lvl7_screen":
             create_lvl7_screen()
-
-            for rendered, rect, key in buttons:
-                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-                screen.blit(rendered, rect)
 
         elif current_page == "lvl8_screen":
             create_lvl8_screen()
 
-            for rendered, rect, key in buttons:
-                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-                screen.blit(rendered, rect)
-
         elif current_page == "lvl9_screen":
             create_lvl9_screen()
-
-            for rendered, rect, key in buttons:
-                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-                screen.blit(rendered, rect)
 
         elif current_page == "lvl10_screen":
             create_lvl10_screen()
 
-            for rendered, rect, key in buttons:
-                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-                screen.blit(rendered, rect)
-
         elif current_page == "lvl11_screen":
             create_lvl11_screen()
-
-            for rendered, rect, key in buttons:
-                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-                screen.blit(rendered, rect)
 
         elif current_page == "lvl12_screen":
             create_lvl12_screen()
 
-            for rendered, rect, key in buttons:
-                pygame.draw.rect(screen, (50, 50, 100), rect.inflate(20, 10))
-                screen.blit(rendered, rect)
-        
         elif current_page == "lvl13_screen":
             create_lvl13_screen()      
 
