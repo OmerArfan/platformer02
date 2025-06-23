@@ -250,8 +250,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.49", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 158)
+ver_text = font_def.render("Version 1.2.50", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -7386,7 +7386,7 @@ def create_lvl12_screen():
             save_progress(progress)  # Save progress to JSON file
 
             running = False
-            set_page('main_menu')    
+            set_page('lvl13_screen')    
 
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
@@ -7840,7 +7840,7 @@ def create_lvl13_screen():
     # Camera settings
     camera_x = 300
     camera_y = -500
-    spawn_x, spawn_y =  65000, 0
+    spawn_x, spawn_y =  100, 0
     player_x, player_y = spawn_x, spawn_y
     running = True
     gravity = 1
@@ -8036,6 +8036,9 @@ def create_lvl13_screen():
 
         current_time = time.time() - start_time
         formatted_time = "{:.2f}".format(current_time)
+
+        if keys[pygame.K_d] and keys[pygame.K_v]:
+            player_x, player_y = 64800, 400
 
         if keys[pygame.K_r]:
             start_time = time.time()
@@ -9489,23 +9492,13 @@ def create_secret1_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["complete_levels"] < 13:
-                progress["complete_levels"] = 13
-                # You might want to update locked_levels here as well if needed
-
             if not is_mute:
                 warp_sound.play()
 
-            if current_time < progress["times"]["lvl13"] or progress["times"]["lvl13"] == 0:
-                progress["times"]["lvl13"] = round(current_time, 2)
-            
-            progress["medals"]["lvl13"] = get_medal(13, progress["times"]["lvl13"])
-
-            update_locked_levels()
             save_progress(progress)  # Save progress to JSON file
 
             running = False
-            set_page('main_menu')    
+            set_page('ice_levels')    
 
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
@@ -9620,10 +9613,10 @@ def create_secret1_screen():
                 button_sound.play()
             lights_off = False
 
-        timed_coin_text = in_game_ice.get("timed_coin_message", "Orange coins are timed! They open blocks for a limited")
+        timed_coin_text = in_game_ice.get("sikrit", "Secret level... uhm work in progress no spoilers!!")
         rendered_timed_text = font.render(timed_coin_text, True, (0, 0, 0))
         screen.blit(rendered_timed_text, (0 - camera_x, -80 - camera_y))
-        timed_coin_text_2 = in_game_ice.get("timed_coin_message_2", "time. Run before they close again, or at worst, crush you...")
+        timed_coin_text_2 = in_game_ice.get("sikrit_2", "at least this game isnt mainstream... YET.")
         rendered_timed_text_2 = font.render(timed_coin_text_2, True, (0, 0, 0))
         screen.blit(rendered_timed_text_2, (-20 - camera_x, -30 - camera_y))
         ice_friendly = in_game_ice.get("ice_friendly", "Here's a ice block in case you need it!")
@@ -10287,17 +10280,8 @@ def handle_action(key):
     elif current_page == "ice_levels":
         if key is None:  # Ignore clicks on locked levels
             return
-        elif key == "back":
-            if not is_transitioning:
-                transition.start("levels")
-                transition_time = pygame.time.get_ticks()  # Start the wait time
-                is_transitioning = True
-            if is_transitioning and transition_time is not None:
-                if transition_time - pygame.time.get_ticks() > 2000:
-                    set_page("levels")
-                    is_transitioning = False
-                    transition_time = None
         else:  # Trigger a level's screen
+         if not key == "back":
           if not key == "lvl14":
             if not is_transitioning:
                 transition.start(f"{key}_screen")
@@ -10309,6 +10293,7 @@ def handle_action(key):
                     is_transitioning = False
                     transition_time = None
           else:
+           if not is_mute:
             death_sound.play()
     elif current_page == "quit_confirm":
         if key == "yes":
