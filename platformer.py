@@ -250,8 +250,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.50", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 158)
+ver_text = font_def.render("Version 1.2.51", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -668,8 +668,24 @@ def low_detail():
     else:
         LDM = True
 
+def score_calc():
+    global current_time, medal, deathcount, score
+
+    time_score = int(current_time * 160)
+    if medal == "Gold":
+        medal_score = 5000
+    elif medal == "Silver":
+        medal_score = 10000
+    elif medal == "Bronze":
+        medal_score = 15000
+    else:
+        medal_score = 25000
+    death_score = deathcount * 300
+    score = 100000 - medal_score - death_score - time_score
+    print(score, medal_score, death_score, time_score)
+
 def create_lvl1_screen():
-    global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, is_transitioning, transition_time
+    global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, is_transitioning, transition_time, current_time, medal, deathcount, score
 
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -867,9 +883,11 @@ def create_lvl1_screen():
                 progress["times"]["lvl1"] = round(current_time, 2)
             
             progress["medals"]["lvl1"] = get_medal(1, progress["times"]["lvl1"])
+            medal = get_medal(1, current_time)
 
             update_locked_levels()
 
+            score_calc()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -1003,7 +1021,7 @@ def create_lvl1_screen():
         pygame.display.update()    
 
 def create_lvl2_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, wait_time, transition_time, is_transitioning
+    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, wait_time, transition_time, is_transitioning, current_time, medal, deathcount, score
 
     screen.blit(green_background, (0, 0))
     in_game = load_language(lang_code).get('in_game', {})
@@ -1268,6 +1286,7 @@ def create_lvl2_screen():
             progress["medals"]["lvl2"] = get_medal(2, progress["times"]["lvl2"])
 
             update_locked_levels()
+            score_calc()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -1413,7 +1432,7 @@ def create_lvl2_screen():
         pygame.display.update()    
 
 def create_lvl3_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
+    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
 
     screen.blit(green_background, (0, 0))
     wait_time = None
@@ -1520,6 +1539,51 @@ def create_lvl3_screen():
 
     key_text = in_game.get("key_message", "Grab the coin and open the block!")
     rendered_key_text = font.render(key_text, True, (255, 255, 0))  # Render the key text
+
+    # Drawing
+    screen.blit(green_background, (0, 0))
+
+    screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+    screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+ 
+        # Draw all saws first
+    for x, y, r, color in saws:
+            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+    for block in blocks:
+            pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
+    for jump_block in jump_blocks:
+            pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))
+
+    for spike in spikes:
+            pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
+
+    for pair in key_block_pairs:
+
+     if not pair["collected"]:
+        key_x, key_y, key_r, key_color = pair["key"]
+        block = pair["block"]
+        pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
+
+            # Draw block only if key is not collected
+     if not pair["collected"]:
+        pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
+
+    pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+
+        # Draw the texts
+    screen.blit(rendered_saw_text, (int(550 - camera_x), int(600 - camera_y)))  # Draws the rendered up text
+    screen.blit(rendered_key_text, (int(2500 - camera_x), int(200 - camera_y)))  # Draws the rendered up text
+    if show_greenrobo_unlocked:
+        messages = load_language(lang_code).get('messages', {})
+        if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
+            unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+            rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+            screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
+    else:
+        show_greenrobo_unlocked = False
+
     if transition.x <= -transition.image.get_width():
       while running:
         clock.tick(60)
@@ -1681,6 +1745,7 @@ def create_lvl3_screen():
             progress["medals"]["lvl3"] = get_medal(3, progress["times"]["lvl3"])
 
             update_locked_levels()
+            score_calc()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -1878,7 +1943,7 @@ def create_lvl3_screen():
         pygame.display.update()    
 
 def create_lvl4_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
+    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
 
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -2009,6 +2074,69 @@ def create_lvl4_screen():
         b2 = sign((px, py), b, c) < 0.0
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
+
+    # Drawing
+    screen.blit(green_background, (0, 0))
+
+    screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+    screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+ 
+    for rotating_saw in rotating_saws:
+    # Update angle
+            rotating_saw['angle'] = (rotating_saw['angle'] + rotating_saw['speed']) % 360
+            rad = math.radians(rotating_saw['angle'])
+
+    # Orbit around block center
+            orbit_center_x = blocks[1].centerx
+            orbit_center_y = blocks[1].centery
+            x = orbit_center_x + rotating_saw['orbit_radius'] * math.cos(rad)
+            y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
+
+    # Draw the saw
+            pygame.draw.circle(screen, (255, 0, 0), (int(x - camera_x), int(y - camera_y)), rotating_saw['r'])
+
+
+    for x, y, r, color in saws:
+        pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+        # Draw all lasers first
+    for laser in lasers:
+        pygame.draw.rect(screen, (255, 0, 0), (int(laser.x - camera_x), int(laser.y - camera_y), laser.width, laser.height))
+
+    for block in blocks:
+        pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
+
+    for jump_block in jump_blocks:
+        pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))
+
+    for spike in spikes:
+        pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
+
+        
+    for pair in key_block_pairs:
+            key_x, key_y, key_r, key_color = pair["key"]
+            block = pair["block"]
+            pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
+            pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
+
+    for block in moving_blocks:
+        rect = block['rect']
+        axis = block['axis']
+        speed = block['speed']
+        pygame.draw.rect(screen, (128, 0, 128), rect.move(-camera_x, -camera_y))
+
+
+    pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+
+    if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
+            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
+    else:
+            show_greenrobo_unlocked = False
 
     if transition.x <= -transition.image.get_width():
        while running:
@@ -2203,6 +2331,7 @@ def create_lvl4_screen():
             progress["medals"]["lvl4"] = get_medal(4, progress["times"]["lvl4"])
 
             update_locked_levels()
+            score_calc()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -2510,7 +2639,7 @@ def create_lvl4_screen():
         pygame.display.update()   
 
 def create_lvl5_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
+    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
 
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -2650,6 +2779,55 @@ def create_lvl5_screen():
         return b1 == b2 == b3
     
     # Render the texts
+    screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+    screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+ 
+    for rotating_saw in rotating_saws:
+    # Update angle
+            rotating_saw['angle'] = (rotating_saw['angle'] + rotating_saw['speed']) % 360
+            rad = math.radians(rotating_saw['angle'])
+
+    # Orbit around block center
+            orbit_center_x = blocks[1].centerx
+            orbit_center_y = blocks[1].centery
+            x = orbit_center_x + rotating_saw['orbit_radius'] * math.cos(rad)
+            y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
+
+    # Draw the saw
+            pygame.draw.circle(screen, (255, 0, 0), (int(x - camera_x), int(y - camera_y)), rotating_saw['r'])
+
+
+    for x, y, r, color in saws:
+        pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+    for block in blocks:
+        pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
+
+    for jump_block in jump_blocks:
+        pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))
+
+    for spike in spikes:
+        pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
+
+        
+    for pair in key_block_pairs:
+            key_x, key_y, key_r, key_color = pair["key"]
+            block = pair["block"]
+            pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
+            pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
+
+
+    pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+
+    if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
+            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
+    else:
+            show_greenrobo_unlocked = False
 
     if transition.x <= -transition.image.get_width():
       while running:
@@ -2824,6 +3002,7 @@ def create_lvl5_screen():
             progress["medals"]["lvl5"] = get_medal(5, progress["times"]["lvl5"])
 
             update_locked_levels()
+            score_calc()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -3157,7 +3336,7 @@ def create_lvl5_screen():
         pygame.display.update()   
 
 def create_lvl6_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
+    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     start_time = time.time()
 
     buttons.clear()
@@ -3285,6 +3464,59 @@ def create_lvl6_screen():
         b2 = sign((px, py), b, c) < 0.0
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
+
+    screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+    screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+ 
+    for rotating_saw in rotating_saws:
+    # Update angle
+            rotating_saw['angle'] = (rotating_saw['angle'] + rotating_saw['speed']) % 360
+            rad = math.radians(rotating_saw['angle'])
+
+    # Orbit around block center
+            orbit_center_x = blocks[1].centerx
+            orbit_center_y = blocks[1].centery
+            x = orbit_center_x + rotating_saw['orbit_radius'] * math.cos(rad)
+            y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
+
+    # Draw the saw
+            pygame.draw.circle(screen, (255, 0, 0), (int(x - camera_x), int(y - camera_y)), rotating_saw['r'])
+
+
+    for x, y, r, color in saws:
+        pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+        # Draw all lasers first
+    for laser in lasers:
+        pygame.draw.rect(screen, (255, 0, 0), (int(laser.x - camera_x), int(laser.y - camera_y), laser.width, laser.height))
+
+    for block in blocks:
+        pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
+
+    for jump_block in jump_blocks:
+        pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))
+
+    for spike in spikes:
+        pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
+
+        
+    for pair in key_block_pairs:
+            key_x, key_y, key_r, key_color = pair["key"]
+            block = pair["block"]
+            pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
+            pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
+
+    pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+
+    if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
+            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
+    else:
+            show_greenrobo_unlocked = False
 
     if transition.x <= -transition.image.get_width():
       while running:
@@ -3445,6 +3677,7 @@ def create_lvl6_screen():
             progress["medals"]["lvl6"] = get_medal(6, progress["times"]["lvl6"])
 
             update_locked_levels()
+            score_calc()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -3788,7 +4021,7 @@ def create_lvl6_screen():
         pygame.display.update()   
 
 def create_lvl7_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
+    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     start_time = time.time()
 
     buttons.clear()
@@ -3894,6 +4127,44 @@ def create_lvl7_screen():
         b2 = sign((px, py), b, c) < 0.0
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
+
+    screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+    screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+ 
+    for rotating_saw in rotating_saws:
+    # Update angle
+            rotating_saw['angle'] = (rotating_saw['angle'] + rotating_saw['speed']) % 360
+            rad = math.radians(rotating_saw['angle'])
+
+    # Orbit around block center
+            orbit_center_x = blocks[0].centerx
+            orbit_center_y = blocks[0].centery
+            x = orbit_center_x + rotating_saw['orbit_radius'] * math.cos(rad)
+            y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
+
+    # Draw the saw
+            pygame.draw.circle(screen, (255, 0, 0), (int(x - camera_x), int(y - camera_y)), rotating_saw['r'])
+
+
+    for x, y, r, color in saws:
+        pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+    for block in blocks:
+        pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
+    for spike in spikes:
+        pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
+
+    pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+
+    if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
+            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
+    else:
+            show_greenrobo_unlocked = False
 
     if transition.x <= -transition.image.get_width():
        while running:
@@ -4011,6 +4282,7 @@ def create_lvl7_screen():
             progress["medals"]["lvl7"] = get_medal(7, progress["times"]["lvl7"])
 
             update_locked_levels()
+            score_calc()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -4298,7 +4570,7 @@ def create_lvl7_screen():
         pygame.display.update()   
 
 def create_lvl8_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
+    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
 
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -4422,6 +4694,29 @@ def create_lvl8_screen():
         b2 = sign((px, py), b, c) < 0.0
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
+
+    screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+    screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+ 
+    for x, y, r, color in saws:
+        pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+    for block in blocks:
+        pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
+    for spike in spikes:
+        pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
+
+    pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+
+    if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
+            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
+    else:
+            show_greenrobo_unlocked = False
 
     if transition.x <= -transition.image.get_width():
        while running:
@@ -4568,6 +4863,7 @@ def create_lvl8_screen():
             progress["medals"]["lvl8"] = get_medal(8, progress["times"]["lvl8"])
 
             update_locked_levels()
+            score_calc()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -4855,7 +5151,7 @@ def create_lvl8_screen():
         pygame.display.update()   
 
 def create_lvl9_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
+    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -5027,6 +5323,30 @@ def create_lvl9_screen():
         b2 = sign((px, py), b, c) < 0.0
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
+
+    screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+    screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+ 
+    for x, y, r, color in gravity_strongers:
+            # Draw the button as a circle
+                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+    for block in blocks:
+        pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
+    for spike in spikes:
+        pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
+
+    pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+
+    if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
+            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
+    else:
+            show_greenrobo_unlocked = False
 
     if transition.x <= -transition.image.get_width():
        while running:
@@ -5213,6 +5533,7 @@ def create_lvl9_screen():
             progress["medals"]["lvl9"] = get_medal(9, progress["times"]["lvl9"])
 
             update_locked_levels()
+            score_calc()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -5537,7 +5858,7 @@ def create_lvl9_screen():
         pygame.display.update() 
 
 def create_lvl10_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
+    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -5665,6 +5986,39 @@ def create_lvl10_screen():
     moving_speed = 5
     moving_limit_left1 = 2200
     moving_limit_right1 = 2800
+
+    screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+    screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+
+    for rotating_saw in rotating_saws:
+    # Update angle
+            rotating_saw['angle'] = (rotating_saw['angle'] + rotating_saw['speed']) % 360
+            rad = math.radians(rotating_saw['angle'])
+
+    # Orbit around block center
+            orbit_center_x = blocks[0].centerx
+            orbit_center_y = blocks[0].centery
+            x = orbit_center_x + rotating_saw['orbit_radius'] * math.cos(rad)
+            y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
+
+    # Draw the saw
+            pygame.draw.circle(screen, (255, 0, 0), (int(x - camera_x), int(y - camera_y)), rotating_saw['r'])
+
+    for block in blocks:
+        pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
+    for x, y, r, color in saws:
+            # Draw the saw as a circle
+            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+    if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
+            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
+    else:
+            show_greenrobo_unlocked = False
 
     if transition.x <= -transition.image.get_width():
        while running:
@@ -5823,6 +6177,7 @@ def create_lvl10_screen():
             progress["medals"]["lvl10"] = get_medal(10, progress["times"]["lvl10"])
 
             update_locked_levels()
+            score_calc()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -6163,7 +6518,7 @@ def create_lvl10_screen():
         pygame.display.update() 
 
 def create_lvl11_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked
+    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
 
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -6322,6 +6677,25 @@ def create_lvl11_screen():
         b2 = sign((px, py), b, c) < 0.0
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
+
+    for x, y, r, color in saws:
+            # Draw the saw as a circle
+            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+    for spike in spikes:
+        pygame.draw.polygon(screen, (255, 0, 0), [((x - camera_x),( y - camera_y)) for x, y in spike])
+
+    for block in blocks:
+        pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
+    if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
+            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
+    else:
+            show_greenrobo_unlocked = False
 
     if transition.x <= -transition.image.get_width():
        while running:
@@ -6516,6 +6890,7 @@ def create_lvl11_screen():
             progress["medals"]["lvl11"] = get_medal(11, progress["times"]["lvl11"])
 
             update_locked_levels()
+            score_calc()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -7137,6 +7512,29 @@ def create_lvl12_screen():
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
 
+    for x, y, r, color in saws:
+            # Draw the saw as a circle
+            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+    for spike in spikes:
+        pygame.draw.polygon(screen, (255, 0, 0), [((x - camera_x),( y - camera_y)) for x, y in spike])
+
+    for block in blocks:
+        pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
+    if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
+            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
+    else:
+            show_greenrobo_unlocked = False
+    
+    for ice in ice_blocks:
+            block = ice.rect
+            pygame.draw.rect(screen, (0, 205, 255), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+        
     if transition.x <= -transition.image.get_width():
        while running:
         clock.tick(60)
@@ -8026,6 +8424,34 @@ def create_lvl13_screen():
         b2 = sign((px, py), b, c) < 0.0
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
+
+    for x, y, r, color in saws:
+            # Draw the saw as a circle
+            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+    for spike in spikes:
+        pygame.draw.polygon(screen, (255, 0, 0), [((x - camera_x),( y - camera_y)) for x, y in spike])
+
+    for saw in moving_saws:
+                # Draw the moving circle (saw)
+            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+
+    for block in blocks:    
+        pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+
+    if show_greenrobo_unlocked:
+            messages = load_language(lang_code).get('messages', {})
+            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
+                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
+                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
+    else:
+            show_greenrobo_unlocked = False
+    
+    for ice in ice_blocks:
+            block = ice.rect
+            pygame.draw.rect(screen, (0, 205, 255), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+        
 
     if transition.x <= -transition.image.get_width():
        while running:
