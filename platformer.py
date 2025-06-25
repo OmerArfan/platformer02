@@ -250,8 +250,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.51", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 158)
+ver_text = font_def.render("Version 1.2.52", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -684,6 +684,41 @@ def score_calc():
     score = 100000 - medal_score - death_score - time_score
     print(score, medal_score, death_score, time_score)
 
+def level_complete():
+    global score, display_score
+    display_score = 0
+    wait_time = None
+    running = True
+    clock = pygame.time.Clock()
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+        screen.fill((30, 30, 30))
+        lvl_comp = font.render("Level Complete!", True, (255, 255, 255))
+        screen.blit(lvl_comp, (SCREEN_WIDTH // 2 - lvl_comp.get_width() // 2, 150))
+
+        # Animate score
+        if display_score < score:
+            hover_sound.play()
+            display_score += max(7, (score // 60))  # Animate in ~1 second
+            if display_score > score:
+                display_score = score
+        score_text = font_text.render(str(display_score), True, (255, 255, 255))
+        screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, SCREEN_HEIGHT // 2 - score_text.get_height() // 2))
+
+        if display_score == score and wait_time is None:
+            wait_time = pygame.time.get_ticks()
+        elif wait_time is not None:
+            if pygame.time.get_ticks() - wait_time > 2000:  # Show for 2 seconds
+                running = False
+
+        pygame.display.update()
+        clock.tick(60)
+
+
 def create_lvl1_screen():
     global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, is_transitioning, transition_time, current_time, medal, deathcount, score
 
@@ -883,17 +918,20 @@ def create_lvl1_screen():
                 progress["times"]["lvl1"] = round(current_time, 2)
             
             progress["medals"]["lvl1"] = get_medal(1, progress["times"]["lvl1"])
-            medal = get_medal(1, current_time)
 
             update_locked_levels()
 
+            medal = get_medal(1, current_time)
             score_calc()
+
+            level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
             save_progress(progress)  # Save progress to JSON file
             running = False
-            set_page('lvl2_screen')
+            if display_score == score:
+               set_page('lvl2_screen')
         
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
@@ -1286,7 +1324,9 @@ def create_lvl2_screen():
             progress["medals"]["lvl2"] = get_medal(2, progress["times"]["lvl2"])
 
             update_locked_levels()
+            medal = get_medal(2, current_time)
             score_calc()
+            level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -1745,7 +1785,9 @@ def create_lvl3_screen():
             progress["medals"]["lvl3"] = get_medal(3, progress["times"]["lvl3"])
 
             update_locked_levels()
+            medal = get_medal(3, current_time)
             score_calc()
+            level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -2331,7 +2373,9 @@ def create_lvl4_screen():
             progress["medals"]["lvl4"] = get_medal(4, progress["times"]["lvl4"])
 
             update_locked_levels()
+            medal = get_medal(4, current_time)
             score_calc()
+            level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -3002,7 +3046,9 @@ def create_lvl5_screen():
             progress["medals"]["lvl5"] = get_medal(5, progress["times"]["lvl5"])
 
             update_locked_levels()
+            medal = get_medal(5, current_time)
             score_calc()
+            level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -3677,7 +3723,9 @@ def create_lvl6_screen():
             progress["medals"]["lvl6"] = get_medal(6, progress["times"]["lvl6"])
 
             update_locked_levels()
+            medal = get_medal(6, current_time)
             score_calc()
+            level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -4282,7 +4330,9 @@ def create_lvl7_screen():
             progress["medals"]["lvl7"] = get_medal(7, progress["times"]["lvl7"])
 
             update_locked_levels()
+            medal = get_medal(7, current_time)
             score_calc()
+            level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -4863,7 +4913,9 @@ def create_lvl8_screen():
             progress["medals"]["lvl8"] = get_medal(8, progress["times"]["lvl8"])
 
             update_locked_levels()
+            medal = get_medal(8, current_time)
             score_calc()
+            level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -5533,7 +5585,9 @@ def create_lvl9_screen():
             progress["medals"]["lvl9"] = get_medal(9, progress["times"]["lvl9"])
 
             update_locked_levels()
+            medal = get_medal(9, current_time)
             score_calc()
+            level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -6177,7 +6231,9 @@ def create_lvl10_screen():
             progress["medals"]["lvl10"] = get_medal(10, progress["times"]["lvl10"])
 
             update_locked_levels()
+            medal = get_medal(10, current_time)
             score_calc()
+            level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -6890,7 +6946,9 @@ def create_lvl11_screen():
             progress["medals"]["lvl11"] = get_medal(11, progress["times"]["lvl11"])
 
             update_locked_levels()
+            medal = get_medal(11, current_time)
             score_calc()
+            level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -7245,18 +7303,19 @@ def create_lvl11_screen():
                 hit_sound.play()
             deathcount += 1
 
-        if player_x > 4800 and player_y < -300 and not lights_off:
+        if player_x > 4800 and player_y < -300 and not lights_off and evilrobo_phase == 2:
             epos_x = 4799
             epos_y = player_y
             screen.blit(evilrobo_mascot, ((epos_x - camera_x), (epos_y - camera_y)))
             if player_rect.colliderect(evilrobo_rect):
+                evilrobo_phase = 0
                 screen.fill((255, 255, 255))
                 epos_x, epos_y = espawn_x, espawn_y
                 player_x, player_y = spawn_x, spawn_y
                 stamina = False
                 lights_off = True
                 hit_sound.play()
-                
+
 
         button4_text = in_game.get("button4_message", "Green buttons, upon activation, will give you a massive speed boost!")
         rendered_button4_text = font.render(button4_text, True, (51, 255, 51))
@@ -7781,6 +7840,8 @@ def create_lvl12_screen():
             progress["medals"]["lvl12"] = get_medal(12, progress["times"]["lvl12"])
 
             update_locked_levels()
+            medal = get_medal(12, current_time)
+            score_calc()
             save_progress(progress)  # Save progress to JSON file
 
             running = False
@@ -8744,6 +8805,8 @@ def create_lvl13_screen():
             progress["medals"]["lvl13"] = get_medal(13, progress["times"]["lvl13"])
 
             update_locked_levels()
+            medal = get_medal(13, current_time)
+            score_calc()
             save_progress(progress)  # Save progress to JSON file
 
             running = False
