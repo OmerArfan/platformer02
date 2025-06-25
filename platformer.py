@@ -57,6 +57,7 @@ default_progress = {
     "locked_levels": ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12", "lvl13", "lvl14", "lvl15"],
     "times": {f"lvl{i}": 0 for i in range(1, 16)},
     "medals": {f"lvl{i}": "None" for i in range(1, 16)},
+    "score": {f"lvl{i}": 0 for i in range(1, 16)},
     "language": "en",
     "selected_character": "robot",
     "icerobo_scenes": 0,
@@ -77,7 +78,7 @@ def load_progress():
             if key not in data:
                 data[key] = value
         # Also merge nested dicts (like "times" and "medals")
-        for key in ["times", "medals"]:
+        for key in ["times", "medals", "score"]:
             if key in default_progress and key in data:
                 for subkey, subval in default_progress[key].items():
                     if subkey not in data[key]:
@@ -101,12 +102,7 @@ font_text = pygame.font.Font(font_path, 55)
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 SCREEN_WIDTH, SCREEN_HEIGHT = screen.get_size()
 pygame.display.set_caption("Platformer 02!")
-MIN_WIDTH = 1000
-if SCREEN_WIDTH < 1300:
-    MIN_HEIGHT = 800
-else:
-    MIN_HEIGHT = 760
-
+MIN_WIDTH, MIN_HEIGHT = 1300, 800
 
 # Save progress to file
 def save_progress(data):
@@ -191,6 +187,8 @@ green_background_img = pygame.image.load("bgs/GreenBackground.png").convert()
 green_background = pygame.transform.scale(green_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 trans = pygame.image.load("bgs/trans.png").convert()
 trans = pygame.transform.scale(trans, ((SCREEN_WIDTH), (SCREEN_HEIGHT)))
+end = pygame.image.load("bgs/EndScreen.png").convert_alpha()
+end = pygame.transform.scale(end, ((SCREEN_WIDTH), (SCREEN_HEIGHT)))
 
 # Load and initalize Images!
 nact_cp = pygame.image.load("oimgs/checkpoints/yellow_flag.png").convert_alpha()
@@ -250,8 +248,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.52", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 158)
+ver_text = font_def.render("Version 1.2.53", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -685,34 +683,43 @@ def score_calc():
     print(score, medal_score, death_score, time_score)
 
 def level_complete():
-    global score, display_score
+    global score, display_score, new_hs
     display_score = 0
     wait_time = None
     running = True
+    notified = False
     clock = pygame.time.Clock()
     while running:
+        screen.blit(end, (0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
 
-        screen.fill((30, 30, 30))
         lvl_comp = font.render("Level Complete!", True, (255, 255, 255))
         screen.blit(lvl_comp, (SCREEN_WIDTH // 2 - lvl_comp.get_width() // 2, 150))
 
         # Animate score
         if display_score < score:
             hover_sound.play()
-            display_score += max(7, (score // 60))  # Animate in ~1 second
+            display_score += max(5, (score // 71))  # Animate in ~1 second
             if display_score > score:
                 display_score = score
+
         score_text = font_text.render(str(display_score), True, (255, 255, 255))
         screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, SCREEN_HEIGHT // 2 - score_text.get_height() // 2))
 
         if display_score == score and wait_time is None:
-            wait_time = pygame.time.get_ticks()
+            wait_time = pygame.time.get_ticks()  # Start the wait timer
         elif wait_time is not None:
-            if pygame.time.get_ticks() - wait_time > 2000:  # Show for 2 seconds
+            if pygame.time.get_ticks() - wait_time > 500:  # Show for 3 seconds
+                if new_hs:
+                    new_hs_text = font.render("New High Score!", True, (255, 215, 0))
+                    screen.blit(new_hs_text, (SCREEN_WIDTH // 2 - new_hs_text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
+                    if not is_mute and not notified:
+                        notify_sound.play()
+                        notified = True
+            if pygame.time.get_ticks() - wait_time > 3000:  # Show for 3 seconds
                 running = False
 
         pygame.display.update()
@@ -721,6 +728,8 @@ def level_complete():
 
 def create_lvl1_screen():
     global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, is_transitioning, transition_time, current_time, medal, deathcount, score
+    global new_hs
+    new_hs = False
 
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -922,8 +931,11 @@ def create_lvl1_screen():
             update_locked_levels()
 
             medal = get_medal(1, current_time)
+        
             score_calc()
-
+            if progress["score"]["lvl1"] < score or progress["score"]["lvl1"] == 0:
+                progress["score"]["lvl1"] = score
+                new_hs = True
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -1060,6 +1072,8 @@ def create_lvl1_screen():
 
 def create_lvl2_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, wait_time, transition_time, is_transitioning, current_time, medal, deathcount, score
+    global new_hs
+    new_hs = False
 
     screen.blit(green_background, (0, 0))
     in_game = load_language(lang_code).get('in_game', {})
@@ -1067,7 +1081,6 @@ def create_lvl2_screen():
     wait_time = None
     start_time = time.time()
 
-    # Camera settings
     camera_x = 0  
     camera_y = 0
     player_x, player_y = 150, 500
@@ -1081,6 +1094,7 @@ def create_lvl2_screen():
     camera_speed = 0.05
     deathcount = 0
     was_moving = False
+
 
     # Load player image
     if selected_character == "robot": 
@@ -1325,7 +1339,11 @@ def create_lvl2_screen():
 
             update_locked_levels()
             medal = get_medal(2, current_time)
+            if progress["score"]["lvl2"] < score or progress["score"]["lvl2"] == 0:
+                progress["score"]["lvl2"] = score
+                new_hs = True
             score_calc()
+
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -1473,7 +1491,8 @@ def create_lvl2_screen():
 
 def create_lvl3_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-
+    global new_hs
+    new_hs = False
     screen.blit(green_background, (0, 0))
     wait_time = None
     start_time = time.time()
@@ -1787,7 +1806,11 @@ def create_lvl3_screen():
             update_locked_levels()
             medal = get_medal(3, current_time)
             score_calc()
+            if progress["score"]["lvl3"] < score or progress["score"]["lvl3"] == 0:
+                progress["score"]["lvl3"] = score
+                new_hs = True
             level_complete()
+            
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -1986,7 +2009,8 @@ def create_lvl3_screen():
 
 def create_lvl4_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-
+    global new_hs
+    new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
     wait_time = None
@@ -2376,6 +2400,9 @@ def create_lvl4_screen():
             medal = get_medal(4, current_time)
             score_calc()
             level_complete()
+            if progress["score"]["lvl4"] < score or progress["score"]["lvl4"] == 0:
+                progress["score"]["lvl4"] = score
+                new_hs = True
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -2684,7 +2711,8 @@ def create_lvl4_screen():
 
 def create_lvl5_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-
+    global new_hs
+    new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
     wait_time = None
@@ -3048,7 +3076,11 @@ def create_lvl5_screen():
             update_locked_levels()
             medal = get_medal(5, current_time)
             score_calc()
+            if progress["score"]["lvl5"] < score or progress["score"]["lvl5"] == 0:
+                progress["score"]["lvl5"] = score
+                new_hs = True
             level_complete()
+
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -3384,7 +3416,8 @@ def create_lvl5_screen():
 def create_lvl6_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     start_time = time.time()
-
+    global new_hs
+    new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
 
@@ -3725,6 +3758,9 @@ def create_lvl6_screen():
             update_locked_levels()
             medal = get_medal(6, current_time)
             score_calc()
+            if progress["score"]["lvl6"] < score or progress["score"]["lvl6"] == 0:
+                progress["score"]["lvl6"] = score
+                new_hs = True
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -4071,7 +4107,8 @@ def create_lvl6_screen():
 def create_lvl7_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     start_time = time.time()
-
+    global new_hs
+    new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
 
@@ -4332,6 +4369,9 @@ def create_lvl7_screen():
             update_locked_levels()
             medal = get_medal(7, current_time)
             score_calc()
+            if progress["score"]["lvl7"] < score or progress["score"]["lvl7"] == 0:
+                progress["score"]["lvl7"] = score
+                new_hs = True
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -4621,7 +4661,8 @@ def create_lvl7_screen():
 
 def create_lvl8_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-
+    global new_hs
+    new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
 
@@ -4915,6 +4956,9 @@ def create_lvl8_screen():
             update_locked_levels()
             medal = get_medal(8, current_time)
             score_calc()
+            if progress["score"]["lvl8"] < score or progress["score"]["lvl8"] == 0:
+                progress["score"]["lvl8"] = score
+                new_hs = True
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -5204,7 +5248,8 @@ def create_lvl8_screen():
 
 def create_lvl9_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-    
+    global new_hs
+    new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
     
@@ -5913,7 +5958,8 @@ def create_lvl9_screen():
 
 def create_lvl10_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-    
+    global new_hs
+    new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
 
@@ -6575,7 +6621,9 @@ def create_lvl10_screen():
 
 def create_lvl11_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
+    global new_hs
 
+    new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
 
