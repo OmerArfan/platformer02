@@ -35,6 +35,15 @@ notify_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "notify.wav"))
 overheat_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "overheat.wav"))
 freeze_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "freeze.wav"))
 token_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "token.wav"))
+star1 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/1star.wav"))
+star2 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/2star.wav"))
+star3 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/3star.wav"))
+hscore = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/hs.wav"))
+star1.set_volume(4.0)
+star2.set_volume(4.0)
+star3.set_volume(4.0)
+
+
 # Load and set window icon
 icon = pygame.image.load("robots.ico")
 pygame.display.set_icon(icon)
@@ -267,11 +276,11 @@ transition = TransitionManager(screen, trans)
 site_text = font_def.render("Sound effects from: pixabay.com", True, (255, 255, 255))
 site_pos = (SCREEN_WIDTH - 398, SCREEN_HEIGHT - 98)
 logo_text = font_def.render("Logo and Background made with: canva.com", True, (255, 255, 255))
-logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 68)
+logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
-credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.54", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 158)
+credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.55", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -367,6 +376,9 @@ lockeddisk_img = pygame.image.load("oimgs/disks/lockeddisk.png").convert_alpha()
 lockeddisk_img = pygame.transform.scale(lockeddisk_img, (100, 100))  # Resize as needed
 token_img = pygame.image.load("oimgs/ig/roboken.png").convert_alpha()
 token_img = pygame.transform.scale(token_img, (80, 80))
+star_img = pygame.image.load("oimgs/ig/star.png").convert_alpha()
+star_img = pygame.transform.scale(star_img, (150, 140))
+
 def green_world_buttons():
     global current_lang, buttons
     buttons.clear()
@@ -523,6 +535,7 @@ evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 200, SCREEN
 icerobot_rect = icerobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 - 50))
 lavarobot_rect = lavarobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 - 50))
 greenrobot_rect = greenrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 250, SCREEN_HEIGHT // 2 - 50))
+
 def character_select():
     global selected_character, set_page, current_page
     
@@ -707,16 +720,42 @@ def score_calc():
     else:
         medal_score = 25000
     death_score = deathcount * 300
-    score = 100000 - medal_score - death_score - time_score + token_score
+    score = max(500, 100000 - medal_score - death_score - time_score + token_score)
     print(score, medal_score, death_score, time_score)
 
+class StarParticles:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.radius = random.randint(2, 4)
+        self.color = (255, 255, 100)
+        self.life = 80  # frames
+        # Wider horizontal spread, initial upward velocity
+        self.vel = [random.uniform(-3, 3), random.uniform(-6, -3)]
+        self.gravity = 0.35  # Gravity strength
+
+    def update(self):
+        self.vel[1] += self.gravity  # Apply gravity
+        self.x += self.vel[0]
+        self.y += self.vel[1]
+        self.life -= 1
+
+    def draw(self, surface):
+        if self.life > 0:
+            pygame.draw.circle(surface, self.color, (int(self.x), int(self.y)), self.radius)
+            
+stareffects = []
+
 def level_complete():
-    global score, display_score, new_hs, collected_tokens, hs
+    global score, display_score, new_hs, collected_tokens, hs, stareffects
     display_score = 0
+    star1_p, star2_p, star3_p = False, False, False
     wait_time = None
     running = True
     notified = False
     clock = pygame.time.Clock()
+    star_channel = pygame.mixer.Channel(2)
+
     while running:
         screen.blit(end, (0, 0))
         for event in pygame.event.get():
@@ -728,10 +767,40 @@ def level_complete():
         screen.blit(lvl_comp, (SCREEN_WIDTH // 2 - lvl_comp.get_width() // 2, 150))
 
         # Animate score
+        
         if display_score < score:
+          if not is_mute:
             hover_sound.play()
-            display_score += max(5, (score // 71))  # Animate in ~1 second
-            if display_score > score:
+          display_score += max(5, (score // 71))
+        if display_score > 10000:
+                screen.blit(star_img, (SCREEN_WIDTH // 2 - 230, 230))
+                if not star1_p:
+                 for _ in range(40):  # Add some particles at star position
+                    stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 230 + star_img.get_width() // 2, 230 + star_img.get_height() // 2)) 
+                 star_channel.play(star1)
+                 star1_p = True
+        if display_score > 55000:
+                screen.blit(star_img, (SCREEN_WIDTH // 2 - 75, 230))
+                if not star2_p and star1_p: 
+                    for _ in range(40):  # Add some particles at star position
+                     stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 75 + star_img.get_width() // 2, 230 + star_img.get_height() // 2))  
+                    star_channel.play(star2)
+                    star2_p = True
+        if display_score > 90000:
+                screen.blit(star_img, (SCREEN_WIDTH // 2 + 80, 230)) 
+                if  not star3_p and star2_p: 
+                    for _ in range(40):  # Add some particles at star position
+                      stareffects.append(StarParticles(SCREEN_WIDTH // 2 + 80 + star_img.get_width() // 2, 230 + star_img.get_height() // 2)) 
+                    star_channel.play(star3)
+                    star3_p = True
+
+        for particle in stareffects[:]:
+         particle.update()
+         particle.draw(screen)
+         if particle.life <= 0:
+            stareffects.remove(particle)
+        
+        if display_score > score:
                 display_score = score
 
         score_text = font_text.render(str(display_score), True, (255, 255, 255))
@@ -745,7 +814,7 @@ def level_complete():
                     new_hs_text = font.render("New High Score!", True, (255, 215, 0))
                     screen.blit(new_hs_text, (SCREEN_WIDTH // 2 - new_hs_text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
                     if not is_mute and not notified:
-                        notify_sound.play()
+                        hscore.play()
                         notified = True
                 else:
                     hs_text = font.render(f"Highscore: {hs}", True, (158, 158, 158))
@@ -758,8 +827,8 @@ def level_complete():
 
 
 def create_lvl1_screen():
-    global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, is_transitioning, transition_time, current_time, medal, deathcount, score, collected_tokens, hs
-    global new_hs
+    global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, is_transitioning, transition_time, current_time, medal, deathcount, score, collected_tokens
+    global new_hs, hs
     new_hs = False
 
     buttons.clear()
@@ -1127,7 +1196,7 @@ def create_lvl1_screen():
 
 def create_lvl2_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, wait_time, transition_time, is_transitioning, current_time, medal, deathcount, score
-    global new_hs
+    global new_hs, hs
     new_hs = False
 
     screen.blit(green_background, (0, 0))
@@ -1393,14 +1462,15 @@ def create_lvl2_screen():
             progress["medals"]["lvl2"] = get_medal(2, progress["times"]["lvl2"])
 
             update_locked_levels()
+            
             medal = get_medal(2, current_time)
+            score_calc()
+
             if progress["score"]["lvl2"] < score or progress["score"]["lvl2"] == 0:
                 progress["score"]["lvl2"] = score
                 new_hs = True
             if not new_hs:
                 hs = progress["score"]["lvl2"]
-            score_calc()
-
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -1548,7 +1618,7 @@ def create_lvl2_screen():
 
 def create_lvl3_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-    global new_hs
+    global new_hs, hs
     new_hs = False
     screen.blit(green_background, (0, 0))
     wait_time = None
@@ -2067,7 +2137,7 @@ def create_lvl3_screen():
 
 def create_lvl4_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-    global new_hs
+    global new_hs, hs
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -2771,7 +2841,7 @@ def create_lvl4_screen():
 
 def create_lvl5_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-    global new_hs
+    global new_hs, hs
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -3478,7 +3548,7 @@ def create_lvl5_screen():
 def create_lvl6_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     start_time = time.time()
-    global new_hs
+    global new_hs, hs
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -4171,7 +4241,7 @@ def create_lvl6_screen():
 def create_lvl7_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     start_time = time.time()
-    global new_hs
+    global new_hs, hs
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -4727,7 +4797,7 @@ def create_lvl7_screen():
 
 def create_lvl8_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-    global new_hs
+    global new_hs, hs
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -7558,7 +7628,7 @@ snow = []
 def create_lvl12_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, snow
     global new_hs, hs, current_time, medal, deathcount, score
-
+    new_hs = False
     buttons.clear()
     screen.blit(ice_background, (0, 0))
     in_game = load_language(lang_code).get('in_game', {})
@@ -8426,7 +8496,7 @@ def create_lvl12_screen():
 def create_lvl13_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, snow
     global new_hs, hs, current_time, medal, deathcount, score
-
+    new_hs = False
     buttons.clear()
     screen.blit(ice_background, (0, 0))
     in_game = load_language(lang_code).get('in_game', {})
