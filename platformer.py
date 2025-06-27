@@ -6,6 +6,7 @@ import sys
 import time  # Import time to track time(for future use in scoring)
 import random
 import webbrowser
+import shutil
 
 # Path to sound folder
 SOUND_FOLDER = os.path.join("audio")
@@ -33,7 +34,7 @@ hit_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hit.wav"))
 notify_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "notify.wav"))
 overheat_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "overheat.wav"))
 freeze_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "freeze.wav"))
-
+token_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "token.wav"))
 # Load and set window icon
 icon = pygame.image.load("robots.ico")
 pygame.display.set_icon(icon)
@@ -68,33 +69,58 @@ default_progress = {
     "greenrobo_unlocked": False,
 }
 
-# Load progress from save file or return default
 def load_progress():
     if os.path.exists(SAVE_FILE):
-        with open(SAVE_FILE, "r") as f:
-            data = json.load(f)
-        # Merge missing keys from default_progress
-        for key, value in default_progress.items():
-            if key not in data:
-                data[key] = value
-        # Also merge nested dicts (like "times" and "medals")
-        for key in ["times", "medals", "score"]:
-            if key in default_progress and key in data:
-                for subkey, subval in default_progress[key].items():
-                    if subkey not in data[key]:
-                        data[key][subkey] = subval
-        # Merge new locked levels
-        if "locked_levels" in default_progress and "locked_levels" in data:
-            for lvl in default_progress["locked_levels"]:
-                if lvl not in data["locked_levels"]:
-                    data["locked_levels"].append(lvl)
-        return data
+        try:
+            with open(SAVE_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if not data:  # Handle empty file
+                    raise ValueError("Empty save file")
+        except Exception as e:
+            print(f"Main save corrupted: {e}")
+            # Try to load from backup
+            if os.path.exists(SAVE_FILE + ".bak"):
+                print("Loading from backup...")
+                try:
+                    with open(SAVE_FILE + ".bak", "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        
+                        with open(SAVE_FILE, "w", encoding="utf-8") as f:
+                            json.dump(data, f, indent=4, ensure_ascii=False)
+                        print("Backup restored to main save file.")
+
+                except Exception as e:
+                    print(f"Backup also corrupted: {e}")
+                    data = default_progress.copy()
+            else:
+                print("No backup found. Using default progress.")
+                data = default_progress.copy()
     else:
-        return default_progress.copy()
+        print("Save file not found. Using default progress.")
+        data = default_progress.copy()
+
+    # Merge missing keys
+    for key, value in default_progress.items():
+        if key not in data:
+            data[key] = value
+
+    for key in ["times", "medals", "score"]:
+        if key in default_progress and key in data:
+            for subkey, subval in default_progress[key].items():
+                if subkey not in data[key]:
+                    data[key][subkey] = subval
+
+    if "locked_levels" in default_progress and "locked_levels" in data:
+        for lvl in default_progress["locked_levels"]:
+            if lvl not in data["locked_levels"]:
+                data["locked_levels"].append(lvl)
+
+    return data
 
 # Load the Chinese font (ensure the font file path is correct)
 font_path_ch = 'NotoSansSC-SemiBold.ttf'
 font_path = 'NotoSansDisplay-SemiBold.ttf'
+font_ch = pygame.font.Font(font_path_ch, 25)
 font_def = pygame.font.Font(font_path, 25)
 font_text = pygame.font.Font(font_path, 55)
 
@@ -110,17 +136,14 @@ def save_progress(data):
         print("Refusing to save empty or invalid progress!")
         return
     try:
-        with open(SAVE_FILE, "w", encoding="utf-8" ) as f:
+        with open(SAVE_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
+        shutil.copy(SAVE_FILE, SAVE_FILE + ".bak")  # ✅ Only backup after a good save
     except PermissionError:
         hit_sound.play()
         screen.blit(font_def.render("Error: Unable to save progress.", True, (255, 0, 0)), (SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT - 50))
     except Exception as e:
-        screen.blit(font_def.render(f"An unexpected error occurred: {e}", True, (255, 0, 0)), (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 50))
-
-import shutil
-if os.path.exists(SAVE_FILE):
-    shutil.copy(SAVE_FILE, SAVE_FILE + ".bak")
+        screen.blit(font_def.render(f"Unexpected error: {e}", True, (255, 0, 0)), (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 50))
 
 # Load progress at start
 progress = load_progress()
@@ -199,13 +222,12 @@ if lang_code == "zh_cn":
 else:
     font = pygame.font.Font(font_path, 25)
 
-def render_text(text, color = (255, 255, 255)):
-    # Use Chinese font if any CJK character is present
+def render_text(text, color=(255, 255, 255)):
     if any('\u4e00' <= c <= '\u9fff' for c in text):
-        return pygame.font.Font('NotoSansSC-SemiBold.ttf', 25).render(text, True, color)
+        return font_ch.render(text, True, color)
     else:
         return font_def.render(text, True, color)
-
+    
 class TransitionManager:
     def __init__(self, screen, image, speed=40):
         self.screen = screen
@@ -248,8 +270,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 266, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.53", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 158)
+ver_text = font_def.render("Version 1.2.54", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 180, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -343,7 +365,8 @@ icedisk_img = pygame.image.load("oimgs/disks/icedisk.png").convert_alpha()
 icedisk_img = pygame.transform.scale(icedisk_img, (100, 100))  # Resize as needed
 lockeddisk_img = pygame.image.load("oimgs/disks/lockeddisk.png").convert_alpha()
 lockeddisk_img = pygame.transform.scale(lockeddisk_img, (100, 100))  # Resize as needed
-
+token_img = pygame.image.load("oimgs/ig/roboken.png").convert_alpha()
+token_img = pygame.transform.scale(token_img, (80, 80))
 def green_world_buttons():
     global current_lang, buttons
     buttons.clear()
@@ -667,8 +690,13 @@ def low_detail():
         LDM = True
 
 def score_calc():
-    global current_time, medal, deathcount, score
+    global current_time, medal, deathcount, score, collected_tokens
 
+    # WIP!
+    #if collected_tokens is not None:
+     #   token_score =  len(collected_tokens)*150
+    #else:
+    token_score = 0
     time_score = int(current_time * 160)
     if medal == "Gold":
         medal_score = 5000
@@ -679,11 +707,11 @@ def score_calc():
     else:
         medal_score = 25000
     death_score = deathcount * 300
-    score = 100000 - medal_score - death_score - time_score
+    score = 100000 - medal_score - death_score - time_score + token_score
     print(score, medal_score, death_score, time_score)
 
 def level_complete():
-    global score, display_score, new_hs
+    global score, display_score, new_hs, collected_tokens, hs
     display_score = 0
     wait_time = None
     running = True
@@ -719,6 +747,9 @@ def level_complete():
                     if not is_mute and not notified:
                         notify_sound.play()
                         notified = True
+                else:
+                    hs_text = font.render(f"Highscore: {hs}", True, (158, 158, 158))
+                    screen.blit(hs_text, (SCREEN_WIDTH // 2 - hs_text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
             if pygame.time.get_ticks() - wait_time > 3000:  # Show for 3 seconds
                 running = False
 
@@ -727,7 +758,7 @@ def level_complete():
 
 
 def create_lvl1_screen():
-    global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, is_transitioning, transition_time, current_time, medal, deathcount, score
+    global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, is_transitioning, transition_time, current_time, medal, deathcount, score, collected_tokens, hs
     global new_hs
     new_hs = False
 
@@ -790,6 +821,14 @@ def create_lvl1_screen():
 
     exit_portal = pygame.Rect(2850, 150, 50, 100)
     clock = pygame.time.Clock()
+
+    token_pos = [
+        pygame.Rect(1050, 320, 80, 80),
+        pygame.Rect(1720, 220, 80, 80),
+        pygame.Rect(2400, 200, 80, 80),
+    ]
+
+    collected_tokens = set()
 
     def point_in_triangle(px, py, a, b, c):
         def sign(p1, p2, p3):
@@ -936,6 +975,8 @@ def create_lvl1_screen():
             if progress["score"]["lvl1"] < score or progress["score"]["lvl1"] == 0:
                 progress["score"]["lvl1"] = score
                 new_hs = True
+            if not new_hs:
+                hs = progress["score"]["lvl1"]
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -956,6 +997,17 @@ def create_lvl1_screen():
 
         # Drawing
         screen.blit(green_background, (0, 0))
+
+
+        for i, token in enumerate(token_pos):
+            if i not in collected_tokens:
+                screen.blit(token_img, (token.x - camera_x, token.y - camera_y))
+
+        for i, token in enumerate(token_pos):
+         if i not in collected_tokens and player_rect.colliderect(token):
+          collected_tokens.add(i)
+          if not is_mute:
+           token_sound.play()  # optional: a happy "ping!" sound
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
@@ -1067,6 +1119,9 @@ def create_lvl1_screen():
                 screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
+
+        token_display = f"Tokens: {len(collected_tokens)}/{len(token_pos)}"
+        screen.blit(font.render(token_display, True, (255, 255, 0)), (SCREEN_WIDTH - 200, 50))
 
         pygame.display.update()    
 
@@ -1342,6 +1397,8 @@ def create_lvl2_screen():
             if progress["score"]["lvl2"] < score or progress["score"]["lvl2"] == 0:
                 progress["score"]["lvl2"] = score
                 new_hs = True
+            if not new_hs:
+                hs = progress["score"]["lvl2"]
             score_calc()
 
             level_complete()
@@ -1809,8 +1866,9 @@ def create_lvl3_screen():
             if progress["score"]["lvl3"] < score or progress["score"]["lvl3"] == 0:
                 progress["score"]["lvl3"] = score
                 new_hs = True
-            level_complete()
-            
+            if not new_hs:
+                hs = progress["score"]["lvl3"]
+            level_complete()    
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -2403,6 +2461,8 @@ def create_lvl4_screen():
             if progress["score"]["lvl4"] < score or progress["score"]["lvl4"] == 0:
                 progress["score"]["lvl4"] = score
                 new_hs = True
+            if not new_hs:
+                hs = progress["score"]["lvl4"]
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -3079,6 +3139,8 @@ def create_lvl5_screen():
             if progress["score"]["lvl5"] < score or progress["score"]["lvl5"] == 0:
                 progress["score"]["lvl5"] = score
                 new_hs = True
+            if not new_hs:
+                hs = progress["score"]["lvl5"]
             level_complete()
 
             # Check if all medals from lvl1 to lvl11 are "Gold"
@@ -3761,6 +3823,8 @@ def create_lvl6_screen():
             if progress["score"]["lvl6"] < score or progress["score"]["lvl6"] == 0:
                 progress["score"]["lvl6"] = score
                 new_hs = True
+            if not new_hs:
+                hs = progress["score"]["lvl6"]
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -4372,6 +4436,8 @@ def create_lvl7_screen():
             if progress["score"]["lvl7"] < score or progress["score"]["lvl7"] == 0:
                 progress["score"]["lvl7"] = score
                 new_hs = True
+            if not new_hs:
+                hs = progress["score"]["lvl7"]
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -4959,6 +5025,8 @@ def create_lvl8_screen():
             if progress["score"]["lvl8"] < score or progress["score"]["lvl8"] == 0:
                 progress["score"]["lvl8"] = score
                 new_hs = True
+            if not new_hs:
+                hs = progress["score"]["lvl8"]
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -5248,7 +5316,7 @@ def create_lvl8_screen():
 
 def create_lvl9_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-    global new_hs
+    global new_hs, hs
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -5632,6 +5700,11 @@ def create_lvl9_screen():
             update_locked_levels()
             medal = get_medal(9, current_time)
             score_calc()
+            if progress["score"]["lvl9"] < score or progress["score"]["lvl9"] == 0:
+                new_hs = True
+                progress["score"]["lvl9"] = score
+            if not new_hs:
+                hs = progress["score"]["lvl9"]
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -5958,7 +6031,7 @@ def create_lvl9_screen():
 
 def create_lvl10_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-    global new_hs
+    global new_hs, hs
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -6279,6 +6352,11 @@ def create_lvl10_screen():
             update_locked_levels()
             medal = get_medal(10, current_time)
             score_calc()
+            if progress["score"]["lvl10"] < score or progress["score"]["lvl10"] == 0:
+                new_hs = True
+                progress["score"]["lvl10"] = score
+            if not new_hs:
+                hs = progress["score"]["lvl10"]
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -6621,7 +6699,7 @@ def create_lvl10_screen():
 
 def create_lvl11_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-    global new_hs
+    global new_hs, hs
 
     new_hs = False
     buttons.clear()
@@ -6996,6 +7074,11 @@ def create_lvl11_screen():
             update_locked_levels()
             medal = get_medal(11, current_time)
             score_calc()
+            if progress["score"]["lvl11"] < score or progress["score"]["lvl11"] == 0:
+                new_hs = True
+                progress["score"]["lvl11"] = score
+            if not new_hs:
+                hs = progress["score"]["lvl11"]
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -7474,6 +7557,7 @@ snow = []
 
 def create_lvl12_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, snow
+    global new_hs, hs, current_time, medal, deathcount, score
 
     buttons.clear()
     screen.blit(ice_background, (0, 0))
@@ -7890,6 +7974,12 @@ def create_lvl12_screen():
             update_locked_levels()
             medal = get_medal(12, current_time)
             score_calc()
+            if progress["score"]["lvl12"] < score or progress["score"]["lvl12"] == 0:
+                new_hs = True
+                progress["score"]["lvl12"] = score
+            if not new_hs:
+                hs = progress["score"]["lvl12"]
+            level_complete()
             save_progress(progress)  # Save progress to JSON file
 
             running = False
@@ -8335,6 +8425,7 @@ def create_lvl12_screen():
 
 def create_lvl13_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, snow
+    global new_hs, hs, current_time, medal, deathcount, score
 
     buttons.clear()
     screen.blit(ice_background, (0, 0))
@@ -8566,8 +8657,6 @@ def create_lvl13_screen():
        while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
-
-        print(visibility)
 
         current_time = time.time() - start_time
         formatted_time = "{:.2f}".format(current_time)
@@ -8855,6 +8944,12 @@ def create_lvl13_screen():
             update_locked_levels()
             medal = get_medal(13, current_time)
             score_calc()
+            if progress["score"]["lvl13"] < score or progress["score"]["lvl13"] == 0:
+                new_hs = True
+                progress["score"]["lvl13"] = score
+            if not new_hs:
+                hs = progress["score"]["lvl13"]
+            level_complete()
             save_progress(progress)  # Save progress to JSON file
 
             running = False
