@@ -243,7 +243,7 @@ class TransitionManager:
         self.image = image
         self.speed = speed
         self.active = False
-        self.direction = 1  # 1 for slide-in, -1 for slide-out
+        self.direction = 1  # 1 for slide-in, -2 for slide-out
         self.x = -screen.get_width()
         self.target_page = None
 
@@ -263,9 +263,9 @@ class TransitionManager:
             self.x = 0
             # Switch page when screen is fully covered
             set_page(self.target_page)
-            self.direction = -1  # Start sliding out
+            self.direction = -2  # Start sliding out
 
-        elif self.direction == -1 and self.x >= self.screen.get_width():
+        elif self.direction == -2 and self.x >= self.screen.get_width():
             self.active = False  # Done with transition
 
         # Draw the image
@@ -279,8 +279,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.56.1", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 194, SCREEN_HEIGHT - 158)
+ver_text = font_def.render("Version 1.2.57", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -296,7 +296,6 @@ def load_language(lang_code):
 
 # Load the actual language strings from file
 current_lang = load_language(lang_code)
-
 # Page states
 current_page = 'main_menu'
 buttons = []
@@ -548,7 +547,15 @@ def character_select():
     
     # Clear screen
     buttons.clear()
+    current_lang = load_language(lang_code)['language_select']
+    button_texts = ["back"]
 
+    for i, key in enumerate(button_texts):
+        text = current_lang[key]
+        rendered = font.render(text, True, (255, 255, 255))
+        rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100)) 
+        buttons.append((rendered, rect, key, False))
+    
     for event in pygame.event.get():#
         
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # left click
@@ -2533,12 +2540,14 @@ def create_lvl4_screen():
             update_locked_levels()
             medal = get_medal(4, current_time)
             score_calc()
-            level_complete()
+            
             if progress["score"]["lvl4"] < score or progress["score"]["lvl4"] == 0:
                 progress["score"]["lvl4"] = score
                 new_hs = True
             if not new_hs:
                 hs = progress["score"]["lvl4"]
+
+            level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
 
@@ -10883,7 +10892,7 @@ is_transitioning = False
 
 # Handle actions based on current page
 def handle_action(key):
-    global current_page, pending_level, level_load_time, transition, is_transitioning, transition_time
+    global current_page, pending_level, level_load_time, transition, is_transitioning, transition_time,locked_char_sound_played, locked_char_sound_time
     
     if current_page == 'main_menu':
         if key == "start":
@@ -11009,8 +11018,10 @@ def handle_action(key):
         elif key == "no":
             set_page("main_menu")
     elif current_page == "character_select":
-        if key == "locked":
+        if key == "locked" and not locked_char_sound_played:
          death_sound.play()
+         locked_char_sound_played = False
+         locked_char_sound_time = time.time()
 
 # Start with main menu
 set_page('main_menu')
@@ -11024,6 +11035,8 @@ logo_hover = False
 logo_click = False
 LDM = False
 
+locked_char_sound_time = None
+locked_char_sound_played = False
 # Main loop
 running = True
 while running:
@@ -11138,8 +11151,8 @@ while running:
                         menu_text = font.render("Play the game.", True, (255, 255, 0))
                         screen.blit(menu_text, (SCREEN_WIDTH // 2 - 70, SCREEN_HEIGHT - 50))
                     elif key == "character_select":
-                        achieve_text = font.render("Select your character! Under Development.", True, (255, 255, 0))
-                        screen.blit(achieve_text, (SCREEN_WIDTH // 2 - 260, SCREEN_HEIGHT - 50))
+                        char_text = font.render("Select your character! Under Development.", True, (255, 255, 0))
+                        screen.blit(char_text, (SCREEN_WIDTH // 2 - 260, SCREEN_HEIGHT - 50))
                     elif key == "settings": 
                         settings_text = font.render("Turn on the audio or turn it off, depending on current mode.", True, (255, 255, 0))
                         screen.blit(settings_text, (SCREEN_WIDTH // 2 - 400, SCREEN_HEIGHT - 50))
@@ -11167,6 +11180,8 @@ while running:
             screen.blit(plain_background, (0, 0))
             locked_sound_played = False
             messages = load_language(lang_code).get('messages', {})  # Fetch localized messages
+            char_text = font.render("Select your Robo!", True, (0, 0, 0))
+            screen.blit(char_text, (SCREEN_WIDTH // 2 - 100, 50))
             #Check if characters are locked
             icerobo_unlock = progress.get("icerobo_unlocked", False)
             evilrobo_unlock = progress.get("evilrobo_unlocked", False)
@@ -11224,6 +11239,10 @@ while running:
                         set_page("main_menu")
                     else:
                         handle_action("locked")
+                        locked_char_sound_time = time.time()
+                        locked_char_sound_played = True
+                        if time.time() - locked_char_sound_time < 1.5:
+                            locked_char_sound_played = False
                         if wait_time is None:
                             wait_time = pygame.time.get_ticks()                            
                         locked_text = messages.get("evillocked_message", "Encounter this robot in an alternative route to unlock him!")
@@ -11238,6 +11257,10 @@ while running:
                         set_page("main_menu")
                     else:
                         handle_action("locked")
+                        locked_char_sound_time = time.time()
+                        locked_char_sound_played = True
+                        if time.time() - locked_char_sound_time < 1.5:
+                            locked_char_sound_played = False
                         if wait_time is None:
                             wait_time = pygame.time.get_ticks()
                         locked_text = messages.get("icelock_message", "This robot is hiding in the mountains...")
@@ -11251,9 +11274,11 @@ while running:
                             click_sound.play()
                         set_page("main_menu")
                     else:
-                        if not is_mute and not locked_sound_played:
-                            death_sound.play()
-                            locked_sound_played = True
+                        handle_action("locked")
+                        locked_char_sound_time = time.time()
+                        locked_char_sound_played = True
+                        if time.time() - locked_char_sound_time < 1.5:
+                            locked_char_sound_played = True
                             # Initialize the time                    
                         locked_text = messages.get("lavalocked_message", "This robot is coming soon!")
                         if wait_time is None:
@@ -11268,9 +11293,11 @@ while running:
                             click_sound.play()
                         set_page("main_menu")
                     else:
-                        if not is_mute and not locked_sound_played:
-                            death_sound.play()
-                            locked_sound_played = True
+                        handle_action("locked")
+                        locked_char_sound_time = time.time()
+                        locked_char_sound_played = True
+                        if time.time() - locked_char_sound_time < 1.5:
+                            locked_char_sound_played = True
                             # Initialize the time
                         if wait_time is None:
                             wait_time = pygame.time.get_ticks()
@@ -11279,6 +11306,12 @@ while running:
             if not pygame.mouse.get_pressed()[0]:
                 locked_sound_played = False
 
+            # In your event section:
+            if rect.collidepoint(mouse_pos):
+                if pygame.mouse.get_pressed()[0]:
+                    set_page("main_menu")
+                    if not is_mute:
+                        click_sound.play()
             keys = pygame.key.get_pressed() 
             if keys[pygame.K_ESCAPE]:
                 set_page("main_menu")
@@ -11288,6 +11321,23 @@ while running:
                     screen.blit(rendered_locked_text, ((SCREEN_WIDTH // 2 - rendered_locked_text.get_width() // 2), SCREEN_HEIGHT - 700))
                 else:
                     wait_time = None
+        
+        # Render buttons for other pages
+            for rendered, rect, key, is_locked in buttons:
+                if rect.collidepoint(mouse_pos):
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
+                    hovered = rect.collidepoint(pygame.mouse.get_pos())
+                    if hovered and not button_hovered_last_frame and not is_mute:
+                        hover_sound.play()
+                    button_hovered_last_frame = hovered
+                else:
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((153, 51, 255, 0))  # RGBA: 100 is alpha (transparency)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
+                screen.blit(rendered, rect)
+
         if current_page == "language_select":
             screen.blit(plain_background, (0, 0))
 
