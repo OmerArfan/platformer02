@@ -279,7 +279,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.55", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.56", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
@@ -304,7 +304,7 @@ def create_main_menu_buttons():
     global current_lang, buttons
     current_lang = load_language(lang_code)['main_menu']
     buttons.clear()
-    button_texts = ["start", "achievements", "settings", "quit", "language"]
+    button_texts = ["start", "character_select", "settings", "quit", "language"]
 
     # Center buttons vertically and horizontally
     button_spacing = 60
@@ -332,7 +332,7 @@ def create_language_buttons():
         ("Español", "es"),
         ("Deutsch", "de"),
         ("简体中文", "zh_cn"),
-        ("O'zbekcha", "uz"),
+        ("Türkçe", "tr"),
         ("Português(Brasil)", "pt_br"),
         ("Русский", "ru")
     ]
@@ -748,14 +748,16 @@ stareffects = []
 
 def level_complete():
     global score, display_score, new_hs, collected_tokens, hs, stareffects
+    messages = load_language(lang_code).get('messages', {})
     display_score = 0
     star1_p, star2_p, star3_p = False, False, False
-    wait_time = None
+    star_time = time.time()
     running = True
     notified = False
     clock = pygame.time.Clock()
     star_channel = pygame.mixer.Channel(2)
-
+    lvl_comp = messages.get("lvl_comp", "Level Complete!")
+    rendered_lvl_comp = font.render(lvl_comp, True, (255, 255, 255))
     while running:
         screen.blit(end, (0, 0))
         for event in pygame.event.get():
@@ -763,8 +765,7 @@ def level_complete():
                 pygame.quit()
                 exit()
 
-        lvl_comp = font.render("Level Complete!", True, (255, 255, 255))
-        screen.blit(lvl_comp, (SCREEN_WIDTH // 2 - lvl_comp.get_width() // 2, 150))
+        screen.blit(rendered_lvl_comp, (SCREEN_WIDTH // 2 - rendered_lvl_comp.get_width() // 2, 150))
 
         # Animate score
         
@@ -772,21 +773,21 @@ def level_complete():
           if not is_mute:
             hover_sound.play()
           display_score += max(5, (score // 71))
-        if display_score > 10000:
+        if score > 10000 and (time.time() - star_time > 0.5):
                 screen.blit(star_img, (SCREEN_WIDTH // 2 - 230, 230))
                 if not star1_p:
                  for _ in range(40):  # Add some particles at star position
                     stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 230 + star_img.get_width() // 2, 230 + star_img.get_height() // 2)) 
                  star_channel.play(star1)
                  star1_p = True
-        if display_score > 55000:
+        if score > 55000 and (time.time() - star_time > 1.5):
                 screen.blit(star_img, (SCREEN_WIDTH // 2 - 75, 230))
                 if not star2_p and star1_p: 
                     for _ in range(40):  # Add some particles at star position
                      stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 75 + star_img.get_width() // 2, 230 + star_img.get_height() // 2))  
                     star_channel.play(star2)
                     star2_p = True
-        if display_score > 90000:
+        if score > 90000 and (time.time() - star_time  >  2.5):
                 screen.blit(star_img, (SCREEN_WIDTH // 2 + 80, 230)) 
                 if  not star3_p and star2_p: 
                     for _ in range(40):  # Add some particles at star position
@@ -806,10 +807,8 @@ def level_complete():
         score_text = font_text.render(str(display_score), True, (255, 255, 255))
         screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, SCREEN_HEIGHT // 2 - score_text.get_height() // 2))
 
-        if display_score == score and wait_time is None:
-            wait_time = pygame.time.get_ticks()  # Start the wait timer
-        elif wait_time is not None:
-            if pygame.time.get_ticks() - wait_time > 500:  # Show for 3 seconds
+        
+        if time.time() - star_time > 4:  # Show for 3 seconds
                 if new_hs:
                     new_hs_text = font.render("New High Score!", True, (255, 215, 0))
                     screen.blit(new_hs_text, (SCREEN_WIDTH // 2 - new_hs_text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
@@ -819,7 +818,7 @@ def level_complete():
                 else:
                     hs_text = font.render(f"Highscore: {hs}", True, (158, 158, 158))
                     screen.blit(hs_text, (SCREEN_WIDTH // 2 - hs_text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
-            if pygame.time.get_ticks() - wait_time > 3000:  # Show for 3 seconds
+        if time.time() - star_time > 6:
                 running = False
 
         pygame.display.update()
@@ -10896,7 +10895,7 @@ def handle_action(key):
                         transition_time = None
                         set_page(level_page)
                         
-        elif key == "achievements":
+        elif key == "character_select":
             if not is_transitioning:
                 transition.start("character_select")
                 transition_time = pygame.time.get_ticks()  # Start the wait time
@@ -10942,7 +10941,7 @@ def handle_action(key):
                     set_page("main_menu")
                     is_transitioning = False
                     transition_time = None
-        elif key in ["en", "fr", "es", "de", "zh_cn", "uz", "pt_br", "ru"]:
+        elif key in ["en", "fr", "es", "de", "zh_cn", "tr", "pt_br", "ru"]:
             change_language(key)
             if not is_transitioning:
                 transition.start("main_menu")
@@ -11002,7 +11001,7 @@ def handle_action(key):
             quit_game()
         elif key == "no":
             set_page("main_menu")
-    elif current_page == "achievements":
+    elif current_page == "character_select":
         if key == "locked":
          death_sound.play()
 
@@ -11131,7 +11130,7 @@ while running:
                     if key == "start":
                         menu_text = font.render("Play the game.", True, (255, 255, 0))
                         screen.blit(menu_text, (SCREEN_WIDTH // 2 - 70, SCREEN_HEIGHT - 50))
-                    elif key == "achievements":
+                    elif key == "character_select":
                         achieve_text = font.render("Select your character! Under Development.", True, (255, 255, 0))
                         screen.blit(achieve_text, (SCREEN_WIDTH // 2 - 260, SCREEN_HEIGHT - 50))
                     elif key == "settings": 
