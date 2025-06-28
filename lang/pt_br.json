@@ -1,7 +1,7 @@
 {
     "main_menu": {
         "start": "Iniciar",
-        "achievements": "Seleção de Personagem",
+        "character_select": "Seleção de Personagem",
         "settings": "Silenciar/ativar áudio",
         "quit": "Sair",
         "language": "Alterar Idioma"
@@ -40,6 +40,7 @@
         ,"icelocked_message": "Este robô chegará em breve!"
         ,"lavalocked_message": "Este robô chegará em breve!"
         ,"greenlocked_message": "Consiga a classificação OURO em todos os Níveis do Mundo Verde para desbloquear este robô!"
+        ,"lvl_comp": "Nível Concluído!"
     }
     ,"in_game": {
         "dead_message": "Você está morto!",

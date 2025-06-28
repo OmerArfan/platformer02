@@ -1,0 +1,84 @@
+{
+  "main_menu": {
+    "start": "Başla",
+    "character_select": "Karakter Seçimi",
+    "settings": "Sesi Aç/Kapat",
+    "quit": "Çıkış",
+    "language": "Dili Değiştir"
+  },
+  "language_select": {
+    "back": "Geri"
+  },
+  "levels": {
+    "level_display": "BİR SEVİYE SEÇ",
+    "1": "1",
+    "2": "2",
+    "3": "3",
+    "4": "4",
+    "5": "5",
+    "6": "6",
+    "7": "7",
+    "8": "8",
+    "9": "9",
+    "10": "10",
+    "11": "11",
+    "12": "12",
+    "lvl1": "Seviye 1",
+    "lvl2": "Seviye 2",
+    "lvl3": "Seviye 3",
+    "lvl4": "Seviye 4",
+    "lvl5": "Seviye 5",
+    "lvl6": "Seviye 6",
+    "lvl7": "Seviye 7",
+    "lvl8": "Seviye 8",
+    "lvl9": "Seviye 9",
+    "lvl10": "Seviye 10",
+    "lvl11": "Seviye 11",
+    "lvl12": "Seviye 12",
+    "back": "Geri",
+    "next": "İleri"
+  },
+  "messages": {
+    "you_are_in": "{level} yakında geliyor!",
+    "loading": "Yükleniyor...",
+    "confirm_quit": "Çıkmak istediğine emin misin?",
+    "yes": "Evet",
+    "no": "Hayır",
+    "evillocked_message": "Bu robotu alternatif bir rotada bul ve kilidini aç!",
+    "icelocked_message": "Bu robot yakında geliyor!",
+    "lavalocked_message": "Bu robot yakında geliyor!",
+    "greenlocked_message": "Tüm Yeşil Dünya seviyelerinde ALTIN derece al ve bu robotun kilidini aç!"
+    ,"lvl_comp": "Bölüm Tamamlandı!"
+  },
+  "in_game": {
+    "dead_message": "Öldün!",
+    "fall_message": "Çok yükseğe düştün!",
+    "deaths_no": "Ölümler: {deathcount}",
+    "warning_message": "Dikenlere dikkat et!",
+    "up_message": "Zıplamak için YUKARI tuşuna bas!",
+    "stamina_message": "Dayanıklılık: ",
+    "exit_message": "Çıkış Portalı! Kazanmak için buraya gel!",
+    "moving_message": "Tüm bloklar sabit durmaz...",
+    "mock_message": "Yanlış yol kardeşim, burada özel bir şey yok...",
+    "jump_message": "Turuncu blokları kullanarak yüksek mesafelere zıpla!",
+    "saw_message": "Testereler de tehlikelidir!",
+    "sawed_message": "Parçalandın!",
+    "key_message": "Parayı kap ve bloğu aç!",
+    "laser_message": "Lazer tarafından vuruldun!",
+    "invisible_message": "Bu testereler sana zarar vermez... söz!",
+    "portal_message": "Bu mavi portallar seni ışınlar! Ama genelde iyi yerlere!",
+    "button1_message": "Mavi butonlar, etkinleştirildiğinde daha yükseğe zıplarsın!",
+    "button2_message": "Lavanta butonları, etkinleştirildiğinde daha az zıplarsın!",
+    "clarify_message": "Tabii ki bir kontrol noktasına ulaşana kadar!",
+    "clarify_message2": "Ayrıca zıplama bloklarındaki zıplamanı da etkilerler!",
+    "button3_message": "Mor butonlar, etkinleştirildiğinde neredeyse tüm ışıkları kapatır!",
+    "button4_message": "Yeşil butonlar, etkinleştirildiğinde sana büyük bir hız verir!"
+  },
+  "in_game_ice": {
+    "temp": "Sıcaklık: {current_temp}",
+    "ice_message": "Buz bloklarının üzerinde durunca erir! Ama seni de serinletirler!",
+    "freeze_message": "Ama üşümemek için biraz ısınmayı unutma!",
+    "overheat_message1": "Ayrıca sıcaklığını takip etmeyi unutma ve eğer",
+    "overheat_message2": "fazla ısınırsan, yakındaki bir buz bloğuna çık!"
+  }
+}

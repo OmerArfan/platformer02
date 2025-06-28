@@ -1,7 +1,7 @@
 {
     "main_menu": {
       "start": "Commencer",
-      "achievements": "Sélection de personnage",
+      "character_select": "Sélection de personnage",
       "settings": "Couper/Activer le son",
       "quit": "Quitter",
       "language": "Changer de langue"
@@ -40,6 +40,8 @@
   ,"icelocked_message": "Ce robot arrive bientôt!"
   ,"lavalocked_message": "Ce robot arrive bientôt!"
   ,"greenlocked_message": "Obtenez le rang OR dans tous les niveaux du Monde Vert pour débloquer ce robot!"
+  ,"lvl_comp": "Niveau terminé !"
+  
   }
   ,"in_game": {
   "dead_message": "Vous êtes mort!",

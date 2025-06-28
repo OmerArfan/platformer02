@@ -1,7 +1,7 @@
 {
     "main_menu": {
       "start": "Start",
-      "achievements": "Character Select",
+      "character_select": "Character Select",
       "settings": "Mute/Unmute Audio",
       "quit": "Quit",
       "language": "Change Language"
@@ -11,6 +11,18 @@
   }
   ,"levels": {
   "level_display": "SELECT A LEVEL",
+  "1": "1",
+  "2": "2",
+  "3": "3",
+  "4": "4",
+  "5": "5",
+  "6": "6",
+  "7": "7",
+  "8": "8",
+  "9": "9",
+  "10": "10",
+  "11": "11",
+  "12": "12",
   "lvl1": "Level 1",
   "lvl2": "Level 2",
   "lvl3": "Level 3",
@@ -36,6 +48,7 @@
   ,"icelocked_message": "This robot is coming soon!"
   ,"lavalocked_message": "This robot is coming soon!"
   ,"greenlocked_message": "Get GOLD rank in all Green World Levels to unlock this robot!"
+  ,"lvl_comp": "Level Complete!"
 }
   ,"in_game": {
   "dead_message": "You died!",
