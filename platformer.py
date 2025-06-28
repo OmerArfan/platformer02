@@ -279,13 +279,20 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.56", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 158)
+ver_text = font_def.render("Version 1.2.56.1", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 194, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
-    with open(f'lang/{lang_code}.json', encoding='utf-8') as f:
-        return json.load(f)
+    try:
+        with open(f"lang/{lang_code}.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"[WARN] Language '{lang_code}' not found. Falling back to English.")
+        progress["language"] = "en"
+        save_progress(progress)
+        with open("lang/en.json", "r", encoding="utf-8") as f:
+            return json.load(f)
 
 # Load the actual language strings from file
 current_lang = load_language(lang_code)
