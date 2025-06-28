@@ -182,6 +182,22 @@ level_thresholds = [
     {'level': 13,'gold': 30, 'silver': 50, 'bronze': 70},
 ]
 
+# Level score thresholds
+score_thresholds = [
+    {'level': 1,  '1': 10000, '2': 80000, '3': 85000},
+    {'level': 2,  '1': 10000, '2': 70000, '3': 85000},
+    {'level': 3,  '1': 10000, '2': 70000, '3': 85000},
+    {'level': 4,  '1': 10000, '2': 70000, '3': 85000},
+    {'level': 5,  '1': 10000, '2': 65000, '3': 80000},
+    {'level': 6,  '1': 10000, '2': 65000, '3': 86000},
+    {'level': 7,  '1': 10000, '2': 74000, '3': 86000},
+    {'level': 8,  '1': 10000, '2': 76000, '3': 84500},
+    {'level': 9,  '1': 10000, '2': 66000, '3': 82000},
+    {'level': 10, '1': 10000, '2': 75000, '3': 85000},
+    {'level': 11, '1': 10000, '2': 73000, '3': 86000},
+    {'level': 12, '1': 10000, '2': 73000, '3': 84000},
+    {'level': 13, '1': 10000, '2': 76000, '3': 80000},
+]
 # Function to get medal based on time
 def get_medal(level, time_taken):
     thresholds = next((t for t in level_thresholds if t['level'] == level), None)
@@ -196,6 +212,19 @@ def get_medal(level, time_taken):
     else:
         return "None"
 
+def get_stars(level, score):
+    thresholds = next((t for t in score_thresholds if t['level'] == level), None)
+    if not thresholds:
+        return "0"
+    if score >= thresholds['3']:
+        return "3"
+    elif score >= thresholds['2']:
+        return "2"
+    elif score >= thresholds['1']:
+        return "1"
+    else:
+        return "0"
+    
 pygame.mouse.set_visible(False)  # Hide the system cursor
 cursor_img = pygame.image.load("oimgs/cursor/cursor.png").convert_alpha()
 
@@ -279,7 +308,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.57", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.58", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
@@ -1059,6 +1088,8 @@ def create_lvl1_screen():
                 new_hs = True
             if not new_hs:
                 hs = progress["score"]["lvl1"]
+            stars = get_stars(1, progress["score"]["lvl1"])
+            print(stars)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -4972,7 +5003,7 @@ def create_lvl8_screen():
             weak_grav = False # Reset weak gravity status
             checkpoint_reached = False  # Reset checkpoint status
             checkpoint_reached2 = False  # Reset checkpoint status
-            spawn_x, spawn_y = -25, 260
+            spawn_x, spawn_y = 0, 260
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount = 0
