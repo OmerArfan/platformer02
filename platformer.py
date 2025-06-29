@@ -215,15 +215,15 @@ def get_medal(level, time_taken):
 def get_stars(level, score):
     thresholds = next((t for t in score_thresholds if t['level'] == level), None)
     if not thresholds:
-        return "0"
+        return 0
     if score >= thresholds['3']:
-        return "3"
+        return 3
     elif score >= thresholds['2']:
-        return "2"
+        return 2
     elif score >= thresholds['1']:
-        return "1"
+        return 1
     else:
-        return "0"
+        return 0
     
 pygame.mouse.set_visible(False)  # Hide the system cursor
 cursor_img = pygame.image.load("oimgs/cursor/cursor.png").convert_alpha()
@@ -308,7 +308,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.58", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.59", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
@@ -413,6 +413,7 @@ token_img = pygame.image.load("oimgs/ig/roboken.png").convert_alpha()
 token_img = pygame.transform.scale(token_img, (80, 80))
 star_img = pygame.image.load("oimgs/ig/star.png").convert_alpha()
 star_img = pygame.transform.scale(star_img, (150, 140))
+s_star_img = pygame.transform.scale(star_img, (20, 17))
 
 def green_world_buttons():
     global current_lang, buttons
@@ -445,7 +446,6 @@ def green_world_buttons():
     # Get the text
     back_text = current_lang.get("back", "Back")        
     rendered_back = font.render(back_text, True, (255, 255, 255))
-
 
     # Create a fixed 100x100 hitbox centered at the right location
     back_rect = pygame.Rect(0, 0, 100, 100)
@@ -500,6 +500,13 @@ def ice_world_buttons():
         text_surface = font_text.render(level_no[i], True, color)
         disk_rect = icedisk_img.get_rect(center=(x, y))
         buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
+
+        # --- Draw stars for completed levels ---
+        stars = get_stars(int(level_no[i]), progress["score"].get(level, 0))
+        for s in range(stars):
+            star_x = x - 30 + s * 30  # Adjust as needed for spacing
+            star_y = y + 50            # Adjust as needed for vertical position
+            screen.blit(s_star_img, (star_x, star_y))
 
     # Back button at bottom center
 
@@ -790,7 +797,7 @@ class StarParticles:
 stareffects = []
 
 def level_complete():
-    global score, display_score, new_hs, collected_tokens, hs, stareffects
+    global score, display_score, new_hs, collected_tokens, hs, stareffects, stars
     messages = load_language(lang_code).get('messages', {})
     display_score = 0
     star1_p, star2_p, star3_p = False, False, False
@@ -816,22 +823,22 @@ def level_complete():
           if not is_mute:
             hover_sound.play()
           display_score += max(5, (score // 71))
-        if score > 10000 and (time.time() - star_time > 0.5):
-                screen.blit(star_img, (SCREEN_WIDTH // 2 - 230, 230))
+        if stars >= 1 and (time.time() - star_time > 0.5):
+                screen.blit(star_img, (SCREEN_WIDTH // 2 - 231, 230))
                 if not star1_p:
                  for _ in range(40):  # Add some particles at star position
                     stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 230 + star_img.get_width() // 2, 230 + star_img.get_height() // 2)) 
                  star_channel.play(star1)
                  star1_p = True
-        if score > 55000 and (time.time() - star_time > 1.5):
-                screen.blit(star_img, (SCREEN_WIDTH // 2 - 75, 230))
+        if stars >= 2 and (time.time() - star_time > 1.5):
+                screen.blit(star_img, (SCREEN_WIDTH // 2 - 76, 230))
                 if not star2_p and star1_p: 
                     for _ in range(40):  # Add some particles at star position
                      stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 75 + star_img.get_width() // 2, 230 + star_img.get_height() // 2))  
                     star_channel.play(star2)
                     star2_p = True
-        if score > 90000 and (time.time() - star_time  >  2.5):
-                screen.blit(star_img, (SCREEN_WIDTH // 2 + 80, 230)) 
+        if stars >= 3 and (time.time() - star_time  >  2.5):
+                screen.blit(star_img, (SCREEN_WIDTH // 2 + 79, 230)) 
                 if  not star3_p and star2_p: 
                     for _ in range(40):  # Add some particles at star position
                       stareffects.append(StarParticles(SCREEN_WIDTH // 2 + 80 + star_img.get_width() // 2, 230 + star_img.get_height() // 2)) 
@@ -870,7 +877,7 @@ def level_complete():
 
 def create_lvl1_screen():
     global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, is_transitioning, transition_time, current_time, medal, deathcount, score, collected_tokens
-    global new_hs, hs
+    global new_hs, hs, stars
     new_hs = False
 
     buttons.clear()
@@ -1088,8 +1095,7 @@ def create_lvl1_screen():
                 new_hs = True
             if not new_hs:
                 hs = progress["score"]["lvl1"]
-            stars = get_stars(1, progress["score"]["lvl1"])
-            print(stars)
+            stars = get_stars(1, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -1240,7 +1246,7 @@ def create_lvl1_screen():
 
 def create_lvl2_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, wait_time, transition_time, is_transitioning, current_time, medal, deathcount, score
-    global new_hs, hs
+    global new_hs, hs, stars
     new_hs = False
 
     screen.blit(green_background, (0, 0))
@@ -1515,6 +1521,7 @@ def create_lvl2_screen():
                 new_hs = True
             if not new_hs:
                 hs = progress["score"]["lvl2"]
+            stars = get_stars(2, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -1662,7 +1669,7 @@ def create_lvl2_screen():
 
 def create_lvl3_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-    global new_hs, hs
+    global new_hs, hs, stars
     new_hs = False
     screen.blit(green_background, (0, 0))
     wait_time = None
@@ -1982,6 +1989,7 @@ def create_lvl3_screen():
                 new_hs = True
             if not new_hs:
                 hs = progress["score"]["lvl3"]
+            stars = get_stars(3, score)
             level_complete()    
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -2181,7 +2189,7 @@ def create_lvl3_screen():
 
 def create_lvl4_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-    global new_hs, hs
+    global new_hs, hs, stars
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -2577,7 +2585,7 @@ def create_lvl4_screen():
                 new_hs = True
             if not new_hs:
                 hs = progress["score"]["lvl4"]
-
+            stars = get_stars(4, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -2887,7 +2895,7 @@ def create_lvl4_screen():
 
 def create_lvl5_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-    global new_hs, hs
+    global new_hs, hs, stars
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -3257,6 +3265,7 @@ def create_lvl5_screen():
                 new_hs = True
             if not new_hs:
                 hs = progress["score"]["lvl5"]
+            stars = get_stars(5, score)
             level_complete()
 
             # Check if all medals from lvl1 to lvl11 are "Gold"
@@ -3594,7 +3603,7 @@ def create_lvl5_screen():
 def create_lvl6_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     start_time = time.time()
-    global new_hs, hs
+    global new_hs, hs, stars
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -3941,6 +3950,7 @@ def create_lvl6_screen():
                 new_hs = True
             if not new_hs:
                 hs = progress["score"]["lvl6"]
+            stars = get_stars(6, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -4287,7 +4297,7 @@ def create_lvl6_screen():
 def create_lvl7_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     start_time = time.time()
-    global new_hs, hs
+    global new_hs, hs, stars
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -4554,6 +4564,7 @@ def create_lvl7_screen():
                 new_hs = True
             if not new_hs:
                 hs = progress["score"]["lvl7"]
+            stars = get_stars(7, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -4843,7 +4854,7 @@ def create_lvl7_screen():
 
 def create_lvl8_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-    global new_hs, hs
+    global new_hs, hs, stars
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -5143,6 +5154,7 @@ def create_lvl8_screen():
                 new_hs = True
             if not new_hs:
                 hs = progress["score"]["lvl8"]
+            stars = get_stars(8, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -5432,7 +5444,7 @@ def create_lvl8_screen():
 
 def create_lvl9_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-    global new_hs, hs
+    global new_hs, hs, stars
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -5821,6 +5833,7 @@ def create_lvl9_screen():
                 progress["score"]["lvl9"] = score
             if not new_hs:
                 hs = progress["score"]["lvl9"]
+            stars = get_stars(9, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -6147,7 +6160,7 @@ def create_lvl9_screen():
 
 def create_lvl10_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-    global new_hs, hs
+    global new_hs, hs, stars
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -6473,6 +6486,7 @@ def create_lvl10_screen():
                 progress["score"]["lvl10"] = score
             if not new_hs:
                 hs = progress["score"]["lvl10"]
+            stars = get_stars(10, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -6815,7 +6829,7 @@ def create_lvl10_screen():
 
 def create_lvl11_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
-    global new_hs, hs
+    global new_hs, hs, stars
 
     new_hs = False
     buttons.clear()
@@ -7195,6 +7209,7 @@ def create_lvl11_screen():
                 progress["score"]["lvl11"] = score
             if not new_hs:
                 hs = progress["score"]["lvl11"]
+            stars = get_stars(11, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             check_green_gold()
@@ -7673,7 +7688,7 @@ snow = []
 
 def create_lvl12_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, snow
-    global new_hs, hs, current_time, medal, deathcount, score
+    global new_hs, hs, current_time, medal, deathcount, score, stars
     new_hs = False
     buttons.clear()
     screen.blit(ice_background, (0, 0))
@@ -8095,6 +8110,7 @@ def create_lvl12_screen():
                 progress["score"]["lvl12"] = score
             if not new_hs:
                 hs = progress["score"]["lvl12"]
+            stars = get_stars(12, score)
             level_complete()
             save_progress(progress)  # Save progress to JSON file
 
@@ -8541,7 +8557,7 @@ def create_lvl12_screen():
 
 def create_lvl13_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, snow
-    global new_hs, hs, current_time, medal, deathcount, score
+    global new_hs, hs, current_time, medal, deathcount, score, stars
     new_hs = False
     buttons.clear()
     screen.blit(ice_background, (0, 0))
@@ -9065,6 +9081,7 @@ def create_lvl13_screen():
                 progress["score"]["lvl13"] = score
             if not new_hs:
                 hs = progress["score"]["lvl13"]
+            stars = get_stars(13, score)
             level_complete()
             save_progress(progress)  # Save progress to JSON file
 
@@ -11447,6 +11464,17 @@ while running:
 
         elif current_page == "levels":
             screen.blit(green_background, (0, 0))
+            # ...existing code...
+
+            for i, (text_surface, disk_rect, level, is_locked) in enumerate(buttons[:11]):
+              level_num = i + 1
+              score = progress["score"].get(f"lvl{level_num}", 0)
+              stars = get_stars(level_num, score)
+              for s in range(stars):
+               star_x = disk_rect.centerx - 30 + (s * 20)
+               star_y = disk_rect.bottom - 4
+               screen.blit(s_star_img, (star_x, star_y))
+
             # Fetch the localized "Select a Level" text dynamically
             select_text = current_lang.get("level_display", "Select a Level")
             rendered_select_text = font.render(select_text, True, (255, 255, 255))
@@ -11513,6 +11541,20 @@ while running:
                 screen.fill((0, 146, 230))
             else:
                 screen.blit(ice_background, (0, 0))
+            
+            for i, (text_surface, disk_rect, level, is_locked) in enumerate(buttons):
+                if not level or not level.startswith("lvl"):
+                    continue  # Skip non-level buttons like "back"
+    
+                level_num = i + 1
+                score = progress["score"].get(level_num, 0)
+                stars = get_stars(level_num, score)
+                for s in range(stars):
+                 star_x = disk_rect.centerx - 30 + (s * 20)
+                 star_y = disk_rect.bottom - 4
+                 screen.blit(s_star_img, (star_x, star_y))
+
+            
             # Fetch the localized "Select a Level" text dynamically
             select_text = current_lang.get("level_display", "Select a Level")
             rendered_select_text = font.render(select_text, True, (0, 0, 0))
