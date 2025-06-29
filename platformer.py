@@ -76,6 +76,7 @@ default_progress = {
     "icerobo_unlocked": False,
     "lavarobo_unlocked": False,
     "greenrobo_unlocked": False,
+    "cakebo_unlocked": False,
 }
 
 def load_progress():
@@ -308,7 +309,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.59", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.60", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
@@ -564,20 +565,21 @@ evilrobot_img = pygame.image.load("char/evilrobot/evilrobot.png").convert_alpha(
 icerobot_img = pygame.image.load("char/icerobot/icerobot.png").convert_alpha()
 lavarobot_img = pygame.image.load("char/lavarobot/lavarobot.png").convert_alpha()
 greenrobot_img = pygame.image.load("char/greenrobot/greenrobot.png").convert_alpha()
+cakebot_img = pygame.image.load("char/cakebot/cakebot.png").convert_alpha()
 locked_img = pygame.image.load("char/lockedrobot.png").convert_alpha()
 
 #Initialize default character
 selected_character = progress.get("selected_character", default_progress["selected_character"])
 
 # Get rects and position them
-robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 350, SCREEN_HEIGHT // 2 - 50))
+robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 425, SCREEN_HEIGHT // 2 - 50))
 #Evil Robot
-evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 50))
+evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 275, SCREEN_HEIGHT // 2 - 50))
 #Ice and lava robot
-icerobot_rect = icerobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 - 50))
-lavarobot_rect = lavarobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 - 50))
-greenrobot_rect = greenrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 250, SCREEN_HEIGHT // 2 - 50))
-
+icerobot_rect = icerobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 125, SCREEN_HEIGHT // 2 - 50))
+lavarobot_rect = lavarobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 25, SCREEN_HEIGHT // 2 - 50))
+greenrobot_rect = greenrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 175, SCREEN_HEIGHT // 2 - 50))
+cakebot_rect = cakebot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 325, SCREEN_HEIGHT // 2 - 50))
 def character_select():
     global selected_character, set_page, current_page
     
@@ -610,6 +612,9 @@ def character_select():
                 set_page("main_menu")   
             elif greenrobot_rect.collidepoint(mouse_pos):
                 selected_character = "greenrobot"
+                set_page("main_menu")
+            elif cakebot_rect.collidepoint(mouse_pos):
+                selected_character = "cakebot"
                 set_page("main_menu")
     pygame.display.flip()
 
@@ -874,10 +879,36 @@ def level_complete():
         pygame.display.update()
         clock.tick(60)
 
+def char_assets():
+    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+ # Load player image
+    if selected_character == "robot": 
+        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
+    elif selected_character == "evilrobot":
+        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
+    elif selected_character == "greenrobot":
+        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
+    elif selected_character == "icerobot":
+        player_img = pygame.image.load(f"char/icerobot/icerobot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/icerobot/moveicerobotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/icerobot/moveicerobot.png") # Resize to fit the game
+    elif selected_character == "cakebot":
+        player_img = pygame.image.load(f"char/cakebot/cakebot.png").convert_alpha()
+        moving_img_l = pygame.image.load(f"char/cakebot/movecakebotL.png") # Resize to fit the game
+        moving_img = pygame.image.load(f"char/cakebot/movecakebot.png") # Resize to fit the game
+    img_width, img_height = player_img.get_size()
 
 def create_lvl1_screen():
     global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, is_transitioning, transition_time, current_time, medal, deathcount, score, collected_tokens
     global new_hs, hs, stars
+    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    char_assets()
     new_hs = False
 
     buttons.clear()
@@ -900,21 +931,6 @@ def create_lvl1_screen():
     camera_speed = 0.05
     deathcount = 0
     was_moving = False
-    
-    # Load player image
-    if selected_character == "robot": 
-        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
-    img_width, img_height = player_img.get_size()
 
     blocks = [
         pygame.Rect(600, 450, 200, 50),
@@ -1247,6 +1263,8 @@ def create_lvl1_screen():
 def create_lvl2_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, wait_time, transition_time, is_transitioning, current_time, medal, deathcount, score
     global new_hs, hs, stars
+    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    char_assets()
     new_hs = False
 
     screen.blit(green_background, (0, 0))
@@ -1268,22 +1286,6 @@ def create_lvl2_screen():
     camera_speed = 0.05
     deathcount = 0
     was_moving = False
-
-
-    # Load player image
-    if selected_character == "robot": 
-        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
-    img_width, img_height = player_img.get_size()
 
     # Draw flag
     flag = pygame.Rect(2150, 650, 80, 50)  # x, y, width, height
@@ -1670,6 +1672,8 @@ def create_lvl2_screen():
 def create_lvl3_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     global new_hs, hs, stars
+    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    char_assets()
     new_hs = False
     screen.blit(green_background, (0, 0))
     wait_time = None
@@ -1691,21 +1695,6 @@ def create_lvl3_screen():
     camera_speed = 0.5
     deathcount = 0
     was_moving = False
-
-    # Load player image
-    if selected_character == "robot": 
-        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
-    img_width, img_height = player_img.get_size()
 
     # Draw flag
     flag = pygame.Rect(200, 200, 100, 125)  # x, y, width, height
@@ -2190,6 +2179,8 @@ def create_lvl3_screen():
 def create_lvl4_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     global new_hs, hs, stars
+    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    char_assets()
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -2212,21 +2203,6 @@ def create_lvl4_screen():
     camera_speed = 0.5
     deathcount = 0
     was_moving = False
-
-    # Load player image
-    if selected_character == "robot": 
-        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
-    img_width, img_height = player_img.get_size()
 
     # Draw flag
     flag = pygame.Rect(1500, 550, 100, 125)  # x, y, width, height
@@ -2269,8 +2245,8 @@ def create_lvl4_screen():
         pygame.Rect(200, 650, 650, 100),
         pygame.Rect(1100, 510, 100, 100),
         pygame.Rect(1450, 650, 650, 100),
-        pygame.Rect(2300, 230, 1000, 800),
-        pygame.Rect(2800, 400, 1200, 600),
+        pygame.Rect(2300, 230, 1000, 1800),
+        pygame.Rect(2800, 400, 1200, 1600),
         pygame.Rect(2800, -370, 200, 400),
         pygame.Rect(3100, -300, 450, 100),
         pygame.Rect(3700, -100, 200, 100),
@@ -2896,6 +2872,8 @@ def create_lvl4_screen():
 def create_lvl5_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     global new_hs, hs, stars
+    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    char_assets()
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -2918,21 +2896,6 @@ def create_lvl5_screen():
     camera_speed = 0.5
     deathcount = 0
     was_moving = False
-
-    # Load player image
-    if selected_character == "robot": 
-        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
-    img_width, img_height = player_img.get_size()
 
     # Draw flag
     flag = pygame.Rect(2100, -150, 100, 125)  # x, y, width, height
@@ -3604,6 +3567,8 @@ def create_lvl6_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     start_time = time.time()
     global new_hs, hs, stars
+    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    char_assets()
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -3625,21 +3590,6 @@ def create_lvl6_screen():
     camera_speed = 0.5
     deathcount = 0
     was_moving = False
-
-    # Load player image
-    if selected_character == "robot": 
-        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
-    img_width, img_height = player_img.get_size()
 
     # Draw flag
     flag = pygame.Rect(2400, 380, 100, 125)  # x, y, width, height
@@ -4298,6 +4248,8 @@ def create_lvl7_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     start_time = time.time()
     global new_hs, hs, stars
+    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    char_assets()
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -4319,21 +4271,6 @@ def create_lvl7_screen():
     camera_speed = 0.5
     deathcount = 0
     was_moving = False
-
-    # Load player image
-    if selected_character == "robot": 
-        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
-    img_width, img_height = player_img.get_size()
 
     # Draw flag
     flag = pygame.Rect(2600, 300, 100, 125)  # x, y, width, height
@@ -4855,6 +4792,9 @@ def create_lvl7_screen():
 def create_lvl8_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     global new_hs, hs, stars
+    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    char_assets()
+
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -4881,21 +4821,6 @@ def create_lvl8_screen():
     camera_speed = 0.5
     deathcount = 0
     was_moving = False
-
-    # Load player image
-    if selected_character == "robot": 
-        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
-    img_width, img_height = player_img.get_size()
 
     # Draw flag
     flag = pygame.Rect(8470, -320, 100, 125)  # x, y, width, height
@@ -5445,6 +5370,8 @@ def create_lvl8_screen():
 def create_lvl9_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     global new_hs, hs, stars
+    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    char_assets()
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -5474,21 +5401,6 @@ def create_lvl9_screen():
     weak_grav = False
     move_speed = 8
     on_ground = False
-
-    # Load player image
-    if selected_character == "robot": 
-        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
-    img_width, img_height = player_img.get_size()
 
     # Draw flag
     flag = pygame.Rect(2350, 300, 100, 125)  # x, y, width, height
@@ -6162,6 +6074,8 @@ def create_lvl10_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     global new_hs, hs, stars
     new_hs = False
+    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    char_assets()
     buttons.clear()
     screen.blit(green_background, (0, 0))
 
@@ -6190,21 +6104,6 @@ def create_lvl10_screen():
     deathcount = 0
     was_moving = False
     lights_off = True
-
-    # Load player image
-    if selected_character == "robot": 
-        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
-    img_width, img_height = player_img.get_size()
 
     # Draw flag
     flag = pygame.Rect(3100, 370, 100, 125)  # x, y, width, height
@@ -6830,7 +6729,8 @@ def create_lvl10_screen():
 def create_lvl11_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
     global new_hs, hs, stars
-
+    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    char_assets()
     new_hs = False
     buttons.clear()
     screen.blit(green_background, (0, 0))
@@ -6881,21 +6781,6 @@ def create_lvl11_screen():
     unlock = progress.get("evilrobo_unlocked", False)
     unlock_time = None
 
-    # Load player image
-    if selected_character == "robot": 
-        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
-    img_width, img_height = player_img.get_size()
-
     # Draw flag
     flag = pygame.Rect(1400, 420, 100, 125)  # x, y, width, height
     checkpoint_reached = False
@@ -6918,7 +6803,7 @@ def create_lvl11_screen():
         pygame.Rect(1625, -200, 100, 590),
         pygame.Rect(1625, 50, 150, 50),
         pygame.Rect(2200, 400, 100, 50),
-        pygame.Rect(2250, -300, 600, 1000),
+        pygame.Rect(2250, -300, 600, 2200),
         pygame.Rect(2300, 200, 3000, 100),
         pygame.Rect(3100, -300, 2600, 100),
         pygame.Rect(3050, -500, 120, 300),
@@ -7689,6 +7574,8 @@ snow = []
 def create_lvl12_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, snow
     global new_hs, hs, current_time, medal, deathcount, score, stars
+    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    char_assets()
     new_hs = False
     buttons.clear()
     screen.blit(ice_background, (0, 0))
@@ -7735,21 +7622,6 @@ def create_lvl12_screen():
     current_temp = start_temp
     ice_melt = 0.3
     on_ice = False
-
-    # Load player image
-    if selected_character == "robot": 
-        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
-    img_width, img_height = player_img.get_size()
 
     # Draw flag
     flag = pygame.Rect(5250, 460, 100, 125)  # x, y, width, height
@@ -8559,6 +8431,8 @@ def create_lvl13_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, snow
     global new_hs, hs, current_time, medal, deathcount, score, stars
     new_hs = False
+    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    char_assets()
     buttons.clear()
     screen.blit(ice_background, (0, 0))
     in_game = load_language(lang_code).get('in_game', {})
@@ -8613,22 +8487,6 @@ def create_lvl13_screen():
     current_temp = start_temp
     ice_melt = 0.3
     on_ice = False
-
-    # Load player image
-    if selected_character == "robot": 
-        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
-    img_width, img_height = player_img.get_size()
-
 
     ice_robo = pygame.image.load(f"char/icerobot/moveicerobotL.png").convert_alpha()
     ice_robo_x, ice_robo_y = 66200, 650
@@ -11199,8 +11057,8 @@ while running:
                         menu_text = font.render("Play the game.", True, (255, 255, 0))
                         screen.blit(menu_text, (SCREEN_WIDTH // 2 - 70, SCREEN_HEIGHT - 50))
                     elif key == "character_select":
-                        char_text = font.render("Select your character! Under Development.", True, (255, 255, 0))
-                        screen.blit(char_text, (SCREEN_WIDTH // 2 - 260, SCREEN_HEIGHT - 50))
+                        char_text = font.render("Select your character!", True, (255, 255, 0))
+                        screen.blit(char_text, (SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT - 50))
                     elif key == "settings": 
                         settings_text = font.render("Turn on the audio or turn it off, depending on current mode.", True, (255, 255, 0))
                         screen.blit(settings_text, (SCREEN_WIDTH // 2 - 400, SCREEN_HEIGHT - 50))
@@ -11235,6 +11093,7 @@ while running:
             evilrobo_unlock = progress.get("evilrobo_unlocked", False)
             lavarobo_unlock = progress.get("lavarobo_unlocked", False)
             greenrobo_unlock = progress.get("greenrobo_unlocked", False)
+            cakebo_unlock = progress.get("cakebo_unlocked", False)
             save_progress(progress)
             # Draw images
             screen.blit(robot_img, robot_rect)
@@ -11254,6 +11113,10 @@ while running:
                 screen.blit(greenrobot_img, greenrobot_rect)
             else:
                 screen.blit(locked_img, greenrobot_rect)
+            if cakebo_unlock:
+                screen.blit(cakebot_img, cakebot_rect)
+            else:
+                screen.blit(locked_img, cakebot_rect)
             # Draw a highlight border around the selected character
             if selected_character == "robot":
                 pygame.draw.rect(screen, (63, 72, 204), robot_rect.inflate(5, 5), 5)
@@ -11265,6 +11128,8 @@ while running:
                 pygame.draw.rect(screen, (136, 0, 21), lavarobot_rect.inflate(5, 5), 5)
             elif selected_character == "greenrobot":
                 pygame.draw.rect(screen, (25, 195, 21), greenrobot_rect.inflate(5, 5), 5)
+            elif selected_character == "cakebot":
+                pygame.draw.rect(screen, (255, 171, 204), cakebot_rect.inflate(5, 5), 5)
 
             # Handle events from the main loop, not a new event loop!
             if pygame.mouse.get_pressed()[0]:  # Left mouse button is pressed
@@ -11350,6 +11215,25 @@ while running:
                         if wait_time is None:
                             wait_time = pygame.time.get_ticks()
                         locked_text = messages.get("greenlocked_message", "Get GOLD rank in all Green World Levels to unlock this robot!")
+
+                elif cakebot_rect.collidepoint(mouse_pos):
+                    if cakebo_unlock:
+                        selected_character = "cakebot"
+                        progress["selected_character"] = selected_character
+                        save_progress(progress)
+                        if not is_mute:
+                            click_sound.play()
+                        set_page("main_menu")
+                    else:
+                        handle_action("locked")
+                        locked_char_sound_time = time.time()
+                        locked_char_sound_played = True
+                        if time.time() - locked_char_sound_time < 1.5:
+                            locked_char_sound_played = True
+                            # Initialize the time
+                        if wait_time is None:
+                            wait_time = pygame.time.get_ticks()
+                        locked_text = messages.get("cakelocked_message", "Happy 2 month anniversary!")
 
             if not pygame.mouse.get_pressed()[0]:
                 locked_sound_played = False
