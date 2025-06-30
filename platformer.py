@@ -23,41 +23,9 @@ pygame.mixer.init()
 # Initialize pygame
 pygame.init()
 
-# Load sounds using the path
-click_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "click.wav"))
-hover_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hover.wav"))
-death_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "death.wav"))
-laser_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "laser.wav"))
-fall_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "fall.wav"))
-open_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "unlock.wav"))
-checkpoint_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "checkpoint.wav"))
-warp_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "warp.wav"))
-button_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "button.wav"))
-bounce_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "bounce.wav"))
-move_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "travel.wav"))
-jump_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "jump.wav"))
-hit_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hit.wav"))
-notify_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "notify.wav"))
-overheat_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "overheat.wav"))
-freeze_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "freeze.wav"))
-token_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "token.wav"))
-star1 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/1star.wav"))
-star2 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/2star.wav"))
-star3 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/3star.wav"))
-hscore = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/hs.wav"))
-star1.set_volume(4.0)
-star2.set_volume(4.0)
-star3.set_volume(4.0)
-
-
 # Load and set window icon
 icon = pygame.image.load("robots.ico")
 pygame.display.set_icon(icon)
-
-# Ambient themes
-pygame.mixer.music.load("audio/amb/ambience.wav")
-pygame.mixer.music.set_volume(0.1)
-pygame.mixer.music.play(-1)  # Loop forever
 
 def change_ambience(new_file):
     pygame.mixer.music.load(new_file)
@@ -67,6 +35,7 @@ def change_ambience(new_file):
 # Save file name
 SAVE_FILE = "save_data.json"
 
+pygame.mouse.set_visible(False)  # Hide the system cursor
 # Default progress dictionary
 default_progress = {
     "complete_levels": 0,
@@ -133,7 +102,7 @@ def load_progress():
 
     return data
 
-# Load the Chinese font (ensure the font file path is correct)
+# Load the fonts (ensure the font file path is correct)
 font_path_ch = 'NotoSansSC-SemiBold.ttf'
 font_path = 'NotoSansDisplay-SemiBold.ttf'
 font_ch = pygame.font.Font(font_path_ch, 25)
@@ -160,17 +129,105 @@ def save_progress(data):
         screen.blit(font_def.render("Error: Unable to save progress.", True, (255, 0, 0)), (SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT - 50))
     except Exception as e:
         screen.blit(font_def.render(f"Unexpected error: {e}", True, (255, 0, 0)), (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 50))
+    pygame.display.flip()
 
 # Load progress at start
-progress = load_progress()
+progress_loaded = False
+language_loaded = False
+sounds_loaded = False
+images_loaded = False
 
+def draw_loading_bar(stage_name, percent):
+    screen.fill((0, 0, 0))
+    text = font_def.render(f"{stage_name}...", True, (255, 255, 255))
+    text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 40))
+    screen.blit(text, text_rect)
+    pygame.draw.rect(screen, (255, 255, 255), (SCREEN_WIDTH// 2 - 100, SCREEN_HEIGHT//2, 200, 20), 2)
+    pygame.draw.rect(screen, (0, 255, 0), (SCREEN_WIDTH// 2 - 100, SCREEN_HEIGHT//2, 2*percent, 20))
+    pygame.display.flip()
+
+if not sounds_loaded:
+    # Load sounds using the path
+    draw_loading_bar("Loading sounds...", 17)
+    click_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "click.wav"))
+    hover_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hover.wav"))
+    death_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "death.wav"))
+    laser_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "laser.wav"))
+    fall_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "fall.wav"))
+    open_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "unlock.wav"))
+    checkpoint_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "checkpoint.wav"))
+    warp_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "warp.wav"))
+    button_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "button.wav"))
+    bounce_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "bounce.wav"))
+    move_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "travel.wav"))
+    jump_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "jump.wav"))
+    hit_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hit.wav"))
+    notify_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "notify.wav"))
+    overheat_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "overheat.wav"))
+    freeze_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "freeze.wav"))
+    token_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "token.wav"))
+    star1 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/1star.wav"))
+    star2 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/2star.wav"))
+    star3 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/3star.wav"))
+    hscore = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/hs.wav"))
+    star1.set_volume(4.0)
+    star2.set_volume(4.0)
+    star3.set_volume(4.0)
+    sounds_loaded = True
+    # Ambient themes
+    pygame.mixer.music.load("audio/amb/ambience.wav")
+    pygame.display.flip()
+
+if not images_loaded:
+    draw_loading_bar("Loading images...", 31)
+    cursor_img = pygame.image.load("oimgs/cursor/cursor.png").convert_alpha()
+
+    # Load logo images
+    logo = pygame.image.load("oimgs/logos/logo.png").convert_alpha()
+    studio_logo = pygame.image.load("oimgs/logos/studiologodef.png").convert_alpha()
+    studio_logo = pygame.transform.scale(studio_logo, (390, 150))
+    studio_logo_rect = studio_logo.get_rect(topleft=(20, SCREEN_HEIGHT - 170))
+    studio_glow = pygame.image.load("oimgs/logos/studiologoglow.png").convert_alpha()
+    studio_glow = pygame.transform.scale(studio_glow, (420, 170))
+    studio_glow_rect = studio_glow.get_rect(topleft=(20, SCREEN_HEIGHT - 190))
+
+    # Load and scale backgrounds
+    background_img = pygame.image.load("bgs/Background.png").convert()
+    background = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    plain_background_img = pygame.image.load("bgs/PlainBackground.png").convert()
+    plain_background = pygame.transform.scale(plain_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    ice_background_img = pygame.image.load("bgs/IceBackground.png").convert()
+    ice_background = pygame.transform.scale(ice_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    green_background_img = pygame.image.load("bgs/GreenBackground.png").convert()
+    green_background = pygame.transform.scale(green_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    trans = pygame.image.load("bgs/trans.png").convert()
+    trans = pygame.transform.scale(trans, ((SCREEN_WIDTH), (SCREEN_HEIGHT)))
+    end = pygame.image.load("bgs/EndScreen.png").convert_alpha()
+    end = pygame.transform.scale(end, ((SCREEN_WIDTH), (SCREEN_HEIGHT)))
+
+    # Load and initalize Images!
+    nact_cp = pygame.image.load("oimgs/checkpoints/yellow_flag.png").convert_alpha()
+    act_cp = pygame.image.load("oimgs/checkpoints/green_flag.png").convert_alpha()
+
+
+if not progress_loaded and sounds_loaded:
+    draw_loading_bar("Loading progress...", 91)
+    progress = load_progress()
+    complete_levels = progress.get("complete_levels", 0)
+    progress_loaded = True
+    pygame.display.flip()
+
+if not language_loaded and progress_loaded:
 # Get just the language code, default to English
-lang_code = progress.get("language", "en")
+    draw_loading_bar("Loading configured settings...", 100)
+    lang_code = progress.get("language", "en")
+    progress["language"] = lang_code
+    is_mute = progress.get("is_mute", default_progress["is_mute"])  # Global variable to track mute state
+    language_loaded = True
+    pygame.display.flip()
 
-is_mute = progress.get("is_mute", default_progress["is_mute"])  # Global variable to track mute state
-
-# Define shortcuts for easier access if needed
-complete_levels = progress.get("complete_levels", 0)
+pygame.mixer.music.set_volume(0.1)
+pygame.mixer.music.play(-1)  # Loop forever
 
 # Level rank thresholds
 level_thresholds = [
@@ -232,35 +289,6 @@ def get_stars(level, score):
     else:
         return 0
     
-pygame.mouse.set_visible(False)  # Hide the system cursor
-cursor_img = pygame.image.load("oimgs/cursor/cursor.png").convert_alpha()
-
-# Load logo images
-logo = pygame.image.load("oimgs/logos/logo.png").convert_alpha()
-studio_logo = pygame.image.load("oimgs/logos/studiologodef.png").convert_alpha()
-studio_logo = pygame.transform.scale(studio_logo, (390, 150))
-studio_logo_rect = studio_logo.get_rect(topleft=(20, SCREEN_HEIGHT - 170))
-studio_glow = pygame.image.load("oimgs/logos/studiologoglow.png").convert_alpha()
-studio_glow = pygame.transform.scale(studio_glow, (420, 170))
-studio_glow_rect = studio_glow.get_rect(topleft=(20, SCREEN_HEIGHT - 190))
-
-# Load and scale backgrounds
-background_img = pygame.image.load("bgs/Background.png").convert()
-background = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
-plain_background_img = pygame.image.load("bgs/PlainBackground.png").convert()
-plain_background = pygame.transform.scale(plain_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
-ice_background_img = pygame.image.load("bgs/IceBackground.png").convert()
-ice_background = pygame.transform.scale(ice_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
-green_background_img = pygame.image.load("bgs/GreenBackground.png").convert()
-green_background = pygame.transform.scale(green_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
-trans = pygame.image.load("bgs/trans.png").convert()
-trans = pygame.transform.scale(trans, ((SCREEN_WIDTH), (SCREEN_HEIGHT)))
-end = pygame.image.load("bgs/EndScreen.png").convert_alpha()
-end = pygame.transform.scale(end, ((SCREEN_WIDTH), (SCREEN_HEIGHT)))
-
-# Load and initalize Images!
-nact_cp = pygame.image.load("oimgs/checkpoints/yellow_flag.png").convert_alpha()
-act_cp = pygame.image.load("oimgs/checkpoints/green_flag.png").convert_alpha()
 
 if lang_code == "zh_cn":
     font = pygame.font.Font(font_path_ch, 25)
@@ -315,8 +343,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.62", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 158)
+ver_text = font_def.render("Version 1.2.63", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 176, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -330,12 +358,11 @@ def load_language(lang_code):
         with open("lang/en.json", "r", encoding="utf-8") as f:
             return json.load(f)
 
-# Load the actual language strings from file
+
 current_lang = load_language(lang_code)
 # Page states
 current_page = 'main_menu'
 buttons = []
-progress["language"] = lang_code
 
 # Display Green Robo Unlocked for a limited time
 greenrobo_unlocked_message_time = 0
@@ -812,9 +839,9 @@ def fetch_news_html_and_convert():
         os.makedirs("oimgs/news", exist_ok=True)
 
         for img in soup.find_all("img"):
-            src = img.get("src")
+            src = img.get("src") # type: ignore
             if src:
-                full_url = "https://omerarfan.github.io/lilrobowebsite/" + src.lstrip("/") 
+                full_url = "https://omerarfan.github.io/lilrobowebsite/" + src.lstrip("/")  # type: ignore
                 image_urls.append(full_url)
 
                 filename = os.path.basename(full_url)
@@ -11117,6 +11144,9 @@ image_surfaces = None
 locked_char_sound_time = None
 locked_char_sound_played = False
 
+if not is_mute and SCREEN_WIDTH > MIN_WIDTH or SCREEN_HEIGHT > MIN_HEIGHT:
+    click_sound.play()
+
 # Main loop
 running = True
 while running:
@@ -11173,7 +11203,6 @@ while running:
         sys.exit()
 
     else:
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 set_page("quit_confirm")
