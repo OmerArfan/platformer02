@@ -2,6 +2,7 @@
     "main_menu": {
       "start": "Iniciar",
       "character_select": "Selección de personaje",
+      "news": "Noticias",
       "settings": "Silenciar/Activar audio",
       "quit": "Salir",
       "language": "Cambiar idioma"
