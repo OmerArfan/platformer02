@@ -3774,6 +3774,8 @@ def create_lvl6_screen():
     camera_speed = 0.5
     deathcount = 0
     was_moving = False
+    val = None
+    guide = False
 
     # Draw flag
     flag = pygame.Rect(2400, 380, 100, 125)  # x, y, width, height
@@ -3923,6 +3925,10 @@ def create_lvl6_screen():
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
+        if wait_time is None:
+            val = random.random()
+            print(val)
+
         current_time = time.time() - start_time
         formatted_time = "{:.2f}".format(current_time)
 
@@ -4015,7 +4021,7 @@ def create_lvl6_screen():
         if player_y > 1100:
             death_text = in_game.get("fall_message", "Fell too far!")
             wait_time = pygame.time.get_ticks()
-            if not is_mute:
+            if not is_mute and val > 0.35:
                 fall_sound.play()
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
@@ -4185,7 +4191,7 @@ def create_lvl6_screen():
                 wait_time = pygame.time.get_ticks()               
                 player_x, player_y = spawn_x, spawn_y  # Reset player position    
                 deathcount += 1        
-                if not is_mute:
+                if not is_mute and val > 0.35:
                     death_sound.play()
                 velocity_y = 0
                 key_block_pairs[0]["collected"] = False
@@ -4212,7 +4218,7 @@ def create_lvl6_screen():
         # Trigger death logic
                 death_text = in_game.get("sawed_message", "Sawed to bits!")
                 wait_time = pygame.time.get_ticks()
-                if not is_mute:
+                if not is_mute and val > 0.35:
                     death_sound.play()
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
@@ -4239,7 +4245,7 @@ def create_lvl6_screen():
         # Trigger death logic
                 death_text = in_game.get("sawed_message", "Sawed to bits!")
                 wait_time = pygame.time.get_ticks()
-                if not is_mute:
+                if not is_mute and val > 0.35:
                     death_sound.play()
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
@@ -4270,7 +4276,7 @@ def create_lvl6_screen():
                 wait_time = pygame.time.get_ticks()
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
-                if not is_mute:
+                if not is_mute and val > 0.35:
                     death_sound.play() 
                 velocity_y = 0
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
@@ -4285,7 +4291,7 @@ def create_lvl6_screen():
                 # Trigger death logic
                 death_text = in_game.get("laser_message", "Lasered!")
                 wait_time = pygame.time.get_ticks()
-                if not is_mute:
+                if not is_mute and val > 0.35:
                     laser_sound.play()
                 player_x, player_y = spawn_x, spawn_y
                 deathcount += 1
@@ -4300,7 +4306,7 @@ def create_lvl6_screen():
                 death_text = in_game.get("hit_message", "Hit on the head!")
                 wait_time = pygame.time.get_ticks()
                 key_block_pairs[0]["collected"] = False  # Reset key block status
-                if not is_mute:    
+                if not is_mute and val > 0.35:    
                     hit_sound.play()
                 velocity_y = 0
                 deathcount += 1  
@@ -4326,7 +4332,7 @@ def create_lvl6_screen():
                     player_x, player_y = spawn_x, spawn_y  # Reset player position
                     death_text = in_game.get("dead_message", "You Died")
                     wait_time = pygame.time.get_ticks()
-                    if not is_mute:
+                    if not is_mute and val > 0.35:
                         death_sound.play()
                     velocity_y = 0
                     deathcount += 1
@@ -4350,7 +4356,7 @@ def create_lvl6_screen():
                     player_x, player_y = spawn_x, spawn_y  # Reset player position
                     death_text = in_game.get("dead_message", "You Died")
                     wait_time = pygame.time.get_ticks()
-                    if not is_mute:
+                    if not is_mute and val > 0.35:
                         death_sound.play()
                     velocity_y = 0
                     deathcount += 1
@@ -4422,9 +4428,23 @@ def create_lvl6_screen():
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
+                if val > 0.3:
+                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                else:
+                    if not guide:
+                        hscore.play()
+                        guide = True
+                    
+                    if val < 0.15:
+                        screen.blit(font_def.render('"The strong is not the one who overcomes the people by his strength, but the strong is', True, (255, 255, 0)), (20, 50))
+                        screen.blit(font_def.render('the one who controls himself while in anger." (Bukhari 6114)', True, (255, 255, 0)), (20, 80)) 
+                    else:
+                        screen.blit(font_def.render('"Indeed, with hardship comes ease." (Quran 94:6)', True, (255, 255, 0)), (20, 50))
+            
             else:
                 wait_time = None
+                val = None
+
 
         pygame.display.update()   
 
