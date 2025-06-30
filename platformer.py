@@ -7,6 +7,9 @@ import time
 import random
 import webbrowser
 import shutil
+
+# For extracting data from the news section of the website!
+from bs4 import BeautifulSoup
 import urllib.request
 import html2text
 import re
@@ -312,8 +315,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.61", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 175, SCREEN_HEIGHT - 158)
+ver_text = font_def.render("Version 1.2.62", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -779,23 +782,59 @@ def create_quit_confirm_buttons():
 
     pygame.display.flip()  # Update the display to show the quit confirmation screen
 
+
 def fetch_news_html_and_convert():
     try:
-        url = "http://35.194.23.107/gamestuff.html"  # or wherever your live HTML is
+        url = "https://omerarfan.github.io/lilrobowebsite/gamestuff.html"
         with urllib.request.urlopen(url, timeout=5) as response:
             html = response.read().decode()
+
+        soup = BeautifulSoup(html, "html.parser")
 
         text_maker = html2text.HTML2Text()
         text_maker.ignore_links = False
         text_maker.ignore_images = True
-        text_maker.body_width = 0  # Prevent automatic line wrapping
-        
-        line = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', line)  # strips Markdown links for News Page
-        markdown_text = text_maker.handle(html)
-        return markdown_text.splitlines()  # Returns a list of lines
-    
+        text_maker.body_width = 0
+
+        text = text_maker.handle(html).splitlines()
+
+        # Clean markdown links
+        clean_text = []
+        for line in text:
+            line = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', line)
+            line = re.sub(r'\[\]\([^)]+\)', '', line)
+            if line.strip():
+                clean_text.append(line.strip())
+
+        # Get image URLs
+        image_urls = []
+        image_paths = []
+        os.makedirs("oimgs/news", exist_ok=True)
+
+        for img in soup.find_all("img"):
+            src = img.get("src")
+            if src:
+                full_url = "https://omerarfan.github.io/lilrobowebsite/" + src.lstrip("/") 
+                image_urls.append(full_url)
+
+                filename = os.path.basename(full_url)
+                local_path = os.path.join("oimgs/news", filename)
+                image_paths.append(local_path)
+
+                if not os.path.exists(local_path):
+                    try:
+                        urllib.request.urlretrieve(full_url, local_path)
+                        print("✅ Downloaded:", local_path)
+                    except Exception as e:
+                        print("❌ Download failed:", full_url, e)
+                else:
+                    print("✅ Already exists:", local_path)
+
+        print("→ FOUND IMAGES:", image_urls)
+        return clean_text, image_paths
+
     except Exception as e:
-        return [f"Error loading news: {e}"]
+        return [f"Error loading news: {e}"], []
 
 def low_detail():
     global LDM
@@ -11073,6 +11112,8 @@ logo_hover = False
 logo_click = False
 LDM = False
 news_lines = None
+image_paths = None
+image_surfaces = None
 locked_char_sound_time = None
 locked_char_sound_played = False
 
@@ -11172,7 +11213,7 @@ while running:
                     if event.type == pygame.MOUSEBUTTONDOWN and not logo_click:    
                         if not is_mute:
                             click_sound.play()    
-                        webbrowser.open("http://35.194.23.107/") 
+                        webbrowser.open("https://omerarfan.github.io/lilrobowebsite/") 
                         logo_click = True
                 else:
                     screen.blit(studio_logo, studio_logo_rect.topleft)
@@ -11360,27 +11401,36 @@ while running:
                 set_page("main_menu")
 
         elif current_page == "news":
-
-            if news_lines is None:
-                news_lines = fetch_news_html_and_convert()
+            if news_lines is None or image_paths is None:
+                news_lines, image_paths = fetch_news_html_and_convert()
+                image_surfaces = []
+                for path in image_paths:
+                  print("🖼️ Loading image:", path)
+                  try:
+                     img = pygame.image.load(path).convert_alpha()
+                     img = pygame.transform.scale(img, (250, 250))
+                     image_surfaces.append(img)
+                     print("✅ Loaded:", path)
+                  except Exception as e:
+                    print("❌ Failed to load:", path, e)
 
             screen.fill((20, 20, 20))
 
-            # Title
             title = font.render(current_lang.get("news", "News"), True, (255, 255, 255))
             screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 50))
 
-            # Content
-            y_start = 120
-            if not news_lines:
-                rendered = font.render("Loading news...", True, (255, 255, 255))
-                screen.blit(rendered, (80, y_start))
-            else:
-             for i, line in enumerate(news_lines[:20]):
-                line = line.strip()
-                if line:
-                 rendered = font.render(line, True, (200, 200, 200))
-                 screen.blit(rendered, (80, y_start + i * 28))
+            y = 120
+
+        # Draw text
+            for line in news_lines:
+             rendered = font.render(line, True, (200, 200, 200))
+             screen.blit(rendered, (80, y))
+             y += 28
+
+            # Draw images BELOW text
+            for img in image_surfaces: # type: ignore
+                screen.blit(img, (80, y))
+                y += img.get_height() + 20
 
 
         elif current_page == "lvl1_screen":
