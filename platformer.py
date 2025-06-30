@@ -3,10 +3,13 @@ import json
 import os
 import math
 import sys
-import time  # Import time to track time(for future use in scoring)
+import time
 import random
 import webbrowser
 import shutil
+import urllib.request
+import html2text
+import re
 
 # Path to sound folder
 SOUND_FOLDER = os.path.join("audio")
@@ -309,8 +312,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.60", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 158)
+ver_text = font_def.render("Version 1.2.61", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 175, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -340,11 +343,11 @@ def create_main_menu_buttons():
     global current_lang, buttons
     current_lang = load_language(lang_code)['main_menu']
     buttons.clear()
-    button_texts = ["start", "character_select", "settings", "quit", "language"]
+    button_texts = ["start", "character_select", "settings", "news", "language", "quit"]
 
     # Center buttons vertically and horizontally
     button_spacing = 60
-    start_y = (SCREEN_HEIGHT // 2) - (len(button_texts) * button_spacing // 2) + 250
+    start_y = (SCREEN_HEIGHT // 2) - (len(button_texts) * button_spacing // 2) + 150
 
     for i, key in enumerate(button_texts):
         text = current_lang[key]
@@ -680,6 +683,9 @@ def set_page(page):
         current_lang = load_language(lang_code).get('levels', {})
         green_world_buttons()
         change_ambience("audio/amb/greenambience.wav")
+    elif page == "news":
+        current_lang = load_language(lang_code).get('levels', {})
+        fetch_news_html_and_convert()
     elif page == 'quit_confirm':
         current_lang = load_language(lang_code).get('messages', {})
         create_quit_confirm_buttons()
@@ -724,6 +730,29 @@ def set_page(page):
         ice_world_buttons()
         change_ambience("audio/amb/iceambience.wav")
 
+def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg):
+    if rect.collidepoint(pygame.mouse.get_pos()):
+        global wait_time, selected_character, locked_char_sound_time, locked_char_sound_played
+
+        if unlock_flag:
+            selected_character = char_key
+            progress["selected_character"] = selected_character
+            save_progress(progress)
+            if not is_mute:
+                click_sound.play()
+            set_page("main_menu")
+        else:
+            handle_action("locked")
+            if not locked_char_sound_played or time.time() - locked_char_sound_time > 1.5: # type: ignore
+                if not is_mute:
+                    death_sound.play()
+                locked_char_sound_time = time.time()
+                locked_char_sound_played = True
+            if wait_time is None:
+                wait_time = pygame.time.get_ticks()
+            global locked_text
+            locked_text = messages.get(locked_msg_key, fallback_msg)
+
 def create_quit_confirm_buttons():
     global current_lang, buttons, quit_text, quit_text_rect, selected_character
     buttons.clear()
@@ -749,6 +778,24 @@ def create_quit_confirm_buttons():
     buttons.append((rendered_no, no_rect, "no", False))
 
     pygame.display.flip()  # Update the display to show the quit confirmation screen
+
+def fetch_news_html_and_convert():
+    try:
+        url = "http://35.194.23.107/gamestuff.html"  # or wherever your live HTML is
+        with urllib.request.urlopen(url, timeout=5) as response:
+            html = response.read().decode()
+
+        text_maker = html2text.HTML2Text()
+        text_maker.ignore_links = False
+        text_maker.ignore_images = True
+        text_maker.body_width = 0  # Prevent automatic line wrapping
+        
+        line = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', line)  # strips Markdown links for News Page
+        markdown_text = text_maker.handle(html)
+        return markdown_text.splitlines()  # Returns a list of lines
+    
+    except Exception as e:
+        return [f"Error loading news: {e}"]
 
 def low_detail():
     global LDM
@@ -957,9 +1004,11 @@ def create_lvl1_screen():
     clock = pygame.time.Clock()
 
     token_pos = [
+        pygame.Rect(800, 200, 80, 80),
         pygame.Rect(1050, 320, 80, 80),
         pygame.Rect(1720, 220, 80, 80),
-        pygame.Rect(2400, 200, 80, 80),
+        pygame.Rect(1930, 50, 80, 80),
+        pygame.Rect(2440, 180, 80, 80),
     ]
 
     collected_tokens = set()
@@ -1142,7 +1191,7 @@ def create_lvl1_screen():
          if i not in collected_tokens and player_rect.colliderect(token):
           collected_tokens.add(i)
           if not is_mute:
-           token_sound.play()  # optional: a happy "ping!" sound
+           token_sound.play()
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
@@ -1354,6 +1403,22 @@ def create_lvl2_screen():
         b3 = sign((px, py), c, a) < 0.0
         return b1 == b2 == b3
     
+    token_pos = [
+        pygame.Rect(1060, 140, 80, 80),
+        pygame.Rect(550, 410, 80, 80),
+        pygame.Rect(1400, 210, 80, 80),
+        pygame.Rect(1900, 110, 80, 80),
+        pygame.Rect(2030, -50, 80, 80),
+        pygame.Rect(2200, 650, 80, 80),
+        pygame.Rect(2300, 650, 80, 80),
+        pygame.Rect(2400, 650, 80, 80),
+        pygame.Rect(2550, 140, 80, 80),
+        pygame.Rect(3640, 475, 80, 80),
+        pygame.Rect(4100, 475, 80, 80),
+    ]
+
+    collected_tokens = set()
+
     # Render the texts
     jump_message = in_game.get("jump_message", "Use orange blocks to jump high distances!")
     rendered_jump_text = font.render(jump_message, True, (255, 128, 0))  # Render the jump text
@@ -1544,6 +1609,16 @@ def create_lvl2_screen():
         # Drawing
         screen.blit(green_background, (0, 0))
 
+        for i, token in enumerate(token_pos):
+            if i not in collected_tokens:
+                screen.blit(token_img, (token.x - camera_x, token.y - camera_y))
+
+        for i, token in enumerate(token_pos):
+         if i not in collected_tokens and player_rect.colliderect(token):
+          collected_tokens.add(i)
+          if not is_mute:
+           token_sound.play()
+
         if player_rect.colliderect(flag) and not checkpoint_reached:
             checkpoint_reached = True
             spawn_x, spawn_y = 2150, 620  # Store checkpoint position
@@ -1667,6 +1742,9 @@ def create_lvl2_screen():
             else:
                 wait_time = None
 
+        token_display = f"Tokens: {len(collected_tokens)}/{len(token_pos)}"
+        screen.blit(font.render(token_display, True, (255, 255, 0)), (SCREEN_WIDTH - 200, 50))
+
         pygame.display.update()    
 
 def create_lvl3_screen():
@@ -1759,6 +1837,32 @@ def create_lvl3_screen():
         return b1 == b2 == b3
     
     # Render the texts
+    token_pos = [
+        pygame.Rect(550, 410, 80, 80),
+        pygame.Rect(960, 410, 80, 80),
+        pygame.Rect(100, 210, 80, 80),
+        pygame.Rect(1900, 210, 80, 80),
+        pygame.Rect(920, 210, 80, 80),
+        pygame.Rect(2300, 250, 80, 80),
+        pygame.Rect(2300, 450, 80, 80),
+        pygame.Rect(2300, 650, 80, 80),
+        pygame.Rect(2620, 0, 80, 80),
+        pygame.Rect(2620, -200, 80, 80),
+        pygame.Rect(3000, -100, 80, 80),
+        pygame.Rect(2100, -260, 80, 80),
+        pygame.Rect(1900, -400, 80, 80),
+        pygame.Rect(1500, -260, 80, 80),
+        pygame.Rect(500, -400, 80, 80),
+        pygame.Rect(1200, -260, 80, 80),
+        pygame.Rect(950, -400, 80, 80),
+        pygame.Rect(300, -260, 80, 80),
+        pygame.Rect(0, -500, 80, 80),
+        pygame.Rect(-200, -500, 80, 80),
+        pygame.Rect(-500, -500, 80, 80),
+        pygame.Rect(-800, -500, 80, 80),
+    ]
+
+    collected_tokens = set()
 
     saw_text = in_game.get("saws_message", "Saws are also dangerous!")
     rendered_saw_text = font.render(saw_text, True, (255, 0, 0))  # Render the saw text
@@ -1812,6 +1916,7 @@ def create_lvl3_screen():
 
     if transition.x <= -transition.image.get_width():
       while running:
+        print(player_x, player_y)
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
@@ -2010,6 +2115,16 @@ def create_lvl3_screen():
         # Drawing
         screen.blit(green_background, (0, 0))
 
+        for i, token in enumerate(token_pos):
+            if i not in collected_tokens:
+                screen.blit(token_img, (token.x - camera_x, token.y - camera_y))
+
+        for i, token in enumerate(token_pos):
+         if i not in collected_tokens and player_rect.colliderect(token):
+          collected_tokens.add(i)
+          if not is_mute:
+           token_sound.play()
+
         if checkpoint_reached:
             screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         else:
@@ -2173,6 +2288,9 @@ def create_lvl3_screen():
                 screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
+
+        token_display = f"Tokens: {len(collected_tokens)}/{len(token_pos)}"
+        screen.blit(font.render(token_display, True, (255, 255, 0)), (SCREEN_WIDTH - 200, 50))
 
         pygame.display.update()    
 
@@ -10798,7 +10916,7 @@ is_transitioning = False
 
 # Handle actions based on current page
 def handle_action(key):
-    global current_page, pending_level, level_load_time, transition, is_transitioning, transition_time,locked_char_sound_played, locked_char_sound_time
+    global current_page, pending_level, level_load_time, transition, is_transitioning, transition_time,locked_char_sound_played, locked_char_sound_time, news_times
     
     if current_page == 'main_menu':
         if key == "start":
@@ -10850,6 +10968,16 @@ def handle_action(key):
             if is_transitioning and transition_time is not None:
                 if transition_time - pygame.time.get_ticks() > 2000:
                     set_page("language_select")
+                    is_transitioning = False
+                    transition_time = None
+        elif key == "news":
+            if not is_transitioning:
+                transition.start("news")
+                transition_time = pygame.time.get_ticks()  # Start the wait time
+                is_transitioning = True
+            if is_transitioning and transition_time is not None:
+                if transition_time - pygame.time.get_ticks() > 2000:
+                    set_page("news")
                     is_transitioning = False
                     transition_time = None
     elif current_page == 'language_select':
@@ -10928,10 +11056,14 @@ def handle_action(key):
          death_sound.play()
          locked_char_sound_played = False
          locked_char_sound_time = time.time()
+        
+
 
 # Start with main menu
 set_page('main_menu')
 update_locked_levels() # Update locked levels every frame!
+
+# Global variables(only needed before amin loop)!
 button_hovered_last_frame = False
 last_hovered_key = None
 main_menu_hover = None
@@ -10940,9 +11072,10 @@ disk_mode = True
 logo_hover = False
 logo_click = False
 LDM = False
-
+news_lines = None
 locked_char_sound_time = None
 locked_char_sound_played = False
+
 # Main loop
 running = True
 while running:
@@ -11039,7 +11172,7 @@ while running:
                     if event.type == pygame.MOUSEBUTTONDOWN and not logo_click:    
                         if not is_mute:
                             click_sound.play()    
-                        webbrowser.open("https://omerarfan.github.io/lilrobowebsite/index.html") 
+                        webbrowser.open("http://35.194.23.107/") 
                         logo_click = True
                 else:
                     screen.blit(studio_logo, studio_logo_rect.topleft)
@@ -11062,6 +11195,9 @@ while running:
                     elif key == "settings": 
                         settings_text = font.render("Turn on the audio or turn it off, depending on current mode.", True, (255, 255, 0))
                         screen.blit(settings_text, (SCREEN_WIDTH // 2 - 400, SCREEN_HEIGHT - 50))
+                    elif key == "news":
+                        news_text = font.render("News and updates about the game!", True, (255, 255, 0))
+                        screen.blit(news_text, (SCREEN_WIDTH // 2 - 180, SCREEN_HEIGHT - 50))
                     elif key == "quit":
                         quit_text = font.render("Exit the game.", True, (255, 255, 0))
                         screen.blit(quit_text, (SCREEN_WIDTH // 2 - 70, SCREEN_HEIGHT - 50))
@@ -11089,6 +11225,7 @@ while running:
             char_text = font.render("Select your Robo!", True, (0, 0, 0))
             screen.blit(char_text, (SCREEN_WIDTH // 2 - 100, 50))
             #Check if characters are locked
+            robo_unlock = True
             icerobo_unlock = progress.get("icerobo_unlocked", False)
             evilrobo_unlock = progress.get("evilrobo_unlocked", False)
             lavarobo_unlock = progress.get("lavarobo_unlocked", False)
@@ -11135,105 +11272,22 @@ while running:
             if pygame.mouse.get_pressed()[0]:  # Left mouse button is pressed
                 mouse_pos = pygame.mouse.get_pos()
                 if robot_rect.collidepoint(mouse_pos):
-                    selected_character = "robot"
-                    progress["selected_character"] = selected_character
-                    save_progress(progress)
-                    if not is_mute:
-                        click_sound.play()
-                    set_page("main_menu")
+                    try_select_robo(robo_unlock, "robot", robot_rect, "placeholder", "Imagine if this actually popped up in game BRO-")
                 
                 elif evilrobot_rect.collidepoint(mouse_pos):
-                    if evilrobo_unlock:
-                        selected_character = "evilrobot"
-                        progress["selected_character"] = selected_character
-                        save_progress(progress)
-                        if not is_mute:
-                            click_sound.play()
-                        set_page("main_menu")
-                    else:
-                        handle_action("locked")
-                        locked_char_sound_time = time.time()
-                        locked_char_sound_played = True
-                        if time.time() - locked_char_sound_time < 1.5:
-                            locked_char_sound_played = False
-                        if wait_time is None:
-                            wait_time = pygame.time.get_ticks()                            
-                        locked_text = messages.get("evillocked_message", "Encounter this robot in an alternative route to unlock him!")
+                    try_select_robo(evilrobo_unlock, "evilrobot", evilrobot_rect, "evillocked_message", "Encounter this robot in an alternative route to unlock him!")
                 
                 elif icerobot_rect.collidepoint(mouse_pos):
-                    if icerobo_unlock:
-                        selected_character = "icerobot"
-                        progress["selected_character"] = selected_character
-                        save_progress(progress)
-                        if not is_mute:
-                            click_sound.play()
-                        set_page("main_menu")
-                    else:
-                        handle_action("locked")
-                        locked_char_sound_time = time.time()
-                        locked_char_sound_played = True
-                        if time.time() - locked_char_sound_time < 1.5:
-                            locked_char_sound_played = False
-                        if wait_time is None:
-                            wait_time = pygame.time.get_ticks()
-                        locked_text = messages.get("icelock_message", "This robot is hiding in the mountains...")
+                    try_select_robo(icerobo_unlock, "icerobot", icerobot_rect, "icelock_message", "This robot is hiding in the mountains...")
                 
                 elif lavarobot_rect.collidepoint(mouse_pos):
-                    if lavarobo_unlock:
-                        selected_character = "lavarobot"
-                        progress["selected_character"] = selected_character
-                        save_progress(progress)
-                        if not is_mute:
-                            click_sound.play()
-                        set_page("main_menu")
-                    else:
-                        handle_action("locked")
-                        locked_char_sound_time = time.time()
-                        locked_char_sound_played = True
-                        if time.time() - locked_char_sound_time < 1.5:
-                            locked_char_sound_played = True
-                            # Initialize the time                    
-                        locked_text = messages.get("lavalocked_message", "This robot is coming soon!")
-                        if wait_time is None:
-                            wait_time = pygame.time.get_ticks()
+                    try_select_robo(lavarobo_unlock, "lavarobot", lavarobot_rect, "lavalocked_message", "This robot is coming soon!")
 
                 elif greenrobot_rect.collidepoint(mouse_pos):
-                    if greenrobo_unlock:
-                        selected_character = "greenrobot"
-                        progress["selected_character"] = selected_character
-                        save_progress(progress)
-                        if not is_mute:
-                            click_sound.play()
-                        set_page("main_menu")
-                    else:
-                        handle_action("locked")
-                        locked_char_sound_time = time.time()
-                        locked_char_sound_played = True
-                        if time.time() - locked_char_sound_time < 1.5:
-                            locked_char_sound_played = True
-                            # Initialize the time
-                        if wait_time is None:
-                            wait_time = pygame.time.get_ticks()
-                        locked_text = messages.get("greenlocked_message", "Get GOLD rank in all Green World Levels to unlock this robot!")
-
+                    try_select_robo(greenrobo_unlock, "greenrobot", greenrobot_rect, "greenlocked_message", "Get GOLD rank in all Green World Levels to unlock this robot!")
+                
                 elif cakebot_rect.collidepoint(mouse_pos):
-                    if cakebo_unlock:
-                        selected_character = "cakebot"
-                        progress["selected_character"] = selected_character
-                        save_progress(progress)
-                        if not is_mute:
-                            click_sound.play()
-                        set_page("main_menu")
-                    else:
-                        handle_action("locked")
-                        locked_char_sound_time = time.time()
-                        locked_char_sound_played = True
-                        if time.time() - locked_char_sound_time < 1.5:
-                            locked_char_sound_played = True
-                            # Initialize the time
-                        if wait_time is None:
-                            wait_time = pygame.time.get_ticks()
-                        locked_text = messages.get("cakelocked_message", "Happy 2 month anniversary!")
+                    try_select_robo(cakebo_unlock, "cakebot", cakebot_rect, "cakelocked_message", "Happy 2 month anniversary!")
 
             if not pygame.mouse.get_pressed()[0]:
                 locked_sound_played = False
@@ -11304,6 +11358,30 @@ while running:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_ESCAPE]:
                 set_page("main_menu")
+
+        elif current_page == "news":
+
+            if news_lines is None:
+                news_lines = fetch_news_html_and_convert()
+
+            screen.fill((20, 20, 20))
+
+            # Title
+            title = font.render(current_lang.get("news", "News"), True, (255, 255, 255))
+            screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 50))
+
+            # Content
+            y_start = 120
+            if not news_lines:
+                rendered = font.render("Loading news...", True, (255, 255, 255))
+                screen.blit(rendered, (80, y_start))
+            else:
+             for i, line in enumerate(news_lines[:20]):
+                line = line.strip()
+                if line:
+                 rendered = font.render(line, True, (200, 200, 200))
+                 screen.blit(rendered, (80, y_start + i * 28))
+
 
         elif current_page == "lvl1_screen":
             # Render the Level 1 screen
