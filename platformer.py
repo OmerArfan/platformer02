@@ -35,6 +35,8 @@ def change_ambience(new_file):
 # Save file name
 SAVE_FILE = "save_data.json"
 
+notif = False
+er = False
 pygame.mouse.set_visible(False)  # Hide the system cursor
 # Default progress dictionary
 default_progress = {
@@ -54,7 +56,10 @@ default_progress = {
     "cakebo_unlocked": False,
 }
 
+notification_time = None
+
 def load_progress():
+    global notification_time, notification_text
     if os.path.exists(SAVE_FILE):
         try:
             with open(SAVE_FILE, "r", encoding="utf-8") as f:
@@ -117,8 +122,13 @@ MIN_WIDTH, MIN_HEIGHT = 1300, 800
 
 # Save progress to file
 def save_progress(data):
+    global notification_text, notification_time, error_code, notif, er
     if not data or "complete_levels" not in data:
-        print("Refusing to save empty or invalid progress!")
+        hit_sound.play()
+        notification_text = font_def.render("Refusing to save empty or invalid progress!", True, (255, 0, 0))
+        if notification_time is None:
+            notif = True
+            notification_time = time.time()
         return
     try:
         with open(SAVE_FILE, "w", encoding="utf-8") as f:
@@ -126,9 +136,13 @@ def save_progress(data):
         shutil.copy(SAVE_FILE, SAVE_FILE + ".bak")  # ✅ Only backup after a good save
     except PermissionError:
         hit_sound.play()
-        screen.blit(font_def.render("Error: Unable to save progress.", True, (255, 0, 0)), (SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT - 50))
+        notification_text = font_def.render("Error: Unable to save progress.", True, (255, 0, 0))
+        if notification_time is None:
+            notif = True
+            notification_time = time.time()
     except Exception as e:
-        screen.blit(font_def.render(f"Unexpected error: {e}", True, (255, 0, 0)), (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 50))
+        er = True
+        error_code = font_def.render(f"Unexpected error: {e}", True, (255, 0, 0))
     pygame.display.flip()
 
 # Load progress at start
@@ -137,13 +151,15 @@ language_loaded = False
 sounds_loaded = False
 images_loaded = False
 
+background_img = pygame.image.load("bgs/Background.png").convert()
+background = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
 def draw_loading_bar(stage_name, percent):
-    screen.fill((0, 0, 0))
+    screen.blit(background, (0, 0))
     text = font_def.render(f"{stage_name}...", True, (255, 255, 255))
-    text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 40))
+    text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 60))
     screen.blit(text, text_rect)
-    pygame.draw.rect(screen, (255, 255, 255), (SCREEN_WIDTH// 2 - 100, SCREEN_HEIGHT//2, 200, 20), 2)
-    pygame.draw.rect(screen, (0, 255, 0), (SCREEN_WIDTH// 2 - 100, SCREEN_HEIGHT//2, 2*percent, 20))
+    pygame.draw.rect(screen, (0, 0, 255), (0, SCREEN_HEIGHT - 10, (SCREEN_WIDTH / 100)*percent, 10))
     pygame.display.flip()
 
 if not sounds_loaded:
@@ -192,8 +208,6 @@ if not images_loaded:
     studio_glow_rect = studio_glow.get_rect(topleft=(20, SCREEN_HEIGHT - 190))
 
     # Load and scale backgrounds
-    background_img = pygame.image.load("bgs/Background.png").convert()
-    background = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
     plain_background_img = pygame.image.load("bgs/PlainBackground.png").convert()
     plain_background = pygame.transform.scale(plain_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
     ice_background_img = pygame.image.load("bgs/IceBackground.png").convert()
@@ -343,8 +357,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.63", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 176, SCREEN_HEIGHT - 158)
+ver_text = font_def.render("Version 1.2.64", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -391,9 +405,10 @@ def create_main_menu_buttons():
 
 
 def create_language_buttons():
-    global current_lang, buttons
+    global current_lang, buttons, heading_text
     current_lang = load_language(lang_code).get('language_select', {})
     buttons.clear()
+    start = load_language(lang_code).get('main_menu', {})
 
     language_options = [
         ("English", "en"),
@@ -413,6 +428,9 @@ def create_language_buttons():
     grid_width = (buttons_per_row - 1) * spacing_x
     start_x = (SCREEN_WIDTH - grid_width) // 2
     start_y = (SCREEN_HEIGHT // 2) - (len(language_options) // buttons_per_row * spacing_y // 2)
+
+    heading = start.get("language", "Change Language")
+    heading_text = font.render(heading, True, (255 , 255, 255))
 
     for i, (display_name, code) in enumerate(language_options):
         text = display_name
@@ -560,6 +578,29 @@ def ice_world_buttons():
     # Add the button
     buttons.append((rendered_back, back_rect, "back", False))
 
+def map():
+    global buttons, mappy, map_x
+    buttons.clear()
+
+    level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12", "lvl13", "lvl14", "lvl15"]
+
+    mappy = pygame.image.load("bgs/map.png").convert_alpha()
+    target_height = SCREEN_HEIGHT
+
+    map_width, map_height = mappy.get_width(), mappy.get_height()
+    scale_factor = target_height / map_height
+    scaled_width = int(map_width * scale_factor)
+    scaled_height = target_height
+
+    # Use scale for sharpness if needed
+    mappy = pygame.transform.scale(mappy, (scaled_width, scaled_height))
+
+    # Optional: Loop the map (if you want it to repeat)
+    if map_x <= -scaled_width:
+        map_x = SCREEN_WIDTH
+
+    pygame.display.flip()
+
 #def load_level(level_id):
 #    global current_page, buttons
 #
@@ -661,7 +702,7 @@ def open_settings():
 
 def quit_game():
     pygame.quit()
-    exit()
+    sys.exit()
 
 def change_language(lang):
     global lang_code, last_page_change_time, current_lang, font, font_path_ch, font_path
@@ -704,6 +745,8 @@ def set_page(page):
     if page == 'main_menu':
         current_lang = load_language(lang_code).get('main_menu', {})
         create_main_menu_buttons()
+    elif page == "map":
+        map()
     elif page == 'character_select':
         character_select()
     elif page == 'language_select':
@@ -931,7 +974,7 @@ def level_complete():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                exit()
+                sys.exit()
 
         screen.blit(rendered_lvl_comp, (SCREEN_WIDTH // 2 - rendered_lvl_comp.get_width() // 2, 150))
 
@@ -984,7 +1027,8 @@ def level_complete():
                         hscore.play()
                         notified = True
                 else:
-                    hs_text = font.render(f"Highscore: {hs}", True, (158, 158, 158))
+                    high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
+                    hs_text = font.render(high_text, True, (158, 158, 158))
                     screen.blit(hs_text, (SCREEN_WIDTH // 2 - hs_text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
         if time.time() - star_time > 6:
                 running = False
@@ -1017,10 +1061,105 @@ def char_assets():
         moving_img = pygame.image.load(f"char/cakebot/movecakebot.png") # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
+def point_in_triangle(px, py, a, b, c):
+        def sign(p1, p2, p3):
+            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
+        b1 = sign((px, py), a, b) < 0.0
+        b2 = sign((px, py), b, c) < 0.0
+        b3 = sign((px, py), c, a) < 0.0
+        return b1 == b2 == b3
+    
+def draw_spikes(spikes):
+            global x, y, spawn_x, spawn_y, camera_x, camera_y, player_x, player_y, img_width, img_height, deathcount, in_game, velocity_y, wait_time,death_text
+            for spike in spikes:
+                pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
+
+                        # Spike death
+            bottom_points = [
+                (player_x + img_width // 2, player_y + img_height),
+                (player_x + 5, player_y + img_height),
+                (player_x + img_width - 5, player_y + img_height)
+            ]
+            collision_detected = False  # Flag to stop further checks after a collision
+            for spike in spikes:
+                if collision_detected:
+                    break  # Exit the outer loop if a collision has already been detected
+                for point in bottom_points:
+                    if point_in_triangle(point[0], point[1], *spike):
+                        player_x, player_y = spawn_x, spawn_y
+                        death_text = in_game.get("dead_message", "You Died")
+                        wait_time = pygame.time.get_ticks()
+                        if not is_mute:
+                            death_sound.play()
+                        velocity_y = 0
+                        deathcount += 1
+                        collision_detected = True  # Set the flag to stop further checks
+                        break
+
+        # Spike death (including top collision detection)
+            top_points = [
+                (player_x + img_width // 2, player_y),  # Center top point
+                (player_x + 5, player_y),               # Left top point
+                (player_x + img_width - 5, player_y)    # Right top point
+            ]
+            collision_detected = False  # Flag to stop further checks after a collision
+            for spike in spikes:
+                if collision_detected:
+                    break  # Exit the outer loop if a collision has already been detected
+                for point in top_points:
+                    if point_in_triangle(point[0], point[1], *spike):
+                        # Trigger death logic
+                        player_x, player_y = spawn_x, spawn_y  # Reset player position
+                        death_text = in_game.get("dead_message", "You Died")
+                        wait_time = pygame.time.get_ticks()
+                        if not is_mute:
+                            death_sound.play()
+                        velocity_y = 0
+                        deathcount += 1
+                        collision_detected = True  # Set the flag to stop further checks
+                        break
+
+def block_func(blocks):
+    global x, y, camera_x,spawn_x, spawn_y,  camera_y, player_x, player_y, img_width, img_height, deathcount, in_game, velocity_y, wait_time,death_text, player_rect, on_ground
+    
+    for block in blocks:
+            pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
+    
+    for block in blocks:
+            if player_rect.colliderect(block):
+                # Falling onto a block
+                if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
+                    player_y = block.y - img_height
+                    velocity_y = 0
+                    on_ground = True
+
+                # Horizontal collision (left or right side of the block)
+                elif player_x + img_width > block.x and player_x < block.x + block.width:
+                    if player_x < block.x:  # Colliding with the left side of the block
+                        player_x = block.x - img_width
+                    elif player_x + img_width > block.x + block.width:  # Colliding with the right side
+                        player_x = block.x + block.width
+
+    for block in blocks:
+            pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
+            if block.width <= 100:
+                laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
+            else:
+                laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
+            if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
+                player_x, player_y = spawn_x, spawn_y  # Reset player position
+                death_text = in_game.get("hit_message", "Hit on the head!")
+                wait_time = pygame.time.get_ticks()
+                if not is_mute:    
+                    hit_sound.play()
+                velocity_y = 0
+                deathcount += 1 
+
 def create_lvl1_screen():
     global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, is_transitioning, transition_time, current_time, medal, deathcount, score, collected_tokens
     global new_hs, hs, stars
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    global x, y, camera_x, camera_y, player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text,spawn_x, spawn_y,  player_rect, on_ground
     char_assets()
     new_hs = False
 
@@ -1035,6 +1174,7 @@ def create_lvl1_screen():
     camera_x = 0  
     camera_y = 0
     player_x, player_y = 600, 200
+    spawn_x, spawn_y = player_x, player_y
     running = True
     gravity = 1
     jump_strength = 20
@@ -1079,14 +1219,6 @@ def create_lvl1_screen():
 
     collected_tokens = set()
 
-    def point_in_triangle(px, py, a, b, c):
-        def sign(p1, p2, p3):
-            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
-        b1 = sign((px, py), a, b) < 0.0
-        b2 = sign((px, py), b, c) < 0.0
-        b3 = sign((px, py), c, a) < 0.0
-        return b1 == b2 == b3
-    
     # Render the texts
     warning_text = in_game.get("warning_message", "Watch out for spikes!")
     rendered_warning_text = font.render(warning_text, True, (255, 0, 0))  # Render the warning text
@@ -1100,12 +1232,7 @@ def create_lvl1_screen():
     moving_text = in_game.get("moving_message", "Not all blocks stay still...")
     rendered_moving_text = font.render(moving_text, True, (128, 0, 128))  # Render the moving text
 
-    for block in blocks:
-            pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
-            pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
-
-    for spike in spikes:
-                pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
+    pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
 
     pygame.draw.rect(screen, (129, 94, 123), (exit_portal.x - camera_x, exit_portal.y - camera_y, exit_portal.width, exit_portal.height))
 
@@ -1115,6 +1242,9 @@ def create_lvl1_screen():
     screen.blit(rendered_moving_text, (1350 - camera_x, 170 - camera_y))  # Draws the rendered moving text
     screen.blit(rendered_exit_text, (2400 - camera_x, 300 - camera_y))  # Draws the rendered exit text
 
+    for block in blocks:
+            pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
+    
     if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
@@ -1173,26 +1303,6 @@ def create_lvl1_screen():
         # Collisions and Ground Detection
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
         on_ground = False
-
-        for block in blocks + [moving_block]:
-            if player_rect.colliderect(block):
-                # Falling onto a block
-                if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
-                    player_y = block.y - img_height
-                    velocity_y = 0
-                    on_ground = True
-
-                # Hitting the bottom of a block
-                elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
-                    player_y = block.y + block.height
-                    velocity_y = 0
-
-                # Horizontal collision (left or right side of the block)
-                elif player_x + img_width > block.x and player_x < block.x + block.width:
-                    if player_x < block.x:  # Colliding with the left side of the block
-                        player_x = block.x - img_width
-                    elif player_x + img_width > block.x + block.width:  # Colliding with the right side
-                        player_x = block.x + block.width
 
         if player_y > 1100:
             player_x, player_y = 600, 200
@@ -1259,71 +1369,25 @@ def create_lvl1_screen():
           if not is_mute:
            token_sound.play()
 
-        for block in blocks:
-            pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
-            pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
+        pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
+    
+        block_func(blocks)
 
-        for block in blocks:
-            pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-            if block.width <= 100:
-                laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
-            else:
-                laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
-            if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
-                player_x, player_y = 600, 200  # Reset player position
-                death_text = in_game.get("hit_message", "Hit on the head!")
-                wait_time = pygame.time.get_ticks()
-                if not is_mute:    
-                    hit_sound.play()
-                velocity_y = 0
-                deathcount += 1 
+        draw_spikes(spikes)
 
-            for spike in spikes:
-                pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
-                        # Spike death
-            bottom_points = [
-                (player_x + img_width // 2, player_y + img_height),
-                (player_x + 5, player_y + img_height),
-                (player_x + img_width - 5, player_y + img_height)
-            ]
-            collision_detected = False  # Flag to stop further checks after a collision
-            for spike in spikes:
-                if collision_detected:
-                    break  # Exit the outer loop if a collision has already been detected
-                for point in bottom_points:
-                    if point_in_triangle(point[0], point[1], *spike):
-                        player_x, player_y = 600, 200
-                        death_text = in_game.get("dead_message", "You Died")
-                        wait_time = pygame.time.get_ticks()
-                        if not is_mute:
-                            death_sound.play()
-                        velocity_y = 0
-                        deathcount += 1
-                        collision_detected = True  # Set the flag to stop further checks
-                        break
+        if player_rect.colliderect(moving_block):
+                # Falling onto a block
+                if velocity_y > 0 and player_y + img_height - velocity_y <= moving_block.y:
+                    player_y = moving_block.y - img_height
+                    velocity_y = 0
+                    on_ground = True
 
-        # Spike death (including top collision detection)
-            top_points = [
-                (player_x + img_width // 2, player_y),  # Center top point
-                (player_x + 5, player_y),               # Left top point
-                (player_x + img_width - 5, player_y)    # Right top point
-            ]
-            collision_detected = False  # Flag to stop further checks after a collision
-            for spike in spikes:
-                if collision_detected:
-                    break  # Exit the outer loop if a collision has already been detected
-                for point in top_points:
-                    if point_in_triangle(point[0], point[1], *spike):
-                        # Trigger death logic
-                        player_x, player_y = 150, 200  # Reset player position
-                        death_text = in_game.get("dead_message", "You Died")
-                        wait_time = pygame.time.get_ticks()
-                        if not is_mute:
-                            death_sound.play()
-                        velocity_y = 0
-                        deathcount += 1
-                        collision_detected = True  # Set the flag to stop further checks
-                        break
+                # Horizontal collision (left or right side of the block)
+                elif player_x + img_width > moving_block.x and player_x < moving_block.x + moving_block.width:
+                    if player_x < moving_block.x:  # Colliding with the left side of the block
+                        player_x = moving_block.x - img_width
+                    elif player_x + img_width > moving_block.x + moving_block.width:  # Colliding with the right side
+                        player_x = moving_block.x + moving_block.width
 
         pygame.draw.rect(screen, (129, 94, 123), (exit_portal.x - camera_x, exit_portal.y - camera_y, exit_portal.width, exit_portal.height))
         
@@ -1379,6 +1443,7 @@ def create_lvl2_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, wait_time, transition_time, is_transitioning, current_time, medal, deathcount, score
     global new_hs, hs, stars
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    global x, y, camera_x, camera_y, spawn_x, spawn_y,  player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text, player_rect, on_ground
     char_assets()
     new_hs = False
 
@@ -1413,7 +1478,7 @@ def create_lvl2_screen():
         pygame.Rect(1900, 200, 200, 50),
         pygame.Rect(2080, 750, 620, 50),        
         pygame.Rect(2150, 530, 300, 50),
-        pygame.Rect(2400, 50, 50, 500),
+        pygame.Rect(2340, 50, 110, 500),
         pygame.Rect(2900, 450, 400, 50),
         pygame.Rect(3300, 650, 260, 50),
         pygame.Rect(3800, 650, 220, 50),
@@ -1460,14 +1525,6 @@ def create_lvl2_screen():
 
     exit_portal = pygame.Rect(4400, 550, 50, 100)
     clock = pygame.time.Clock()
-
-    def point_in_triangle(px, py, a, b, c):
-        def sign(p1, p2, p3):
-            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
-        b1 = sign((px, py), a, b) < 0.0
-        b2 = sign((px, py), b, c) < 0.0
-        b3 = sign((px, py), c, a) < 0.0
-        return b1 == b2 == b3
     
     token_pos = [
         pygame.Rect(1060, 140, 80, 80),
@@ -1494,11 +1551,7 @@ def create_lvl2_screen():
     else:
             screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
 
-    for spike in spikes:
-            pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
 
-    for block in blocks:
-            pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
 
     pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
 
@@ -1577,26 +1630,6 @@ def create_lvl2_screen():
         # Collisions and Ground Detection
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
         on_ground = False
-
-        for block in blocks + [moving_block]:
-            if player_rect.colliderect(block):
-                # Falling onto a block
-                if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
-                    player_y = block.y - img_height
-                    velocity_y = 0
-                    on_ground = True
-
-                # Hitting the bottom of a block
-                elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
-                    player_y = block.y + block.height
-                    velocity_y = 0
-
-                # Horizontal collision (left or right side of the block)
-                elif player_x + img_width > block.x and player_x < block.x + block.width:
-                    if player_x < block.x:  # Colliding with the left side of the block
-                        player_x = block.x - img_width
-                    elif player_x + img_width > block.x + block.width:  # Colliding with the right side
-                        player_x = block.x + block.width
 
         # Jump block logic
         for jump_block in jump_blocks:
@@ -1696,66 +1729,23 @@ def create_lvl2_screen():
         else:
             screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
 
-        for spike in spikes:
-            pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
-            # Spike death
-            bottom_points = [
-                (player_x + img_width // 2, player_y + img_height),
-                (player_x + 5, player_y + img_height),
-                (player_x + img_width - 5, player_y + img_height)
-            ]
-            collision_detected = False  # Flag to stop further checks after a collision
-            if collision_detected:
-                    break  # Exit the outer loop if a collision has already been detected
-            for point in bottom_points:
-                    if point_in_triangle(point[0], point[1], *spike):
-                        player_x, player_y = spawn_x, spawn_y
-                        death_text = in_game.get("dead_message", "You Died")
-                        wait_time = pygame.time.get_ticks()
-                        if not is_mute:
-                            death_sound.play()
-                        velocity_y = 0
-                        deathcount += 1
-                        collision_detected = True  # Set the flag to stop further checks
-                        break
+        block_func(blocks)
 
-            # Spike death (including top collision detection)
-            top_points = [
-                    (player_x + img_width // 2, player_y),  # Center top point
-                    (player_x + 5, player_y),               # Left top point
-                    (player_x + img_width - 5, player_y)    # Right top point
-            ]
-            collision_detected = False  # Flag to stop further checks after a collision
-            if collision_detected:
-                break  # Exit the outer loop if a collision has already been detected
-            for point in top_points:
-                if point_in_triangle(point[0], point[1], *spike):
-                    # Trigger death logic
-                        player_x, player_y = spawn_x, spawn_y  # Reset player position
-                        death_text = in_game.get("dead_message", "You Died")
-                        wait_time = pygame.time.get_ticks()
-                        if not is_mute:
-                            death_sound.play()
-                        velocity_y = 0
-                        deathcount += 1
-                        collision_detected = True  # Set the flag to stop further checks
-                        break
+        draw_spikes(spikes)
+        
+        if player_rect.colliderect(moving_block):
+                # Falling onto a block
+                if velocity_y > 0 and player_y + img_height - velocity_y <= moving_block.y:
+                    player_y = moving_block.y - img_height
+                    velocity_y = 0
+                    on_ground = True
 
-        for block in blocks:
-            pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-            if block.x != 2400:
-             if block.width <= 100:
-               laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
-             else:
-                laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
-             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = in_game.get("hit_message", "Hit on the head!")
-                wait_time = pygame.time.get_ticks()
-                if not is_mute:    
-                    hit_sound.play()
-                velocity_y = 0
-                deathcount += 1  
+                # Horizontal collision (left or right side of the block)
+                elif player_x + img_width > moving_block.x and player_x < moving_block.x + moving_block.width:
+                    if player_x < moving_block.x:  # Colliding with the left side of the block
+                        player_x = moving_block.x - img_width
+                    elif player_x + img_width > moving_block.x + moving_block.width:  # Colliding with the right side
+                        player_x = moving_block.x + moving_block.width
 
         pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
 
@@ -1894,14 +1884,6 @@ def create_lvl3_screen():
     exit_portal = pygame.Rect(500, -250, 50, 100)
     clock = pygame.time.Clock()
 
-    def point_in_triangle(px, py, a, b, c):
-        def sign(p1, p2, p3):
-            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
-        b1 = sign((px, py), a, b) < 0.0
-        b2 = sign((px, py), b, c) < 0.0
-        b3 = sign((px, py), c, a) < 0.0
-        return b1 == b2 == b3
-    
     # Render the texts
     token_pos = [
         pygame.Rect(550, 410, 80, 80),
@@ -2472,14 +2454,6 @@ def create_lvl4_screen():
     ]
     exit_portal = pygame.Rect(4950, 350, 50, 100)
     clock = pygame.time.Clock()
-
-    def point_in_triangle(px, py, a, b, c):
-        def sign(p1, p2, p3):
-            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
-        b1 = sign((px, py), a, b) < 0.0
-        b2 = sign((px, py), b, c) < 0.0
-        b3 = sign((px, py), c, a) < 0.0
-        return b1 == b2 == b3
 
     # Drawing
     screen.blit(green_background, (0, 0))
@@ -3173,13 +3147,6 @@ def create_lvl5_screen():
     exit_portal = pygame.Rect(1375, 0, 50, 100)
     clock = pygame.time.Clock()
 
-    def point_in_triangle(px, py, a, b, c):
-        def sign(p1, p2, p3):
-            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
-        b1 = sign((px, py), a, b) < 0.0
-        b2 = sign((px, py), b, c) < 0.0
-        b3 = sign((px, py), c, a) < 0.0
-        return b1 == b2 == b3
     
     # Render the texts
     screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
@@ -3774,7 +3741,7 @@ def create_lvl6_screen():
     camera_speed = 0.5
     deathcount = 0
     was_moving = False
-    val = None
+    val = 1
     guide = False
 
     # Draw flag
@@ -3859,13 +3826,6 @@ def create_lvl6_screen():
     exit_portal = pygame.Rect(5700, 430, 50, 100)
     clock = pygame.time.Clock()
 
-    def point_in_triangle(px, py, a, b, c):
-        def sign(p1, p2, p3):
-            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
-        b1 = sign((px, py), a, b) < 0.0
-        b2 = sign((px, py), b, c) < 0.0
-        b3 = sign((px, py), c, a) < 0.0
-        return b1 == b2 == b3
 
     screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
     screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
@@ -4021,7 +3981,7 @@ def create_lvl6_screen():
         if player_y > 1100:
             death_text = in_game.get("fall_message", "Fell too far!")
             wait_time = pygame.time.get_ticks()
-            if not is_mute and val > 0.35:
+            if not is_mute and val > 0.35: # type: ignore
                 fall_sound.play()
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
@@ -4191,7 +4151,7 @@ def create_lvl6_screen():
                 wait_time = pygame.time.get_ticks()               
                 player_x, player_y = spawn_x, spawn_y  # Reset player position    
                 deathcount += 1        
-                if not is_mute and val > 0.35:
+                if not is_mute and val > 0.35: # type: ignore
                     death_sound.play()
                 velocity_y = 0
                 key_block_pairs[0]["collected"] = False
@@ -4218,7 +4178,7 @@ def create_lvl6_screen():
         # Trigger death logic
                 death_text = in_game.get("sawed_message", "Sawed to bits!")
                 wait_time = pygame.time.get_ticks()
-                if not is_mute and val > 0.35:
+                if not is_mute and val > 0.35: # type: ignore
                     death_sound.play()
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
@@ -4245,7 +4205,7 @@ def create_lvl6_screen():
         # Trigger death logic
                 death_text = in_game.get("sawed_message", "Sawed to bits!")
                 wait_time = pygame.time.get_ticks()
-                if not is_mute and val > 0.35:
+                if not is_mute and val > 0.35: # type: ignore
                     death_sound.play()
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
@@ -4276,7 +4236,7 @@ def create_lvl6_screen():
                 wait_time = pygame.time.get_ticks()
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
-                if not is_mute and val > 0.35:
+                if not is_mute and val > 0.35: # type: ignore
                     death_sound.play() 
                 velocity_y = 0
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
@@ -4293,7 +4253,7 @@ def create_lvl6_screen():
                 wait_time = pygame.time.get_ticks()
                 if not is_mute and val > 0.35:
                     laser_sound.play()
-                player_x, player_y = spawn_x, spawn_y
+                player_x, player_y = spawn_x, spawn_y # type: ignore
                 deathcount += 1
                 velocity_y = 0
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
@@ -4535,14 +4495,6 @@ def create_lvl7_screen():
             "color": (0, 196, 255)
         }
     ]
-
-    def point_in_triangle(px, py, a, b, c):
-        def sign(p1, p2, p3):
-            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
-        b1 = sign((px, py), a, b) < 0.0
-        b2 = sign((px, py), b, c) < 0.0
-        b3 = sign((px, py), c, a) < 0.0
-        return b1 == b2 == b3
 
     screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
     screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
@@ -5099,14 +5051,6 @@ def create_lvl8_screen():
             "color": (0, 196, 255)
         }
     ]
-
-    def point_in_triangle(px, py, a, b, c):
-        def sign(p1, p2, p3):
-            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
-        b1 = sign((px, py), a, b) < 0.0
-        b2 = sign((px, py), b, c) < 0.0
-        b3 = sign((px, py), c, a) < 0.0
-        return b1 == b2 == b3
 
     screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
     screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
@@ -5724,14 +5668,6 @@ def create_lvl9_screen():
     moving_speed = 5
     moving_limit_left1 = 4050
     moving_limit_right1 = 5600
-
-    def point_in_triangle(px, py, a, b, c):
-        def sign(p1, p2, p3):
-            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
-        b1 = sign((px, py), a, b) < 0.0
-        b2 = sign((px, py), b, c) < 0.0
-        b3 = sign((px, py), c, a) < 0.0
-        return b1 == b2 == b3
 
     screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
     screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
@@ -6988,10 +6924,10 @@ def create_lvl11_screen():
     # Draw flag
     flag = pygame.Rect(1400, 420, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(5400, 330, 100, 125)  # x, y, width, height
+    flag2 = pygame.Rect(5600, 330, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
     flag_1_x, flag_1_y = 1400, 420
-    flag_2_x, flag_2_y = 5400, 330
+    flag_2_x, flag_2_y = 5600, 330
 
     key_block_pairs = [
         {
@@ -7070,14 +7006,6 @@ def create_lvl11_screen():
         (-100, 400, 30, (51, 255, 51)),
         (2450, -400, 30, (51, 255, 51)),
     ]
-
-    def point_in_triangle(px, py, a, b, c):
-        def sign(p1, p2, p3):
-            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
-        b1 = sign((px, py), a, b) < 0.0
-        b2 = sign((px, py), b, c) < 0.0
-        b3 = sign((px, py), c, a) < 0.0
-        return b1 == b2 == b3
 
     for x, y, r, color in saws:
             # Draw the saw as a circle
@@ -7273,7 +7201,7 @@ def create_lvl11_screen():
             stamina = False
             pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
-            spawn_x, spawn_y = 5400, 280  # Checkpoint position
+            spawn_x, spawn_y = 5600, 330  # Checkpoint position
             if not is_mute:
                 checkpoint_sound.play()
 
@@ -7901,14 +7829,6 @@ def create_lvl12_screen():
     speedsters = [
         (5300, 450, 30, (51, 255, 51)),
     ]
-
-    def point_in_triangle(px, py, a, b, c):
-        def sign(p1, p2, p3):
-            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
-        b1 = sign((px, py), a, b) < 0.0
-        b2 = sign((px, py), b, c) < 0.0
-        b3 = sign((px, py), c, a) < 0.0
-        return b1 == b2 == b3
 
     for x, y, r, color in saws:
             # Draw the saw as a circle
@@ -8699,10 +8619,7 @@ def create_lvl13_screen():
     # Draw flag
     flag = pygame.Rect(3900, 200, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(54000, 300, 100, 125)  # x, y, width, height
-    checkpoint_reached2 = False
     flag_1_x, flag_1_y = 3900, 200
-    flag_2_x, flag_2_y = 54900, 3000
 
     gravity_strongers = [
         (3800, 250, 30, (204, 102, 204)),  # Strong gravity button
@@ -8811,13 +8728,6 @@ def create_lvl13_screen():
         (5300, 450, 30, (51, 255, 51)),
     ]
 
-    def point_in_triangle(px, py, a, b, c):
-        def sign(p1, p2, p3):
-            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
-        b1 = sign((px, py), a, b) < 0.0
-        b2 = sign((px, py), b, c) < 0.0
-        b3 = sign((px, py), c, a) < 0.0
-        return b1 == b2 == b3
 
     for x, y, r, color in saws:
             # Draw the saw as a circle
@@ -8855,7 +8765,7 @@ def create_lvl13_screen():
         current_time = time.time() - start_time
         formatted_time = "{:.2f}".format(current_time)
 
-        if keys[pygame.K_d] and keys[pygame.K_v]:
+        if keys[pygame.K_v]:
             player_x, player_y = 64800, 400
 
         if keys[pygame.K_r]:
@@ -8865,7 +8775,6 @@ def create_lvl13_screen():
             weak_grav = False
             strong_grav = False
             checkpoint_reached = False  # Reset checkpoint status
-            checkpoint_reached2 = False  # Reset checkpoint status
             current_temp = start_temp
             spawn_x, spawn_y = 100, 0
             player_x, player_y = spawn_x, spawn_y  # Reset player position
@@ -9098,7 +9007,7 @@ def create_lvl13_screen():
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
 
         # Checkpoint logic
-        if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
+        if player_rect.colliderect(flag) and not checkpoint_reached:
             checkpoint_reached = True
             stamina = False  # Reset stamina status
             lights_off = True
@@ -9108,18 +9017,6 @@ def create_lvl13_screen():
             if not is_mute:
                 checkpoint_sound.play()
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
-        if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
-            checkpoint_reached = False
-            checkpoint_reached2 = True
-            lights_off = True
-            stamina = False
-            weak_grav = False
-            strong_grav = False
-            pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
-            pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
-            spawn_x, spawn_y = 5400, 280  # Checkpoint position
-            if not is_mute:
-                checkpoint_sound.play()
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
@@ -9165,11 +9062,6 @@ def create_lvl13_screen():
         else:
             pygame.draw.rect(screen, (255, 215, 0), flag.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
-        if checkpoint_reached2:
-            pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
-        else:
-            pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
-
         # Drawing
         if LDM:
             screen.fill((0, 146, 230))
@@ -9192,10 +9084,6 @@ def create_lvl13_screen():
             screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         else:
             screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
-        if checkpoint_reached2:
-            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
-        else:
-            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
 
         for saw in moving_saws:
                 # Draw the moving circle (saw)
@@ -9822,7 +9710,7 @@ def create_lvl13_screen():
         else:
             screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))
 
-        if wait_time is not None:
+        if wait_time is not None and player_x < 65500:
             if pygame.time.get_ticks() - wait_time < 2500:
                 screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 80))
             else:
@@ -9852,6 +9740,8 @@ def create_lvl13_screen():
 
 def create_secret1_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, snow
+    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    char_assets()
 
     in_game = load_language(lang_code).get('in_game', {})
     in_game_ice = load_language(lang_code).get('in_game_ice', {})
@@ -9860,7 +9750,7 @@ def create_secret1_screen():
     start_time = time.time()
 
     # Camera settings
-    camera_x = 300
+    camera_x = 0
     camera_y = -500
     spawn_x, spawn_y =  100, 0
     player_x, player_y = spawn_x, spawn_y
@@ -9892,7 +9782,9 @@ def create_secret1_screen():
     deathcount = 0
     was_moving = False
     lights_off = True
-    
+    visibility = 255
+    fade_time = None
+
     # Robo Temperature and Ice
     start_temp = 24.0
     on_ground_heatup = 0.08
@@ -9903,22 +9795,6 @@ def create_secret1_screen():
     current_temp = start_temp
     ice_melt = 0.3
     on_ice = False
-
-    # Load player image
-    if selected_character == "robot": 
-        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
-    img_width, img_height = player_img.get_size()
-
 
     ice_robo = pygame.image.load(f"char/icerobot/moveicerobotL.png").convert_alpha()
     ice_robo_x, ice_robo_y = 67000, 650
@@ -9957,25 +9833,10 @@ def create_secret1_screen():
             "duration": 5000,  # Duration for which the block is active
             "locked_time": None
         },
-        {
-            "key": (4000, 250, 30, (255, 119, 0)),
-            "block": pygame.Rect(4150, 400, 50, 250),
-            "collected": False,
-            "timer": 0,  # Timer for the key block
-            "duration": 3500,  # Duration for which the block is active
-            "locked_time": None
-        }
     ]
 
     blocks = [
         pygame.Rect(0, 200, 2000, 100),
-        pygame.Rect(1900, -1000, 100, 1000),
-        pygame.Rect(3200, -50, 800, 100),
-        pygame.Rect(3600, 300, 600, 100),
-        pygame.Rect(4100, -700, 100, 1000),
-        pygame.Rect(3450, 650, 1000, 100),
-        pygame.Rect(3350, 0, 100, 750),
-        pygame.Rect(65000, 750, 5000, 200),
     ]
 
     jump_blocks = [
@@ -9990,10 +9851,7 @@ def create_secret1_screen():
             self.float_height = self.initial_height
 
     ice_blocks = [
-        IceBlock(pygame.Rect(-200, 200, 100, 100)),
-        IceBlock(pygame.Rect(2300, 200, 150, 100)),
-        IceBlock(pygame.Rect(2600, 20, 200, 100)),
-        IceBlock(pygame.Rect(4500, 750, 60000, 200)),
+        IceBlock(pygame.Rect(-200, 2200, 100, 100)),
     ]
 
     moving_saws = [ 
@@ -10039,15 +9897,10 @@ def create_secret1_screen():
         (5300, 450, 30, (51, 255, 51)),
     ]
 
-    def point_in_triangle(px, py, a, b, c):
-        def sign(p1, p2, p3):
-            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
-        b1 = sign((px, py), a, b) < 0.0
-        b2 = sign((px, py), b, c) < 0.0
-        b3 = sign((px, py), c, a) < 0.0
-        return b1 == b2 == b3
-
     while running:
+        print(visibility)
+        print("cool!")
+
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
@@ -10650,8 +10503,10 @@ def create_secret1_screen():
                 weak_grav = True
                 strong_grav = False
 
-        screen.blit(ice_robo, (ice_robo_x - camera_x, ice_robo_y - camera_y))
-
+        if player_x > 400:
+            screen.blit(ice_robo, (ice_robo_x - camera_x, ice_robo_y - camera_y))
+        else:
+            screen.blit(ice_robo, (ice_robo_x, ice_robo_y))
 
         pygame.draw.rect(screen, (96, 96, 96), (0, 0, 300 , 130 ))
         pygame.draw.rect(screen, (96, 96, 96), (SCREEN_WIDTH // 2 - 80, 0, 160 , 70))
@@ -10982,12 +10837,20 @@ def create_secret1_screen():
                 ice.rect.height = int(ice.float_height)
 
         # Player Image
-        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+        if player_x > 400:
+         if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
             screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+         elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
             screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        else:
+         else:
             screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        else:
+         if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+            screen.blit(moving_img, (player_x , player_y - camera_y ))  # Draw the moving block image
+         elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+            screen.blit(moving_img_l, (player_x , player_y - camera_y))  # Draw the moving block image
+         else:
+            screen.blit(player_img, (player_x, player_y - camera_y))
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
@@ -10995,6 +10858,20 @@ def create_secret1_screen():
             else:
                 wait_time = None
 
+
+        if visibility > 0:
+         fade_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+         fade_surface.set_alpha(visibility)
+         fade_surface.fill((0, 0, 0))
+         screen.blit(fade_surface, (0, 0))
+         if fade_time is None:
+                     fade_time = pygame.time.get_ticks()
+         else:
+                    if pygame.time.get_ticks() - fade_time > 1:
+                        visibility -= 1
+                        fade_time = None
+
+        
         pygame.display.update() 
 
 transition_time = None
@@ -11142,6 +11019,8 @@ def handle_action(key):
          death_sound.play()
          locked_char_sound_played = False
          locked_char_sound_time = time.time()
+    elif current_page == "map":
+        map()
         
 
 
@@ -11163,7 +11042,9 @@ image_paths = None
 image_surfaces = None
 locked_char_sound_time = None
 locked_char_sound_played = False
-
+mapped = False
+camera_x = 0
+map_x = 0
 if not is_mute and SCREEN_WIDTH > MIN_WIDTH or SCREEN_HEIGHT > MIN_HEIGHT:
     click_sound.play()
 
@@ -11243,6 +11124,17 @@ while running:
                             if key is not None:
                                 handle_action(key)  # Only load level on click!
 
+        if current_page == "map":
+            map()
+            screen.blit(mappy, (map_x,0))
+
+            keys = pygame.key.get_pressed()
+            max_scroll = mappy.get_width() - SCREEN_WIDTH - 60
+            if keys[pygame.K_RIGHT] and map_x > -max_scroll:
+                map_x -= 24
+            elif keys[pygame.K_LEFT] and map_x < 0:
+                map_x += 24
+
         if current_page == "main_menu":
 
             screen.blit(logo, ((SCREEN_WIDTH // 2 - 473), 30))
@@ -11308,114 +11200,108 @@ while running:
             last_hovered_key = hovered_key
 
         if current_page == "character_select":
-            # Initalize locked sound effect
-            screen.blit(plain_background, (0, 0))
-            locked_sound_played = False
-            messages = load_language(lang_code).get('messages', {})  # Fetch localized messages
-            char_text = font.render("Select your Robo!", True, (0, 0, 0))
-            screen.blit(char_text, (SCREEN_WIDTH // 2 - 100, 50))
-            #Check if characters are locked
-            robo_unlock = True
-            icerobo_unlock = progress.get("icerobo_unlocked", False)
-            evilrobo_unlock = progress.get("evilrobo_unlocked", False)
-            lavarobo_unlock = progress.get("lavarobo_unlocked", False)
-            greenrobo_unlock = progress.get("greenrobo_unlocked", False)
-            cakebo_unlock = progress.get("cakebo_unlocked", False)
-            save_progress(progress)
+         screen.blit(plain_background, (0, 0))
+
+    # Initialize locked sound effect and mouse position
+         locked_sound_played = False
+         mouse_pos = pygame.mouse.get_pos()
+
+         messages = load_language(lang_code).get('messages', {})  # Fetch localized messages
+         char_text = font.render("Select your Robo!", True, (0, 0, 0))
+         screen.blit(char_text, (SCREEN_WIDTH // 2 - 100, 50))
+
+    # Check if characters are locked
+         robo_unlock = True
+         icerobo_unlock = progress.get("icerobo_unlocked", False)
+         evilrobo_unlock = progress.get("evilrobo_unlocked", False)
+         lavarobo_unlock = progress.get("lavarobo_unlocked", False)
+         greenrobo_unlock = progress.get("greenrobo_unlocked", False)
+         cakebo_unlock = progress.get("cakebo_unlocked", False)
+
             # Draw images
-            screen.blit(robot_img, robot_rect)
-            if evilrobo_unlock:
-                screen.blit(evilrobot_img, evilrobot_rect)
-            else:
-                screen.blit(locked_img, evilrobot_rect)
-            if icerobo_unlock:
-                screen.blit(icerobot_img, icerobot_rect)
-            else:
-                screen.blit(locked_img, icerobot_rect)
-            if lavarobo_unlock:
-                screen.blit(lavarobot_img, lavarobot_rect)
-            else:
-                screen.blit(locked_img, lavarobot_rect)
-            if greenrobo_unlock:
-                screen.blit(greenrobot_img, greenrobot_rect)
-            else:
-                screen.blit(locked_img, greenrobot_rect)
-            if cakebo_unlock:
-                screen.blit(cakebot_img, cakebot_rect)
-            else:
-                screen.blit(locked_img, cakebot_rect)
-            # Draw a highlight border around the selected character
-            if selected_character == "robot":
-                pygame.draw.rect(screen, (63, 72, 204), robot_rect.inflate(5, 5), 5)
-            elif selected_character == "evilrobot":
-                pygame.draw.rect(screen, (128, 0, 128), evilrobot_rect.inflate(5, 5), 5)
-            elif selected_character == "icerobot":
-                pygame.draw.rect(screen, (51, 254, 255), icerobot_rect.inflate(5, 5), 5)
-            elif selected_character == "lavarobot":
-                pygame.draw.rect(screen, (136, 0, 21), lavarobot_rect.inflate(5, 5), 5)
-            elif selected_character == "greenrobot":
-                pygame.draw.rect(screen, (25, 195, 21), greenrobot_rect.inflate(5, 5), 5)
-            elif selected_character == "cakebot":
-                pygame.draw.rect(screen, (255, 171, 204), cakebot_rect.inflate(5, 5), 5)
+         screen.blit(robot_img, robot_rect)     
+         screen.blit(evilrobot_img if evilrobo_unlock else locked_img, evilrobot_rect)
+         screen.blit(icerobot_img if icerobo_unlock else locked_img, icerobot_rect)
+         screen.blit(lavarobot_img if lavarobo_unlock else locked_img, lavarobot_rect)
+         screen.blit(greenrobot_img if greenrobo_unlock else locked_img, greenrobot_rect)
+         screen.blit(cakebot_img if cakebo_unlock else locked_img, cakebot_rect)
 
-            # Handle events from the main loop, not a new event loop!
-            if pygame.mouse.get_pressed()[0]:  # Left mouse button is pressed
-                mouse_pos = pygame.mouse.get_pos()
-                if robot_rect.collidepoint(mouse_pos):
-                    try_select_robo(robo_unlock, "robot", robot_rect, "placeholder", "Imagine if this actually popped up in game BRO-")
-                
-                elif evilrobot_rect.collidepoint(mouse_pos):
-                    try_select_robo(evilrobo_unlock, "evilrobot", evilrobot_rect, "evillocked_message", "Encounter this robot in an alternative route to unlock him!")
-                
-                elif icerobot_rect.collidepoint(mouse_pos):
-                    try_select_robo(icerobo_unlock, "icerobot", icerobot_rect, "icelock_message", "This robot is hiding in the mountains...")
-                
-                elif lavarobot_rect.collidepoint(mouse_pos):
-                    try_select_robo(lavarobo_unlock, "lavarobot", lavarobot_rect, "lavalocked_message", "This robot is coming soon!")
-
-                elif greenrobot_rect.collidepoint(mouse_pos):
-                    try_select_robo(greenrobo_unlock, "greenrobot", greenrobot_rect, "greenlocked_message", "Get GOLD rank in all Green World Levels to unlock this robot!")
-                
-                elif cakebot_rect.collidepoint(mouse_pos):
-                    try_select_robo(cakebo_unlock, "cakebot", cakebot_rect, "cakelocked_message", "Happy 2 month anniversary!")
-
-            if not pygame.mouse.get_pressed()[0]:
-                locked_sound_played = False
-
-            # In your event section:
-            if rect.collidepoint(mouse_pos):
-                if pygame.mouse.get_pressed()[0]:
-                    set_page("main_menu")
-                    if not is_mute:
-                        click_sound.play()
-            keys = pygame.key.get_pressed() 
-            if keys[pygame.K_ESCAPE]:
-                set_page("main_menu")
-            if wait_time is not None:
-                if pygame.time.get_ticks() - wait_time < 5000:
-                    rendered_locked_text = font.render(locked_text, True, (255, 255, 0))
-                    screen.blit(rendered_locked_text, ((SCREEN_WIDTH // 2 - rendered_locked_text.get_width() // 2), SCREEN_HEIGHT - 700))
-                else:
-                    wait_time = None
+     # Draw a highlight border around the selected character
+         highlight_colors = {
+          "robot": (63, 72, 204),
+          "evilrobot": (128, 0, 128),
+          "icerobot": (51, 254, 255),
+          "lavarobot": (136, 0, 21),
+          "greenrobot": (25, 195, 21),
+          "cakebot": (255, 171, 204)
+         }
+         
+         rects = {
+          "robot": robot_rect,
+          "evilrobot": evilrobot_rect,
+          "icerobot": icerobot_rect,
+          "lavarobot": lavarobot_rect,
+          "greenrobot": greenrobot_rect,
+          "cakebot": cakebot_rect
+         }
         
-        # Render buttons for other pages
-            for rendered, rect, key, is_locked in buttons:
-                if rect.collidepoint(mouse_pos):
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
-                    hovered = rect.collidepoint(pygame.mouse.get_pos())
-                    if hovered and not button_hovered_last_frame and not is_mute:
-                        hover_sound.play()
-                    button_hovered_last_frame = hovered
-                else:
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((153, 51, 255, 0))  # RGBA: 100 is alpha (transparency)
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                screen.blit(rendered, rect)
+         if selected_character in rects:
+          pygame.draw.rect(screen, highlight_colors[selected_character], rects[selected_character].inflate(5, 5), 5)
+
+            # --- Use MOUSEBUTTONDOWN instead of continuous mouse.get_pressed ---
+         for event in pygame.event.get():
+           if event.type == pygame.QUIT:
+            set_page("quit_confirm")
+
+           elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if robot_rect.collidepoint(mouse_pos):
+                try_select_robo(robo_unlock, "robot", robot_rect, "placeholder", "Imagine if this actually popped up in game BRO-")
+            elif evilrobot_rect.collidepoint(mouse_pos):
+                try_select_robo(evilrobo_unlock, "evilrobot", evilrobot_rect, "evillocked_message", "Encounter this robot in an alternative route to unlock him!")
+            elif icerobot_rect.collidepoint(mouse_pos):
+                try_select_robo(icerobo_unlock, "icerobot", icerobot_rect, "icelock_message", "This robot is hiding in the mountains...")
+            elif lavarobot_rect.collidepoint(mouse_pos):
+                try_select_robo(lavarobo_unlock, "lavarobot", lavarobot_rect, "lavalocked_message", "This robot is coming soon!")
+            elif greenrobot_rect.collidepoint(mouse_pos):
+                try_select_robo(greenrobo_unlock, "greenrobot", greenrobot_rect, "greenlocked_message", "Get GOLD rank in all Green World Levels to unlock this robot!")
+            elif cakebot_rect.collidepoint(mouse_pos):
+                try_select_robo(cakebo_unlock, "cakebot", cakebot_rect, "cakelocked_message", "Happy 2 month anniversary!")
+            elif rect.collidepoint(mouse_pos):
+                set_page("main_menu")
+                if not is_mute:
+                    click_sound.play()
+
+         keys = pygame.key.get_pressed()
+         if keys[pygame.K_ESCAPE]:
+            set_page("main_menu")
+
+    # Display locked message for 5 seconds
+         if wait_time is not None:
+            if pygame.time.get_ticks() - wait_time < 5000:
+             rendered_locked_text = font.render(locked_text, True, (255, 255, 0))
+             screen.blit(rendered_locked_text, ((SCREEN_WIDTH // 2 - rendered_locked_text.get_width() // 2), SCREEN_HEIGHT - 700))
+            else:
+             wait_time = None
+
+    # Render buttons
+         for rendered, rect, key, is_locked in buttons:
+            hovered = rect.collidepoint(mouse_pos)
+            button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+            if hovered:
+             button_surface.fill((200, 200, 250, 100))
+             if not button_hovered_last_frame and not is_mute:
+                hover_sound.play()
+             button_hovered_last_frame = True
+            else:
+             button_surface.fill((153, 51, 255, 0))
+             button_hovered_last_frame = False
+            screen.blit(button_surface, rect.inflate(20, 10).topleft)
+            screen.blit(rendered, rect)
+
 
         if current_page == "language_select":
             screen.blit(plain_background, (0, 0))
+            screen.blit(heading_text, (SCREEN_WIDTH // 2 - heading_text.get_width() // 2, 50))
 
         if current_page == "quit_confirm":
             screen.blit(plain_background, (0, 0))
@@ -11454,14 +11340,14 @@ while running:
                 news_lines, image_paths = fetch_news_html_and_convert()
                 image_surfaces = []
                 for path in image_paths:
-                  print("🖼️ Loading image:", path)
+                  print(" Loading image:", path)
                   try:
                      img = pygame.image.load(path).convert_alpha()
                      img = pygame.transform.scale(img, (250, 250))
                      image_surfaces.append(img)
-                     print("✅ Loaded:", path)
+                     print(" Loaded:", path)
                   except Exception as e:
-                    print("❌ Failed to load:", path, e)
+                    print(" Failed to load:", path, e)
 
             screen.fill((20, 20, 20))
 
@@ -11469,6 +11355,11 @@ while running:
             screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 50))
 
             y = 120
+
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_ESCAPE]:
+                set_page("main_menu")
+
 
         # Draw text
             for line in news_lines:
@@ -11488,7 +11379,6 @@ while running:
 
         elif current_page == "lvl2_screen":
             create_lvl2_screen()
-
     
         elif current_page == "lvl3_screen":
             create_lvl3_screen()
@@ -11525,16 +11415,6 @@ while running:
 
         elif current_page == "levels":
             screen.blit(green_background, (0, 0))
-            # ...existing code...
-
-            for i, (text_surface, disk_rect, level, is_locked) in enumerate(buttons[:11]):
-              level_num = i + 1
-              score = progress["score"].get(f"lvl{level_num}", 0)
-              stars = get_stars(level_num, score)
-              for s in range(stars):
-               star_x = disk_rect.centerx - 30 + (s * 20)
-               star_y = disk_rect.bottom - 4
-               screen.blit(s_star_img, (star_x, star_y))
 
             # Fetch the localized "Select a Level" text dynamically
             select_text = current_lang.get("level_display", "Select a Level")
@@ -11565,21 +11445,20 @@ while running:
                 for text_surface, disk_rect, key, is_locked in buttons:
                     if disk_rect.collidepoint(event.pos):
                         if key != "next" and key != "back" and not is_locked:
-                            lvl_time_text = font.render(f"Best Time: {progress['times'][key]}s", True, (255, 255, 0))
+                            lvl_time_text = font.render(f"Highscore: {progress['score'][key]}", True, (255, 255, 0))
                             # Adjust position as needed
-                            screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                            if progress['medals'][key] == "Gold":
-                                lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (255, 255, 0))
-                                screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals'][key] == "Silver":
-                                lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (160, 160, 160))
-                                screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals'][key] == "Bronze":
-                                lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (153, 76, 0))
-                                screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            else:
-                                lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (255, 255, 255))
-                                screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
+                            screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - lvl_time_text.get_width() // 2, SCREEN_HEIGHT - 50))
+                            s = key
+                            num = int(s[3:])  # Skip the first 3 characters
+                            print(num)  # Output: 13
+                            stars = get_stars(num, progress['score'][key])
+                            if stars >= 1:
+                                screen.blit(s_star_img, (SCREEN_WIDTH // 2 - 25, SCREEN_HEIGHT - 80))
+                            if stars >= 2:
+                                screen.blit(s_star_img, (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 80))
+                            if stars == 3:
+                                screen.blit(s_star_img, (SCREEN_WIDTH // 2 + 25, SCREEN_HEIGHT - 80))
+
                     else:    
                         if key is not None:
                             # Unlocked level
@@ -11602,20 +11481,7 @@ while running:
                 screen.fill((0, 146, 230))
             else:
                 screen.blit(ice_background, (0, 0))
-            
-            for i, (text_surface, disk_rect, level, is_locked) in enumerate(buttons):
-                if not level or not level.startswith("lvl"):
-                    continue  # Skip non-level buttons like "back"
-    
-                level_num = i + 1
-                score = progress["score"].get(level_num, 0)
-                stars = get_stars(level_num, score)
-                for s in range(stars):
-                 star_x = disk_rect.centerx - 30 + (s * 20)
-                 star_y = disk_rect.bottom - 4
-                 screen.blit(s_star_img, (star_x, star_y))
-
-            
+                        
             # Fetch the localized "Select a Level" text dynamically
             select_text = current_lang.get("level_display", "Select a Level")
             rendered_select_text = font.render(select_text, True, (0, 0, 0))
@@ -11655,21 +11521,18 @@ while running:
                 for text_surface, disk_rect, key, is_locked in buttons:
                     if disk_rect.collidepoint(event.pos):
                         if not key == "back" and not is_locked:
-                            lvl_time_text = font.render(f"Best Time: {progress['times'][key]}s", True, (255, 255, 0))
+                            lvl_time_text = font.render(f"Highscore: {progress['score'][key]}", True, (255, 255, 0))
                             # Adjust position as needed
-                            screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 50))
-                            if progress['medals'][key] == "Gold":
-                                lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (255, 255, 0))
-                                screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals'][key] == "Silver":
-                                lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (160, 160, 160))
-                                screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            elif progress['medals'][key] == "Bronze":
-                                lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (153, 76, 0))
-                                screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
-                            else:
-                                lvl_medal_text = font.render(f"Medal: {progress['medals'][key]}", True, (255, 255, 255))
-                                screen.blit(lvl_medal_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100))
+                            screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - lvl_time_text.get_width() // 2, SCREEN_HEIGHT - 50))
+                            s = key
+                            num = int(s[3:])  # Skip the first 3 characters
+                            stars = get_stars(num, progress['score'][key])
+                            if stars >= 1:
+                                screen.blit(s_star_img, (SCREEN_WIDTH // 2 - 25, SCREEN_HEIGHT - 80))
+                            if stars >= 2:
+                                screen.blit(s_star_img, (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 80))
+                            if stars == 3:
+                                screen.blit(s_star_img, (SCREEN_WIDTH // 2 + 25, SCREEN_HEIGHT - 80))
                         elif key == "back" and (pygame.mouse.get_pressed()[0]):
                             set_page("levels")
                     else:    
@@ -11713,13 +11576,22 @@ while running:
         else:
             show_greenrobo_unlocked = False
         
+        if notif:
+            if time.time() - notification_time < 4:  # Show for 4 seconds
+                screen.blit(notification_text, (SCREEN_WIDTH // 2 - notification_text.get_width() // 2, 100))
+        else:
+            notif = False
+
+        if er:
+            if time.time() - notification_time < 4:  # Show for 4 seconds
+                screen.blit(error_code, (SCREEN_WIDTH // 2 - error_code.get_width() // 2, 120))
+        else:
+            er = False
         mouse_pos = pygame.mouse.get_pos()
         screen.blit(cursor_img, mouse_pos)
 
         if transition.active:
             transition.update()
-
-        pygame.display.update()
 
         pygame.display.flip()
 
