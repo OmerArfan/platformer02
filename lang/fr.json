@@ -24,6 +24,9 @@
   "lvl10": "Niveau 10",
   "lvl11": "Niveau 11",
   "lvl12": "Niveau 12",
+  "lvl13": "Niveau 13",
+  "lvl14": "Niveau 14",
+  "lvl15": "Niveau 15",
   "back": "retour"
   ,"next": "prochain"
    }
@@ -42,7 +45,7 @@
   ,"lavalocked_message": "Ce robot arrive bientôt!"
   ,"greenlocked_message": "Obtenez le rang OR dans tous les niveaux du Monde Vert pour débloquer ce robot!"
   ,"lvl_comp": "Niveau terminé !"
-  
+  ,"hs_m":"Meilleur score : {hs}"
   }
   ,"in_game": {
   "dead_message": "Vous êtes mort!",

@@ -1,0 +1,79 @@
+{
+  "main_menu": {
+    "start": "시작",
+    "character_select": "캐릭터 선택",
+    "settings": "오디오 음소거/해제",
+    "news": "뉴스",
+    "quit": "종료",
+    "language": "언어 변경"
+  },
+  "language_select": {
+    "back": "뒤로"
+  },
+  "levels": {
+    "level_display": "레벨 선택",
+    "lvl1": "레벨 1",
+    "lvl2": "레벨 2",
+    "lvl3": "레벨 3",
+    "lvl4": "레벨 4",
+    "lvl5": "레벨 5",
+    "lvl6": "레벨 6",
+    "lvl7": "레벨 7",
+    "lvl8": "레벨 8",
+    "lvl9": "레벨 9",
+    "lvl10": "레벨 10",
+    "lvl11": "레벨 11",
+    "lvl12": "레벨 12",
+    "lvl13": "레벨 13",
+    "lvl14": "레벨 14",
+    "lvl15": "레벨 15",
+    "lvl16": "레벨 16",
+    "back": "뒤로",
+    "next": "다음"
+  },
+  "messages": {
+    "you_are_in": "{level}는 곧 출시됩니다!",
+    "loading": "로딩 중...",
+    "confirm_quit": "정말로 종료하시겠습니까?",
+    "yes": "예",
+    "no": "아니요",
+    "evillocked_message": "다른 경로에서 이 로봇을 만나서 잠금을 해제하세요!",
+    "icelocked_message": "이 로봇은 곧 출시됩니다!",
+    "lavalocked_message": "이 로봇은 곧 출시됩니다!",
+    "greenlocked_message": "그린 월드의 모든 레벨에서 GOLD 랭크를 달성하여 이 로봇을 잠금 해제하세요!",
+    "lvl_comp": "레벨 완료!",
+    "hs_m": "최고 점수: {hs}"
+    
+  },
+  "in_game": {
+    "dead_message": "사망했습니다!",
+    "fall_message": "너무 멀리 떨어졌습니다!",
+    "deaths_no": "사망 수: {deathcount}",
+    "warning_message": "가시에 주의하세요!",
+    "up_message": "점프하려면 위쪽 키를 누르세요!",
+    "stamina_message": "스태미나: ",
+    "exit_message": "출구 포탈! 여기로 가면 승리입니다!",
+    "moving_message": "모든 블록이 가만히 있지는 않아요...",
+    "mock_message": "잘못된 길입니다, 친구. 여긴 특별한 게 없어요...",
+    "jump_message": "주황색 블록을 사용해 멀리 점프하세요!",
+    "saws_message": "톱날도 위험해요!",
+    "sawed_message": "산산조각났어요!",
+    "key_message": "코인을 획득하고 블록을 여세요!",
+    "laser_message": "레이저에 맞았습니다!",
+    "invisible_message": "이 톱날들은 너를 해치지 않을 거야... 아마도!",
+    "portal_message": "이 파란 포탈은 당신을 순간이동시켜요! 대부분 좋은 곳으로...",
+    "button1_message": "파란 버튼을 누르면 점프력이 향상돼요!",
+    "button2_message": "라벤더 버튼을 누르면 점프력이 약해져요!",
+    "clarify_message": "물론 체크포인트에 도달하기 전까지는요!",
+    "clarify_message2": "점프 블록의 점프에도 영향을 줍니다!",
+    "button3_message": "보라색 버튼을 누르면 대부분의 조명이 꺼집니다!",
+    "button4_message": "초록색 버튼을 누르면 엄청난 속도 부스트가 주어집니다!"
+  },
+  "in_game_ice": {
+    "temp": "온도: {current_temp}",
+    "ice_message": "얼음 블록은 밟으면 녹지만, 몸을 식혀줘요!",
+    "freeze_message": "너무 추워지기 전에 따뜻하게 해야 해요!",
+    "overheat_message1": "체온이 너무 높아지면,",
+    "overheat_message2": "근처의 얼음 블록에 서서 식히세요!"
+  }
+}

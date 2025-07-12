@@ -1,0 +1,78 @@
+{
+  "main_menu": {
+    "start": "スタート",
+    "character_select": "キャラクター選択",
+    "settings": "音声オン/オフ",
+    "news": "ニュース",
+    "quit": "終了",
+    "language": "言語を変更"
+  },
+  "language_select": {
+    "back": "戻る"
+  },
+  "levels": {
+    "level_display": "レベルを選択",
+    "lvl1": "レベル 1",
+    "lvl2": "レベル 2",
+    "lvl3": "レベル 3",
+    "lvl4": "レベル 4",
+    "lvl5": "レベル 5",
+    "lvl6": "レベル 6",
+    "lvl7": "レベル 7",
+    "lvl8": "レベル 8",
+    "lvl9": "レベル 9",
+    "lvl10": "レベル 10",
+    "lvl11": "レベル 11",
+    "lvl12": "レベル 12",
+    "lvl13": "レベル 13",
+    "lvl14": "レベル 14",
+    "lvl15": "レベル 15",
+    "lvl16": "レベル 16",
+    "back": "戻る",
+    "next": "次へ"
+  },
+  "messages": {
+    "you_are_in": "{level} は近日公開！",
+    "loading": "読み込み中...",
+    "confirm_quit": "本当に終了しますか？",
+    "yes": "はい",
+    "no": "いいえ",
+    "evillocked_message": "別ルートでこのロボットに出会ってアンロックしよう！",
+    "icelocked_message": "このロボットは近日登場！",
+    "lavalocked_message": "このロボットは近日登場！",
+    "greenlocked_message": "グリーンワールドのすべてのレベルでゴールドランクを獲得してこのロボットをアンロック！",
+    "lvl_comp": "レベルクリア！",
+    "hs_m": "ハイスコア: {hs}"
+  },
+  "in_game": {
+    "dead_message": "やられた！",
+    "fall_message": "落ちすぎた！",
+    "deaths_no": "死亡回数: {deathcount}",
+    "warning_message": "トゲに注意！",
+    "up_message": "ジャンプするには上キーを押そう！",
+    "stamina_message": "スタミナ: ",
+    "exit_message": "出口ポータル！ここに来て勝利しよう！",
+    "moving_message": "すべてのブロックが止まっているとは限らない…",
+    "mock_message": "間違った道だよ。特に何もない…",
+    "jump_message": "オレンジブロックで遠くまでジャンプしよう！",
+    "saws_message": "ノコギリも危険だよ！",
+    "sawed_message": "バラバラにされた！",
+    "key_message": "コインを取ってブロックを開けよう！",
+    "laser_message": "レーザーにやられた！",
+    "invisible_message": "このノコギリは…たぶん大丈夫…たぶん！",
+    "portal_message": "この青いポータルでテレポートできる！たいていは良い場所へ！",
+    "button1_message": "青いボタンを押すとジャンプ力アップ！",
+    "button2_message": "ラベンダーボタンでジャンプ力ダウン！",
+    "clarify_message": "もちろん、チェックポイントに到達するまでの話だよ！",
+    "clarify_message2": "ジャンプブロックのジャンプにも影響するよ！",
+    "button3_message": "紫のボタンを押すと、ほとんどのライトが消える！",
+    "button4_message": "緑のボタンを押すとスピードが大幅アップ！"
+  },
+  "in_game_ice": {
+    "temp": "温度: {current_temp}",
+    "ice_message": "氷ブロックは乗ると溶けるけど、体を冷やしてくれる！",
+    "freeze_message": "でも、凍え死なないように暖かい場所にも行こう！",
+    "overheat_message1": "体温が上がりすぎないように気を付けて、",
+    "overheat_message2": "熱くなったら近くの氷ブロックで冷やそう！"
+  }
+}

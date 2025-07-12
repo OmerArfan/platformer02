@@ -1,0 +1,78 @@
+{
+  "main_menu": {
+    "start": "Mulai",
+    "character_select": "Pilih Karakter",
+    "settings": "Bunyikan/Senyapkan Audio",
+    "news": "Berita",
+    "quit": "Keluar",
+    "language": "Ganti Bahasa"
+  },
+  "language_select": {
+    "back": "Kembali"
+  },
+  "levels": {
+    "level_display": "PILIH LEVEL",
+    "lvl1": "Level 1",
+    "lvl2": "Level 2",
+    "lvl3": "Level 3",
+    "lvl4": "Level 4",
+    "lvl5": "Level 5",
+    "lvl6": "Level 6",
+    "lvl7": "Level 7",
+    "lvl8": "Level 8",
+    "lvl9": "Level 9",
+    "lvl10": "Level 10",
+    "lvl11": "Level 11",
+    "lvl12": "Level 12",
+    "lvl13": "Level 13",
+    "lvl14": "Level 14",
+    "lvl15": "Level 15",
+    "lvl16": "Level 16",
+    "back": "Kembali",
+    "next": "Berikutnya"
+  },
+  "messages": {
+    "you_are_in": "{level} segera hadir!",
+    "loading": "Memuat...",
+    "confirm_quit": "Yakin ingin keluar?",
+    "yes": "Ya",
+    "no": "Tidak",
+    "evillocked_message": "Temui robot ini di rute alternatif untuk membukanya!",
+    "icelocked_message": "Robot ini akan segera hadir!",
+    "lavalocked_message": "Robot ini akan segera hadir!",
+    "greenlocked_message": "Dapatkan peringkat EMAS di semua level Dunia Hijau untuk membuka robot ini!",
+    "lvl_comp": "Level Selesai!",
+    "hs_m": "Skor Tertinggi: {hs}"
+  },
+  "in_game": {
+    "dead_message": "Kamu mati!",
+    "fall_message": "Jatuh terlalu jauh!",
+    "deaths_no": "Kematian: {deathcount}",
+    "warning_message": "Awas paku!",
+    "up_message": "Tekan ATAS untuk Melompat!",
+    "stamina_message": "Stamina: ",
+    "exit_message": "Portal Keluar! Datang ke sini untuk menang!",
+    "moving_message": "Tidak semua blok tetap diam...",
+    "mock_message": "Arah yang salah, bro. Nggak ada yang spesial di sini...",
+    "jump_message": "Gunakan blok oranye untuk melompat jauh!",
+    "saws_message": "Gergaji juga berbahaya!",
+    "sawed_message": "Terpotong kecil-kecil!",
+    "key_message": "Ambil koin dan buka blok!",
+    "laser_message": "Kena laser!",
+    "invisible_message": "Gergaji ini tidak akan menyakitimu... mungkin!",
+    "portal_message": "Portal biru ini bisa teleport! Tapi biasanya ke tempat bagus...",
+    "button1_message": "Tombol biru akan membuatmu melompat lebih tinggi!",
+    "button2_message": "Tombol lavender akan membuatmu melompat lebih rendah!",
+    "clarify_message": "Sampai kamu mencapai checkpoint, tentu saja!",
+    "clarify_message2": "Itu juga memengaruhi lompatan pada blok lompat!",
+    "button3_message": "Tombol ungu akan mematikan hampir semua cahaya!",
+    "button4_message": "Tombol hijau akan memberikan dorongan kecepatan besar!"
+  },
+  "in_game_ice": {
+    "temp": "Suhu: {current_temp}",
+    "ice_message": "Blok es akan mencair saat diinjak! Tapi juga mendinginkanmu!",
+    "freeze_message": "Ingat untuk menghangatkan diri atau kamu bisa membeku sampai mati!",
+    "overheat_message1": "Ingat juga untuk memantau suhu tubuhmu dan jika",
+    "overheat_message2": "terlalu panas, berdirilah di atas blok es terdekat!"
+  }
+}

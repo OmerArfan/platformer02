@@ -1,0 +1,78 @@
+{
+  "main_menu": {
+    "start": "Inizia",
+    "character_select": "Seleziona Personaggio",
+    "settings": "Audio On/Off",
+    "news": "Notizie",
+    "quit": "Esci",
+    "language": "Cambia Lingua"
+  },
+  "language_select": {
+    "back": "Indietro"
+  },
+  "levels": {
+    "level_display": "SELEZIONA UN LIVELLO",
+    "lvl1": "Livello 1",
+    "lvl2": "Livello 2",
+    "lvl3": "Livello 3",
+    "lvl4": "Livello 4",
+    "lvl5": "Livello 5",
+    "lvl6": "Livello 6",
+    "lvl7": "Livello 7",
+    "lvl8": "Livello 8",
+    "lvl9": "Livello 9",
+    "lvl10": "Livello 10",
+    "lvl11": "Livello 11",
+    "lvl12": "Livello 12",
+    "lvl13": "Livello 13",
+    "lvl14": "Livello 14",
+    "lvl15": "Livello 15",
+    "lvl16": "Livello 16",
+    "back": "Indietro",
+    "next": "Avanti"
+  },
+  "messages": {
+    "you_are_in": "{level} in arrivo!",
+    "loading": "Caricamento...",
+    "confirm_quit": "Sei sicuro di voler uscire?",
+    "yes": "Sì",
+    "no": "No",
+    "evillocked_message": "Incontra questo robot in un percorso alternativo per sbloccarlo!",
+    "icelocked_message": "Questo robot arriverà presto!",
+    "lavalocked_message": "Questo robot arriverà presto!",
+    "greenlocked_message": "Ottieni il grado ORO in tutti i livelli del Mondo Verde per sbloccare questo robot!",
+    "lvl_comp": "Livello Completato!",
+    "hs_m": "Punteggio massimo: {hs}"
+  },
+  "in_game": {
+    "dead_message": "Sei morto!",
+    "fall_message": "Caduto troppo in basso!",
+    "deaths_no": "Morti: {deathcount}",
+    "warning_message": "Attento ai spuntoni!",
+    "up_message": "Premi SU per saltare!",
+    "stamina_message": "Stamina: ",
+    "exit_message": "Portale d’Uscita! Vai lì per vincere!",
+    "moving_message": "Non tutti i blocchi stanno fermi...",
+    "mock_message": "Strada sbagliata, amico. Qui non c'è nulla di speciale...",
+    "jump_message": "Usa i blocchi arancioni per saltare più lontano!",
+    "saws_message": "Anche le seghe sono pericolose!",
+    "sawed_message": "Fatto a pezzi!",
+    "key_message": "Prendi la moneta e apri il blocco!",
+    "laser_message": "Colpito dal laser!",
+    "invisible_message": "Queste seghe non ti faranno male... promesso!",
+    "portal_message": "Questi portali blu ti teletrasportano! Ma di solito in buoni posti...",
+    "button1_message": "I pulsanti blu, una volta attivati, ti faranno saltare più in alto!",
+    "button2_message": "I pulsanti lavanda, una volta attivati, ti faranno saltare più basso!",
+    "clarify_message": "Almeno finché non raggiungi un checkpoint!",
+    "clarify_message2": "Influenzano anche i salti sui blocchi di salto!",
+    "button3_message": "I pulsanti viola, una volta attivati, spegneranno quasi tutte le luci!",
+    "button4_message": "I pulsanti verdi, una volta attivati, ti daranno un'enorme spinta di velocità!"
+  },
+  "in_game_ice": {
+    "temp": "Temperatura: {current_temp}",
+    "ice_message": "I blocchi di ghiaccio si sciolgono quando ci stai sopra! Ma ti rinfrescano anche!",
+    "freeze_message": "Ma ricordati di riscaldarti... o morirai congelato!",
+    "overheat_message1": "Ricordati anche di controllare la tua temperatura e se",
+    "overheat_message2": "diventa troppo alta, stai su un blocco di ghiaccio vicino!"
+  }
+}
