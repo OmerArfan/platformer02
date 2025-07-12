@@ -6,10 +6,12 @@
   Download it here: https://www.python.org/downloads/
   Pygame 2.6.1
   YOU CAN INSTALL IT USING pip install pygame IN CMD(Windows)
+  BeautifulSoup4 & HTML2text
+  INSTALL USING pip install beautifulsoup4 html2text in CMD(you can also add pygame here, so you install all 3 at once!)
 
 3)If you haven't already, download the ZIP file, what are you waiting for lol...
 
-4)Open the ZIP folder and take out the main file folder 
+4)Open the ZIP folder and extract the main file folder 
 
 5)Move the game folder to a safe and accessible location (like your Documents or where VSCode normally opens projects from).
 
@@ -21,4 +23,8 @@
 
 8)Then run the "platformer.py" file in VScode by clicking the "play"-like button on the top right.
 
+9)If you cannot see the play button, then you need to select the interpreter from the bottom right(choose the python version in where all the other imports are installed!)
+
 9)Cry.
+
+!!! IF I MISSED OUT ON SOMETHING FEEL FREE TO TELL ME !!!
