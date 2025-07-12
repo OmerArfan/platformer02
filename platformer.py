@@ -108,9 +108,13 @@ def load_progress():
     return data
 
 # Load the fonts (ensure the font file path is correct)
-font_path_ch = 'NotoSansSC-SemiBold.ttf'
-font_path = 'NotoSansDisplay-SemiBold.ttf'
+font_path_ch = 'fonts/NotoSansSC-SemiBold.ttf'
+font_path_jp = 'fonts/NotoSansJP-SemiBold.ttf'
+font_path_kr = 'fonts/NotoSansKR-SemiBold.ttf'
+font_path = 'fonts/NotoSansDisplay-SemiBold.ttf'
 font_ch = pygame.font.Font(font_path_ch, 25)
+font_jp = pygame.font.Font(font_path_jp, 25)
+font_kr = pygame.font.Font(font_path_kr, 25)
 font_def = pygame.font.Font(font_path, 25)
 font_text = pygame.font.Font(font_path, 55)
 
@@ -306,12 +310,18 @@ def get_stars(level, score):
 
 if lang_code == "zh_cn":
     font = pygame.font.Font(font_path_ch, 25)
+if lang_code == "jp":
+    font = pygame.font.Font(font_path_jp, 25)
+if lang_code == "kr":
+    font = pygame.font.Font(font_path_kr, 25)
 else:
     font = pygame.font.Font(font_path, 25)
 
 def render_text(text, color=(255, 255, 255)):
     if any('\u4e00' <= c <= '\u9fff' for c in text):
         return font_ch.render(text, True, color)
+    if any('\uAC00' <= c <= '\uD7A3' for c in text):
+        return font_kr.render(text, True, color)
     else:
         return font_def.render(text, True, color)
     
@@ -357,8 +367,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.64", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 158)
+ver_text = font_def.render("Version 1.2.65", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -415,10 +425,14 @@ def create_language_buttons():
         ("Français", "fr"),
         ("Español", "es"),
         ("Deutsch", "de"),
-        ("简体中文", "zh_cn"),
-        ("Türkçe", "tr"),
+        ("Italiano", "it"),
         ("Português(Brasil)", "pt_br"),
-        ("Русский", "ru")
+        ("Türkçe", "tr"),
+        ("Bahasa Indonesia", "id"),
+        ("Русский", "ru"),
+        ("简体中文", "zh_cn"),
+        ("日本語", "jp"),
+        ("한국인", "kr"),
     ]
     buttons_per_row = 4
     spacing_x = 200
@@ -713,6 +727,10 @@ def change_language(lang):
     save_progress(progress)
     if lang_code == "zh_cn":
         font = pygame.font.Font(font_path_ch, 25)
+    elif lang_code == "jp":
+        font = pygame.font.Font(font_path_jp, 25)
+    elif lang_code == "kr":
+        font = pygame.font.Font(font_path_kr, 25)
     else:
         font = pygame.font.Font(font_path, 25)
 
@@ -3774,9 +3792,9 @@ def create_lvl6_screen():
         pygame.Rect(-200, 700, 1200, 100),
         pygame.Rect(800, 400, 100, 100),
         pygame.Rect(2300, 500, 450, 50),
-        pygame.Rect(2900, 10, 50, 540),
+        pygame.Rect(2900, 10, 50, 570),
         pygame.Rect(3150, 10, 50, 170),
-        pygame.Rect(2900, 530, 3000, 50),
+        pygame.Rect(2950, 530, 2950, 50),
         pygame.Rect(3200, 130, 2700, 50)
     ]
 
@@ -10954,7 +10972,7 @@ def handle_action(key):
                     set_page("main_menu")
                     is_transitioning = False
                     transition_time = None
-        elif key in ["en", "fr", "es", "de", "zh_cn", "tr", "pt_br", "ru"]:
+        elif key in ["en", "fr", "es", "de", "zh_cn", "tr", "pt_br", "ru", "jp", "id", "kr", "it"]:
             change_language(key)
             if not is_transitioning:
                 transition.start("main_menu")
@@ -11051,6 +11069,7 @@ if not is_mute and SCREEN_WIDTH > MIN_WIDTH or SCREEN_HEIGHT > MIN_HEIGHT:
 # Main loop
 running = True
 while running:
+    messages = load_language(lang_code).get('messages', {})
     # Clear screen!
     screen.blit(background, (0, 0))
     mouse_pos = pygame.mouse.get_pos()
@@ -11137,7 +11156,7 @@ while running:
 
         if current_page == "main_menu":
 
-            screen.blit(logo, ((SCREEN_WIDTH // 2 - 473), 30))
+            screen.blit(logo, ((SCREEN_WIDTH // 2 - logo.get_width() // 2), 30))
             screen.blit(logo_text, logo_pos)
             screen.blit(site_text, site_pos)
             screen.blit(credit_text, credit_pos)
@@ -11445,7 +11464,10 @@ while running:
                 for text_surface, disk_rect, key, is_locked in buttons:
                     if disk_rect.collidepoint(event.pos):
                         if key != "next" and key != "back" and not is_locked:
-                            lvl_time_text = font.render(f"Highscore: {progress['score'][key]}", True, (255, 255, 0))
+                            hs = progress['score'][key]
+                            high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
+                            lvl_time_text = font.render(high_text, True, (255, 255, 0))
+
                             # Adjust position as needed
                             screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - lvl_time_text.get_width() // 2, SCREEN_HEIGHT - 50))
                             s = key
@@ -11521,7 +11543,9 @@ while running:
                 for text_surface, disk_rect, key, is_locked in buttons:
                     if disk_rect.collidepoint(event.pos):
                         if not key == "back" and not is_locked:
-                            lvl_time_text = font.render(f"Highscore: {progress['score'][key]}", True, (255, 255, 0))
+                            hs = progress['score'][key]
+                            high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
+                            lvl_time_text = font.render(high_text, True, (255, 255, 0))
                             # Adjust position as needed
                             screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - lvl_time_text.get_width() // 2, SCREEN_HEIGHT - 50))
                             s = key
