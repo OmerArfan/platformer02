@@ -7,6 +7,8 @@ import time
 import random
 import webbrowser
 import shutil
+import arabic_reshaper
+from bidi.algorithm import get_display
 
 # For extracting data from the news section of the website!
 from bs4 import BeautifulSoup
@@ -111,11 +113,15 @@ def load_progress():
 font_path_ch = 'fonts/NotoSansSC-SemiBold.ttf'
 font_path_jp = 'fonts/NotoSansJP-SemiBold.ttf'
 font_path_kr = 'fonts/NotoSansKR-SemiBold.ttf'
+font_path_ar = "fonts/NotoNaskhArabic-Bold.ttf"
+font_path_ps = "fonts/NotoSansHebrew-SemiBold.ttf"
 font_path = 'fonts/NotoSansDisplay-SemiBold.ttf'
 font_ch = pygame.font.Font(font_path_ch, 25)
 font_jp = pygame.font.Font(font_path_jp, 25)
 font_kr = pygame.font.Font(font_path_kr, 25)
 font_def = pygame.font.Font(font_path, 25)
+font_ar = pygame.font.Font(font_path_ar, 25)
+font_ps = pygame.font.Font(font_path_ps, 25)
 font_text = pygame.font.Font(font_path, 55)
 
 # Initializing screen resolution
@@ -314,16 +320,33 @@ if lang_code == "jp":
     font = pygame.font.Font(font_path_jp, 25)
 if lang_code == "kr":
     font = pygame.font.Font(font_path_kr, 25)
+if lang_code == "pk" or lang_code == "ir" or lang_code == "ar":
+    font = pygame.font.Font(font_path_ar, 25)
+if lang_code == "ps":
+    font = pygame.font.Font(font_path_ps, 25)
 else:
     font = pygame.font.Font(font_path, 25)
 
-def render_text(text, color=(255, 255, 255)):
-    if any('\u4e00' <= c <= '\u9fff' for c in text):
+def render_text(text, Boolean, color):
+    if any('\u0590' <= c <= '\u06FF' for c in text):  # Urdu/Arabic range
+        reshaped = arabic_reshaper.reshape(text)
+        bidi_text = get_display(reshaped)
+        if any('\u0600' <= c <= '\u06FF' for c in text):
+            return font_ar.render(bidi_text, True, color)
+        else:
+            return font_ps.render(bidi_text, True, color)
+    
+    if any('\u4e00' <= c <= '\u9fff' for c in text):  # Chinese
         return font_ch.render(text, True, color)
-    if any('\uAC00' <= c <= '\uD7A3' for c in text):
+    
+    if any('\u3040' <= c <= '\u30FF' for c in text) or any('\u4E00' <= c <= '\u9FFF' for c in text):
+        return font_jp.render(text, True, color)    
+    
+    if any('\uAC00' <= c <= '\uD7A3' for c in text):  # Korean
         return font_kr.render(text, True, color)
-    else:
-        return font_def.render(text, True, color)
+
+    return font_def.render(text, True, color)
+    
     
 class TransitionManager:
     def __init__(self, screen, image, speed=40):
@@ -367,8 +390,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.65", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 158)
+ver_text = font_def.render("Version 1.2.66", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -405,7 +428,7 @@ def create_main_menu_buttons():
 
     for i, key in enumerate(button_texts):
         text = current_lang[key]
-        rendered = font.render(text, True, (255, 255, 255))
+        rendered = render_text(text, True, (255, 255, 255))
         rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, start_y + i * button_spacing)) 
         buttons.append((rendered, rect, key, False))
 
@@ -433,6 +456,10 @@ def create_language_buttons():
         ("简体中文", "zh_cn"),
         ("日本語", "jp"),
         ("한국인", "kr"),
+        ("اردو", "pk"),
+        ("فارسی", "ir"),
+        ("العربية", "ar"),
+        ("פלסטיני", "ps")
     ]
     buttons_per_row = 4
     spacing_x = 200
@@ -444,11 +471,11 @@ def create_language_buttons():
     start_y = (SCREEN_HEIGHT // 2) - (len(language_options) // buttons_per_row * spacing_y // 2)
 
     heading = start.get("language", "Change Language")
-    heading_text = font.render(heading, True, (255 , 255, 255))
+    heading_text = render_text(heading, True, (255 , 255, 255))
 
     for i, (display_name, code) in enumerate(language_options):
         text = display_name
-        rendered = render_text(text, (255, 255, 255))
+        rendered = render_text(text, True, (255, 255, 255))
 
         col = i % buttons_per_row
         row = i // buttons_per_row
@@ -465,7 +492,7 @@ def create_language_buttons():
 
     # Add a "Back" button at the bottom center
     back_text = current_lang.get("back", "Back")
-    rendered_back = font.render(back_text, True, (255, 255, 255))
+    rendered_back = render_text(back_text, True, (255, 255, 255))
     back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, y + spacing_y + 40))
     buttons.append((rendered_back, back_rect, "back", False))
 
@@ -511,7 +538,7 @@ def green_world_buttons():
 
     # Get the text
     back_text = current_lang.get("back", "Back")        
-    rendered_back = font.render(back_text, True, (255, 255, 255))
+    rendered_back = render_text(back_text, True, (255, 255, 255))
 
     # Create a fixed 100x100 hitbox centered at the right location
     back_rect = pygame.Rect(0, 0, 100, 100)
@@ -525,7 +552,7 @@ def green_world_buttons():
     buttons.append((rendered_back, back_rect, "back", False))
 
     next_text = current_lang.get("next", "next")
-    rendered_next = font.render(next_text, True, (255, 255, 255))
+    rendered_next = render_text(next_text, True, (255, 255, 255))
 
     next_rect = pygame.Rect(0, 0, 100, 100)
     next_rect.center = (SCREEN_WIDTH - 90, SCREEN_HEIGHT // 2)
@@ -578,7 +605,7 @@ def ice_world_buttons():
 
     # Get the text
     back_text = current_lang.get("back", "Back")        
-    rendered_back = font.render(back_text, True, (255, 255, 255))
+    rendered_back = render_text(back_text, True, (255, 255, 255))
 
 
     # Create a fixed 100x100 hitbox centered at the right location
@@ -622,7 +649,7 @@ def map():
 #    screen.fill((30, 30, 30))
 #    messages = load_language(lang_code).get('messages', {})  # Reload messages with the current language
 #    loading_text = messages.get("loading", "Loading...")
-#    rendered_loading = font.render(loading_text, True, (255, 255, 255))
+#    rendered_loading = render_text(loading_text, True, (255, 255, 255))
 #    loading_rect = rendered_loading.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))  # Center dynamically
 #    screen.blit(rendered_loading, loading_rect)
 #    pygame.display.flip()
@@ -678,7 +705,7 @@ def character_select():
 
     for i, key in enumerate(button_texts):
         text = current_lang[key]
-        rendered = font.render(text, True, (255, 255, 255))
+        rendered = render_text(text, True, (255, 255, 255))
         rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100)) 
         buttons.append((rendered, rect, key, False))
     
@@ -726,13 +753,17 @@ def change_language(lang):
     progress["language"] = lang_code
     save_progress(progress)
     if lang_code == "zh_cn":
-        font = pygame.font.Font(font_path_ch, 25)
+        font = font_ch
     elif lang_code == "jp":
-        font = pygame.font.Font(font_path_jp, 25)
+        font = font_jp
     elif lang_code == "kr":
-        font = pygame.font.Font(font_path_kr, 25)
+        font = font_kr
+    elif lang_code == "pk" or lang_code == "ir" or lang_code == "ar":
+        font = font_ar
+    elif lang_code == "ps":
+        font = font_ps
     else:
-        font = pygame.font.Font(font_path, 25)
+        font = font_def
 
 def go_back():
     global last_page_change_time
@@ -853,18 +884,18 @@ def create_quit_confirm_buttons():
     confirm_quit = messages.get("confirm_quit", "Are you sure you want to quit?")
 
     # Store the quit confirmation text for rendering in the main loop
-    quit_text = font.render(confirm_quit, True, (255, 255, 255))
+    quit_text = render_text(confirm_quit, True, (255, 255, 255))
     quit_text_rect = quit_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 25))
 
     # Create "Yes" button
     yes_text = messages.get("yes", "Yes")
-    rendered_yes = font.render(yes_text, True, (255, 255, 255))
+    rendered_yes = render_text(yes_text, True, (255, 255, 255))
     yes_rect = rendered_yes.get_rect(center=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 50))
     buttons.append((rendered_yes, yes_rect, "yes", False))
 
     # Create "No" button
     no_text = messages.get("no", "No")
-    rendered_no = font.render(no_text, True, (255, 255, 255))
+    rendered_no = render_text(no_text, True, (255, 255, 255))
     no_rect = rendered_no.get_rect(center=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 + 50))
     buttons.append((rendered_no, no_rect, "no", False))
 
@@ -986,7 +1017,7 @@ def level_complete():
     clock = pygame.time.Clock()
     star_channel = pygame.mixer.Channel(2)
     lvl_comp = messages.get("lvl_comp", "Level Complete!")
-    rendered_lvl_comp = font.render(lvl_comp, True, (255, 255, 255))
+    rendered_lvl_comp = render_text(lvl_comp, True, (255, 255, 255))
     while running:
         screen.blit(end, (0, 0))
         for event in pygame.event.get():
@@ -1039,14 +1070,14 @@ def level_complete():
         
         if time.time() - star_time > 4:  # Show for 3 seconds
                 if new_hs:
-                    new_hs_text = font.render("New High Score!", True, (255, 215, 0))
+                    new_hs_text = render_text("New High Score!", True, (255, 215, 0))
                     screen.blit(new_hs_text, (SCREEN_WIDTH // 2 - new_hs_text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
                     if not is_mute and not notified:
                         hscore.play()
                         notified = True
                 else:
                     high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
-                    hs_text = font.render(high_text, True, (158, 158, 158))
+                    hs_text = render_text(high_text, True, (158, 158, 158))
                     screen.blit(hs_text, (SCREEN_WIDTH // 2 - hs_text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
         if time.time() - star_time > 6:
                 running = False
@@ -1239,16 +1270,16 @@ def create_lvl1_screen():
 
     # Render the texts
     warning_text = in_game.get("warning_message", "Watch out for spikes!")
-    rendered_warning_text = font.render(warning_text, True, (255, 0, 0))  # Render the warning text
+    rendered_warning_text = render_text(warning_text, True, (255, 0, 0))  # Render the warning text
 
     up_text = in_game.get("up_message", "Press UP to Jump!")
-    rendered_up_text = font.render(up_text, True, (0, 0, 0))  # Render the up text
+    rendered_up_text = render_text(up_text, True, (0, 0, 0))  # Render the up text
 
     exit_text = in_game.get("exit_message", "Exit Portal! Come here to win!")
-    rendered_exit_text = font.render(exit_text, True, (0, 73, 0))  # Render the exit text
+    rendered_exit_text = render_text(exit_text, True, (0, 73, 0))  # Render the exit text
 
     moving_text = in_game.get("moving_message", "Not all blocks stay still...")
-    rendered_moving_text = font.render(moving_text, True, (128, 0, 128))  # Render the moving text
+    rendered_moving_text = render_text(moving_text, True, (128, 0, 128))  # Render the moving text
 
     pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
 
@@ -1267,7 +1298,7 @@ def create_lvl1_screen():
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
         show_greenrobo_unlocked = False
@@ -1417,7 +1448,7 @@ def create_lvl1_screen():
             screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
 
             # Inside the game loop:
         screen.blit(rendered_up_text, (700 - camera_x, 200 - camera_y))  # Draws the rendered up text
@@ -1425,35 +1456,35 @@ def create_lvl1_screen():
         screen.blit(rendered_moving_text, (1350 - camera_x, 170 - camera_y))  # Draws the rendered moving text
         screen.blit(rendered_exit_text, (2400 - camera_x, 300 - camera_y))  # Draws the rendered exit text
 
-        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
         # Initialize and draw the quit text
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
         levels = load_language(lang_code).get('levels', {})
         lvl1_text = levels.get("lvl1", "Level 1")  # Render the level text
-        screen.blit(render_text(lvl1_text, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+        screen.blit(render_text(lvl1_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
+                screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
         token_display = f"Tokens: {len(collected_tokens)}/{len(token_pos)}"
-        screen.blit(font.render(token_display, True, (255, 255, 0)), (SCREEN_WIDTH - 200, 50))
+        screen.blit(render_text(token_display, True, (255, 255, 0)), (SCREEN_WIDTH - 200, 50))
 
         pygame.display.update()    
 
@@ -1562,7 +1593,7 @@ def create_lvl2_screen():
 
     # Render the texts
     jump_message = in_game.get("jump_message", "Use orange blocks to jump high distances!")
-    rendered_jump_text = font.render(jump_message, True, (255, 128, 0))  # Render the jump text
+    rendered_jump_text = render_text(jump_message, True, (255, 128, 0))  # Render the jump text
 
     if checkpoint_reached:
             screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
@@ -1585,7 +1616,7 @@ def create_lvl2_screen():
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
@@ -1780,9 +1811,9 @@ def create_lvl2_screen():
             screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
 
-        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
             # Inside the game loop:
@@ -1790,34 +1821,34 @@ def create_lvl2_screen():
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
         screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
         levels = load_language(lang_code).get('levels', {})
         lvl2_text = levels.get("lvl2", "Level 2")  # Render the level text
-        screen.blit(font.render(lvl2_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+        screen.blit(render_text(lvl2_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
+                screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
         token_display = f"Tokens: {len(collected_tokens)}/{len(token_pos)}"
-        screen.blit(font.render(token_display, True, (255, 255, 0)), (SCREEN_WIDTH - 200, 50))
+        screen.blit(render_text(token_display, True, (255, 255, 0)), (SCREEN_WIDTH - 200, 50))
 
         pygame.display.update()    
 
@@ -1931,10 +1962,10 @@ def create_lvl3_screen():
     collected_tokens = set()
 
     saw_text = in_game.get("saws_message", "Saws are also dangerous!")
-    rendered_saw_text = font.render(saw_text, True, (255, 0, 0))  # Render the saw text
+    rendered_saw_text = render_text(saw_text, True, (255, 0, 0))  # Render the saw text
 
     key_text = in_game.get("key_message", "Grab the coin and open the block!")
-    rendered_key_text = font.render(key_text, True, (255, 255, 0))  # Render the key text
+    rendered_key_text = render_text(key_text, True, (255, 255, 0))  # Render the key text
 
     # Drawing
     screen.blit(green_background, (0, 0))
@@ -1975,7 +2006,7 @@ def create_lvl3_screen():
         messages = load_language(lang_code).get('messages', {})
         if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
             unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-            rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+            rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
             screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
         show_greenrobo_unlocked = False
@@ -2318,7 +2349,7 @@ def create_lvl3_screen():
             screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
 
         # Draw the texts
         screen.blit(rendered_saw_text, (int(550 - camera_x), int(600 - camera_y)))  # Draws the rendered up text
@@ -2326,37 +2357,37 @@ def create_lvl3_screen():
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
         screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
         levels = load_language(lang_code).get('levels', {})
         lvl3_text = levels.get("lvl3", "Level 3")  # Render the level text
-        screen.blit(font.render(lvl3_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+        screen.blit(render_text(lvl3_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
         
         if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
+                screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
         token_display = f"Tokens: {len(collected_tokens)}/{len(token_pos)}"
-        screen.blit(font.render(token_display, True, (255, 255, 0)), (SCREEN_WIDTH - 200, 50))
+        screen.blit(render_text(token_display, True, (255, 255, 0)), (SCREEN_WIDTH - 200, 50))
 
         pygame.display.update()    
 
@@ -2531,7 +2562,7 @@ def create_lvl4_screen():
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
@@ -3008,38 +3039,38 @@ def create_lvl4_screen():
             screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
 
         # Draw the texts
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
         screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
         levels = load_language(lang_code).get('levels', {})
         lvl4_text = levels.get("lvl4", "Level 4")  # Render the level text
-        screen.blit(font.render(lvl4_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+        screen.blit(render_text(lvl4_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
+                screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
@@ -3212,7 +3243,7 @@ def create_lvl5_screen():
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
@@ -3695,38 +3726,38 @@ def create_lvl5_screen():
             screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
 
         # Draw the texts
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
         screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
         levels = load_language(lang_code).get('levels', {})
         lvl5_text = levels.get("lvl5", "Level 5")  # Render the level text
-        screen.blit(font.render(lvl5_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+        screen.blit(render_text(lvl5_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
+                screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
@@ -3893,7 +3924,7 @@ def create_lvl6_screen():
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
@@ -4372,34 +4403,34 @@ def create_lvl6_screen():
             screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
 
         # Draw the texts
         
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
         screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
         levels = load_language(lang_code).get('levels', {})
         lvl6_text = levels.get("lvl6", "Level 6")  # Render the level text
-        screen.blit(font.render(lvl6_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+        screen.blit(render_text(lvl6_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
-        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
         invisible_text = in_game.get("invisible_message", "These saws won't hurt you... promise!")
-        screen.blit(font.render(invisible_text, True, (255, 51, 153)), (900 - camera_x, 250 - camera_y)) # Render the invisible block text
+        screen.blit(render_text(invisible_text, True, (255, 51, 153)), (900 - camera_x, 250 - camera_y)) # Render the invisible block text
 
         if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
@@ -4407,7 +4438,7 @@ def create_lvl6_screen():
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
                 if val > 0.3:
-                    screen.blit(font.render(death_text, True, (255, 0, 0)), (20, 50))
+                    screen.blit(render_text(death_text, True, (255, 0, 0)), (20, 50))
                 else:
                     if not guide:
                         hscore.play()
@@ -4547,7 +4578,7 @@ def create_lvl7_screen():
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
@@ -4923,41 +4954,41 @@ def create_lvl7_screen():
             screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
 
         # Draw the texts
         
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
         screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
         levels = load_language(lang_code).get('levels', {})
         lvl7_text = levels.get("lvl7", "Level 7")  # Render the level text
-        screen.blit(font.render(lvl7_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+        screen.blit(render_text(lvl7_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         portal_text = in_game.get("portal_message", "These blue portals teleport you! But to good places... mostly!")
-        screen.blit(font.render(portal_text, True, (0, 196, 255)), (4400 - camera_x, 300 - camera_y))
+        screen.blit(render_text(portal_text, True, (0, 196, 255)), (4400 - camera_x, 300 - camera_y))
 
         if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
         
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
+                screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
@@ -5088,7 +5119,7 @@ def create_lvl8_screen():
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
@@ -5487,47 +5518,47 @@ def create_lvl8_screen():
             screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
 
         # Draw the texts
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
         screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text 
                
         levels = load_language(lang_code).get('levels', {})
         lvl8_text = levels.get("lvl8", "Level 8")  # Render the level text
-        screen.blit(font.render(lvl8_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+        screen.blit(render_text(lvl8_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         button1_text = in_game.get("button1_message", "Blue buttons, upon activation, will make you jump higher!")
-        screen.blit(font.render(button1_text, True, (0, 102, 204)), (8400 - camera_x, -150 - camera_y))
+        screen.blit(render_text(button1_text, True, (0, 102, 204)), (8400 - camera_x, -150 - camera_y))
 
         clarify_text = in_game.get("clarify_message", "Until you reach a checkpoint, of course!")
-        screen.blit(font.render(clarify_text, True, (0, 102, 204)), (9800 - camera_x, -150 - camera_y))
+        screen.blit(render_text(clarify_text, True, (0, 102, 204)), (9800 - camera_x, -150 - camera_y))
 
         mock_text = in_game.get("mock_message", "Wrong way my guy nothing to see here...")
-        screen.blit(font.render(mock_text, True, (255, 0, 0)), (13200 - camera_x, -300 - camera_y))
+        screen.blit(render_text(mock_text, True, (255, 0, 0)), (13200 - camera_x, -300 - camera_y))
 
-        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
         if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
+                screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
@@ -5706,7 +5737,7 @@ def create_lvl9_screen():
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
@@ -6185,44 +6216,44 @@ def create_lvl9_screen():
             screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
 
         # Draw the texts
         
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
         screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
         levels = load_language(lang_code).get('levels', {})
         lvl9_text = levels.get("lvl9", "Level 9")  # Render the level text
-        screen.blit(font.render(lvl9_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+        screen.blit(render_text(lvl9_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         button2_text = in_game.get("button2_message", "Lavender buttons, upon activation, will make you jump lower!")
-        screen.blit(font.render(button2_text, True, (204, 102, 204)), (100 - camera_x, 100 - camera_y))
+        screen.blit(render_text(button2_text, True, (204, 102, 204)), (100 - camera_x, 100 - camera_y))
 
         clarify2_text = in_game.get("clarify_message2", "They also affect your jumps on jump blocks!")
-        screen.blit(font.render(clarify2_text, True, (204, 102, 204)), (1000 - camera_x, 450 - camera_y))
+        screen.blit(render_text(clarify2_text, True, (204, 102, 204)), (1000 - camera_x, 450 - camera_y))
 
-        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
         if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
+                screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
@@ -6374,7 +6405,7 @@ def create_lvl10_screen():
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
@@ -6808,7 +6839,7 @@ def create_lvl10_screen():
         # Draw the texts
 
         button2_text = in_game.get("button3_message", "Purple buttons, upon activation, will turn out almost all the lights!")
-        screen.blit(font.render(button2_text, True, (104, 102, 204)), (100 - camera_x, 300 - camera_y))
+        screen.blit(render_text(button2_text, True, (104, 102, 204)), (100 - camera_x, 300 - camera_y))
 
         if player_rect.colliderect(light_off_button):
             if not is_mute and lights_off:
@@ -6850,35 +6881,35 @@ def create_lvl10_screen():
 
         levels = load_language(lang_code).get('levels', {})
         lvl10_text = levels.get("lvl10", "Level 10")  # Render the level text
-        screen.blit(font.render(lvl10_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+        screen.blit(render_text(lvl10_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
         screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
         if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
+                screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
@@ -7039,7 +7070,7 @@ def create_lvl11_screen():
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
@@ -7544,14 +7575,14 @@ def create_lvl11_screen():
             screen.blit(evilrobo_mascot, ((epos_x - camera_x), (epos_y - camera_y)))
 
             if evilrobo_phase == 0 and player_x < trigger_x:
-                sus_message = font.render("Huh? Is there anyone there?", True, (255, 20, 12))
+                sus_message = render_text("Huh? Is there anyone there?", True, (255, 20, 12))
                 screen.blit(sus_message, (4800 - camera_x, -450 - camera_y))
             else:
                 if evilrobo_phase < 1:
                     evilrobo_phase = 1  # Prevents repeating
 
         if evilrobo_phase == 1 and player_y < -300 and lights_off:
-            holup_message = font.render("HEY! Get away from here!", True, (185, 0, 0))
+            holup_message = render_text("HEY! Get away from here!", True, (185, 0, 0))
             screen.blit(holup_message, (4800 - camera_x, -450 - camera_y))
             
         if evilrobo_phase == 1 and lights_off:
@@ -7566,7 +7597,7 @@ def create_lvl11_screen():
         if evilrobo_phase == 2:
             screen.blit(evilrobo_mascot, (int(epos_x - camera_x), int(epos_y - camera_y)))
             if player_y > -300:
-                confused_text = font.render("WHERE DID HE GO????", True, (82, 0, 0))
+                confused_text = render_text("WHERE DID HE GO????", True, (82, 0, 0))
                 screen.blit(confused_text, ((epos_x - camera_x), (epos_y - camera_y)))
                 if not unlock:
                     if not is_mute:
@@ -7584,7 +7615,7 @@ def create_lvl11_screen():
             current_time = pygame.time.get_ticks()
             if current_time - unlock_time <= 5000:
                 unlock_text = messages.get("evilrobo_unlocked", "Evil Robo unlocked!")
-                rendered_unlock_text = font.render(unlock_text, True, (41, 255, 11))
+                rendered_unlock_text = render_text(unlock_text, True, (41, 255, 11))
                 screen.blit(rendered_unlock_text , (SCREEN_WIDTH // 2 - rendered_unlock_text .get_width() // 2, 80))
 
         evilrobo_rect = pygame.Rect(int(epos_x), int(epos_y), evilrobo_mascot.get_width(), evilrobo_mascot.get_height())
@@ -7615,7 +7646,7 @@ def create_lvl11_screen():
 
 
         button4_text = in_game.get("button4_message", "Green buttons, upon activation, will give you a massive speed boost!")
-        rendered_button4_text = font.render(button4_text, True, (51, 255, 51))
+        rendered_button4_text = render_text(button4_text, True, (51, 255, 51))
         screen.blit(rendered_button4_text, (-320 - camera_x, 300 - camera_y))
 
         if player_rect.colliderect(light_off_button) and evilrobo_phase != 1:
@@ -7666,34 +7697,34 @@ def create_lvl11_screen():
 
         levels = load_language(lang_code).get('levels', {})
         lvl11_text = levels.get("lvl11", "Level 11")  # Render the level text
-        screen.blit(font.render(lvl11_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
+        screen.blit(render_text(lvl11_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
         screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
         
         if show_greenrobo_unlocked:
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 50))
+                screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
 
@@ -7862,7 +7893,7 @@ def create_lvl12_screen():
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
@@ -8236,16 +8267,16 @@ def create_lvl12_screen():
 
 
         ice_text = in_game_ice.get("ice_message", "Ice Blocks melt when you stand on them! But they also cool you down!")
-        rendered_ice_text = font.render(ice_text, True, (0, 0, 0))
+        rendered_ice_text = render_text(ice_text, True, (0, 0, 0))
         screen.blit(rendered_ice_text, (2050 - camera_x, 560 - camera_y))
         freeze_text = in_game_ice.get("freeze_message", "Just remember to get some warm ups and don't just freeze to death!")
-        rendered_freeze_text = font.render(freeze_text, True, (0, 0, 0))
+        rendered_freeze_text = render_text(freeze_text, True, (0, 0, 0))
         screen.blit(rendered_freeze_text, (2055 - camera_x, 590 - camera_y))    
         overheat_text1 = in_game_ice.get("overheat_message1", "Also remember to keep track of your temperature and if")    
-        rendered_overheat1_text = font.render(overheat_text1, True, (0, 0, 0))
+        rendered_overheat1_text = render_text(overheat_text1, True, (0, 0, 0))
         screen.blit(rendered_overheat1_text, (4600 - camera_x, 300 - camera_y))
         overheat_text2 = in_game_ice.get("overheat_message2", "you heat up too much, stand on an ice block nearby!")
-        rendered_overheat2_text = font.render(overheat_text2, True, (0, 0, 0))
+        rendered_overheat2_text = render_text(overheat_text2, True, (0, 0, 0))
         screen.blit(rendered_overheat2_text, (4620 - camera_x, 340 - camera_y))
 
         # Draw Main text backgrounds
@@ -8255,38 +8286,38 @@ def create_lvl12_screen():
 
         levels = load_language(lang_code).get('levels', {})
         lvl_text = levels.get("lvl12", "Level 12")  # Render the level text
-        rendered_lvl_text = font.render(lvl_text, True, (255, 255, 255))
+        rendered_lvl_text = render_text(lvl_text, True, (255, 255, 255))
         screen.blit(rendered_lvl_text, (SCREEN_WIDTH //2 - rendered_lvl_text.get_width() // 2, 20)) # Draws the level text
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
 
         temp_val = in_game_ice.get("temp", "Temperature: {current_temp}").format(current_temp=current_temp)
         if current_temp >= 4 and current_temp <= 13:
-            screen.blit(font.render(temp_val, True, (0, 188, 255)), (20, 50))
+            screen.blit(render_text(temp_val, True, (0, 188, 255)), (20, 50))
         elif current_temp >= 13 and current_temp <= 20:
-            screen.blit(font.render(temp_val, True, (0, 255, 239)), (20, 50))
+            screen.blit(render_text(temp_val, True, (0, 255, 239)), (20, 50))
         elif current_temp >= 20 and current_temp <= 27:
-            screen.blit(font.render(temp_val, True, (0, 255, 43)), (20, 50))
+            screen.blit(render_text(temp_val, True, (0, 255, 43)), (20, 50))
         elif current_temp >= 27 and current_temp <= 35:
-            screen.blit(font.render(temp_val, True, (205, 255, 0)), (20, 50))
+            screen.blit(render_text(temp_val, True, (205, 255, 0)), (20, 50))
         elif current_temp >= 35 and current_temp <= 43:             
-            screen.blit(font.render(temp_val, True, (255, 162, 0)), (20, 50))
+            screen.blit(render_text(temp_val, True, (255, 162, 0)), (20, 50))
         elif current_temp >= 43 and current_temp <= 50: 
-            screen.blit(font.render(temp_val, True, (230, 105, 0)), (20, 50))
+            screen.blit(render_text(temp_val, True, (230, 105, 0)), (20, 50))
         elif current_temp >= 50:
-            screen.blit(font.render(temp_val, True, (255, 0, 0)), (20, 50))
+            screen.blit(render_text(temp_val, True, (255, 0, 0)), (20, 50))
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
         screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
         # Locked blocks logic!
@@ -8548,7 +8579,7 @@ def create_lvl12_screen():
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
@@ -8563,7 +8594,7 @@ def create_lvl12_screen():
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 80))
+                screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 80))
             else:
                 wait_time = None
 
@@ -8765,7 +8796,7 @@ def create_lvl13_screen():
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = font.render(unlocked_text, True, (51, 255, 51))
+                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
@@ -9173,13 +9204,13 @@ def create_lvl13_screen():
             lights_off = False
 
         timed_coin_text = in_game_ice.get("timed_coin_message", "Orange coins are timed! They open blocks for a limited")
-        rendered_timed_text = font.render(timed_coin_text, True, (0, 0, 0))
+        rendered_timed_text = render_text(timed_coin_text, True, (0, 0, 0))
         screen.blit(rendered_timed_text, (0 - camera_x, -80 - camera_y))
         timed_coin_text_2 = in_game_ice.get("timed_coin_message_2", "time. Run before they close again, or at worst, crush you...")
-        rendered_timed_text_2 = font.render(timed_coin_text_2, True, (0, 0, 0))
+        rendered_timed_text_2 = render_text(timed_coin_text_2, True, (0, 0, 0))
         screen.blit(rendered_timed_text_2, (-20 - camera_x, -30 - camera_y))
         ice_friendly = in_game_ice.get("ice_friendly", "Here's a ice block in case you need it!")
-        ice_friendly_text = font.render(ice_friendly, True, (0, 0, 0))
+        ice_friendly_text = render_text(ice_friendly, True, (0, 0, 0))
         screen.blit(ice_friendly_text, (-450 - camera_x, 80 - camera_y))
         if not lights_off:
             # Create a full dark surface
@@ -9390,38 +9421,38 @@ def create_lvl13_screen():
 
          levels = load_language(lang_code).get('levels', {})
          lvl_text = levels.get("lvl13", "Level 13")  # Render the level text
-         rendered_lvl_text = font.render(lvl_text, True, (255, 255, 255))
+         rendered_lvl_text = render_text(lvl_text, True, (255, 255, 255))
          screen.blit(rendered_lvl_text, (SCREEN_WIDTH //2 - rendered_lvl_text.get_width() // 2, 20)) # Draws the level text
 
          deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-         screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+         screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
 
          temp_val = in_game_ice.get("temp", "Temperature: {current_temp}").format(current_temp=current_temp)
          if current_temp >= 4 and current_temp <= 13:
-            screen.blit(font.render(temp_val, True, (0, 188, 255)), (20, 50))
+            screen.blit(render_text(temp_val, True, (0, 188, 255)), (20, 50))
          elif current_temp >= 13 and current_temp <= 20:
-            screen.blit(font.render(temp_val, True, (0, 255, 239)), (20, 50))
+            screen.blit(render_text(temp_val, True, (0, 255, 239)), (20, 50))
          elif current_temp >= 20 and current_temp <= 27:
-            screen.blit(font.render(temp_val, True, (0, 255, 43)), (20, 50))
+            screen.blit(render_text(temp_val, True, (0, 255, 43)), (20, 50))
          elif current_temp >= 27 and current_temp <= 35:
-            screen.blit(font.render(temp_val, True, (205, 255, 0)), (20, 50))
+            screen.blit(render_text(temp_val, True, (205, 255, 0)), (20, 50))
          elif current_temp >= 35 and current_temp <= 43:             
-           screen.blit(font.render(temp_val, True, (255, 162, 0)), (20, 50))
+           screen.blit(render_text(temp_val, True, (255, 162, 0)), (20, 50))
          elif current_temp >= 43 and current_temp <= 50: 
-            screen.blit(font.render(temp_val, True, (230, 105, 0)), (20, 50))
+            screen.blit(render_text(temp_val, True, (230, 105, 0)), (20, 50))
          elif current_temp >= 50:
-            screen.blit(font.render(temp_val, True, (255, 0, 0)), (20, 50))
+            screen.blit(render_text(temp_val, True, (255, 0, 0)), (20, 50))
 
         # Initialize and draw the reset and quit text
          reset_text = in_game.get("reset_message", "Press R to reset")
-         rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+         rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
          screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
          quit_text = in_game.get("quit_message", "Press Q to quit")
-         rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
          screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-         timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+         timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
          screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
         else:
             screen.blit(ice_robo_move, (ice_robo_x - camera_x, ice_robo_y - camera_y))
@@ -9730,7 +9761,7 @@ def create_lvl13_screen():
 
         if wait_time is not None and player_x < 65500:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 80))
+                screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 80))
             else:
                 wait_time = None
 
@@ -10312,13 +10343,13 @@ def create_secret1_screen():
             lights_off = False
 
         timed_coin_text = in_game_ice.get("sikrit", "Secret level... uhm work in progress no spoilers!!")
-        rendered_timed_text = font.render(timed_coin_text, True, (0, 0, 0))
+        rendered_timed_text = render_text(timed_coin_text, True, (0, 0, 0))
         screen.blit(rendered_timed_text, (0 - camera_x, -80 - camera_y))
         timed_coin_text_2 = in_game_ice.get("sikrit_2", "at least this game isnt mainstream... YET.")
-        rendered_timed_text_2 = font.render(timed_coin_text_2, True, (0, 0, 0))
+        rendered_timed_text_2 = render_text(timed_coin_text_2, True, (0, 0, 0))
         screen.blit(rendered_timed_text_2, (-20 - camera_x, -30 - camera_y))
         ice_friendly = in_game_ice.get("ice_friendly", "Here's a ice block in case you need it!")
-        ice_friendly_text = font.render(ice_friendly, True, (0, 0, 0))
+        ice_friendly_text = render_text(ice_friendly, True, (0, 0, 0))
         screen.blit(ice_friendly_text, (-450 - camera_x, 80 - camera_y))
         if not lights_off:
             # Create a full dark surface
@@ -10532,38 +10563,38 @@ def create_secret1_screen():
 
         levels = load_language(lang_code).get('levels', {})
         lvl_text = levels.get("lvl13", "Level 13")  # Render the level text
-        rendered_lvl_text = font.render(lvl_text, True, (255, 255, 255))
+        rendered_lvl_text = render_text(lvl_text, True, (255, 255, 255))
         screen.blit(rendered_lvl_text, (SCREEN_WIDTH //2 - rendered_lvl_text.get_width() // 2, 20)) # Draws the level text
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(font.render(deaths_val, True, (255, 255, 255)), (20, 20))
+        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
 
         temp_val = in_game_ice.get("temp", "Temperature: {current_temp}").format(current_temp=current_temp)
         if current_temp >= 4 and current_temp <= 13:
-            screen.blit(font.render(temp_val, True, (0, 188, 255)), (20, 50))
+            screen.blit(render_text(temp_val, True, (0, 188, 255)), (20, 50))
         elif current_temp >= 13 and current_temp <= 20:
-            screen.blit(font.render(temp_val, True, (0, 255, 239)), (20, 50))
+            screen.blit(render_text(temp_val, True, (0, 255, 239)), (20, 50))
         elif current_temp >= 20 and current_temp <= 27:
-            screen.blit(font.render(temp_val, True, (0, 255, 43)), (20, 50))
+            screen.blit(render_text(temp_val, True, (0, 255, 43)), (20, 50))
         elif current_temp >= 27 and current_temp <= 35:
-            screen.blit(font.render(temp_val, True, (205, 255, 0)), (20, 50))
+            screen.blit(render_text(temp_val, True, (205, 255, 0)), (20, 50))
         elif current_temp >= 35 and current_temp <= 43:             
-            screen.blit(font.render(temp_val, True, (255, 162, 0)), (20, 50))
+            screen.blit(render_text(temp_val, True, (255, 162, 0)), (20, 50))
         elif current_temp >= 43 and current_temp <= 50: 
-            screen.blit(font.render(temp_val, True, (230, 105, 0)), (20, 50))
+            screen.blit(render_text(temp_val, True, (230, 105, 0)), (20, 50))
         elif current_temp >= 50:
-            screen.blit(font.render(temp_val, True, (255, 0, 0)), (20, 50))
+            screen.blit(render_text(temp_val, True, (255, 0, 0)), (20, 50))
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = font.render(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
         screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = font.render(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_text = font.render(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
+        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
         # DEATH LOGICS
@@ -10872,7 +10903,7 @@ def create_secret1_screen():
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
-                screen.blit(font.render(death_text, True, (255, 0 ,0)), (20, 80))
+                screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 80))
             else:
                 wait_time = None
 
@@ -10972,7 +11003,7 @@ def handle_action(key):
                     set_page("main_menu")
                     is_transitioning = False
                     transition_time = None
-        elif key in ["en", "fr", "es", "de", "zh_cn", "tr", "pt_br", "ru", "jp", "id", "kr", "it"]:
+        elif key in ["en", "fr", "es", "de", "zh_cn", "tr", "pt_br", "ru", "jp", "id", "kr", "it", "ir", "ar", "pk", "ps"]:
             change_language(key)
             if not is_transitioning:
                 transition.start("main_menu")
@@ -11102,13 +11133,13 @@ while running:
             # Render the text
             messages = load_language(lang_code).get('messages', {})
             deny_text = messages.get("deny_message", "Access denied!")
-            rendered_deny_text = font.render(deny_text, True, (255, 100, 100))
+            rendered_deny_text = render_text(deny_text, True, (255, 100, 100))
             error_text = messages.get("error_message","Your screen resolution is too small! Increase the screen")
-            rendered_error_text = font.render(error_text, True, (255, 255, 255))
+            rendered_error_text = render_text(error_text, True, (255, 255, 255))
             error_text2 = messages.get("error_message2", "resolution in your system settings.")
-            rendered_error_text2 = font.render(error_text2, True, (255, 255, 255))
+            rendered_error_text2 = render_text(error_text2, True, (255, 255, 255))
             countdown_text = messages.get("countdown_message", "Closing in {countdown} second(s)...").format(countdown=countdown)
-            rendered_countdown_text = font.render(countdown_text, True, (255, 100, 100))
+            rendered_countdown_text = render_text(countdown_text, True, (255, 100, 100))
 
             # Center the text
             screen.blit(rendered_deny_text, (SCREEN_WIDTH // 2 - rendered_deny_text.get_width() // 2, SCREEN_HEIGHT // 2 - 280))            
@@ -11188,22 +11219,22 @@ while running:
                     pygame.draw.rect(screen, (74, 74, 74), rect.inflate(30, 15), 6)  # Border for hover effect
 
                     if key == "start":
-                        menu_text = font.render("Play the game.", True, (255, 255, 0))
+                        menu_text = render_text("Play the game.", True, (255, 255, 0))
                         screen.blit(menu_text, (SCREEN_WIDTH // 2 - 70, SCREEN_HEIGHT - 50))
                     elif key == "character_select":
-                        char_text = font.render("Select your character!", True, (255, 255, 0))
+                        char_text = render_text("Select your character!", True, (255, 255, 0))
                         screen.blit(char_text, (SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT - 50))
                     elif key == "settings": 
-                        settings_text = font.render("Turn on the audio or turn it off, depending on current mode.", True, (255, 255, 0))
+                        settings_text = render_text("Turn on the audio or turn it off, depending on current mode.", True, (255, 255, 0))
                         screen.blit(settings_text, (SCREEN_WIDTH // 2 - 400, SCREEN_HEIGHT - 50))
                     elif key == "news":
-                        news_text = font.render("News and updates about the game!", True, (255, 255, 0))
+                        news_text = render_text("News and updates about the game!", True, (255, 255, 0))
                         screen.blit(news_text, (SCREEN_WIDTH // 2 - 180, SCREEN_HEIGHT - 50))
                     elif key == "quit":
-                        quit_text = font.render("Exit the game.", True, (255, 255, 0))
+                        quit_text = render_text("Exit the game.", True, (255, 255, 0))
                         screen.blit(quit_text, (SCREEN_WIDTH // 2 - 70, SCREEN_HEIGHT - 50))
                     elif key == "language":
-                        lang_text = font.render("Select your language.", True, (255, 255, 0))
+                        lang_text = render_text("Select your language.", True, (255, 255, 0))
                         screen.blit(lang_text, (SCREEN_WIDTH // 2 - 120, SCREEN_HEIGHT - 50))
 
                     if hovered_key != last_hovered_key and not is_mute:
@@ -11226,7 +11257,7 @@ while running:
          mouse_pos = pygame.mouse.get_pos()
 
          messages = load_language(lang_code).get('messages', {})  # Fetch localized messages
-         char_text = font.render("Select your Robo!", True, (0, 0, 0))
+         char_text = render_text("Select your Robo!", True, (0, 0, 0))
          screen.blit(char_text, (SCREEN_WIDTH // 2 - 100, 50))
 
     # Check if characters are locked
@@ -11297,7 +11328,7 @@ while running:
     # Display locked message for 5 seconds
          if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 5000:
-             rendered_locked_text = font.render(locked_text, True, (255, 255, 0))
+             rendered_locked_text = render_text(locked_text, True, (255, 255, 0))
              screen.blit(rendered_locked_text, ((SCREEN_WIDTH // 2 - rendered_locked_text.get_width() // 2), SCREEN_HEIGHT - 700))
             else:
              wait_time = None
@@ -11370,7 +11401,7 @@ while running:
 
             screen.fill((20, 20, 20))
 
-            title = font.render(current_lang.get("news", "News"), True, (255, 255, 255))
+            title = render_text(current_lang.get("news", "News"), True, (255, 255, 255))
             screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 50))
 
             y = 120
@@ -11382,7 +11413,7 @@ while running:
 
         # Draw text
             for line in news_lines:
-             rendered = font.render(line, True, (200, 200, 200))
+             rendered = render_text(line, True, (200, 200, 200))
              screen.blit(rendered, (80, y))
              y += 28
 
@@ -11437,7 +11468,7 @@ while running:
 
             # Fetch the localized "Select a Level" text dynamically
             select_text = current_lang.get("level_display", "Select a Level")
-            rendered_select_text = font.render(select_text, True, (255, 255, 255))
+            rendered_select_text = render_text(select_text, True, (255, 255, 255))
             select_text_rect = rendered_select_text.get_rect(center=(SCREEN_WIDTH // 2, 50))
 
             # Draw the "Select a Level" text
@@ -11466,7 +11497,7 @@ while running:
                         if key != "next" and key != "back" and not is_locked:
                             hs = progress['score'][key]
                             high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
-                            lvl_time_text = font.render(high_text, True, (255, 255, 0))
+                            lvl_time_text = render_text(high_text, True, (255, 255, 0))
 
                             # Adjust position as needed
                             screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - lvl_time_text.get_width() // 2, SCREEN_HEIGHT - 50))
@@ -11506,7 +11537,7 @@ while running:
                         
             # Fetch the localized "Select a Level" text dynamically
             select_text = current_lang.get("level_display", "Select a Level")
-            rendered_select_text = font.render(select_text, True, (0, 0, 0))
+            rendered_select_text = render_text(select_text, True, (0, 0, 0))
             select_text_rect = rendered_select_text.get_rect(center=(SCREEN_WIDTH // 2, 50))
             screen.blit(rendered_select_text, select_text_rect)
 
@@ -11545,7 +11576,7 @@ while running:
                         if not key == "back" and not is_locked:
                             hs = progress['score'][key]
                             high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
-                            lvl_time_text = font.render(high_text, True, (255, 255, 0))
+                            lvl_time_text = render_text(high_text, True, (255, 255, 0))
                             # Adjust position as needed
                             screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - lvl_time_text.get_width() // 2, SCREEN_HEIGHT - 50))
                             s = key
@@ -11595,7 +11626,7 @@ while running:
 
         if show_greenrobo_unlocked:
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = font.render("Green Robo Unlocked!", True, (51, 255, 51))
+                unlocked_text = render_text("Green Robo Unlocked!", True, (51, 255, 51))
                 screen.blit(unlocked_text, (SCREEN_WIDTH // 2 - unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
@@ -11616,7 +11647,7 @@ while running:
 
         if transition.active:
             transition.update()
-
+        
         pygame.display.flip()
 
 pygame.quit()
