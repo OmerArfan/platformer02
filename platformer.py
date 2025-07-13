@@ -35,11 +35,13 @@ def change_ambience(new_file):
     pygame.mixer.music.play(-1)
 
 # Save file name
-SAVE_FILE = "save_data.json"
+SAVE_FILE = "data/progress.json"
 
 notif = False
 er = False
+
 pygame.mouse.set_visible(False)  # Hide the system cursor
+
 # Default progress dictionary
 default_progress = {
     "complete_levels": 0,
@@ -163,129 +165,106 @@ images_loaded = False
 
 background_img = pygame.image.load("bgs/Background.png").convert()
 background = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
-
+running = False
 def draw_loading_bar(stage_name, percent):
     screen.blit(background, (0, 0))
-    text = font_def.render(f"{stage_name}...", True, (255, 255, 255))
+    text = font_def.render(f"{stage_name}", True, (255, 255, 255))
     text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 60))
     screen.blit(text, text_rect)
     pygame.draw.rect(screen, (0, 0, 255), (0, SCREEN_HEIGHT - 10, (SCREEN_WIDTH / 100)*percent, 10))
     pygame.display.flip()
 
-if not sounds_loaded:
-    # Load sounds using the path
-    draw_loading_bar("Loading sounds...", 17)
-    click_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "click.wav"))
-    hover_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hover.wav"))
-    death_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "death.wav"))
-    laser_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "laser.wav"))
-    fall_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "fall.wav"))
-    open_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "unlock.wav"))
-    checkpoint_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "checkpoint.wav"))
-    warp_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "warp.wav"))
-    button_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "button.wav"))
-    bounce_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "bounce.wav"))
-    move_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "travel.wav"))
-    jump_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "jump.wav"))
-    hit_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hit.wav"))
-    notify_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "notify.wav"))
-    overheat_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "overheat.wav"))
-    freeze_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "freeze.wav"))
-    token_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "token.wav"))
-    star1 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/1star.wav"))
-    star2 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/2star.wav"))
-    star3 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/3star.wav"))
-    hscore = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/hs.wav"))
-    star1.set_volume(4.0)
-    star2.set_volume(4.0)
-    star3.set_volume(4.0)
-    sounds_loaded = True
-    # Ambient themes
-    pygame.mixer.music.load("audio/amb/ambience.wav")
-    pygame.display.flip()
+stage = "Loading sounds..."
+ps = 0
+while ps < 100:
+ draw_loading_bar(stage, ps)
+ if not sounds_loaded:
+  click_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "click.wav")); ps += 1
+  hover_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hover.wav"))
+  death_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "death.wav")); ps += 1
+  laser_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "laser.wav"))
+  fall_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "fall.wav")); ps += 1
+  open_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "unlock.wav"))
+  checkpoint_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "checkpoint.wav")); ps += 1
+  warp_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "warp.wav"))
+  button_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "button.wav")); ps += 1
+  bounce_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "bounce.wav"))
+  move_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "travel.wav")); ps += 1
+  jump_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "jump.wav"))
+  hit_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hit.wav")); ps += 1
+  notify_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "notify.wav"))
+  overheat_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "overheat.wav")); ps += 1
+  freeze_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "freeze.wav"))
+  token_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "token.wav")); ps += 1
+  star1 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/1star.wav"))
+  star2 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/2star.wav")); ps += 1
+  star3 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/3star.wav"))
+  hscore = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/hs.wav")); ps += 1
+  star1.set_volume(4.0)
+  star2.set_volume(4.0)
+  star3.set_volume(4.0)
+  # Ambient themes
+  pygame.mixer.music.load("audio/amb/ambience.wav"); ps += 2
+  sounds_loaded = True
 
-if not images_loaded:
-    draw_loading_bar("Loading images...", 31)
-    cursor_img = pygame.image.load("oimgs/cursor/cursor.png").convert_alpha()
+ if not images_loaded:
+    stage = "Loading images..."
+    cursor_img = pygame.image.load("oimgs/cursor/cursor.png").convert_alpha(); ps += 2
 
     # Load logo images
-    logo = pygame.image.load("oimgs/logos/logo.png").convert_alpha()
+    logo = pygame.image.load("oimgs/logos/logo.png").convert_alpha(); ps += 1
     studio_logo = pygame.image.load("oimgs/logos/studiologodef.png").convert_alpha()
     studio_logo = pygame.transform.scale(studio_logo, (390, 150))
-    studio_logo_rect = studio_logo.get_rect(topleft=(20, SCREEN_HEIGHT - 170))
+    studio_logo_rect = studio_logo.get_rect(topleft=(20, SCREEN_HEIGHT - 170)); ps += 1
     studio_glow = pygame.image.load("oimgs/logos/studiologoglow.png").convert_alpha()
     studio_glow = pygame.transform.scale(studio_glow, (420, 170))
-    studio_glow_rect = studio_glow.get_rect(topleft=(20, SCREEN_HEIGHT - 190))
+    studio_glow_rect = studio_glow.get_rect(topleft=(20, SCREEN_HEIGHT - 190)); ps += 1
 
     # Load and scale backgrounds
     plain_background_img = pygame.image.load("bgs/PlainBackground.png").convert()
     plain_background = pygame.transform.scale(plain_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
-    ice_background_img = pygame.image.load("bgs/IceBackground.png").convert()
+    ice_background_img = pygame.image.load("bgs/IceBackground.png").convert(); ps += 2
     ice_background = pygame.transform.scale(ice_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
     green_background_img = pygame.image.load("bgs/GreenBackground.png").convert()
-    green_background = pygame.transform.scale(green_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    green_background = pygame.transform.scale(green_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT)); ps += 2
     trans = pygame.image.load("bgs/trans.png").convert()
-    trans = pygame.transform.scale(trans, ((SCREEN_WIDTH), (SCREEN_HEIGHT)))
+    trans = pygame.transform.scale(trans, ((SCREEN_WIDTH), (SCREEN_HEIGHT))); ps += 1
     end = pygame.image.load("bgs/EndScreen.png").convert_alpha()
-    end = pygame.transform.scale(end, ((SCREEN_WIDTH), (SCREEN_HEIGHT)))
+    end = pygame.transform.scale(end, ((SCREEN_WIDTH), (SCREEN_HEIGHT))); ps += 1
 
     # Load and initalize Images!
     nact_cp = pygame.image.load("oimgs/checkpoints/yellow_flag.png").convert_alpha()
-    act_cp = pygame.image.load("oimgs/checkpoints/green_flag.png").convert_alpha()
+    act_cp = pygame.image.load("oimgs/checkpoints/green_flag.png").convert_alpha(); ps += 1
 
-
-if not progress_loaded and sounds_loaded:
-    draw_loading_bar("Loading progress...", 91)
-    progress = load_progress()
-    complete_levels = progress.get("complete_levels", 0)
+ if not progress_loaded and sounds_loaded:
+    stage = "Loading progress..."
+    progress = load_progress(); ps = 65
+    complete_levels = progress.get("complete_levels", 0); ps = 75
     progress_loaded = True
-    pygame.display.flip()
 
-if not language_loaded and progress_loaded:
+ if not language_loaded and progress_loaded:
 # Get just the language code, default to English
-    draw_loading_bar("Loading configured settings...", 100)
-    lang_code = progress.get("language", "en")
-    progress["language"] = lang_code
-    is_mute = progress.get("is_mute", default_progress["is_mute"])  # Global variable to track mute state
+    stage = "Loading configured settings..."
+    lang_code = progress.get("language", "en"); ps = 82
+    progress["language"] = lang_code; ps = 91
+    is_mute = progress.get("is_mute", default_progress["is_mute"]); ps = 97  # Global variable to track mute state
     language_loaded = True
-    pygame.display.flip()
+ else:
+     ps = 100
+ 
+ pygame.display.flip()
+
+if ps == 100:
+ running = True
 
 pygame.mixer.music.set_volume(0.1)
 pygame.mixer.music.play(-1)  # Loop forever
 
-# Level rank thresholds
-level_thresholds = [
-    {'level': 1 ,'gold': 7, 'silver': 9, 'bronze': 12},
-    {'level': 2 ,'gold': 25, 'silver': 30, 'bronze': 40},
-    {'level': 3 ,'gold': 35, 'silver': 45, 'bronze': 60},
-    {'level': 4 ,'gold': 40, 'silver': 50, 'bronze': 60},
-    {'level': 5 ,'gold': 50, 'silver': 65, 'bronze': 80},
-    {'level': 6 ,'gold': 50, 'silver': 70, 'bronze': 90},
-    {'level': 7 ,'gold': 35, 'silver': 40, 'bronze': 45},
-    {'level': 8 ,'gold': 25, 'silver': 35, 'bronze': 45},
-    {'level': 9 ,'gold': 60, 'silver': 80, 'bronze': 100},
-    {'level': 10,'gold': 35, 'silver': 50, 'bronze': 60},
-    {'level': 11,'gold': 35, 'silver': 55, 'bronze': 75},
-    {'level': 12,'gold': 45, 'silver': 60, 'bronze': 85},
-    {'level': 13,'gold': 30, 'silver': 50, 'bronze': 70},
-]
-
-# Level score thresholds
-score_thresholds = [
-    {'level': 1,  '1': 10000, '2': 80000, '3': 85000},
-    {'level': 2,  '1': 10000, '2': 70000, '3': 85000},
-    {'level': 3,  '1': 10000, '2': 70000, '3': 85000},
-    {'level': 4,  '1': 10000, '2': 70000, '3': 85000},
-    {'level': 5,  '1': 10000, '2': 65000, '3': 80000},
-    {'level': 6,  '1': 10000, '2': 65000, '3': 86000},
-    {'level': 7,  '1': 10000, '2': 74000, '3': 86000},
-    {'level': 8,  '1': 10000, '2': 76000, '3': 84500},
-    {'level': 9,  '1': 10000, '2': 66000, '3': 82000},
-    {'level': 10, '1': 10000, '2': 75000, '3': 85000},
-    {'level': 11, '1': 10000, '2': 73000, '3': 86000},
-    {'level': 12, '1': 10000, '2': 73000, '3': 84000},
-    {'level': 13, '1': 10000, '2': 76000, '3': 80000},
-]
+with open("data/thresholds.json", "r", encoding="utf-8") as f:
+    thresholds_data = json.load(f)
+    level_thresholds = thresholds_data["level_thresholds"]
+    score_thresholds = thresholds_data["score_thresholds"]
+    
 # Function to get medal based on time
 def get_medal(level, time_taken):
     thresholds = next((t for t in level_thresholds if t['level'] == level), None)
@@ -390,7 +369,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.66", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.67", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
@@ -11098,7 +11077,7 @@ if not is_mute and SCREEN_WIDTH > MIN_WIDTH or SCREEN_HEIGHT > MIN_HEIGHT:
     click_sound.play()
 
 # Main loop
-running = True
+
 while running:
     messages = load_language(lang_code).get('messages', {})
     # Clear screen!
