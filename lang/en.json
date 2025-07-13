@@ -12,18 +12,6 @@
   }
   ,"levels": {
   "level_display": "SELECT A LEVEL",
-  "1": "1",
-  "2": "2",
-  "3": "3",
-  "4": "4",
-  "5": "5",
-  "6": "6",
-  "7": "7",
-  "8": "8",
-  "9": "9",
-  "10": "10",
-  "11": "11",
-  "12": "12",
   "lvl1": "Level 1",
   "lvl2": "Level 2",
   "lvl3": "Level 3",
@@ -36,6 +24,10 @@
   "lvl10": "Level 10",
   "lvl11": "Level 11",
   "lvl12": "Level 12",
+  "lvl13": "Level 13",
+  "lvl14": "Level 14",
+  "lvl15": "Level 15",
+  "lvl16": "Level 16",
   "back": "Back"
   ,"next": "Next"
    }
@@ -50,6 +42,7 @@
   ,"lavalocked_message": "This robot is coming soon!"
   ,"greenlocked_message": "Get GOLD rank in all Green World Levels to unlock this robot!"
   ,"lvl_comp": "Level Complete!"
+  ,"hs_m":"Highscore: {hs}" 
 }
   ,"in_game": {
   "dead_message": "You died!",
@@ -62,7 +55,7 @@
   "moving_message": "Not all blocks stay still...",
   "mock_message": "Wrong way my guy nothing special here...",
   "jump_message": "Use orange blocks to jump high distances!",
-  "saw_message": "Saws are also dangerous!",
+  "saws_message": "Saws are also dangerous!",
   "sawed_message": "Sawed to bits!",
   "key_message": "Grab the coin and open the block!",
   "laser_message": "Lasered!",
