@@ -19,6 +19,15 @@ import re
 # Path to sound folder
 SOUND_FOLDER = os.path.join("audio")
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 # Initialize audio
 pygame.mixer.init()
 
@@ -26,7 +35,7 @@ pygame.mixer.init()
 pygame.init()
 
 # Load and set window icon
-icon = pygame.image.load("robots.ico")
+icon = pygame.image.load(resource_path("robots.ico"))
 pygame.display.set_icon(icon)
 
 def change_ambience(new_file):
@@ -163,7 +172,7 @@ language_loaded = False
 sounds_loaded = False
 images_loaded = False
 
-background_img = pygame.image.load("bgs/Background.png").convert()
+background_img = pygame.image.load(resource_path("bgs/Background.png")).convert()
 background = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 running = False
 def draw_loading_bar(stage_name, percent):
@@ -209,36 +218,39 @@ while ps < 100:
 
  if not images_loaded:
     stage = "Loading images..."
-    cursor_img = pygame.image.load("oimgs/cursor/cursor.png").convert_alpha(); ps += 2
+    cursor_img = pygame.image.load(resource_path("oimgs/cursor/cursor.png")).convert_alpha(); ps += 2
 
     # Load logo images
-    logo = pygame.image.load("oimgs/logos/logo.png").convert_alpha(); ps += 1
-    studio_logo = pygame.image.load("oimgs/logos/studiologodef.png").convert_alpha()
+    logo = pygame.image.load(resource_path("oimgs/logos/logo.png")).convert_alpha(); ps += 1
+    studio_logo = pygame.image.load(resource_path("oimgs/logos/studiologodef.png")).convert_alpha()
     studio_logo = pygame.transform.scale(studio_logo, (390, 150))
     studio_logo_rect = studio_logo.get_rect(topleft=(20, SCREEN_HEIGHT - 170)); ps += 1
-    studio_glow = pygame.image.load("oimgs/logos/studiologoglow.png").convert_alpha()
+    studio_glow = pygame.image.load(resource_path("oimgs/logos/studiologoglow.png")).convert_alpha()
     studio_glow = pygame.transform.scale(studio_glow, (420, 170))
     studio_glow_rect = studio_glow.get_rect(topleft=(20, SCREEN_HEIGHT - 190)); ps += 1
 
     # Load and scale backgrounds
-    plain_background_img = pygame.image.load("bgs/PlainBackground.png").convert()
+    plain_background_img = pygame.image.load(resource_path("bgs/PlainBackground.png")).convert()
     plain_background = pygame.transform.scale(plain_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
-    ice_background_img = pygame.image.load("bgs/IceBackground.png").convert(); ps += 2
+    ice_background_img = pygame.image.load(resource_path("bgs/IceBackground.png")).convert(); ps += 2
     ice_background = pygame.transform.scale(ice_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
-    green_background_img = pygame.image.load("bgs/GreenBackground.png").convert()
+    green_background_img = pygame.image.load(resource_path("bgs/GreenBackground.png")).convert()
     green_background = pygame.transform.scale(green_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT)); ps += 2
-    trans = pygame.image.load("bgs/trans.png").convert()
+    trans = pygame.image.load(resource_path("bgs/trans.png")).convert()
     trans = pygame.transform.scale(trans, ((SCREEN_WIDTH), (SCREEN_HEIGHT))); ps += 1
-    end = pygame.image.load("bgs/EndScreen.png").convert_alpha()
+    end = pygame.image.load(resource_path("bgs/EndScreen.png")).convert_alpha()
     end = pygame.transform.scale(end, ((SCREEN_WIDTH), (SCREEN_HEIGHT))); ps += 1
 
     # Load and initalize Images!
-    nact_cp = pygame.image.load("oimgs/checkpoints/yellow_flag.png").convert_alpha()
-    act_cp = pygame.image.load("oimgs/checkpoints/green_flag.png").convert_alpha();
-    gold_m = pygame.image.load("oimgs/medal/gold.png").convert_alpha()
-    silv_m = pygame.image.load("oimgs/medal/silver.png").convert_alpha()
-    bron_m = pygame.image.load("oimgs/medal/bronze.png").convert_alpha(); ps += 1
-
+    nact_cp = pygame.image.load(resource_path("oimgs/checkpoints/yellow_flag.png")).convert_alpha()
+    act_cp = pygame.image.load(resource_path("oimgs/checkpoints/green_flag.png")).convert_alpha();
+    gold_m = pygame.image.load(resource_path("oimgs/medal/gold.png")).convert_alpha()
+    gold_m = pygame.transform.scale(gold_m, ((gold_m.get_width() // 2), (gold_m.get_height() // 2)))
+    silv_m = pygame.image.load(resource_path("oimgs/medal/silver.png")).convert_alpha()
+    silv_m = pygame.transform.scale(silv_m, ((silv_m.get_width() // 2), (silv_m.get_height() // 2)))
+    bron_m = pygame.image.load(resource_path("oimgs/medal/bronze.png")).convert_alpha(); ps += 1
+    bron_m = pygame.transform.scale(bron_m, ((bron_m.get_width() // 2), (bron_m.get_height() // 2)))
+ 
  if not progress_loaded and sounds_loaded:
     stage = "Loading progress..."
     progress = load_progress(); ps = 65
@@ -372,7 +384,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.68", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.69", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
@@ -478,17 +490,26 @@ def create_language_buttons():
     back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, y + spacing_y + 40))
     buttons.append((rendered_back, back_rect, "back", False))
 
-greendisk_img = pygame.image.load("oimgs/disks/greendisk.png").convert_alpha()
+greendisk_img = pygame.image.load(resource_path("oimgs/disks/greendisk.png")).convert_alpha()
 greendisk_img = pygame.transform.scale(greendisk_img, (100, 100))  # Resize as needed
-icedisk_img = pygame.image.load("oimgs/disks/icedisk.png").convert_alpha()
+icedisk_img = pygame.image.load(resource_path("oimgs/disks/icedisk.png")).convert_alpha()
 icedisk_img = pygame.transform.scale(icedisk_img, (100, 100))  # Resize as needed
-lockeddisk_img = pygame.image.load("oimgs/disks/lockeddisk.png").convert_alpha()
+lockeddisk_img = pygame.image.load(resource_path("oimgs/disks/lockeddisk.png")).convert_alpha()
 lockeddisk_img = pygame.transform.scale(lockeddisk_img, (100, 100))  # Resize as needed
-token_img = pygame.image.load("oimgs/ig/roboken.png").convert_alpha()
+token_img = pygame.image.load(resource_path("oimgs/ig/roboken.png")).convert_alpha()
 token_img = pygame.transform.scale(token_img, (80, 80))
-star_img = pygame.image.load("oimgs/ig/star.png").convert_alpha()
+star_img = pygame.image.load(resource_path("oimgs/ig/star.png")).convert_alpha()
 star_img = pygame.transform.scale(star_img, (150, 140))
 s_star_img = pygame.transform.scale(star_img, (20, 17))
+
+# Load character images
+robot_img = pygame.image.load(resource_path("char/robot/robot.png")).convert_alpha()
+evilrobot_img = pygame.image.load(resource_path("char/evilrobot/evilrobot.png")).convert_alpha()
+icerobot_img = pygame.image.load(resource_path("char/icerobot/icerobot.png")).convert_alpha()
+lavarobot_img = pygame.image.load(resource_path("char/lavarobot/lavarobot.png")).convert_alpha()
+greenrobot_img = pygame.image.load(resource_path("char/greenrobot/greenrobot.png")).convert_alpha()
+cakebot_img = pygame.image.load(resource_path("char/cakebot/cakebot.png")).convert_alpha()
+locked_img = pygame.image.load(resource_path("char/lockedrobot.png")).convert_alpha()
 
 def green_world_buttons():
     global current_lang, buttons
@@ -548,7 +569,7 @@ def map():
 
     level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12", "lvl13", "lvl14", "lvl15"]
 
-    mappy = pygame.image.load("bgs/map.png").convert_alpha()
+    mappy = pygame.image.load(resource_path("bgs/map.png").convert_alpha())
     target_height = SCREEN_HEIGHT
 
     map_width, map_height = mappy.get_width(), mappy.get_height()
@@ -596,15 +617,6 @@ def check_green_gold():
             save_progress(progress)
             show_greenrobo_unlocked = True
             greenrobo_unlocked_message_time = time.time()
-
-# Load character images
-robot_img = pygame.image.load("char/robot/robot.png").convert_alpha()
-evilrobot_img = pygame.image.load("char/evilrobot/evilrobot.png").convert_alpha()
-icerobot_img = pygame.image.load("char/icerobot/icerobot.png").convert_alpha()
-lavarobot_img = pygame.image.load("char/lavarobot/lavarobot.png").convert_alpha()
-greenrobot_img = pygame.image.load("char/greenrobot/greenrobot.png").convert_alpha()
-cakebot_img = pygame.image.load("char/cakebot/cakebot.png").convert_alpha()
-locked_img = pygame.image.load("char/lockedrobot.png").convert_alpha()
 
 #Initialize default character
 selected_character = progress.get("selected_character", default_progress["selected_character"])
@@ -974,11 +986,11 @@ def level_complete():
                     star3_p = True
 
         if medal == "Gold":
-            death_sound.play()
+            screen.blit(gold_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - gold_m.get_height() // 2))
         elif medal == "Silver":
-            checkpoint_sound.play()
+            screen.blit(silv_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - gold_m.get_height() // 2))
         elif medal == "Bronze":
-            jump_sound.play()
+            screen.blit(bron_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - gold_m.get_height() // 2))
 
         for particle in stareffects[:]:
          particle.update()
@@ -1014,25 +1026,25 @@ def char_assets():
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
  # Load player image
     if selected_character == "robot": 
-        player_img = pygame.image.load(f"char/robot/robot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/robot/smilerobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/robot/smilerobot.png") # Resize to fit the game
+        player_img = pygame.image.load(resource_path(f"char/robot/robot.png")).convert_alpha()
+        moving_img_l = pygame.image.load(resource_path(f"char/robot/smilerobotL.png")) # Resize to fit the game
+        moving_img = pygame.image.load(resource_path(f"char/robot/smilerobot.png")) # Resize to fit the game
     elif selected_character == "evilrobot":
-        player_img = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/evilrobot/movevilrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/evilrobot/movevilrobot.png") # Resize to fit the game
+        player_img = pygame.image.load(resource_path(f"char/evilrobot/evilrobot.png")).convert_alpha()
+        moving_img_l = pygame.image.load(resource_path(f"char/evilrobot/movevilrobotL.png")) # Resize to fit the game
+        moving_img = pygame.image.load(resource_path(f"char/evilrobot/movevilrobot.png")) # Resize to fit the game
     elif selected_character == "greenrobot":
-        player_img = pygame.image.load(f"char/greenrobot/greenrobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/greenrobot/movegreenrobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/greenrobot/movegreenrobot.png") # Resize to fit the game
+        player_img = pygame.image.load(resource_path(f"char/greenrobot/greenrobot.png")).convert_alpha()
+        moving_img_l = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobotL.png")) # Resize to fit the game
+        moving_img = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobot.png")) # Resize to fit the game
     elif selected_character == "icerobot":
-        player_img = pygame.image.load(f"char/icerobot/icerobot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/icerobot/moveicerobotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/icerobot/moveicerobot.png") # Resize to fit the game
+        player_img = pygame.image.load(resource_path(f"char/icerobot/icerobot.png").convert_alpha())
+        moving_img_l = pygame.image.load(resource_path(f"char/icerobot/moveicerobotL.png")) # Resize to fit the game
+        moving_img = pygame.image.load(resource_path(f"char/icerobot/moveicerobot.png")) # Resize to fit the game
     elif selected_character == "cakebot":
-        player_img = pygame.image.load(f"char/cakebot/cakebot.png").convert_alpha()
-        moving_img_l = pygame.image.load(f"char/cakebot/movecakebotL.png") # Resize to fit the game
-        moving_img = pygame.image.load(f"char/cakebot/movecakebot.png") # Resize to fit the game
+        player_img = pygame.image.load(resource_path(f"char/cakebot/cakebot.png").convert_alpha())
+        moving_img_l = pygame.image.load(resource_path(f"char/cakebot/movecakebotL.png")) # Resize to fit the game
+        moving_img = pygame.image.load(resource_path(f"char/cakebot/movecakebot.png")) # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
 def point_in_triangle(px, py, a, b, c):
@@ -6888,7 +6900,7 @@ def create_lvl11_screen():
     trigger_x = 4650
     espawn_x, espawn_y = 5200, -400
     epos_x, epos_y = espawn_x, espawn_y
-    evilrobo_mascot = pygame.image.load(f"char/evilrobot/evilrobot.png").convert_alpha()
+    evilrobo_mascot = pygame.image.load(resource_path(f"char/evilrobot/evilrobot.png").convert_alpha())
     evilrobo_phase = 0    
 
     # Logic for unlocking Evil Robo
@@ -8586,9 +8598,9 @@ def create_lvl13_screen():
     ice_melt = 0.3
     on_ice = False
 
-    ice_robo = pygame.image.load(f"char/icerobot/moveicerobotL.png").convert_alpha()
+    ice_robo = pygame.image.load(resource_path(f"char/icerobot/moveicerobotL.png").convert_alpha())
     ice_robo_x, ice_robo_y = 66200, 650
-    ice_robo_move = pygame.image.load(f"char/icerobot/moveicerobot.png").convert_alpha()
+    ice_robo_move = pygame.image.load(resource_path(f"char/icerobot/moveicerobot.png").convert_alpha())
 
     # Draw flag
     flag = pygame.Rect(3900, 200, 100, 125)  # x, y, width, height
@@ -9770,9 +9782,9 @@ def create_secret1_screen():
     ice_melt = 0.3
     on_ice = False
 
-    ice_robo = pygame.image.load(f"char/icerobot/moveicerobotL.png").convert_alpha()
+    ice_robo = pygame.image.load(resource_path(f"char/icerobot/moveicerobotL.png").convert_alpha())
     ice_robo_x, ice_robo_y = 67000, 650
-    ice_robo_move = pygame.image.load(f"char/icerobot/moveicerobot.png").convert_alpha()
+    ice_robo_move = pygame.image.load(resource_path(f"char/icerobot/moveicerobot.png").convert_alpha())
 
     # Draw flag
     flag = pygame.Rect(3900, 200, 100, 125)  # x, y, width, height
@@ -11305,7 +11317,7 @@ while running:
                 for path in image_paths:
                   print(" Loading image:", path)
                   try:
-                     img = pygame.image.load(path).convert_alpha()
+                     img = pygame.image.load(resource_path(path).convert_alpha())
                      img = pygame.transform.scale(img, (250, 250))
                      image_surfaces.append(img)
                      print(" Loaded:", path)
