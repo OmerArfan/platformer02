@@ -45,10 +45,10 @@ pygame.mouse.set_visible(False)  # Hide the system cursor
 # Default progress dictionary
 default_progress = {
     "complete_levels": 0,
-    "locked_levels": ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12", "lvl13", "lvl14", "lvl15"],
-    "times": {f"lvl{i}": 0 for i in range(1, 16)},
-    "medals": {f"lvl{i}": "None" for i in range(1, 16)},
-    "score": {f"lvl{i}": 0 for i in range(1, 16)},
+    "locked_levels": ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11"],
+    "times": {f"lvl{i}": 0 for i in range(1, 12)},
+    "medals": {f"lvl{i}": "None" for i in range(1, 12)},
+    "score": {f"lvl{i}": 0 for i in range(1, 12)},
     "language": "en",
     "selected_character": "robot",
     "icerobo_scenes": 0,
@@ -234,7 +234,10 @@ while ps < 100:
 
     # Load and initalize Images!
     nact_cp = pygame.image.load("oimgs/checkpoints/yellow_flag.png").convert_alpha()
-    act_cp = pygame.image.load("oimgs/checkpoints/green_flag.png").convert_alpha(); ps += 1
+    act_cp = pygame.image.load("oimgs/checkpoints/green_flag.png").convert_alpha();
+    gold_m = pygame.image.load("oimgs/medal/gold.png").convert_alpha()
+    silv_m = pygame.image.load("oimgs/medal/silver.png").convert_alpha()
+    bron_m = pygame.image.load("oimgs/medal/bronze.png").convert_alpha(); ps += 1
 
  if not progress_loaded and sounds_loaded:
     stage = "Loading progress..."
@@ -369,7 +372,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.67", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.68", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
@@ -399,10 +402,10 @@ def create_main_menu_buttons():
     global current_lang, buttons
     current_lang = load_language(lang_code)['main_menu']
     buttons.clear()
-    button_texts = ["start", "character_select", "settings", "news", "language", "quit"]
+    button_texts = ["start", "character_select", "settings", "language", "quit"]
 
     # Center buttons vertically and horizontally
-    button_spacing = 60
+    button_spacing = 72
     start_y = (SCREEN_HEIGHT // 2) - (len(button_texts) * button_spacing // 2) + 150
 
     for i, key in enumerate(button_texts):
@@ -539,65 +542,6 @@ def green_world_buttons():
     text_rect = rendered_next.get_rect(center=next_rect.center)
     screen.blit(rendered_next, text_rect)
 
-    buttons.append((rendered_next, next_rect, "next", False))
-
-def ice_world_buttons():
-    global current_lang, buttons
-    buttons.clear()
-
-    # Store the rendered text and its position for later drawing
-    global text_rect, level_key
-
-    level_options = ["lvl12", "lvl13", "lvl14", "lvl15"]
-    level_no = ["12", "13", "14", "15"]
-    buttons_per_row = 4
-    spacing_x = 160
-    spacing_y = 120
-
-    grid_width = (buttons_per_row - 1) * spacing_x
-    start_x = (SCREEN_WIDTH - grid_width) // 2
-    start_y = ((SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2))
-
-    for i, level in enumerate(level_options):
-        col = i % buttons_per_row
-        row = i // buttons_per_row
-        x = start_x + col * spacing_x
-        y = start_y + row * spacing_y
-
-        is_locked = level in progress["locked_levels"]
-        if not is_locked:
-            color = (0, 0, 0)
-        else:
-            color = (255, 255, 255)
-        text_surface = font_text.render(level_no[i], True, color)
-        disk_rect = icedisk_img.get_rect(center=(x, y))
-        buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
-
-        # --- Draw stars for completed levels ---
-        stars = get_stars(int(level_no[i]), progress["score"].get(level, 0))
-        for s in range(stars):
-            star_x = x - 30 + s * 30  # Adjust as needed for spacing
-            star_y = y + 50            # Adjust as needed for vertical position
-            screen.blit(s_star_img, (star_x, star_y))
-
-    # Back button at bottom center
-
-    # Get the text
-    back_text = current_lang.get("back", "Back")        
-    rendered_back = render_text(back_text, True, (255, 255, 255))
-
-
-    # Create a fixed 100x100 hitbox centered at the right location
-    back_rect = pygame.Rect(0, 0, 100, 100)
-    back_rect.center = (90, SCREEN_HEIGHT // 2)
-
-    # Then during draw phase: center the text inside that fixed rect
-    text_rect = rendered_back.get_rect(center=back_rect.center)
-    screen.blit(rendered_back, text_rect)
-
-    # Add the button
-    buttons.append((rendered_back, back_rect, "back", False))
-
 def map():
     global buttons, mappy, map_x
     buttons.clear()
@@ -666,14 +610,13 @@ locked_img = pygame.image.load("char/lockedrobot.png").convert_alpha()
 selected_character = progress.get("selected_character", default_progress["selected_character"])
 
 # Get rects and position them
-robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 425, SCREEN_HEIGHT // 2 - 50))
+robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 350, SCREEN_HEIGHT // 2 - 50))
 #Evil Robot
-evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 275, SCREEN_HEIGHT // 2 - 50))
+evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 50))
 #Ice and lava robot
-icerobot_rect = icerobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 125, SCREEN_HEIGHT // 2 - 50))
-lavarobot_rect = lavarobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 25, SCREEN_HEIGHT // 2 - 50))
-greenrobot_rect = greenrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 175, SCREEN_HEIGHT // 2 - 50))
-cakebot_rect = cakebot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 325, SCREEN_HEIGHT // 2 - 50))
+lavarobot_rect = icerobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 - 50))
+greenrobot_rect = lavarobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 - 50))
+cakebot_rect = greenrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 250, SCREEN_HEIGHT // 2 - 50))
 def character_select():
     global selected_character, set_page, current_page
     
@@ -697,9 +640,6 @@ def character_select():
                 set_page("main_menu")
             elif evilrobot_rect.collidepoint(mouse_pos):
                 selected_character = "evilrobot"
-                set_page("main_menu")
-            elif icerobot_rect.collidepoint(mouse_pos):
-                selected_character = "icerobot"
                 set_page("main_menu")
             elif lavarobot_rect.collidepoint(mouse_pos):
                 selected_character = "lavarobot"
@@ -828,7 +768,6 @@ def set_page(page):
         create_lvl12_screen()   
     elif page == 'ice_levels':
         current_lang = load_language(lang_code).get('levels', {})
-        ice_world_buttons()
         change_ambience("audio/amb/iceambience.wav")
 
 def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg):
@@ -986,7 +925,7 @@ class StarParticles:
 stareffects = []
 
 def level_complete():
-    global score, display_score, new_hs, collected_tokens, hs, stareffects, stars
+    global score, display_score, new_hs, collected_tokens, hs, stareffects, stars, medal
     messages = load_language(lang_code).get('messages', {})
     display_score = 0
     star1_p, star2_p, star3_p = False, False, False
@@ -1033,6 +972,13 @@ def level_complete():
                       stareffects.append(StarParticles(SCREEN_WIDTH // 2 + 80 + star_img.get_width() // 2, 230 + star_img.get_height() // 2)) 
                     star_channel.play(star3)
                     star3_p = True
+
+        if medal == "Gold":
+            death_sound.play()
+        elif medal == "Silver":
+            checkpoint_sound.play()
+        elif medal == "Bronze":
+            jump_sound.play()
 
         for particle in stareffects[:]:
          particle.update()
@@ -7261,7 +7207,7 @@ def create_lvl11_screen():
 
             save_progress(progress)  # Save progress to JSON file
             running = False
-            set_page('ice_levels')    
+            set_page('main_menu')    
 
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
@@ -10912,10 +10858,7 @@ def handle_action(key):
     if current_page == 'main_menu':
         if key == "start":
             complete = progress["complete_levels"]
-            if complete < 11:
-                level_page = "levels"
-            else:
-                level_page = "ice_levels"
+            level_page = "levels"
             if not is_transitioning:
                 transition.start(level_page)
                 transition_time = pygame.time.get_ticks()  # Start the wait time
@@ -11006,9 +10949,6 @@ def handle_action(key):
                     set_page("main_menu")
                     is_transitioning = False
                     transition_time = None
-        elif key == "next":
-            buttons.clear()
-            set_page("ice_levels")
         else:  # Trigger a level's screen
             if not is_transitioning:
                 transition.start(f"{key}_screen")
@@ -11241,7 +11181,6 @@ while running:
 
     # Check if characters are locked
          robo_unlock = True
-         icerobo_unlock = progress.get("icerobo_unlocked", False)
          evilrobo_unlock = progress.get("evilrobo_unlocked", False)
          lavarobo_unlock = progress.get("lavarobo_unlocked", False)
          greenrobo_unlock = progress.get("greenrobo_unlocked", False)
@@ -11250,7 +11189,6 @@ while running:
             # Draw images
          screen.blit(robot_img, robot_rect)     
          screen.blit(evilrobot_img if evilrobo_unlock else locked_img, evilrobot_rect)
-         screen.blit(icerobot_img if icerobo_unlock else locked_img, icerobot_rect)
          screen.blit(lavarobot_img if lavarobo_unlock else locked_img, lavarobot_rect)
          screen.blit(greenrobot_img if greenrobo_unlock else locked_img, greenrobot_rect)
          screen.blit(cakebot_img if cakebo_unlock else locked_img, cakebot_rect)
@@ -11259,7 +11197,6 @@ while running:
          highlight_colors = {
           "robot": (63, 72, 204),
           "evilrobot": (128, 0, 128),
-          "icerobot": (51, 254, 255),
           "lavarobot": (136, 0, 21),
           "greenrobot": (25, 195, 21),
           "cakebot": (255, 171, 204)
@@ -11268,9 +11205,8 @@ while running:
          rects = {
           "robot": robot_rect,
           "evilrobot": evilrobot_rect,
-          "icerobot": icerobot_rect,
-          "lavarobot": lavarobot_rect,
           "greenrobot": greenrobot_rect,
+          "lavarobot": lavarobot_rect,
           "cakebot": cakebot_rect
          }
         
@@ -11287,14 +11223,12 @@ while running:
                 try_select_robo(robo_unlock, "robot", robot_rect, "placeholder", "Imagine if this actually popped up in game BRO-")
             elif evilrobot_rect.collidepoint(mouse_pos):
                 try_select_robo(evilrobo_unlock, "evilrobot", evilrobot_rect, "evillocked_message", "Encounter this robot in an alternative route to unlock him!")
-            elif icerobot_rect.collidepoint(mouse_pos):
-                try_select_robo(icerobo_unlock, "icerobot", icerobot_rect, "icelock_message", "This robot is hiding in the mountains...")
-            elif lavarobot_rect.collidepoint(mouse_pos):
-                try_select_robo(lavarobo_unlock, "lavarobot", lavarobot_rect, "lavalocked_message", "This robot is coming soon!")
             elif greenrobot_rect.collidepoint(mouse_pos):
                 try_select_robo(greenrobo_unlock, "greenrobot", greenrobot_rect, "greenlocked_message", "Get GOLD rank in all Green World Levels to unlock this robot!")
+            elif lavarobot_rect.collidepoint(mouse_pos):
+                try_select_robo(lavarobo_unlock, "lavarobot", lavarobot_rect, "lavalocked_message", "This robot is coming soon!")
             elif cakebot_rect.collidepoint(mouse_pos):
-                try_select_robo(cakebo_unlock, "cakebot", cakebot_rect, "cakelocked_message", "Happy 2 month anniversary!")
+                try_select_robo(cakebo_unlock, "cakebot", cakebot_rect, "cakelocked_message", "This robot is coming soon!")
             elif rect.collidepoint(mouse_pos):
                 set_page("main_menu")
                 if not is_mute:
