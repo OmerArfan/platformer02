@@ -10,12 +10,6 @@ import shutil
 import arabic_reshaper
 from bidi.algorithm import get_display
 
-# For extracting data from the news section of the website!
-from bs4 import BeautifulSoup
-import urllib.request
-import html2text
-import re
-
 # Path to sound folder
 SOUND_FOLDER = os.path.join("audio")
 
@@ -384,8 +378,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.69", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 158)
+ver_text = font_def.render("Version 1.2.70", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 158)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -569,7 +563,7 @@ def map():
 
     level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12", "lvl13", "lvl14", "lvl15"]
 
-    mappy = pygame.image.load(resource_path("bgs/map.png").convert_alpha())
+    mappy = pygame.image.load(resource_path("bgs/map.png")).convert_alpha()
     target_height = SCREEN_HEIGHT
 
     map_width, map_height = mappy.get_width(), mappy.get_height()
@@ -736,9 +730,6 @@ def set_page(page):
         current_lang = load_language(lang_code).get('levels', {})
         green_world_buttons()
         change_ambience("audio/amb/greenambience.wav")
-    elif page == "news":
-        current_lang = load_language(lang_code).get('levels', {})
-        fetch_news_html_and_convert()
     elif page == 'quit_confirm':
         current_lang = load_language(lang_code).get('messages', {})
         create_quit_confirm_buttons()
@@ -775,12 +766,6 @@ def set_page(page):
     elif page == 'lvl11_screen':
         current_lang = load_language(lang_code).get('in_game', {})
         create_lvl11_screen()
-    elif page == 'lvl12_screen':
-        current_lang = load_language(lang_code).get('in_game', {})
-        create_lvl12_screen()   
-    elif page == 'ice_levels':
-        current_lang = load_language(lang_code).get('levels', {})
-        change_ambience("audio/amb/iceambience.wav")
 
 def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg):
     if rect.collidepoint(pygame.mouse.get_pos()):
@@ -831,60 +816,6 @@ def create_quit_confirm_buttons():
 
     pygame.display.flip()  # Update the display to show the quit confirmation screen
 
-
-def fetch_news_html_and_convert():
-    try:
-        url = "https://omerarfan.github.io/lilrobowebsite/gamestuff.html"
-        with urllib.request.urlopen(url, timeout=5) as response:
-            html = response.read().decode()
-
-        soup = BeautifulSoup(html, "html.parser")
-
-        text_maker = html2text.HTML2Text()
-        text_maker.ignore_links = False
-        text_maker.ignore_images = True
-        text_maker.body_width = 0
-
-        text = text_maker.handle(html).splitlines()
-
-        # Clean markdown links
-        clean_text = []
-        for line in text:
-            line = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', line)
-            line = re.sub(r'\[\]\([^)]+\)', '', line)
-            if line.strip():
-                clean_text.append(line.strip())
-
-        # Get image URLs
-        image_urls = []
-        image_paths = []
-        os.makedirs("oimgs/news", exist_ok=True)
-
-        for img in soup.find_all("img"):
-            src = img.get("src") # type: ignore
-            if src:
-                full_url = "https://omerarfan.github.io/lilrobowebsite/" + src.lstrip("/")  # type: ignore
-                image_urls.append(full_url)
-
-                filename = os.path.basename(full_url)
-                local_path = os.path.join("oimgs/news", filename)
-                image_paths.append(local_path)
-
-                if not os.path.exists(local_path):
-                    try:
-                        urllib.request.urlretrieve(full_url, local_path)
-                        print("✅ Downloaded:", local_path)
-                    except Exception as e:
-                        print("❌ Download failed:", full_url, e)
-                else:
-                    print("✅ Already exists:", local_path)
-
-        print("→ FOUND IMAGES:", image_urls)
-        return clean_text, image_paths
-
-    except Exception as e:
-        return [f"Error loading news: {e}"], []
-
 def low_detail():
     global LDM
     if LDM:
@@ -911,7 +842,6 @@ def score_calc():
         medal_score = 25000
     death_score = deathcount * 300
     score = max(500, 100000 - medal_score - death_score - time_score + token_score)
-    print(score, medal_score, death_score, time_score)
 
 class StarParticles:
     def __init__(self, x, y):
@@ -1038,11 +968,11 @@ def char_assets():
         moving_img_l = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobotL.png")) # Resize to fit the game
         moving_img = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobot.png")) # Resize to fit the game
     elif selected_character == "icerobot":
-        player_img = pygame.image.load(resource_path(f"char/icerobot/icerobot.png").convert_alpha())
+        player_img = pygame.image.load(resource_path(f"char/icerobot/icerobot.png")).convert_alpha()
         moving_img_l = pygame.image.load(resource_path(f"char/icerobot/moveicerobotL.png")) # Resize to fit the game
         moving_img = pygame.image.load(resource_path(f"char/icerobot/moveicerobot.png")) # Resize to fit the game
     elif selected_character == "cakebot":
-        player_img = pygame.image.load(resource_path(f"char/cakebot/cakebot.png").convert_alpha())
+        player_img = pygame.image.load(resource_path(f"char/cakebot/cakebot.png")).convert_alpha()
         moving_img_l = pygame.image.load(resource_path(f"char/cakebot/movecakebotL.png")) # Resize to fit the game
         moving_img = pygame.image.load(resource_path(f"char/cakebot/movecakebot.png")) # Resize to fit the game
     img_width, img_height = player_img.get_size()
@@ -1395,6 +1325,15 @@ def create_lvl1_screen():
 
         timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+
+        medal = get_medal(1, current_time)
+        if medal == "Gold":
+            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Silver":
+            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Bronze":
+            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
+
 
         # Initialize and draw the quit text
         quit_text = in_game.get("quit_message", "Press Q to quit")
@@ -1753,6 +1692,14 @@ def create_lvl2_screen():
         timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
+        medal = get_medal(2, current_time)
+        if medal == "Gold":
+            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Silver":
+            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Bronze":
+            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
+
             # Inside the game loop:
         screen.blit(rendered_jump_text, (900 - camera_x, 500 - camera_y))  # Draws the rendered up text
 
@@ -1950,7 +1897,6 @@ def create_lvl3_screen():
 
     if transition.x <= -transition.image.get_width():
       while running:
-        print(player_x, player_y)
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
@@ -2303,6 +2249,14 @@ def create_lvl3_screen():
 
         timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+
+        medal = get_medal(3, current_time)
+        if medal == "Gold":
+            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Silver":
+            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Bronze":
+            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
 
         levels = load_language(lang_code).get('levels', {})
         lvl3_text = levels.get("lvl3", "Level 3")  # Render the level text
@@ -2992,6 +2946,14 @@ def create_lvl4_screen():
         timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
+        medal = get_medal(4, current_time)
+        if medal == "Gold":
+            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Silver":
+            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Bronze":
+            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
+
         levels = load_language(lang_code).get('levels', {})
         lvl4_text = levels.get("lvl4", "Level 4")  # Render the level text
         screen.blit(render_text(lvl4_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
@@ -3679,6 +3641,14 @@ def create_lvl5_screen():
         timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
+        medal = get_medal(5, current_time)
+        if medal == "Gold":
+            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Silver":
+            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Bronze":
+            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
+
         levels = load_language(lang_code).get('levels', {})
         lvl5_text = levels.get("lvl5", "Level 5")  # Render the level text
         screen.blit(render_text(lvl5_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
@@ -3873,7 +3843,6 @@ def create_lvl6_screen():
 
         if wait_time is None:
             val = random.random()
-            print(val)
 
         current_time = time.time() - start_time
         formatted_time = "{:.2f}".format(current_time)
@@ -4359,6 +4328,14 @@ def create_lvl6_screen():
 
         timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+
+        medal = get_medal(6, current_time)
+        if medal == "Gold":
+            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Silver":
+            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Bronze":
+            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
 
         invisible_text = in_game.get("invisible_message", "These saws won't hurt you... promise!")
         screen.blit(render_text(invisible_text, True, (255, 51, 153)), (900 - camera_x, 250 - camera_y)) # Render the invisible block text
@@ -4906,6 +4883,14 @@ def create_lvl7_screen():
 
         timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+
+        medal = get_medal(7, current_time)
+        if medal == "Gold":
+            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Silver":
+            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Bronze":
+            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
 
         levels = load_language(lang_code).get('levels', {})
         lvl7_text = levels.get("lvl7", "Level 7")  # Render the level text
@@ -5483,6 +5468,14 @@ def create_lvl8_screen():
 
         timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+
+        medal = get_medal(8, current_time)
+        if medal == "Gold":
+            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Silver":
+            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Bronze":
+            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
 
         if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
@@ -6179,6 +6172,14 @@ def create_lvl9_screen():
         timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
+        medal = get_medal(9, current_time)
+        if medal == "Gold":
+            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Silver":
+            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Bronze":
+            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
+
         if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
@@ -6835,6 +6836,14 @@ def create_lvl10_screen():
         timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
 
+        medal = get_medal(10, current_time)
+        if medal == "Gold":
+            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Silver":
+            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Bronze":
+            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
+
         if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
@@ -6900,7 +6909,7 @@ def create_lvl11_screen():
     trigger_x = 4650
     espawn_x, espawn_y = 5200, -400
     epos_x, epos_y = espawn_x, espawn_y
-    evilrobo_mascot = pygame.image.load(resource_path(f"char/evilrobot/evilrobot.png").convert_alpha())
+    evilrobo_mascot = pygame.image.load(resource_path(f"char/evilrobot/evilrobot.png")).convert_alpha()
     evilrobo_phase = 0    
 
     # Logic for unlocking Evil Robo
@@ -7651,6 +7660,14 @@ def create_lvl11_screen():
         timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
         
+        medal = get_medal(11, current_time)
+        if medal == "Gold":
+            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Silver":
+            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+        elif medal == "Bronze":
+            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
+
         if show_greenrobo_unlocked:
             if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
                 unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
@@ -8598,9 +8615,9 @@ def create_lvl13_screen():
     ice_melt = 0.3
     on_ice = False
 
-    ice_robo = pygame.image.load(resource_path(f"char/icerobot/moveicerobotL.png").convert_alpha())
+    ice_robo = pygame.image.load(resource_path(f"char/icerobot/moveicerobotL.png")).convert_alpha()
     ice_robo_x, ice_robo_y = 66200, 650
-    ice_robo_move = pygame.image.load(resource_path(f"char/icerobot/moveicerobot.png").convert_alpha())
+    ice_robo_move = pygame.image.load(resource_path(f"char/icerobot/moveicerobot.png")).convert_alpha()
 
     # Draw flag
     flag = pygame.Rect(3900, 200, 100, 125)  # x, y, width, height
@@ -9717,7 +9734,6 @@ def create_lvl13_screen():
             else:
                 if fade_time is None:
                     fade_time = pygame.time.get_ticks()
-                print(pygame.time.get_ticks() - fade_time)
                 if pygame.time.get_ticks() - fade_time > 3000:
                     running = False
                     create_secret1_screen()
@@ -9782,9 +9798,9 @@ def create_secret1_screen():
     ice_melt = 0.3
     on_ice = False
 
-    ice_robo = pygame.image.load(resource_path(f"char/icerobot/moveicerobotL.png").convert_alpha())
+    ice_robo = pygame.image.load(resource_path(f"char/icerobot/moveicerobotL.png")).convert_alpha()
     ice_robo_x, ice_robo_y = 67000, 650
-    ice_robo_move = pygame.image.load(resource_path(f"char/icerobot/moveicerobot.png").convert_alpha())
+    ice_robo_move = pygame.image.load(resource_path(f"char/icerobot/moveicerobot.png")).convert_alpha()
 
     # Draw flag
     flag = pygame.Rect(3900, 200, 100, 125)  # x, y, width, height
@@ -9884,8 +9900,6 @@ def create_secret1_screen():
     ]
 
     while running:
-        print(visibility)
-        print("cool!")
 
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -10865,7 +10879,7 @@ is_transitioning = False
 
 # Handle actions based on current page
 def handle_action(key):
-    global current_page, pending_level, level_load_time, transition, is_transitioning, transition_time,locked_char_sound_played, locked_char_sound_time, news_times
+    global current_page, pending_level, level_load_time, transition, is_transitioning, transition_time,locked_char_sound_played, locked_char_sound_time
     
     if current_page == 'main_menu':
         if key == "start":
@@ -10914,16 +10928,6 @@ def handle_action(key):
             if is_transitioning and transition_time is not None:
                 if transition_time - pygame.time.get_ticks() > 2000:
                     set_page("language_select")
-                    is_transitioning = False
-                    transition_time = None
-        elif key == "news":
-            if not is_transitioning:
-                transition.start("news")
-                transition_time = pygame.time.get_ticks()  # Start the wait time
-                is_transitioning = True
-            if is_transitioning and transition_time is not None:
-                if transition_time - pygame.time.get_ticks() > 2000:
-                    set_page("news")
                     is_transitioning = False
                     transition_time = None
     elif current_page == 'language_select':
@@ -11008,7 +11012,7 @@ def handle_action(key):
 set_page('main_menu')
 update_locked_levels() # Update locked levels every frame!
 
-# Global variables(only needed before amin loop)!
+# Global variables(only needed before main loop)!
 button_hovered_last_frame = False
 last_hovered_key = None
 main_menu_hover = None
@@ -11017,7 +11021,6 @@ disk_mode = True
 logo_hover = False
 logo_click = False
 LDM = False
-news_lines = None
 image_paths = None
 image_surfaces = None
 locked_char_sound_time = None
@@ -11145,9 +11148,9 @@ while running:
                 if rect.collidepoint(mouse_pos):
                     hovered_key = key
                     button_surface = pygame.Surface(rect.inflate(30, 15).size, pygame.SRCALPHA)
-                    button_surface.fill((255, 255, 0, 255))  # RGBA: Hover color
+                    button_surface.fill((150, 255, 150, 255))  # RGBA: Hover color
                     screen.blit(button_surface, rect.inflate(30, 15).topleft)
-                    pygame.draw.rect(screen, (74, 74, 74), rect.inflate(30, 15), 6)  # Border for hover effect
+                    pygame.draw.rect(screen, (0, 255, 0), rect.inflate(30, 15), 6)  # Border for hover effect
 
                     if key == "start":
                         menu_text = render_text("Play the game.", True, (255, 255, 0))
@@ -11158,9 +11161,6 @@ while running:
                     elif key == "settings": 
                         settings_text = render_text("Turn on the audio or turn it off, depending on current mode.", True, (255, 255, 0))
                         screen.blit(settings_text, (SCREEN_WIDTH // 2 - 400, SCREEN_HEIGHT - 50))
-                    elif key == "news":
-                        news_text = render_text("News and updates about the game!", True, (255, 255, 0))
-                        screen.blit(news_text, (SCREEN_WIDTH // 2 - 180, SCREEN_HEIGHT - 50))
                     elif key == "quit":
                         quit_text = render_text("Exit the game.", True, (255, 255, 0))
                         screen.blit(quit_text, (SCREEN_WIDTH // 2 - 70, SCREEN_HEIGHT - 50))
@@ -11173,9 +11173,9 @@ while running:
 
                 else:
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((140, 140, 0, 255))  # RGBA: 100 is alpha (transparency)
+                    button_surface.fill((0, 180, 0, 255))  # RGBA: 100 is alpha (transparency)
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 0, 0), rect.inflate(30, 15), 6)
+                    pygame.draw.rect(screen, (0, 213, 0), rect.inflate(30, 15), 6)
 
                 screen.blit(rendered, rect)
             last_hovered_key = hovered_key
@@ -11194,32 +11194,24 @@ while running:
     # Check if characters are locked
          robo_unlock = True
          evilrobo_unlock = progress.get("evilrobo_unlocked", False)
-         lavarobo_unlock = progress.get("lavarobo_unlocked", False)
          greenrobo_unlock = progress.get("greenrobo_unlocked", False)
-         cakebo_unlock = progress.get("cakebo_unlocked", False)
 
             # Draw images
          screen.blit(robot_img, robot_rect)     
          screen.blit(evilrobot_img if evilrobo_unlock else locked_img, evilrobot_rect)
-         screen.blit(lavarobot_img if lavarobo_unlock else locked_img, lavarobot_rect)
          screen.blit(greenrobot_img if greenrobo_unlock else locked_img, greenrobot_rect)
-         screen.blit(cakebot_img if cakebo_unlock else locked_img, cakebot_rect)
 
      # Draw a highlight border around the selected character
          highlight_colors = {
           "robot": (63, 72, 204),
           "evilrobot": (128, 0, 128),
-          "lavarobot": (136, 0, 21),
           "greenrobot": (25, 195, 21),
-          "cakebot": (255, 171, 204)
          }
          
          rects = {
           "robot": robot_rect,
           "evilrobot": evilrobot_rect,
           "greenrobot": greenrobot_rect,
-          "lavarobot": lavarobot_rect,
-          "cakebot": cakebot_rect
          }
         
          if selected_character in rects:
@@ -11237,10 +11229,6 @@ while running:
                 try_select_robo(evilrobo_unlock, "evilrobot", evilrobot_rect, "evillocked_message", "Encounter this robot in an alternative route to unlock him!")
             elif greenrobot_rect.collidepoint(mouse_pos):
                 try_select_robo(greenrobo_unlock, "greenrobot", greenrobot_rect, "greenlocked_message", "Get GOLD rank in all Green World Levels to unlock this robot!")
-            elif lavarobot_rect.collidepoint(mouse_pos):
-                try_select_robo(lavarobo_unlock, "lavarobot", lavarobot_rect, "lavalocked_message", "This robot is coming soon!")
-            elif cakebot_rect.collidepoint(mouse_pos):
-                try_select_robo(cakebo_unlock, "cakebot", cakebot_rect, "cakelocked_message", "This robot is coming soon!")
             elif rect.collidepoint(mouse_pos):
                 set_page("main_menu")
                 if not is_mute:
@@ -11309,44 +11297,6 @@ while running:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_ESCAPE]:
                 set_page("main_menu")
-
-        elif current_page == "news":
-            if news_lines is None or image_paths is None:
-                news_lines, image_paths = fetch_news_html_and_convert()
-                image_surfaces = []
-                for path in image_paths:
-                  print(" Loading image:", path)
-                  try:
-                     img = pygame.image.load(resource_path(path).convert_alpha())
-                     img = pygame.transform.scale(img, (250, 250))
-                     image_surfaces.append(img)
-                     print(" Loaded:", path)
-                  except Exception as e:
-                    print(" Failed to load:", path, e)
-
-            screen.fill((20, 20, 20))
-
-            title = render_text(current_lang.get("news", "News"), True, (255, 255, 255))
-            screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 50))
-
-            y = 120
-
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_ESCAPE]:
-                set_page("main_menu")
-
-
-        # Draw text
-            for line in news_lines:
-             rendered = render_text(line, True, (200, 200, 200))
-             screen.blit(rendered, (80, y))
-             y += 28
-
-            # Draw images BELOW text
-            for img in image_surfaces: # type: ignore
-                screen.blit(img, (80, y))
-                y += img.get_height() + 20
-
 
         elif current_page == "lvl1_screen":
             # Render the Level 1 screen
@@ -11428,7 +11378,15 @@ while running:
                             screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - lvl_time_text.get_width() // 2, SCREEN_HEIGHT - 50))
                             s = key
                             num = int(s[3:])  # Skip the first 3 characters
-                            print(num)  # Output: 13
+                            medals = progress['medals'][key]
+
+                            if medals == "Gold":
+                                screen.blit(gold_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
+                            elif medals == "Silver":
+                                screen.blit(silv_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
+                            elif medals == "Bronze":
+                                screen.blit(bron_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
+
                             stars = get_stars(num, progress['score'][key])
                             if stars >= 1:
                                 screen.blit(s_star_img, (SCREEN_WIDTH // 2 - 25, SCREEN_HEIGHT - 80))
