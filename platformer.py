@@ -57,10 +57,7 @@ default_progress = {
     "icerobo_scenes": 0,
     "is_mute": False,
     "evilrobo_unlocked": False,
-    "icerobo_unlocked": False,
-    "lavarobo_unlocked": False,
     "greenrobo_unlocked": False,
-    "cakebo_unlocked": False,
 }
 
 notification_time = None
@@ -224,8 +221,8 @@ while ps < 100:
     studio_glow_rect = studio_glow.get_rect(topleft=(20, SCREEN_HEIGHT - 190)); ps += 1
 
     # Load and scale backgrounds
-    plain_background_img = pygame.image.load(resource_path("bgs/PlainBackground.png")).convert()
-    plain_background = pygame.transform.scale(plain_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    green_background_img = pygame.image.load(resource_path("bgs/PlainBackground.png")).convert()
+    green_background = pygame.transform.scale(green_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
     ice_background_img = pygame.image.load(resource_path("bgs/IceBackground.png")).convert(); ps += 2
     ice_background = pygame.transform.scale(ice_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
     green_background_img = pygame.image.load(resource_path("bgs/GreenBackground.png")).convert()
@@ -373,13 +370,13 @@ class TransitionManager:
 transition = TransitionManager(screen, trans)
 
 site_text = font_def.render("Sound effects from: pixabay.com", True, (255, 255, 255))
-site_pos = (SCREEN_WIDTH - 398, SCREEN_HEIGHT - 98)
+site_pos = (SCREEN_WIDTH - 398, SCREEN_HEIGHT - 68)
 logo_text = font_def.render("Logo and Background made with: canva.com", True, (255, 255, 255))
-logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 68)
+logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 38)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
-credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 128)
-ver_text = font_def.render("Version 1.2.70", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 158)
+credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
+ver_text = font_def.render("Version 1.2.71", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -502,6 +499,7 @@ evilrobot_img = pygame.image.load(resource_path("char/evilrobot/evilrobot.png"))
 icerobot_img = pygame.image.load(resource_path("char/icerobot/icerobot.png")).convert_alpha()
 lavarobot_img = pygame.image.load(resource_path("char/lavarobot/lavarobot.png")).convert_alpha()
 greenrobot_img = pygame.image.load(resource_path("char/greenrobot/greenrobot.png")).convert_alpha()
+quitbot = pygame.image.load(resource_path("char/greenrobot/movegreenrobot.png")).convert_alpha()
 cakebot_img = pygame.image.load(resource_path("char/cakebot/cakebot.png")).convert_alpha()
 locked_img = pygame.image.load(resource_path("char/lockedrobot.png")).convert_alpha()
 
@@ -616,12 +614,12 @@ def check_green_gold():
 selected_character = progress.get("selected_character", default_progress["selected_character"])
 
 # Get rects and position them
-robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 350, SCREEN_HEIGHT // 2 - 50))
+robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2 - 50))
 #Evil Robot
-evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 50))
+evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50))
 #Ice and lava robot
 lavarobot_rect = icerobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 - 50))
-greenrobot_rect = lavarobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 - 50))
+greenrobot_rect = lavarobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 150, SCREEN_HEIGHT // 2 - 50))
 cakebot_rect = greenrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 250, SCREEN_HEIGHT // 2 - 50))
 def character_select():
     global selected_character, set_page, current_page
@@ -3013,7 +3011,7 @@ def create_lvl5_screen():
 
     key_block_pairs = [
         {
-            "key": (4050, -800, 30, (255, 255, 0)),
+            "key": (4250, -900, 30, (255, 255, 0)),
             "block": pygame.Rect(1300, -250, 200, 200),
             "collected": False
         },
@@ -5642,7 +5640,7 @@ def create_lvl9_screen():
         (2550, 350, 30, (0, 102, 204)),
     ]
 
-    moving_block = pygame.Rect(4200, 30, 100, 20)
+    moving_block = pygame.Rect(4450, 30, 100, 20)
     moving_direction1 = 1
     moving_speed = 5
     moving_limit_left1 = 4050
@@ -11181,7 +11179,7 @@ while running:
             last_hovered_key = hovered_key
 
         if current_page == "character_select":
-         screen.blit(plain_background, (0, 0))
+         screen.blit(green_background, (0, 0))
 
     # Initialize locked sound effect and mouse position
          locked_sound_played = False
@@ -11263,14 +11261,14 @@ while running:
 
 
         if current_page == "language_select":
-            screen.blit(plain_background, (0, 0))
+            screen.blit(green_background, (0, 0))
             screen.blit(heading_text, (SCREEN_WIDTH // 2 - heading_text.get_width() // 2, 50))
 
         if current_page == "quit_confirm":
-            screen.blit(plain_background, (0, 0))
+            screen.blit(green_background, (0, 0))
             # Render the quit confirmation text
             screen.blit(quit_text, quit_text_rect)
-            screen.blit(icerobot_img, (SCREEN_WIDTH // 2 - icerobot_img.get_width() // 2, SCREEN_HEIGHT // 2 - 200))
+            screen.blit(quitbot, (SCREEN_WIDTH // 2 - icerobot_img.get_width() // 2, SCREEN_HEIGHT // 2 - 200))
 
             # Render the "Yes" and "No" buttons
             for rendered, rect, key, is_locked in buttons:
