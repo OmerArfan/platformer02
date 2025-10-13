@@ -1,16 +1,6 @@
-# platformer02
-## THIS FILE CONTAINS INFORMATION AS OF VERSION 1.2.64, SO IT COULD BE OUTDATED AT ONE POINT!
+# roboquix
+## THIS FILE CONTAINS INFORMATION AS OF VERSION 1.2.74, SO IT COULD BE OUTDATED AT ONE POINT!
 ## CHECK VERSION NAME IN THE "platformer.py" FILE!
 
-Updated version of platformer01, which also contains features like:
-More Levels!
-Characters!
-Language Selection!
-Saved Progress!
-
-For more information, check these files in the "gameinfo" folder:
-
-How to start the game: SetUpGame
-Game Controls: HowToPlay
-Content: Workings
+Roboquix is a simple game where you move Lil Robo towards the purple end portal. You have to dodge obstacles, jump through gaps, collect coins to open locked blocks, and run away from chasing saws. If you complete the level quickly, you will be rewarded a medal accordingly, and these will help you get a higher score, as long as you also try not to die while dodging obstacles.
 
