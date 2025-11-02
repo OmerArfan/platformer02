@@ -292,7 +292,6 @@ def get_stars(level, score):
     else:
         return 0
     
-
 if lang_code == "zh_cn":
     font = pygame.font.Font(font_path_ch, 25)
 if lang_code == "jp":
@@ -369,7 +368,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 38)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.76", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.78", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
@@ -399,7 +398,7 @@ def create_main_menu_buttons():
     global current_lang, buttons
     current_lang = load_language(lang_code)['main_menu']
     buttons.clear()
-    button_texts = ["start", "character_select", "settings", "language", "quit"]
+    button_texts = ["start", "achievements", "character_select", "settings", "language", "quit"]
 
     # Center buttons vertically and horizontally
     button_spacing = 72
@@ -5399,9 +5398,12 @@ def create_lvl9_screen():
         pygame.Rect(2800, -300, 100, 500),
         pygame.Rect(3200, 200, 100, 530),
         pygame.Rect(2900, -600, 1100, 100),
-        pygame.Rect(3500, 200, 100, 850),
-        pygame.Rect(3550, 200, 1980, 100),
+        pygame.Rect(3500, 200, 2030, 100),
         pygame.Rect(3550, 650, 2280, 100)
+    ]
+
+    walls = [
+        pygame.Rect(3500, 220, 100, 830)
     ]
 
     jump_blocks = [
@@ -5598,6 +5600,14 @@ def create_lvl9_screen():
                     elif player_x + img_width > block.x + block.width:  # Colliding with the right side
                         player_x = block.x + block.width
 
+        for block in walls:
+            if player_rect.colliderect(block):
+                # Horizontal collision (left or right side of the block)
+                if player_x + img_width > block.x and player_x < block.x + block.width:
+                    if player_x < block.x:  # Colliding with the left side of the block
+                        player_x = block.x - img_width
+                    elif player_x + img_width > block.x + block.width:  # Colliding with the right side
+                        player_x = block.x + block.width
 
         # Jump block logic
         for jump_block in jump_blocks:
@@ -5872,6 +5882,9 @@ def create_lvl9_screen():
                     hit_sound.play()
                 velocity_y = 0
                 deathcount += 1
+
+        for block in walls:
+            pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
 
         for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))        
