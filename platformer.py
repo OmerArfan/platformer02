@@ -325,7 +325,16 @@ def render_text(text, Boolean, color):
 
     return font_def.render(text, True, color)
     
-    
+class Achievements:
+    def lvl1speed(ctime):
+        global notification_text, notification_time, notif
+        if ctime <= 4.5:
+            notification_text = font_def.render("Achievement Unlocked: Speedy Starter", True, (255, 0, 0))
+            notify_sound.play()
+            if notification_time is None:
+             notif = True
+             notification_time = time.time()
+        
 class TransitionManager:
     def __init__(self, screen, image, speed=40):
         self.screen = screen
@@ -368,7 +377,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 38)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.78", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.79", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
@@ -1184,6 +1193,7 @@ def create_lvl1_screen():
             stars = get_stars(1, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
+            Achievements.lvl1speed(current_time)
             check_green_gold()
 
             save_progress(progress)  # Save progress to JSON file
