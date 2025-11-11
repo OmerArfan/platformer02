@@ -329,11 +329,38 @@ class Achievements:
     def lvl1speed(ctime):
         global notification_text, notification_time, notif
         if ctime <= 4.5:
-            notification_text = font_def.render("Achievement Unlocked: Speedy Starter", True, (255, 0, 0))
+            notification_text = font_def.render("Achievement Unlocked: Speedy Starter", True, (255, 255, 0))
             notify_sound.play()
             if notification_time is None:
              notif = True
              notification_time = time.time()
+    
+    def perfect6(ctime, deaths):
+        global notification_text, notification_time, notif
+        if ctime <= 30 and deaths <= 0:
+            notification_text = font_def.render("Achievement Unlocked: Zenith of Six", True, (255, 255, 0))
+            notify_sound.play()
+            if notification_time is None:
+             notif = True
+             notification_time = time.time()
+
+    def lvl90000(score):
+        global notification_text, notification_time, notif
+        if score >= 90000:
+            notification_text = font_def.render("Achievement Unlocked: It's over 9000(0)!!", True, (255, 255, 0))
+            notify_sound.play()
+            if notification_time is None:
+             notif = True
+             notification_time = time.time()
+    
+    def evilchase():
+        global notification_text, notification_time, notif
+        notification_text = font_def.render("Achievement Unlocked: Chased and Escaped", True, (255, 255, 0))
+        notify_sound.play()
+        if notification_time is None:
+             notif = True
+             notification_time = time.time()
+    
         
 class TransitionManager:
     def __init__(self, screen, image, speed=40):
@@ -377,8 +404,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 38)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.79", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.80", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -7428,11 +7455,8 @@ def create_lvl11_screen():
             evilrobo_phase = 2
 
         if unlock and unlock_time is not None:
-            current_time = pygame.time.get_ticks()
-            if current_time - unlock_time <= 5000:
-                unlock_text = messages.get("evilrobo_unlocked", "Evil Robo unlocked!")
-                rendered_unlock_text = render_text(unlock_text, True, (41, 255, 11))
-                screen.blit(rendered_unlock_text , (SCREEN_WIDTH // 2 - rendered_unlock_text .get_width() // 2, 80))
+            Achievements.evilchase()
+            unlock_time = None
 
         evilrobo_rect = pygame.Rect(int(epos_x), int(epos_y), evilrobo_mascot.get_width(), evilrobo_mascot.get_height())
         
