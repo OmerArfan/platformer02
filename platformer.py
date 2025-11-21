@@ -115,14 +115,12 @@ font_path_ch = 'fonts/NotoSansSC-SemiBold.ttf'
 font_path_jp = 'fonts/NotoSansJP-SemiBold.ttf'
 font_path_kr = 'fonts/NotoSansKR-SemiBold.ttf'
 font_path_ar = "fonts/NotoNaskhArabic-Bold.ttf"
-font_path_ps = "fonts/NotoSansHebrew-SemiBold.ttf"
 font_path = 'fonts/NotoSansDisplay-SemiBold.ttf'
 font_ch = pygame.font.Font(font_path_ch, 25)
 font_jp = pygame.font.Font(font_path_jp, 25)
 font_kr = pygame.font.Font(font_path_kr, 25)
 font_def = pygame.font.Font(font_path, 25)
 font_ar = pygame.font.Font(font_path_ar, 25)
-font_ps = pygame.font.Font(font_path_ps, 25)
 font_text = pygame.font.Font(font_path, 55)
 
 # Initializing screen resolution
@@ -300,8 +298,6 @@ if lang_code == "kr":
     font = pygame.font.Font(font_path_kr, 25)
 if lang_code == "pk" or lang_code == "ir" or lang_code == "ar":
     font = pygame.font.Font(font_path_ar, 25)
-if lang_code == "ps":
-    font = pygame.font.Font(font_path_ps, 25)
 else:
     font = pygame.font.Font(font_path, 25)
 
@@ -311,8 +307,6 @@ def render_text(text, Boolean, color):
         bidi_text = get_display(reshaped)
         if any('\u0600' <= c <= '\u06FF' for c in text):
             return font_ar.render(bidi_text, True, color)
-        else:
-            return font_ps.render(bidi_text, True, color)
     
     if any('\u4e00' <= c <= '\u9fff' for c in text):  # Chinese
         return font_ch.render(text, True, color)
@@ -361,6 +355,19 @@ class Achievements:
              notif = True
              notification_time = time.time()
     
+    def check_green_gold():
+      global show_greenrobo_unlocked, greenrobo_unlocked_message_time
+      all_gold = all(progress["medals"][f"lvl{i}"] == "Gold" for i in range(1, 13))
+      if all_gold:
+        unlock = progress.get("greenrobo_unlocked", False)
+        if not unlock:
+            if not is_mute:
+                notify_sound.play()
+            unlock = True
+            progress["greenrobo_unlocked"] = unlock
+            save_progress(progress)
+            show_greenrobo_unlocked = True
+            greenrobo_unlocked_message_time = time.time()
         
 class TransitionManager:
     def __init__(self, screen, image, speed=40):
@@ -404,8 +411,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 38)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.80", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 177, SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.81", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 175, SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -591,20 +598,6 @@ def green_world_buttons():
     # Now switch the page
    # buttons.clear()
 
-def check_green_gold():
-    global show_greenrobo_unlocked, greenrobo_unlocked_message_time
-    all_gold = all(progress["medals"][f"lvl{i}"] == "Gold" for i in range(1, 13))
-    if all_gold:
-        unlock = progress.get("greenrobo_unlocked", False)
-        if not unlock:
-            if not is_mute:
-                notify_sound.play()
-            unlock = True
-            progress["greenrobo_unlocked"] = unlock
-            save_progress(progress)
-            show_greenrobo_unlocked = True
-            greenrobo_unlocked_message_time = time.time()
-
 #Initialize default character
 selected_character = progress.get("selected_character", default_progress["selected_character"])
 
@@ -668,8 +661,6 @@ def change_language(lang):
         font = font_kr
     elif lang_code == "pk" or lang_code == "ir" or lang_code == "ar":
         font = font_ar
-    elif lang_code == "ps":
-        font = font_ps
     else:
         font = font_def
 
@@ -1221,7 +1212,7 @@ def create_lvl1_screen():
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.lvl1speed(current_time)
-            check_green_gold()
+            Achievements.check_green_gold()
 
             save_progress(progress)  # Save progress to JSON file
             running = False
@@ -1551,7 +1542,7 @@ def create_lvl2_screen():
             stars = get_stars(2, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
-            check_green_gold()
+            Achievements.check_green_gold()
 
             save_progress(progress)  # Save progress to JSON file
             running = False
@@ -1961,7 +1952,7 @@ def create_lvl3_screen():
             stars = get_stars(3, score)
             level_complete()    
             # Check if all medals from lvl1 to lvl11 are "Gold"
-            check_green_gold()
+            Achievements.check_green_gold()
 
             save_progress(progress)  # Save progress to JSON file
             running = False
@@ -2544,7 +2535,7 @@ def create_lvl4_screen():
             stars = get_stars(4, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
-            check_green_gold()
+            Achievements.check_green_gold()
 
             save_progress(progress)  # Save progress to JSON file
             running = False
@@ -3213,7 +3204,7 @@ def create_lvl5_screen():
             level_complete()
 
             # Check if all medals from lvl1 to lvl11 are "Gold"
-            check_green_gold()
+            Achievements.check_green_gold()
 
             save_progress(progress)  # Save progress to JSON file
             running = False
@@ -3890,7 +3881,7 @@ def create_lvl6_screen():
             stars = get_stars(6, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
-            check_green_gold()
+            Achievements.check_green_gold()
 
             save_progress(progress)  # Save progress to JSON file
             running = False
@@ -4505,7 +4496,7 @@ def create_lvl7_screen():
             stars = get_stars(7, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
-            check_green_gold()
+            Achievements.check_green_gold()
 
             save_progress(progress)  # Save progress to JSON file
             running = False
@@ -5083,7 +5074,7 @@ def create_lvl8_screen():
             stars = get_stars(8, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
-            check_green_gold()
+            Achievements.check_green_gold()
 
             save_progress(progress)  # Save progress to JSON file
             running = False
@@ -5760,7 +5751,7 @@ def create_lvl9_screen():
             stars = get_stars(9, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
-            check_green_gold()
+            Achievements.check_green_gold()
 
             save_progress(progress)  # Save progress to JSON file
             running = False
@@ -6411,7 +6402,7 @@ def create_lvl10_screen():
             stars = get_stars(10, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
-            check_green_gold()
+            Achievements.check_green_gold()
 
             save_progress(progress)  # Save progress to JSON file
             running = False
@@ -7121,11 +7112,11 @@ def create_lvl11_screen():
             stars = get_stars(11, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
-            check_green_gold()
+            Achievements.check_green_gold()
 
             save_progress(progress)  # Save progress to JSON file
             running = False
-            set_page('main_menu')    
+            set_page('lvl12_screen')    
 
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
@@ -7852,7 +7843,7 @@ def create_lvl12_screen():
             save_progress(progress)  # Save progress to JSON file
            
             # Check if all medals from lvl1 to lvl12 are "Gold"
-            check_green_gold()
+            Achievements.check_green_gold()
             
             running = False
             set_page('main_menu')    
