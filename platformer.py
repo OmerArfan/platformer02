@@ -7,16 +7,16 @@ import time
 import random
 import webbrowser
 import shutil
+import copy
 import arabic_reshaper
 from bidi.algorithm import get_display
 
 # Path to sound folder
 SOUND_FOLDER = os.path.join("audio")
 
-def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
+# for compilation
+def resource_path(relative_path): 
     try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
     except Exception:
         base_path = os.path.abspath(".")
@@ -27,6 +27,16 @@ pygame.mixer.init()
 
 # Initialize pygame
 pygame.init()
+
+# Initializing screen resolution
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+SCREEN_WIDTH, SCREEN_HEIGHT = screen.get_size()
+pygame.display.set_caption("Roboquix")
+MIN_WIDTH, MIN_HEIGHT = 1300, 800
+
+# First of all, LOAD THE DAMN BGGG
+background_img = pygame.image.load(resource_path("bgs/Background.png")).convert()
+background = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Load and set window icon
 icon = pygame.image.load(resource_path("robots.ico"))
@@ -46,29 +56,51 @@ er = False
 pygame.mouse.set_visible(False)  # Hide the system cursor
 
 # Default progress dictionary
+import json
+import os
+import copy # distinct import needed for deepcopy
+
 default_progress = {
-    "complete_levels": 0,
-    "locked_levels": ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"],
-    "times": {f"lvl{i}": 0 for i in range(1, 13)},
-    "medals": {f"lvl{i}": "None" for i in range(1, 13)},
-    "score": {f"lvl{i}": 0 for i in range(1, 13)},
-    "language": "en",
-    "selected_character": "robot",
-    "is_mute": False,
-    "evilrobo_unlocked": False,
-    "greenrobo_unlocked": False,
+    "lvls": { 
+        "complete_levels": 0,
+        "locked_levels": ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"],
+        "times": {f"lvl{i}": 0 for i in range(1, 13)},
+        "medals": {f"lvl{i}": "None" for i in range(1, 13)},
+        "score": {f"lvl{i}": 0 for i in range(1, 13)},
+    },
+    "pref" : { 
+        "language": "en",
+        "character": "robot",
+        "is_mute": False,
+    },
+    "char": { 
+        "evilrobo": False, 
+        "greenrobo": False,
+    },
+    "achieved": { 
+        "speedy_starter": False,
+        "zen_os": False,
+        "over_9k": False,
+        "chase_escape": False,
+    },
 }
 
 notification_time = None
 
 def load_progress():
-    global notification_time, notification_text
+    global notification_time 
+    
+    # Use deepcopy so we don't accidentally edit the default_progress dictionary later
+    data = copy.deepcopy(default_progress) 
+
     if os.path.exists(SAVE_FILE):
         try:
             with open(SAVE_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                if not data:  # Handle empty file
+                loaded_data = json.load(f)
+                if not loaded_data:
                     raise ValueError("Empty save file")
+                data.update(loaded_data)
+                
         except Exception as e:
             print(f"Main save corrupted: {e}")
             # Try to load from backup
@@ -76,37 +108,41 @@ def load_progress():
                 print("Loading from backup...")
                 try:
                     with open(SAVE_FILE + ".bak", "r", encoding="utf-8") as f:
-                        data = json.load(f)
+                        loaded_data = json.load(f)
+                        data.update(loaded_data)
                         
+                        # Restore backup to main
                         with open(SAVE_FILE, "w", encoding="utf-8") as f:
                             json.dump(data, f, indent=4, ensure_ascii=False)
                         print("Backup restored to main save file.")
 
                 except Exception as e:
                     print(f"Backup also corrupted: {e}")
-                    data = default_progress.copy()
+                    # data is already set to default via deepcopy above
             else:
                 print("No backup found. Using default progress.")
-                data = default_progress.copy()
     else:
         print("Save file not found. Using default progress.")
-        data = default_progress.copy()
 
-    # Merge missing keys
     for key, value in default_progress.items():
         if key not in data:
             data[key] = value
 
-    for key in ["times", "medals", "score"]:
-        if key in default_progress and key in data:
-            for subkey, subval in default_progress[key].items():
-                if subkey not in data[key]:
-                    data[key][subkey] = subval
+    target_subkeys = ["times", "medals", "score"]
+    
+    if "lvls" in data:
+        for subkey in target_subkeys:
+            # Check if the subkey (e.g., "score") exists in the loaded data
+            if subkey not in data["lvls"]:
+                 data["lvls"][subkey] = default_progress["lvls"][subkey]
+            else:
+                # If it exists, check if new levels (e.g., lvl13) were added to the game
+                for lvl_key, lvl_val in default_progress["lvls"][subkey].items():
+                    if lvl_key not in data["lvls"][subkey]:
+                        data["lvls"][subkey][lvl_key] = lvl_val
 
-    if "locked_levels" in default_progress and "locked_levels" in data:
-        for lvl in default_progress["locked_levels"]:
-            if lvl not in data["locked_levels"]:
-                data["locked_levels"].append(lvl)
+    if "lvls" in data and "locked_levels" not in data["lvls"]:
+        data["lvls"]["locked_levels"] = default_progress["lvls"]["locked_levels"]
 
     return data
 
@@ -123,45 +159,47 @@ font_def = pygame.font.Font(font_path, 25)
 font_ar = pygame.font.Font(font_path_ar, 25)
 font_text = pygame.font.Font(font_path, 55)
 
-# Initializing screen resolution
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-SCREEN_WIDTH, SCREEN_HEIGHT = screen.get_size()
-pygame.display.set_caption("Roboquix")
-MIN_WIDTH, MIN_HEIGHT = 1300, 800
-
 # Save progress to file
 def save_progress(data):
     global notification_text, notification_time, error_code, notif, er
-    if not data or "complete_levels" not in data:
+    
+    #check if 'lvls' is missing, because that is the root of your structure.
+    if not data or "lvls" not in data:
         hit_sound.play()
-        notification_text = font_def.render("Refusing to save empty or invalid progress!", True, (255, 0, 0))
+        notification_text = font_def.render("Refusing to save: Invalid data structure!", True, (255, 0, 0))
         if notification_time is None:
             notif = True
             notification_time = time.time()
         return
+
     try:
+        # Create the backup BEFORE opening the file to write. 
+        # If writing fails (computer crash/disk full), the .bak file preserves the previous valid save.
+        if os.path.exists(SAVE_FILE):
+            shutil.copy(SAVE_FILE, SAVE_FILE + ".bak")
+
+        # Now it is safe to overwrite the main file
         with open(SAVE_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
-        shutil.copy(SAVE_FILE, SAVE_FILE + ".bak")  # ✅ Only backup after a good save
+
     except PermissionError:
         hit_sound.play()
-        notification_text = font_def.render("Error: Unable to save progress.", True, (255, 0, 0))
+        notification_text = font_def.render("Error: Permission denied (File open elsewhere?)", True, (255, 0, 0))
         if notification_time is None:
             notif = True
             notification_time = time.time()
+            
     except Exception as e:
         er = True
-        error_code = font_def.render(f"Unexpected error: {e}", True, (255, 0, 0))
-    pygame.display.flip()
+        # Using str(e) ensures the error text is readable
+        error_code = font_def.render(f"Save Error: {str(e)}", True, (255, 0, 0))
+        print(f"Detailed save error: {e}") # helpful for debugging in console
 
 # Load progress at start
 progress_loaded = False
 language_loaded = False
 sounds_loaded = False
 images_loaded = False
-
-background_img = pygame.image.load(resource_path("bgs/Background.png")).convert()
-background = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 running = False
 def draw_loading_bar(stage_name, percent):
     screen.blit(background, (0, 0))
@@ -243,9 +281,9 @@ while ps < 100:
  if not language_loaded and progress_loaded:
 # Get just the language code, default to English
     stage = "Loading configured settings..."
-    lang_code = progress.get("language", "en"); ps = 82
-    progress["language"] = lang_code; ps = 91
-    is_mute = progress.get("is_mute", default_progress["is_mute"]); ps = 97  # Global variable to track mute state
+    lang_code = progress["pref"].get("language", "en"); ps = 82
+    progress["pref"]["language"] = lang_code; ps = 91
+    is_mute = progress.get("is_mute", default_progress["pref"]["is_mute"]); ps = 97  # Global variable to track mute state
     language_loaded = True
  else:
      ps = 100
@@ -357,14 +395,14 @@ class Achievements:
     
     def check_green_gold():
       global show_greenrobo_unlocked, greenrobo_unlocked_message_time
-      all_gold = all(progress["medals"][f"lvl{i}"] == "Gold" for i in range(1, 13))
+      all_gold = all(progress["lvls"]["medals"][f"lvl{i}"] == "Gold" for i in range(1, 13))
       if all_gold:
         unlock = progress.get("greenrobo_unlocked", False)
         if not unlock:
             if not is_mute:
                 notify_sound.play()
             unlock = True
-            progress["greenrobo_unlocked"] = unlock
+            progress["char"]["greenrobo"] = unlock
             save_progress(progress)
             show_greenrobo_unlocked = True
             greenrobo_unlocked_message_time = time.time()
@@ -411,8 +449,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 38)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.81", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 175, SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.82", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -421,7 +459,7 @@ def load_language(lang_code):
             return json.load(f)
     except FileNotFoundError:
         print(f"[WARN] Language '{lang_code}' not found. Falling back to English.")
-        progress["language"] = "en"
+        progress["pref"]["language"] = "en"
         save_progress(progress)
         with open("lang/en.json", "r", encoding="utf-8") as f:
             return json.load(f)
@@ -551,7 +589,7 @@ def green_world_buttons():
         x = start_x + col * spacing_x
         y = start_y + row * spacing_y
 
-        is_locked = level in progress["locked_levels"]
+        is_locked = level in progress["lvls"]["locked_levels"]
         text_surface = font_text.render(level_no[i], True, (255, 255, 255))
         disk_rect = greendisk_img.get_rect(center=(x, y))
         buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
@@ -599,7 +637,7 @@ def green_world_buttons():
    # buttons.clear()
 
 #Initialize default character
-selected_character = progress.get("selected_character", default_progress["selected_character"])
+selected_character = progress.get("character", default_progress["pref"]["character"])
 
 # Get rects and position them
 robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 50))
@@ -651,7 +689,7 @@ def change_language(lang):
     lang_code = lang
     last_page_change_time = time.time()  # Track the time when the language changes
     current_lang = load_language(lang_code)  # Reload the language data
-    progress["language"] = lang_code
+    progress["pref"]["language"] = lang_code
     save_progress(progress)
     if lang_code == "zh_cn":
         font = font_ch
@@ -673,15 +711,15 @@ def update_locked_levels():
     all_levels = ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
     # Always start with all levels locked except lvl2 (which unlocks after lvl1 is completed)
     locked = set(all_levels)
-    times = progress.get("times", {})
+    score = progress["lvls"].get("score", {})
 
     # Unlock levels if the previous level's time is not 0
     for i, lvl in enumerate(all_levels):
         prev_lvl = f"lvl{i+1}"
-        if times.get(prev_lvl, 0) != 0:
+        if score.get(prev_lvl, 0) != 0:
             locked.discard(lvl)  # Unlock this level
 
-    progress["locked_levels"] = list(locked)
+    progress["lvls"]["locked_levels"] = list(locked)
     save_progress(progress)
 
 # Central page switcher
@@ -748,7 +786,7 @@ def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg):
 
         if unlock_flag:
             selected_character = char_key
-            progress["selected_character"] = selected_character
+            progress["pref"]["character"] = selected_character
             save_progress(progress)
             if not is_mute:
                 click_sound.play()
@@ -1037,9 +1075,18 @@ def block_func(blocks):
                 velocity_y = 0
                 deathcount += 1 
 
+ctime = None # global only for resetting
+
+def resetting():
+    global ctime
+    if ctime is None:
+        ctime = time.time()
+    print(time.time() - ctime)
+
+
 def create_lvl1_screen():
     global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, is_transitioning, transition_time, current_time, medal, deathcount, score
-    global new_hs, hs, stars
+    global new_hs, hs, stars, ctime
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     global x, y, camera_x, camera_y, player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text,spawn_x, spawn_y,  player_rect, on_ground
     char_assets()
@@ -1086,6 +1133,7 @@ def create_lvl1_screen():
         [(1850, 400), (1900, 350), (1950, 400)],
         [(1960, 400), (2010, 350), (2060, 400)],
         [(2070, 400), (2120, 350), (2170, 400)],
+        [(2650, 250), (2700, 200), (2750, 250)],
     ]
 
     exit_portal = pygame.Rect(2850, 150, 50, 100)
@@ -1139,6 +1187,7 @@ def create_lvl1_screen():
                 running = False
                 set_page('levels')
 
+
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
@@ -1186,28 +1235,28 @@ def create_lvl1_screen():
             deathcount += 1
 
         if player_rect.colliderect(exit_portal):
-            if progress["complete_levels"] < 1:
-                progress["complete_levels"] = 1
+            if progress["lvls"]["complete_levels"] < 1:
+                progress["lvls"]["complete_levels"] = 1
                 update_locked_levels()
 
             if not is_mute:
                 warp_sound.play()
 
-            if current_time < progress["times"]["lvl1"] or progress["times"]["lvl1"] == 0:
-                progress["times"]["lvl1"] = round(current_time, 2)
+            if current_time < progress["lvls"]["times"]["lvl1"] or progress["lvls"]["times"]["lvl1"] == 0:
+                progress["lvls"]["times"]["lvl1"] = round(current_time, 2)
             
-            progress["medals"]["lvl1"] = get_medal(1, progress["times"]["lvl1"])
+            progress["lvls"]["medals"]["lvl1"] = get_medal(1, progress["lvls"]["times"]["lvl1"])
 
             update_locked_levels()
 
             medal = get_medal(1, current_time)
         
             score_calc()
-            if progress["score"]["lvl1"] < score or progress["score"]["lvl1"] == 0:
-                progress["score"]["lvl1"] = score
+            if progress["lvls"]["score"]["lvl1"] < score or progress["lvls"]["score"]["lvl1"] == 0:
+                progress["lvls"]["score"]["lvl1"] = score
                 new_hs = True
             if not new_hs:
-                hs = progress["score"]["lvl1"]
+                hs = progress["lvls"]["score"]["lvl1"]
             stars = get_stars(1, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
@@ -1280,6 +1329,22 @@ def create_lvl1_screen():
         elif medal == "Bronze":
             screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
 
+        if keys[pygame.K_r]:
+            resetting()
+            if  time.time() - ctime > 3:
+                ctime = None
+                start_time = time.time()
+                current_time = 0
+                spawn_x, spawn_y = 600, 200
+                player_x, player_y = spawn_x, spawn_y  # Reset player position
+                velocity_y = 0
+                deathcount = 0
+            else:
+                countdown = max(0, 3 - round(time.time() - ctime, 2))
+                reset_text = render_text(f"Resetting the level in {countdown:.2f}", True, (255, 0, 0))
+                screen.blit(reset_text, (SCREEN_WIDTH // 2 - 200 , 300))             
+        else:
+            ctime = None
 
         # Initialize and draw the quit text
         quit_text = in_game.get("quit_message", "Press Q to quit")
@@ -1309,7 +1374,7 @@ def create_lvl1_screen():
 
 def create_lvl2_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, wait_time, transition_time, is_transitioning, current_time, medal, deathcount, score
-    global new_hs, hs, stars
+    global new_hs, hs, stars, ctime
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     global x, y, camera_x, camera_y, spawn_x, spawn_y,  player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text, player_rect, on_ground
     char_assets()
@@ -1517,28 +1582,28 @@ def create_lvl2_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["complete_levels"] < 2:
-                progress["complete_levels"] = 2
+            if progress["lvls"]["complete_levels"] < 2:
+                progress["lvls"]["complete_levels"] = 2
                 update_locked_levels()
 
             if not is_mute:
                 warp_sound.play()
 
-            if current_time < progress["times"]["lvl2"] or progress["times"]["lvl2"] == 0:
-                progress["times"]["lvl2"] = round(current_time, 2)
+            if current_time < progress["lvls"]["times"]["lvl2"] or progress["lvls"]["times"]["lvl2"] == 0:
+                progress["lvls"]["times"]["lvl2"] = round(current_time, 2)
             
-            progress["medals"]["lvl2"] = get_medal(2, progress["times"]["lvl2"])
+            progress["lvls"]["medals"]["lvl2"] = get_medal(2, progress["lvls"]["times"]["lvl2"])
 
             update_locked_levels()
             
             medal = get_medal(2, current_time)
             score_calc()
 
-            if progress["score"]["lvl2"] < score or progress["score"]["lvl2"] == 0:
-                progress["score"]["lvl2"] = score
+            if progress["lvls"]["score"]["lvl2"] < score or progress["lvls"]["score"]["lvl2"] == 0:
+                progress["lvls"]["score"]["lvl2"] = score
                 new_hs = True
             if not new_hs:
-                hs = progress["score"]["lvl2"]
+                hs = progress["lvls"]["score"]["lvl2"]
             stars = get_stars(2, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
@@ -1641,7 +1706,24 @@ def create_lvl2_screen():
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
         else:
             show_greenrobo_unlocked = False
-
+                
+        if keys[pygame.K_r]:
+            resetting()
+            if  time.time() - ctime > 3:
+                ctime = None
+                start_time = time.time()
+                current_time = 0
+                spawn_x, spawn_y = 150, 500
+                player_x, player_y = spawn_x, spawn_y  # Reset player position
+                velocity_y = 0
+                deathcount = 0
+            else:
+                countdown = max(0, 3 - round(time.time() - ctime, 2))
+                reset_text = render_text(f"Resetting the level in {countdown:.2f}", True, (255, 0, 0))
+                screen.blit(reset_text, (SCREEN_WIDTH // 2 - 200 , 300))             
+        else:
+            ctime = None
+        
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
@@ -1929,26 +2011,26 @@ def create_lvl3_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["complete_levels"] < 3:
-                progress["complete_levels"] = 3
+            if progress["lvls"]["complete_levels"] < 3:
+                progress["lvls"]["complete_levels"] = 3
                 update_locked_levels()
 
             if not is_mute:
                 warp_sound.play()
 
-            if current_time < progress["times"]["lvl3"] or progress["times"]["lvl3"] == 0:
-                progress["times"]["lvl3"] = round(current_time, 2)
+            if current_time < progress["lvls"]["times"]["lvl3"] or progress["lvls"]["times"]["lvl3"] == 0:
+                progress["lvls"]["times"]["lvl3"] = round(current_time, 2)
             
-            progress["medals"]["lvl3"] = get_medal(3, progress["times"]["lvl3"])
+            progress["lvls"]["medals"]["lvl3"] = get_medal(3, progress["lvls"]["times"]["lvl3"])
 
             update_locked_levels()
             medal = get_medal(3, current_time)
             score_calc()
-            if progress["score"]["lvl3"] < score or progress["score"]["lvl3"] == 0:
-                progress["score"]["lvl3"] = score
+            if progress["lvls"]["score"]["lvl3"] < score or progress["lvls"]["score"]["lvl3"] == 0:
+                progress["lvls"]["score"]["lvl3"] = score
                 new_hs = True
             if not new_hs:
-                hs = progress["score"]["lvl3"]
+                hs = progress["lvls"]["score"]["lvl3"]
             stars = get_stars(3, score)
             level_complete()    
             # Check if all medals from lvl1 to lvl11 are "Gold"
@@ -2512,26 +2594,26 @@ def create_lvl4_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["complete_levels"] < 4:
-                progress["complete_levels"] = 4
+            if progress["lvls"]["complete_levels"] < 4:
+                progress["lvls"]["complete_levels"] = 4
 
             if not is_mute:
                 warp_sound.play()
 
-            if current_time < progress["times"]["lvl4"] or progress["times"]["lvl4"] == 0:
-                progress["times"]["lvl4"] = round(current_time, 2)
+            if current_time < progress["lvls"]["times"]["lvl4"] or progress["lvls"]["times"]["lvl4"] == 0:
+                progress["lvls"]["times"]["lvl4"] = round(current_time, 2)
             
-            progress["medals"]["lvl4"] = get_medal(4, progress["times"]["lvl4"])
+            progress["lvls"]["medals"]["lvl4"] = get_medal(4, progress["lvls"]["times"]["lvl4"])
 
             update_locked_levels()
             medal = get_medal(4, current_time)
             score_calc()
             
-            if progress["score"]["lvl4"] < score or progress["score"]["lvl4"] == 0:
-                progress["score"]["lvl4"] = score
+            if progress["lvls"]["score"]["lvl4"] < score or progress["lvls"]["score"]["lvl4"] == 0:
+                progress["lvls"]["score"]["lvl4"] = score
                 new_hs = True
             if not new_hs:
-                hs = progress["score"]["lvl4"]
+                hs = progress["lvls"]["score"]["lvl4"]
             stars = get_stars(4, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
@@ -3181,25 +3263,25 @@ def create_lvl5_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["complete_levels"] < 5:
-                progress["complete_levels"] = 5
+            if progress["lvls"]["complete_levels"] < 5:
+                progress["lvls"]["complete_levels"] = 5
 
             if not is_mute:
                 warp_sound.play()
 
-            if current_time < progress["times"]["lvl5"] or progress["times"]["lvl5"] == 0:
-                progress["times"]["lvl5"] = round(current_time, 2)
+            if current_time < progress["lvls"]["times"]["lvl5"] or progress["lvls"]["times"]["lvl5"] == 0:
+                progress["lvls"]["times"]["lvl5"] = round(current_time, 2)
             
-            progress["medals"]["lvl5"] = get_medal(5, progress["times"]["lvl5"])
+            progress["lvls"]["medals"]["lvl5"] = get_medal(5, progress["lvls"]["times"]["lvl5"])
 
             update_locked_levels()
             medal = get_medal(5, current_time)
             score_calc()
-            if progress["score"]["lvl5"] < score or progress["score"]["lvl5"] == 0:
-                progress["score"]["lvl5"] = score
+            if progress["lvls"]["score"]["lvl5"] < score or progress["lvls"]["score"]["lvl5"] == 0:
+                progress["lvls"]["score"]["lvl5"] = score
                 new_hs = True
             if not new_hs:
-                hs = progress["score"]["lvl5"]
+                hs = progress["lvls"]["score"]["lvl5"]
             stars = get_stars(5, score)
             level_complete()
 
@@ -3859,25 +3941,25 @@ def create_lvl6_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["complete_levels"] < 6:
-                progress["complete_levels"] = 6
+            if progress["lvls"]["complete_levels"] < 6:
+                progress["lvls"]["complete_levels"] = 6
 
             if not is_mute:
                 warp_sound.play()
 
-            if current_time < progress["times"]["lvl6"] or progress["times"]["lvl6"] == 0:
-                progress["times"]["lvl6"] = round(current_time, 2)
+            if current_time < progress["lvls"]["times"]["lvl6"] or progress["lvls"]["times"]["lvl6"] == 0:
+                progress["lvls"]["times"]["lvl6"] = round(current_time, 2)
             
-            progress["medals"]["lvl6"] = get_medal(6, progress["times"]["lvl6"])
+            progress["lvls"]["medals"]["lvl6"] = get_medal(6, progress["lvls"]["times"]["lvl6"])
 
             update_locked_levels()
             medal = get_medal(6, current_time)
             score_calc()
-            if progress["score"]["lvl6"] < score or progress["score"]["lvl6"] == 0:
-                progress["score"]["lvl6"] = score
+            if progress["lvls"]["score"]["lvl6"] < score or progress["lvls"]["score"]["lvl6"] == 0:
+                progress["lvls"]["score"]["lvl6"] = score
                 new_hs = True
             if not new_hs:
-                hs = progress["score"]["lvl6"]
+                hs = progress["lvls"]["score"]["lvl6"]
             stars = get_stars(6, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
@@ -4474,25 +4556,25 @@ def create_lvl7_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["complete_levels"] < 7:
-                progress["complete_levels"] = 7
+            if progress["lvls"]["complete_levels"] < 7:
+                progress["lvls"]["complete_levels"] = 7
 
             if not is_mute:
                 warp_sound.play()
 
-            if current_time < progress["times"]["lvl7"] or progress["times"]["lvl7"] == 0:
-                progress["times"]["lvl7"] = round(current_time, 2)
+            if current_time < progress["lvls"]["times"]["lvl7"] or progress["lvls"]["times"]["lvl7"] == 0:
+                progress["lvls"]["times"]["lvl7"] = round(current_time, 2)
             
-            progress["medals"]["lvl7"] = get_medal(7, progress["times"]["lvl7"])
+            progress["lvls"]["medals"]["lvl7"] = get_medal(7, progress["lvls"]["times"]["lvl7"])
 
             update_locked_levels()
             medal = get_medal(7, current_time)
             score_calc()
-            if progress["score"]["lvl7"] < score or progress["score"]["lvl7"] == 0:
-                progress["score"]["lvl7"] = score
+            if progress["lvls"]["score"]["lvl7"] < score or progress["lvls"]["score"]["lvl7"] == 0:
+                progress["lvls"]["score"]["lvl7"] = score
                 new_hs = True
             if not new_hs:
-                hs = progress["score"]["lvl7"]
+                hs = progress["lvls"]["score"]["lvl7"]
             stars = get_stars(7, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
@@ -5052,25 +5134,25 @@ def create_lvl8_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["complete_levels"] < 8:
-                progress["complete_levels"] = 8
+            if progress["lvls"]["complete_levels"] < 8:
+                progress["lvls"]["complete_levels"] = 8
 
             if not is_mute:
                 warp_sound.play()
 
-            if current_time < progress["times"]["lvl8"] or progress["times"]["lvl8"] == 0:
-                progress["times"]["lvl8"] = round(current_time, 2)
+            if current_time < progress["lvls"]["times"]["lvl8"] or progress["lvls"]["times"]["lvl8"] == 0:
+                progress["lvls"]["times"]["lvl8"] = round(current_time, 2)
             
-            progress["medals"]["lvl8"] = get_medal(8, progress["times"]["lvl8"])
+            progress["lvls"]["medals"]["lvl8"] = get_medal(8, progress["lvls"]["times"]["lvl8"])
 
             update_locked_levels()
             medal = get_medal(8, current_time)
             score_calc()
-            if progress["score"]["lvl8"] < score or progress["score"]["lvl8"] == 0:
-                progress["score"]["lvl8"] = score
+            if progress["lvls"]["score"]["lvl8"] < score or progress["lvls"]["score"]["lvl8"] == 0:
+                progress["lvls"]["score"]["lvl8"] = score
                 new_hs = True
             if not new_hs:
-                hs = progress["score"]["lvl8"]
+                hs = progress["lvls"]["score"]["lvl8"]
             stars = get_stars(8, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
@@ -5729,25 +5811,25 @@ def create_lvl9_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["complete_levels"] < 9:
-                progress["complete_levels"] = 9
+            if progress["lvls"]["complete_levels"] < 9:
+                progress["lvls"]["complete_levels"] = 9
 
             if not is_mute:
                 warp_sound.play()
 
-            if current_time < progress["times"]["lvl9"] or progress["times"]["lvl9"] == 0:
-                progress["times"]["lvl9"] = round(current_time, 2)
+            if current_time < progress["lvls"]["times"]["lvl9"] or progress["lvls"]["times"]["lvl9"] == 0:
+                progress["lvls"]["times"]["lvl9"] = round(current_time, 2)
             
-            progress["medals"]["lvl9"] = get_medal(9, progress["times"]["lvl9"])
+            progress["lvls"]["medals"]["lvl9"] = get_medal(9, progress["lvls"]["times"]["lvl9"])
 
             update_locked_levels()
             medal = get_medal(9, current_time)
             score_calc()
-            if progress["score"]["lvl9"] < score or progress["score"]["lvl9"] == 0:
+            if progress["lvls"]["score"]["lvl9"] < score or progress["lvls"]["score"]["lvl9"] == 0:
                 new_hs = True
-                progress["score"]["lvl9"] = score
+                progress["lvls"]["score"]["lvl9"] = score
             if not new_hs:
-                hs = progress["score"]["lvl9"]
+                hs = progress["lvls"]["score"]["lvl9"]
             stars = get_stars(9, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
@@ -6381,24 +6463,24 @@ def create_lvl10_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["complete_levels"] < 10:
-                progress["complete_levels"] = 10
+            if progress["lvls"]["complete_levels"] < 10:
+                progress["lvls"]["complete_levels"] = 10
             if not is_mute:
                 warp_sound.play()
 
-            if current_time < progress["times"]["lvl10"] or progress["times"]["lvl10"] == 0:
-                progress["times"]["lvl10"] = round(current_time, 2)
+            if current_time < progress["lvls"]["times"]["lvl10"] or progress["lvls"]["times"]["lvl10"] == 0:
+                progress["lvls"]["times"]["lvl10"] = round(current_time, 2)
             
-            progress["medals"]["lvl10"] = get_medal(10, progress["times"]["lvl10"])
+            progress["lvls"]["medals"]["lvl10"] = get_medal(10, progress["lvls"]["times"]["lvl10"])
 
             update_locked_levels()
             medal = get_medal(10, current_time)
             score_calc()
-            if progress["score"]["lvl10"] < score or progress["score"]["lvl10"] == 0:
+            if progress["lvls"]["score"]["lvl10"] < score or progress["lvls"]["score"]["lvl10"] == 0:
                 new_hs = True
-                progress["score"]["lvl10"] = score
+                progress["lvls"]["score"]["lvl10"] = score
             if not new_hs:
-                hs = progress["score"]["lvl10"]
+                hs = progress["lvls"]["score"]["lvl10"]
             stars = get_stars(10, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
@@ -7090,25 +7172,25 @@ def create_lvl11_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["complete_levels"] < 11:
-                progress["complete_levels"] = 11
+            if progress["lvls"]["complete_levels"] < 11:
+                progress["lvls"]["complete_levels"] = 11
 
             if not is_mute:
                 warp_sound.play()
 
-            if current_time < progress["times"]["lvl11"] or progress["times"]["lvl11"] == 0:
-                progress["times"]["lvl11"] = round(current_time, 2)
+            if current_time < progress["lvls"]["times"]["lvl11"] or progress["lvls"]["times"]["lvl11"] == 0:
+                progress["lvls"]["times"]["lvl11"] = round(current_time, 2)
             
-            progress["medals"]["lvl11"] = get_medal(11, progress["times"]["lvl11"])
+            progress["lvls"]["medals"]["lvl11"] = get_medal(11, progress["lvls"]["times"]["lvl11"])
 
             update_locked_levels()
             medal = get_medal(11, current_time)
             score_calc()
-            if progress["score"]["lvl11"] < score or progress["score"]["lvl11"] == 0:
+            if progress["lvls"]["score"]["lvl11"] < score or progress["lvls"]["score"]["lvl11"] == 0:
                 new_hs = True
-                progress["score"]["lvl11"] = score
+                progress["lvls"]["score"]["lvl11"] = score
             if not new_hs:
-                hs = progress["score"]["lvl11"]
+                hs = progress["lvls"]["score"]["lvl11"]
             stars = get_stars(11, score)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
@@ -7438,7 +7520,7 @@ def create_lvl11_screen():
                         notify_sound.play()
                     unlock = True
                     unlock_time = pygame.time.get_ticks()
-                    progress["evilrobo_unlocked"] = unlock
+                    progress["char"]["evilrobo"] = unlock
                     save_progress(progress)
             epos_x -= 12
 
@@ -7818,26 +7900,26 @@ def create_lvl12_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["complete_levels"] < 12:
-                progress["complete_levels"] = 12
+            if progress["lvls"]["complete_levels"] < 12:
+                progress["lvls"]["complete_levels"] = 12
                 # You might want to update locked_levels here as well if needed
 
             if not is_mute:
                 warp_sound.play()
 
-            if current_time < progress["times"]["lvl12"] or progress["times"]["lvl12"] == 0:
-                progress["times"]["lvl12"] = round(current_time, 2)
+            if current_time < progress["lvls"]["times"]["lvl12"] or progress["lvls"]["times"]["lvl12"] == 0:
+                progress["lvls"]["times"]["lvl12"] = round(current_time, 2)
             
-            progress["medals"]["lvl12"] = get_medal(13, progress["times"]["lvl12"])
+            progress["lvls"]["medals"]["lvl12"] = get_medal(13, progress["lvls"]["times"]["lvl12"])
 
             update_locked_levels()
             medal = get_medal(13, current_time)
             score_calc()
-            if progress["score"]["lvl12"] < score or progress["score"]["lvl12"] == 0:
+            if progress["lvls"]["score"]["lvl12"] < score or progress["lvls"]["score"]["lvl12"] == 0:
                 new_hs = True
-                progress["score"]["lvl12"] = score
+                progress["lvls"]["score"]["lvl12"] = score
             if not new_hs:
-                hs = progress["score"]["lvl12"]
+                hs = progress["lvls"]["score"]["lvl12"]
             stars = get_stars(13, score)
             level_complete()
             save_progress(progress)  # Save progress to JSON file
@@ -8250,7 +8332,7 @@ def handle_action(key):
     
     if current_page == 'main_menu':
         if key == "start":
-            complete = progress["complete_levels"]
+            complete = progress["lvls"]["complete_levels"]
             level_page = "levels"
             if not is_transitioning:
                 transition.start(level_page)
@@ -8275,7 +8357,7 @@ def handle_action(key):
         elif key == "settings":
             open_settings()
             low_detail()
-            progress["is_mute"] = is_mute
+            progress["pref"]["is_mute"] = is_mute
             save_progress(progress)
         elif key == "quit":
             if not is_transitioning:
@@ -8511,8 +8593,8 @@ while running:
 
     # Check if characters are locked
          robo_unlock = True
-         evilrobo_unlock = progress.get("evilrobo_unlocked", False)
-         greenrobo_unlock = progress.get("greenrobo_unlocked", False)
+         evilrobo_unlock = progress["char"].get("evilrobo", False)
+         greenrobo_unlock = progress["char"].get("greenrobo", False)
 
             # Draw images
          screen.blit(robot_img, robot_rect)     
@@ -8691,7 +8773,7 @@ while running:
                 for text_surface, disk_rect, key, is_locked in buttons:
                     if disk_rect.collidepoint(event.pos):
                         if key != "next" and key != "back" and not is_locked:
-                            hs = progress['score'][key]
+                            hs = progress["lvls"]['score'][key]
                             high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
                             lvl_time_text = render_text(high_text, True, (255, 255, 0))
 
@@ -8699,7 +8781,7 @@ while running:
                             screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - lvl_time_text.get_width() // 2, SCREEN_HEIGHT - 50))
                             s = key
                             num = int(s[3:])  # Skip the first 3 characters
-                            medals = progress['medals'][key]
+                            medals = progress["lvls"]['medals'][key]
 
                             if medals == "Gold":
                                 screen.blit(gold_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
@@ -8708,7 +8790,7 @@ while running:
                             elif medals == "Bronze":
                                 screen.blit(bron_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
 
-                            stars = get_stars(num, progress['score'][key])
+                            stars = get_stars(num, progress["lvls"]['score'][key])
                             if stars >= 1:
                                 screen.blit(s_star_img, (SCREEN_WIDTH // 2 - 25, SCREEN_HEIGHT - 80))
                             if stars >= 2:
