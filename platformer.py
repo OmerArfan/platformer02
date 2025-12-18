@@ -63,7 +63,7 @@ import copy # distinct import needed for deepcopy
 default_progress = {
     "lvls": { 
         "complete_levels": 0,
-        "locked_levels": ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"],
+        "locked_levels": {f"lvl{i}" for i in range(2, 13)},
         "times": {f"lvl{i}": 0 for i in range(1, 13)},
         "medals": {f"lvl{i}": "None" for i in range(1, 13)},
         "score": {f"lvl{i}": 0 for i in range(1, 13)},
@@ -76,6 +76,7 @@ default_progress = {
     "char": { 
         "evilrobo": False, 
         "greenrobo": False,
+        "ironrobo": False,
     },
     "achieved": { 
         "speedy_starter": False,
@@ -360,7 +361,10 @@ def render_text(text, Boolean, color):
 class Achievements:
     def lvl1speed(ctime):
         global notification_text, notification_time, notif
+        unlock = progress["achieved"].get("speedy_starter", False)
         if ctime <= 4.5:
+          if not unlock:
+            progress["achieved"]["speedy_starter"] = True  
             notification_text = font_def.render("Achievement Unlocked: Speedy Starter", True, (255, 255, 0))
             notify_sound.play()
             if notification_time is None:
@@ -369,7 +373,12 @@ class Achievements:
     
     def perfect6(ctime, deaths):
         global notification_text, notification_time, notif
+        unlock = progress["achieved"].get("zen_os", False)
         if ctime <= 30 and deaths <= 0:
+          if not unlock:
+            progress["achieved"]["zen_os"] = True
+            progress["char"]["ironrobo"] = True
+            save_progress(progress)
             notification_text = font_def.render("Achievement Unlocked: Zenith of Six", True, (255, 255, 0))
             notify_sound.play()
             if notification_time is None:
@@ -378,7 +387,10 @@ class Achievements:
 
     def lvl90000(score):
         global notification_text, notification_time, notif
+        unlock = progress["achieved"].get("over_9k", False)
         if score >= 90000:
+         if not unlock:
+            progress["achieved"]["over_9k"] = True          
             notification_text = font_def.render("Achievement Unlocked: It's over 9000(0)!!", True, (255, 255, 0))
             notify_sound.play()
             if notification_time is None:
@@ -388,8 +400,14 @@ class Achievements:
     def evilchase():
         global notification_text, notification_time, notif
         notification_text = font_def.render("Achievement Unlocked: Chased and Escaped", True, (255, 255, 0))
-        notify_sound.play()
-        if notification_time is None:
+        unlock = progress["achieved"].get("chase_escape", False)
+        if not unlock:
+          progress["achieved"]["chase_escape"] = True
+          progress["char"]["evilrobo"] = True
+          save_progress(progress)
+          if not is_mute:
+           notify_sound.play()
+           if notification_time is None:
              notif = True
              notification_time = time.time()
     
@@ -397,11 +415,12 @@ class Achievements:
       global show_greenrobo_unlocked, greenrobo_unlocked_message_time
       all_gold = all(progress["lvls"]["medals"][f"lvl{i}"] == "Gold" for i in range(1, 13))
       if all_gold:
-        unlock = progress.get("greenrobo_unlocked", False)
+        unlock = progress["achieved"].get("golden", False)
         if not unlock:
             if not is_mute:
                 notify_sound.play()
             unlock = True
+            progress["achieved"]["golden"] = True
             progress["char"]["greenrobo"] = unlock
             save_progress(progress)
             show_greenrobo_unlocked = True
@@ -449,7 +468,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 38)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.82", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.83", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
@@ -563,6 +582,7 @@ s_star_img = pygame.transform.scale(star_img, (20, 17))
 robot_img = pygame.image.load(resource_path("char/robot/robot.png")).convert_alpha()
 evilrobot_img = pygame.image.load(resource_path("char/evilrobot/evilrobot.png")).convert_alpha()
 greenrobot_img = pygame.image.load(resource_path("char/greenrobot/greenrobot.png")).convert_alpha()
+ironrobot_img = pygame.image.load(resource_path("char/ironrobot/ironrobo.png")).convert_alpha()
 quitbot = pygame.image.load(resource_path("char/greenrobot/movegreenrobot.png")).convert_alpha()
 locked_img = pygame.image.load(resource_path("char/lockedrobot.png")).convert_alpha()
 
@@ -640,9 +660,10 @@ def green_world_buttons():
 selected_character = progress.get("character", default_progress["pref"]["character"])
 
 # Get rects and position them
-robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 50))
-evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 - 50))
-greenrobot_rect = greenrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 - 50))
+robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT // 2 - 50))
+evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 50))
+greenrobot_rect = greenrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50))
+ironrobot_rect = ironrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 150, SCREEN_HEIGHT // 2 - 50))
 def character_select():
     global selected_character, set_page, current_page
     
@@ -979,6 +1000,10 @@ def char_assets():
         player_img = pygame.image.load(resource_path(f"char/greenrobot/greenrobot.png")).convert_alpha()
         moving_img_l = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobotL.png")) # Resize to fit the game
         moving_img = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobot.png")) # Resize to fit the game
+    elif selected_character == "ironrobot":
+        player_img = pygame.image.load(resource_path(f"char/ironrobot/ironrobo.png")).convert_alpha()
+        moving_img_l = pygame.image.load(resource_path(f"char/ironrobot/ironrobomoveL.png")) # Resize to fit the game
+        moving_img = pygame.image.load(resource_path(f"char/ironrobot/ironrobomove.png")) # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
 def point_in_triangle(px, py, a, b, c):
@@ -1080,8 +1105,8 @@ ctime = None # global only for resetting
 def resetting():
     global ctime
     if ctime is None:
-        ctime = time.time()
-    print(time.time() - ctime)
+        ctime = pygame.time.get_ticks()
+    print(pygame.time.get_ticks() - ctime)
 
 
 def create_lvl1_screen():
@@ -3954,7 +3979,8 @@ def create_lvl6_screen():
 
             update_locked_levels()
             medal = get_medal(6, current_time)
-            score_calc()
+            score_calc()            
+
             if progress["lvls"]["score"]["lvl6"] < score or progress["lvls"]["score"]["lvl6"] == 0:
                 progress["lvls"]["score"]["lvl6"] = score
                 new_hs = True
@@ -3964,7 +3990,7 @@ def create_lvl6_screen():
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
-
+            Achievements.perfect6(current_time, deathcount)
             save_progress(progress)  # Save progress to JSON file
             running = False
             set_page('lvl7_screen')
@@ -5825,6 +5851,8 @@ def create_lvl9_screen():
             update_locked_levels()
             medal = get_medal(9, current_time)
             score_calc()
+            if score > 90000:
+                Achievements.lvl90000(score)
             if progress["lvls"]["score"]["lvl9"] < score or progress["lvls"]["score"]["lvl9"] == 0:
                 new_hs = True
                 progress["lvls"]["score"]["lvl9"] = score
@@ -8595,23 +8623,25 @@ while running:
          robo_unlock = True
          evilrobo_unlock = progress["char"].get("evilrobo", False)
          greenrobo_unlock = progress["char"].get("greenrobo", False)
-
-            # Draw images
+         ironrobo_unlock = progress["char"].get("ironrobo", False)
+         # Draw images
          screen.blit(robot_img, robot_rect)     
          screen.blit(evilrobot_img if evilrobo_unlock else locked_img, evilrobot_rect)
          screen.blit(greenrobot_img if greenrobo_unlock else locked_img, greenrobot_rect)
-
+         screen.blit(ironrobot_img if ironrobo_unlock else locked_img, ironrobot_rect)
      # Draw a highlight border around the selected character
          highlight_colors = {
           "robot": (63, 72, 204),
           "evilrobot": (128, 0, 128),
           "greenrobot": (25, 195, 21),
+          "ironrobot": (64, 64, 64),
          }
          
          rects = {
           "robot": robot_rect,
           "evilrobot": evilrobot_rect,
           "greenrobot": greenrobot_rect,
+          "ironrobot": ironrobot_rect,
          }
         
          if selected_character in rects:
@@ -8629,6 +8659,8 @@ while running:
                 try_select_robo(evilrobo_unlock, "evilrobot", evilrobot_rect, "evillocked_message", "Encounter this robot in an alternative route to unlock him!")
             elif greenrobot_rect.collidepoint(mouse_pos):
                 try_select_robo(greenrobo_unlock, "greenrobot", greenrobot_rect, "greenlocked_message", "Get GOLD rank in all Green World Levels to unlock this robot!")
+            elif ironrobot_rect.collidepoint(mouse_pos):
+                try_select_robo(ironrobo_unlock, "ironrobot", ironrobot_rect, "ironlocked_message", "Unlock the Zenith Of Six achievement to get this character!")
             elif rect.collidepoint(mouse_pos):
                 set_page("main_menu")
                 if not is_mute:
