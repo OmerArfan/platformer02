@@ -266,6 +266,8 @@ while ps < 100:
     # Load and initalize Images!
     nact_cp = pygame.image.load(resource_path("oimgs/checkpoints/yellow_flag.png")).convert_alpha()
     act_cp = pygame.image.load(resource_path("oimgs/checkpoints/green_flag.png")).convert_alpha();
+    diam_m = pygame.image.load(resource_path("oimgs/medal/perfect.png")).convert_alpha()
+    diam_m = pygame.transform.scale(diam_m, ((diam_m.get_width() // 2), (diam_m.get_height() // 2)))
     gold_m = pygame.image.load(resource_path("oimgs/medal/gold.png")).convert_alpha()
     gold_m = pygame.transform.scale(gold_m, ((gold_m.get_width() // 2), (gold_m.get_height() // 2)))
     silv_m = pygame.image.load(resource_path("oimgs/medal/silver.png")).convert_alpha()
@@ -468,8 +470,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 38)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.83", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.84", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 179, SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -583,6 +585,7 @@ robot_img = pygame.image.load(resource_path("char/robot/robot.png")).convert_alp
 evilrobot_img = pygame.image.load(resource_path("char/evilrobot/evilrobot.png")).convert_alpha()
 greenrobot_img = pygame.image.load(resource_path("char/greenrobot/greenrobot.png")).convert_alpha()
 ironrobot_img = pygame.image.load(resource_path("char/ironrobot/ironrobo.png")).convert_alpha()
+icerobot_img = pygame.image.load(resource_path("char/icerobot/icerobot.png")).convert_alpha()
 quitbot = pygame.image.load(resource_path("char/greenrobot/movegreenrobot.png")).convert_alpha()
 locked_img = pygame.image.load(resource_path("char/lockedrobot.png")).convert_alpha()
 
@@ -862,7 +865,9 @@ def score_calc():
 
     token_score = 0
     time_score = int(current_time * 160)
-    if medal == "Gold":
+    if medal == "Diamond":
+        medal_score = -10000
+    elif medal == "Gold":
         medal_score = 5000
     elif medal == "Silver":
         medal_score = 10000
@@ -947,8 +952,9 @@ def level_complete():
                     if not is_mute:
                      star_channel.play(star3)
                     star3_p = True
-
-        if medal == "Gold":
+        if medal == "Diamond":
+            screen.blit(diam_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - gold_m.get_height() // 2))
+        elif medal == "Gold":
             screen.blit(gold_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - gold_m.get_height() // 2))
         elif medal == "Silver":
             screen.blit(silv_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - gold_m.get_height() // 2))
@@ -1275,7 +1281,9 @@ def create_lvl1_screen():
             update_locked_levels()
 
             medal = get_medal(1, current_time)
-        
+            if medal == "Gold" and deathcount == 0:
+                medal = "Diamond"
+                progress["lvls"]["medals"]["lvl1"] = medal
             score_calc()
             if progress["lvls"]["score"]["lvl1"] < score or progress["lvls"]["score"]["lvl1"] == 0:
                 progress["lvls"]["score"]["lvl1"] = score
@@ -1348,7 +1356,10 @@ def create_lvl1_screen():
 
         medal = get_medal(1, current_time)
         if medal == "Gold":
-            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+            if deathcount == 0:
+                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+            else:
+                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Silver":
             screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Bronze":
@@ -1622,6 +1633,9 @@ def create_lvl2_screen():
             update_locked_levels()
             
             medal = get_medal(2, current_time)
+            if medal == "Gold" and deathcount == 0:
+                medal = "Diamond"
+                progress["lvls"]["medals"]["lvl2"] = medal
             score_calc()
 
             if progress["lvls"]["score"]["lvl2"] < score or progress["lvls"]["score"]["lvl2"] == 0:
@@ -1701,7 +1715,10 @@ def create_lvl2_screen():
 
         medal = get_medal(2, current_time)
         if medal == "Gold":
-            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+            if deathcount == 0:
+                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+            else:
+                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Silver":
             screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Bronze":
@@ -2050,7 +2067,11 @@ def create_lvl3_screen():
 
             update_locked_levels()
             medal = get_medal(3, current_time)
+            if medal == "Gold" and deathcount == 0:
+                medal = "Diamond"
+                progress["lvls"]["medals"]["lvl3"] = medal
             score_calc()
+            
             if progress["lvls"]["score"]["lvl3"] < score or progress["lvls"]["score"]["lvl3"] == 0:
                 progress["lvls"]["score"]["lvl3"] = score
                 new_hs = True
@@ -2235,7 +2256,10 @@ def create_lvl3_screen():
 
         medal = get_medal(3, current_time)
         if medal == "Gold":
-            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+            if deathcount == 0:
+                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+            else:
+                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Silver":
             screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Bronze":
@@ -2632,6 +2656,10 @@ def create_lvl4_screen():
 
             update_locked_levels()
             medal = get_medal(4, current_time)
+            
+            if medal == "Gold" and deathcount == 0:
+                medal = "Diamond"
+                progress["lvls"]["medals"]["lvl4"] = medal
             score_calc()
             
             if progress["lvls"]["score"]["lvl4"] < score or progress["lvls"]["score"]["lvl4"] == 0:
@@ -2928,7 +2956,10 @@ def create_lvl4_screen():
 
         medal = get_medal(4, current_time)
         if medal == "Gold":
-            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+            if deathcount == 0:
+                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+            else:
+                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Silver":
             screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Bronze":
@@ -3301,7 +3332,12 @@ def create_lvl5_screen():
 
             update_locked_levels()
             medal = get_medal(5, current_time)
+            
+            if medal == "Gold" and deathcount == 0:
+                medal = "Diamond"
+                progress["lvls"]["medals"]["lvl5"] = medal
             score_calc()
+            
             if progress["lvls"]["score"]["lvl5"] < score or progress["lvls"]["score"]["lvl5"] == 0:
                 progress["lvls"]["score"]["lvl5"] = score
                 new_hs = True
@@ -3623,7 +3659,10 @@ def create_lvl5_screen():
 
         medal = get_medal(5, current_time)
         if medal == "Gold":
-            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+            if deathcount == 0:
+                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+            else:
+                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Silver":
             screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Bronze":
@@ -3979,8 +4018,12 @@ def create_lvl6_screen():
 
             update_locked_levels()
             medal = get_medal(6, current_time)
+            
+            if medal == "Gold" and deathcount == 0:
+                medal = "Diamond"
+                progress["lvls"]["medals"]["lvl6"] = medal
             score_calc()            
-
+            
             if progress["lvls"]["score"]["lvl6"] < score or progress["lvls"]["score"]["lvl6"] == 0:
                 progress["lvls"]["score"]["lvl6"] = score
                 new_hs = True
@@ -4312,7 +4355,10 @@ def create_lvl6_screen():
 
         medal = get_medal(6, current_time)
         if medal == "Gold":
-            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+            if deathcount == 0:
+                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+            else:
+                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Silver":
             screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Bronze":
@@ -4595,6 +4641,9 @@ def create_lvl7_screen():
 
             update_locked_levels()
             medal = get_medal(7, current_time)
+            if medal == "Gold" and deathcount == 0:
+                medal = "Diamond"
+                progress["lvls"]["medals"]["lvl7"] = medal
             score_calc()
             if progress["lvls"]["score"]["lvl7"] < score or progress["lvls"]["score"]["lvl7"] == 0:
                 progress["lvls"]["score"]["lvl7"] = score
@@ -4867,7 +4916,10 @@ def create_lvl7_screen():
 
         medal = get_medal(7, current_time)
         if medal == "Gold":
-            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+            if deathcount == 0:
+                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+            else:
+                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Silver":
             screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Bronze":
@@ -5173,6 +5225,9 @@ def create_lvl8_screen():
 
             update_locked_levels()
             medal = get_medal(8, current_time)
+            if medal == "Gold" and deathcount == 0:
+                medal = "Diamond"
+                progress["lvls"]["medals"]["lvl8"] = medal
             score_calc()
             if progress["lvls"]["score"]["lvl8"] < score or progress["lvls"]["score"]["lvl8"] == 0:
                 progress["lvls"]["score"]["lvl8"] = score
@@ -5452,7 +5507,10 @@ def create_lvl8_screen():
 
         medal = get_medal(8, current_time)
         if medal == "Gold":
-            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+            if deathcount == 0:
+                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+            else:
+                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Silver":
             screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Bronze":
@@ -5850,9 +5908,11 @@ def create_lvl9_screen():
 
             update_locked_levels()
             medal = get_medal(9, current_time)
+            if medal == "Gold" and deathcount == 0:
+                medal = "Diamond"
+                progress["lvls"]["medals"]["lvl9"] = medal
             score_calc()
-            if score > 90000:
-                Achievements.lvl90000(score)
+            Achievements.lvl90000(score)
             if progress["lvls"]["score"]["lvl9"] < score or progress["lvls"]["score"]["lvl9"] == 0:
                 new_hs = True
                 progress["lvls"]["score"]["lvl9"] = score
@@ -6171,7 +6231,10 @@ def create_lvl9_screen():
 
         medal = get_medal(9, current_time)
         if medal == "Gold":
-            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+            if deathcount == 0:
+                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+            else:
+                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Silver":
             screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Bronze":
@@ -6503,7 +6566,11 @@ def create_lvl10_screen():
 
             update_locked_levels()
             medal = get_medal(10, current_time)
+            if medal == "Gold" and deathcount == 0:
+                medal = "Diamond"
+                progress["lvls"]["medals"]["lvl10"] = medal
             score_calc()
+            
             if progress["lvls"]["score"]["lvl10"] < score or progress["lvls"]["score"]["lvl10"] == 0:
                 new_hs = True
                 progress["lvls"]["score"]["lvl10"] = score
@@ -6835,7 +6902,10 @@ def create_lvl10_screen():
 
         medal = get_medal(10, current_time)
         if medal == "Gold":
-            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+            if deathcount == 0:
+                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+            else:
+                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Silver":
             screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Bronze":
@@ -7213,7 +7283,12 @@ def create_lvl11_screen():
 
             update_locked_levels()
             medal = get_medal(11, current_time)
+            if medal == "Gold" and deathcount == 0:
+                medal = "Diamond"
+                progress["lvls"]["medals"]["lvl11"] = medal
             score_calc()
+            if medal == "Gold" and deathcount == 0:
+                medal = "Diamond"
             if progress["lvls"]["score"]["lvl11"] < score or progress["lvls"]["score"]["lvl11"] == 0:
                 new_hs = True
                 progress["lvls"]["score"]["lvl11"] = score
@@ -7658,7 +7733,10 @@ def create_lvl11_screen():
         
         medal = get_medal(11, current_time)
         if medal == "Gold":
-            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+            if deathcount == 0:
+                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+            else:
+                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Silver":
             screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Bronze":
@@ -7942,7 +8020,13 @@ def create_lvl12_screen():
 
             update_locked_levels()
             medal = get_medal(13, current_time)
+            if medal == "Gold" and deathcount == 0:
+                medal = "Diamond"
+                progress["lvls"]["medals"]["lvl12"] = medal
+            if medal == "Gold" and deathcount == 0:
+                medal = "Diamond"
             score_calc()
+            
             if progress["lvls"]["score"]["lvl12"] < score or progress["lvls"]["score"]["lvl12"] == 0:
                 new_hs = True
                 progress["lvls"]["score"]["lvl12"] = score
@@ -8138,7 +8222,10 @@ def create_lvl12_screen():
 
         medal = get_medal(13, current_time)
         if medal == "Gold":
-            screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+            if deathcount == 0:
+                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+            else:
+                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Silver":
             screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
         elif medal == "Bronze":
@@ -8814,7 +8901,8 @@ while running:
                             s = key
                             num = int(s[3:])  # Skip the first 3 characters
                             medals = progress["lvls"]['medals'][key]
-
+                            if medals == "Diamond":
+                                screen.blit(diam_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
                             if medals == "Gold":
                                 screen.blit(gold_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
                             elif medals == "Silver":
