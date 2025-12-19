@@ -257,7 +257,9 @@ while ps < 100:
 
     # Load and scale backgrounds
     green_background_img = pygame.image.load(resource_path("bgs/GreenBackground.png")).convert()
-    green_background = pygame.transform.scale(green_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT)); ps += 2
+    green_background = pygame.transform.scale(green_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT)); ps += 1
+    mech_background_img = pygame.image.load(resource_path("bgs/MechBackground.png")).convert()
+    mech_background = pygame.transform.scale(mech_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT)); ps += 1
     trans = pygame.image.load(resource_path("bgs/trans.png")).convert()
     trans = pygame.transform.scale(trans, ((SCREEN_WIDTH), (SCREEN_HEIGHT))); ps += 1
     end = pygame.image.load(resource_path("bgs/EndScreen.png")).convert_alpha()
@@ -470,8 +472,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 38)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.84", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 179, SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.85", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -574,6 +576,8 @@ def create_language_buttons():
 
 greendisk_img = pygame.image.load(resource_path("oimgs/disks/greendisk.png")).convert_alpha()
 greendisk_img = pygame.transform.scale(greendisk_img, (100, 100))  # Resize as needed
+mechdisk_img = pygame.image.load(resource_path("oimgs/disks/mechdisk.png")).convert_alpha()
+mechdisk_img = pygame.transform.scale(mechdisk_img, (100, 100))
 lockeddisk_img = pygame.image.load(resource_path("oimgs/disks/lockeddisk.png")).convert_alpha()
 lockeddisk_img = pygame.transform.scale(lockeddisk_img, (100, 100))  # Resize as needed
 star_img = pygame.image.load(resource_path("oimgs/ig/star.png")).convert_alpha()
@@ -589,6 +593,30 @@ icerobot_img = pygame.image.load(resource_path("char/icerobot/icerobot.png")).co
 quitbot = pygame.image.load(resource_path("char/greenrobot/movegreenrobot.png")).convert_alpha()
 locked_img = pygame.image.load(resource_path("char/lockedrobot.png")).convert_alpha()
 
+def worlds():
+    # THIS IS PLACEHOLDER CODE! NOT FINAL!
+    global current_lang, buttons
+    buttons.clear()
+
+    # Store the rendered text and its position for later drawing
+    global text_rect, level_key
+    screen.blit(greendisk_img, (SCREEN_WIDTH // 2 - greendisk_img.get_width() // 2 - 150 , SCREEN_HEIGHT // 2 - greendisk_img.get_height() // 2))
+    screen.blit(mechdisk_img, (SCREEN_WIDTH // 2 + greendisk_img.get_width() // 2 + 150 , SCREEN_HEIGHT // 2 - greendisk_img.get_height() // 2))
+    # Get the text
+    back_text = current_lang.get("back", "Back")        
+    rendered_back = render_text(back_text, True, (255, 255, 255))
+
+    # Create a fixed 100x100 hitbox centered at the right location
+    back_rect = pygame.Rect(SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, SCREEN_HEIGHT - 175, 100, 100)
+    back_rect.center = (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 200)
+
+    # Then during draw phase: center the text inside that fixed rect
+    text_rect = rendered_back.get_rect(center=back_rect.center)
+    screen.blit(rendered_back, text_rect)
+
+    # Add the button
+    buttons.append((rendered_back, back_rect, "back", False))
+
 def green_world_buttons():
     global current_lang, buttons
     buttons.clear()
@@ -596,15 +624,15 @@ def green_world_buttons():
     # Store the rendered text and its position for later drawing
     global text_rect, level_key
 
-    level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
-    level_no = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
-    buttons_per_row = 4
+    level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6"]
+    level_no = ["1", "2", "3", "4", "5", "6"]
+    buttons_per_row = 3
     spacing_x = 160
     spacing_y = 160
 
     grid_width = (buttons_per_row - 1) * spacing_x
     start_x = (SCREEN_WIDTH - grid_width) // 2
-    start_y = ((SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2)) + 100
+    start_y = ((SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2)) + 50
 
     for i, level in enumerate(level_options):
         col = i % buttons_per_row
@@ -622,8 +650,60 @@ def green_world_buttons():
     rendered_back = render_text(back_text, True, (255, 255, 255))
 
     # Create a fixed 100x100 hitbox centered at the right location
-    back_rect = pygame.Rect(0, 0, 100, 100)
-    back_rect.center = (90, SCREEN_HEIGHT // 2)
+    back_rect = pygame.Rect(SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, SCREEN_HEIGHT - 175, 100, 100)
+    back_rect.center = (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 200)
+
+    # Then during draw phase: center the text inside that fixed rect
+    text_rect = rendered_back.get_rect(center=back_rect.center)
+    screen.blit(rendered_back, text_rect)
+
+    # Add the button
+    buttons.append((rendered_back, back_rect, "back", False))
+
+    next_text = current_lang.get("next", "next")
+    rendered_next = render_text(next_text, True, (255, 255, 255))
+
+    next_rect = pygame.Rect(0, 0, 100, 100)
+    next_rect.center = (SCREEN_WIDTH - 90, SCREEN_HEIGHT // 2)
+
+    text_rect = rendered_next.get_rect(center=next_rect.center)
+    screen.blit(rendered_next, text_rect)
+
+def mech_world_buttons():
+    global current_lang, buttons
+    buttons.clear()
+
+    # Store the rendered text and its position for later drawing
+    global text_rect, level_key
+
+    level_options = ["lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
+    level_no = ["7", "8", "9", "10", "11", "12"]
+    buttons_per_row = 3
+    spacing_x = 160
+    spacing_y = 160
+
+    grid_width = (buttons_per_row - 1) * spacing_x
+    start_x = (SCREEN_WIDTH - grid_width) // 2
+    start_y = ((SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2)) + 50
+
+    for i, level in enumerate(level_options):
+        col = i % buttons_per_row
+        row = i // buttons_per_row
+        x = start_x + col * spacing_x
+        y = start_y + row * spacing_y
+
+        is_locked = level in progress["lvls"]["locked_levels"]
+        text_surface = font_text.render(level_no[i], True, (255, 255, 255))
+        disk_rect = greendisk_img.get_rect(center=(x, y))
+        buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
+
+    # Get the text
+    back_text = current_lang.get("back", "Back")        
+    rendered_back = render_text(back_text, True, (255, 255, 255))
+
+    # Create a fixed 100x100 hitbox centered at the right location
+    back_rect = pygame.Rect(SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, SCREEN_HEIGHT - 175, 100, 100)
+    back_rect.center = (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 200)
 
     # Then during draw phase: center the text inside that fixed rect
     text_rect = rendered_back.get_rect(center=back_rect.center)
@@ -764,6 +844,10 @@ def set_page(page):
         current_lang = load_language(lang_code).get('levels', {})
         green_world_buttons()
         change_ambience("audio/amb/greenambience.wav")
+    elif page == 'mech_levels':
+        current_lang = load_language(lang_code).get('levels', {})
+        mech_world_buttons()
+        change_ambience("audio/amb/mechambience.wav")
     elif page == 'quit_confirm':
         current_lang = load_language(lang_code).get('messages', {})
         create_quit_confirm_buttons()
@@ -1114,6 +1198,36 @@ def resetting():
         ctime = pygame.time.get_ticks()
     print(pygame.time.get_ticks() - ctime)
 
+# ALgorithm for logic stuff when level is completed
+def fin_lvl_logic(lvl):
+            global medal, hs, stars, new_hs
+            if progress["lvls"]["complete_levels"] < lvl:
+                progress["lvls"]["complete_levels"] = lvl
+                update_locked_levels()
+
+            if not is_mute:
+                warp_sound.play()
+
+            if current_time < progress["lvls"]["times"][f"lvl{lvl}"] or progress["lvls"]["times"][f"lvl{lvl}"] == 0:
+                progress["lvls"]["times"][f"lvl{lvl}"] = round(current_time, 2)
+            
+            if progress["lvls"]["score"][f"lvl{lvl}"] < 100000:
+                progress["lvls"]["medals"][f"lvl{lvl}"] = get_medal(lvl, progress["lvls"]["times"][f"lvl{lvl}"])
+            else:
+                progress["lvls"]["medals"][f"lvl{lvl}"] = "Diamond"
+            update_locked_levels()
+
+            medal = get_medal(lvl, current_time)
+            if medal == "Gold" and deathcount == 0:
+                medal = "Diamond"
+                progress["lvls"]["medals"][f"lvl{lvl}"] = medal
+            score_calc()
+            if progress["lvls"]["score"][f"lvl{lvl}"] < score or progress["lvls"]["score"][f"lvl{lvl}"] == 0:
+                progress["lvls"]["score"][f"lvl{lvl}"] = score
+                new_hs = True
+            if not new_hs:
+                hs = progress["lvls"]["score"][f"lvl{lvl}"]
+            stars = get_stars(lvl, score)
 
 def create_lvl1_screen():
     global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, is_transitioning, transition_time, current_time, medal, deathcount, score
@@ -1266,31 +1380,7 @@ def create_lvl1_screen():
             deathcount += 1
 
         if player_rect.colliderect(exit_portal):
-            if progress["lvls"]["complete_levels"] < 1:
-                progress["lvls"]["complete_levels"] = 1
-                update_locked_levels()
-
-            if not is_mute:
-                warp_sound.play()
-
-            if current_time < progress["lvls"]["times"]["lvl1"] or progress["lvls"]["times"]["lvl1"] == 0:
-                progress["lvls"]["times"]["lvl1"] = round(current_time, 2)
-            
-            progress["lvls"]["medals"]["lvl1"] = get_medal(1, progress["lvls"]["times"]["lvl1"])
-
-            update_locked_levels()
-
-            medal = get_medal(1, current_time)
-            if medal == "Gold" and deathcount == 0:
-                medal = "Diamond"
-                progress["lvls"]["medals"]["lvl1"] = medal
-            score_calc()
-            if progress["lvls"]["score"]["lvl1"] < score or progress["lvls"]["score"]["lvl1"] == 0:
-                progress["lvls"]["score"]["lvl1"] = score
-                new_hs = True
-            if not new_hs:
-                hs = progress["lvls"]["score"]["lvl1"]
-            stars = get_stars(1, score)
+            fin_lvl_logic(1)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.lvl1speed(current_time)
@@ -1618,32 +1708,7 @@ def create_lvl2_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["lvls"]["complete_levels"] < 2:
-                progress["lvls"]["complete_levels"] = 2
-                update_locked_levels()
-
-            if not is_mute:
-                warp_sound.play()
-
-            if current_time < progress["lvls"]["times"]["lvl2"] or progress["lvls"]["times"]["lvl2"] == 0:
-                progress["lvls"]["times"]["lvl2"] = round(current_time, 2)
-            
-            progress["lvls"]["medals"]["lvl2"] = get_medal(2, progress["lvls"]["times"]["lvl2"])
-
-            update_locked_levels()
-            
-            medal = get_medal(2, current_time)
-            if medal == "Gold" and deathcount == 0:
-                medal = "Diamond"
-                progress["lvls"]["medals"]["lvl2"] = medal
-            score_calc()
-
-            if progress["lvls"]["score"]["lvl2"] < score or progress["lvls"]["score"]["lvl2"] == 0:
-                progress["lvls"]["score"]["lvl2"] = score
-                new_hs = True
-            if not new_hs:
-                hs = progress["lvls"]["score"]["lvl2"]
-            stars = get_stars(2, score)
+            fin_lvl_logic(2)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
@@ -2053,31 +2118,7 @@ def create_lvl3_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["lvls"]["complete_levels"] < 3:
-                progress["lvls"]["complete_levels"] = 3
-                update_locked_levels()
-
-            if not is_mute:
-                warp_sound.play()
-
-            if current_time < progress["lvls"]["times"]["lvl3"] or progress["lvls"]["times"]["lvl3"] == 0:
-                progress["lvls"]["times"]["lvl3"] = round(current_time, 2)
-            
-            progress["lvls"]["medals"]["lvl3"] = get_medal(3, progress["lvls"]["times"]["lvl3"])
-
-            update_locked_levels()
-            medal = get_medal(3, current_time)
-            if medal == "Gold" and deathcount == 0:
-                medal = "Diamond"
-                progress["lvls"]["medals"]["lvl3"] = medal
-            score_calc()
-            
-            if progress["lvls"]["score"]["lvl3"] < score or progress["lvls"]["score"]["lvl3"] == 0:
-                progress["lvls"]["score"]["lvl3"] = score
-                new_hs = True
-            if not new_hs:
-                hs = progress["lvls"]["score"]["lvl3"]
-            stars = get_stars(3, score)
+            fin_lvl_logic(3)
             level_complete()    
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
@@ -2643,31 +2684,7 @@ def create_lvl4_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["lvls"]["complete_levels"] < 4:
-                progress["lvls"]["complete_levels"] = 4
-
-            if not is_mute:
-                warp_sound.play()
-
-            if current_time < progress["lvls"]["times"]["lvl4"] or progress["lvls"]["times"]["lvl4"] == 0:
-                progress["lvls"]["times"]["lvl4"] = round(current_time, 2)
-            
-            progress["lvls"]["medals"]["lvl4"] = get_medal(4, progress["lvls"]["times"]["lvl4"])
-
-            update_locked_levels()
-            medal = get_medal(4, current_time)
-            
-            if medal == "Gold" and deathcount == 0:
-                medal = "Diamond"
-                progress["lvls"]["medals"]["lvl4"] = medal
-            score_calc()
-            
-            if progress["lvls"]["score"]["lvl4"] < score or progress["lvls"]["score"]["lvl4"] == 0:
-                progress["lvls"]["score"]["lvl4"] = score
-                new_hs = True
-            if not new_hs:
-                hs = progress["lvls"]["score"]["lvl4"]
-            stars = get_stars(4, score)
+            fin_lvl_logic(4)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
@@ -3319,31 +3336,7 @@ def create_lvl5_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["lvls"]["complete_levels"] < 5:
-                progress["lvls"]["complete_levels"] = 5
-
-            if not is_mute:
-                warp_sound.play()
-
-            if current_time < progress["lvls"]["times"]["lvl5"] or progress["lvls"]["times"]["lvl5"] == 0:
-                progress["lvls"]["times"]["lvl5"] = round(current_time, 2)
-            
-            progress["lvls"]["medals"]["lvl5"] = get_medal(5, progress["lvls"]["times"]["lvl5"])
-
-            update_locked_levels()
-            medal = get_medal(5, current_time)
-            
-            if medal == "Gold" and deathcount == 0:
-                medal = "Diamond"
-                progress["lvls"]["medals"]["lvl5"] = medal
-            score_calc()
-            
-            if progress["lvls"]["score"]["lvl5"] < score or progress["lvls"]["score"]["lvl5"] == 0:
-                progress["lvls"]["score"]["lvl5"] = score
-                new_hs = True
-            if not new_hs:
-                hs = progress["lvls"]["score"]["lvl5"]
-            stars = get_stars(5, score)
+            fin_lvl_logic(5)
             level_complete()
 
             # Check if all medals from lvl1 to lvl11 are "Gold"
@@ -4005,31 +3998,7 @@ def create_lvl6_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["lvls"]["complete_levels"] < 6:
-                progress["lvls"]["complete_levels"] = 6
-
-            if not is_mute:
-                warp_sound.play()
-
-            if current_time < progress["lvls"]["times"]["lvl6"] or progress["lvls"]["times"]["lvl6"] == 0:
-                progress["lvls"]["times"]["lvl6"] = round(current_time, 2)
-            
-            progress["lvls"]["medals"]["lvl6"] = get_medal(6, progress["lvls"]["times"]["lvl6"])
-
-            update_locked_levels()
-            medal = get_medal(6, current_time)
-            
-            if medal == "Gold" and deathcount == 0:
-                medal = "Diamond"
-                progress["lvls"]["medals"]["lvl6"] = medal
-            score_calc()            
-            
-            if progress["lvls"]["score"]["lvl6"] < score or progress["lvls"]["score"]["lvl6"] == 0:
-                progress["lvls"]["score"]["lvl6"] = score
-                new_hs = True
-            if not new_hs:
-                hs = progress["lvls"]["score"]["lvl6"]
-            stars = get_stars(6, score)
+            fin_lvl_logic(6)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
@@ -4406,7 +4375,7 @@ def create_lvl7_screen():
     char_assets()
     new_hs = False
     buttons.clear()
-    screen.blit(green_background, (0, 0))
+    screen.blit(mech_background, (0, 0))
 
     wait_time = None
     in_game = load_language(lang_code).get('in_game', {})
@@ -4544,7 +4513,7 @@ def create_lvl7_screen():
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                set_page("levels")
+                set_page("mech_levels")
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -4628,29 +4597,7 @@ def create_lvl7_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["lvls"]["complete_levels"] < 7:
-                progress["lvls"]["complete_levels"] = 7
-
-            if not is_mute:
-                warp_sound.play()
-
-            if current_time < progress["lvls"]["times"]["lvl7"] or progress["lvls"]["times"]["lvl7"] == 0:
-                progress["lvls"]["times"]["lvl7"] = round(current_time, 2)
-            
-            progress["lvls"]["medals"]["lvl7"] = get_medal(7, progress["lvls"]["times"]["lvl7"])
-
-            update_locked_levels()
-            medal = get_medal(7, current_time)
-            if medal == "Gold" and deathcount == 0:
-                medal = "Diamond"
-                progress["lvls"]["medals"]["lvl7"] = medal
-            score_calc()
-            if progress["lvls"]["score"]["lvl7"] < score or progress["lvls"]["score"]["lvl7"] == 0:
-                progress["lvls"]["score"]["lvl7"] = score
-                new_hs = True
-            if not new_hs:
-                hs = progress["lvls"]["score"]["lvl7"]
-            stars = get_stars(7, score)
+            fin_lvl_logic(7)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
@@ -4680,7 +4627,7 @@ def create_lvl7_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(green_background, (0, 0))
+        screen.blit(mech_background, (0, 0))
 
         if checkpoint_reached:
             screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
@@ -4957,7 +4904,7 @@ def create_lvl8_screen():
 
     new_hs = False
     buttons.clear()
-    screen.blit(green_background, (0, 0))
+    screen.blit(mech_background, (0, 0))
 
     wait_time = None
     start_time = time.time()
@@ -5099,7 +5046,7 @@ def create_lvl8_screen():
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                set_page("levels")
+                set_page("mech_levels")
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -5212,29 +5159,7 @@ def create_lvl8_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["lvls"]["complete_levels"] < 8:
-                progress["lvls"]["complete_levels"] = 8
-
-            if not is_mute:
-                warp_sound.play()
-
-            if current_time < progress["lvls"]["times"]["lvl8"] or progress["lvls"]["times"]["lvl8"] == 0:
-                progress["lvls"]["times"]["lvl8"] = round(current_time, 2)
-            
-            progress["lvls"]["medals"]["lvl8"] = get_medal(8, progress["lvls"]["times"]["lvl8"])
-
-            update_locked_levels()
-            medal = get_medal(8, current_time)
-            if medal == "Gold" and deathcount == 0:
-                medal = "Diamond"
-                progress["lvls"]["medals"]["lvl8"] = medal
-            score_calc()
-            if progress["lvls"]["score"]["lvl8"] < score or progress["lvls"]["score"]["lvl8"] == 0:
-                progress["lvls"]["score"]["lvl8"] = score
-                new_hs = True
-            if not new_hs:
-                hs = progress["lvls"]["score"]["lvl8"]
-            stars = get_stars(8, score)
+            fin_lvl_logic(8)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
@@ -5264,7 +5189,7 @@ def create_lvl8_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(green_background, (0, 0))
+        screen.blit(mech_background, (0, 0))
 
         if checkpoint_reached:
             screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
@@ -5540,7 +5465,7 @@ def create_lvl9_screen():
     char_assets()
     new_hs = False
     buttons.clear()
-    screen.blit(green_background, (0, 0))
+    screen.blit(mech_background, (0, 0))
     
     wait_time = None
     start_time = time.time()
@@ -5736,7 +5661,7 @@ def create_lvl9_screen():
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                set_page("levels")
+                set_page("mech_levels")
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -5895,30 +5820,7 @@ def create_lvl9_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["lvls"]["complete_levels"] < 9:
-                progress["lvls"]["complete_levels"] = 9
-
-            if not is_mute:
-                warp_sound.play()
-
-            if current_time < progress["lvls"]["times"]["lvl9"] or progress["lvls"]["times"]["lvl9"] == 0:
-                progress["lvls"]["times"]["lvl9"] = round(current_time, 2)
-            
-            progress["lvls"]["medals"]["lvl9"] = get_medal(9, progress["lvls"]["times"]["lvl9"])
-
-            update_locked_levels()
-            medal = get_medal(9, current_time)
-            if medal == "Gold" and deathcount == 0:
-                medal = "Diamond"
-                progress["lvls"]["medals"]["lvl9"] = medal
-            score_calc()
-            Achievements.lvl90000(score)
-            if progress["lvls"]["score"]["lvl9"] < score or progress["lvls"]["score"]["lvl9"] == 0:
-                new_hs = True
-                progress["lvls"]["score"]["lvl9"] = score
-            if not new_hs:
-                hs = progress["lvls"]["score"]["lvl9"]
-            stars = get_stars(9, score)
+            fin_lvl_logic(9)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
@@ -5972,7 +5874,7 @@ def create_lvl9_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(green_background, (0, 0))
+        screen.blit(mech_background, (0, 0))
 
         if checkpoint_reached:
             screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
@@ -6264,7 +6166,7 @@ def create_lvl10_screen():
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     char_assets()
     buttons.clear()
-    screen.blit(green_background, (0, 0))
+    screen.blit(mech_background, (0, 0))
 
     wait_time = None
     start_time = time.time()
@@ -6429,7 +6331,7 @@ def create_lvl10_screen():
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                set_page("levels")
+                set_page("mech_levels")
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -6554,29 +6456,7 @@ def create_lvl10_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["lvls"]["complete_levels"] < 10:
-                progress["lvls"]["complete_levels"] = 10
-            if not is_mute:
-                warp_sound.play()
-
-            if current_time < progress["lvls"]["times"]["lvl10"] or progress["lvls"]["times"]["lvl10"] == 0:
-                progress["lvls"]["times"]["lvl10"] = round(current_time, 2)
-            
-            progress["lvls"]["medals"]["lvl10"] = get_medal(10, progress["lvls"]["times"]["lvl10"])
-
-            update_locked_levels()
-            medal = get_medal(10, current_time)
-            if medal == "Gold" and deathcount == 0:
-                medal = "Diamond"
-                progress["lvls"]["medals"]["lvl10"] = medal
-            score_calc()
-            
-            if progress["lvls"]["score"]["lvl10"] < score or progress["lvls"]["score"]["lvl10"] == 0:
-                new_hs = True
-                progress["lvls"]["score"]["lvl10"] = score
-            if not new_hs:
-                hs = progress["lvls"]["score"]["lvl10"]
-            stars = get_stars(10, score)
+            fin_lvl_logic(10)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
@@ -6630,7 +6510,7 @@ def create_lvl10_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(green_background, (0, 0))
+        screen.blit(mech_background, (0, 0))
 
         if checkpoint_reached:
             screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
@@ -6935,7 +6815,7 @@ def create_lvl11_screen():
     char_assets()
     new_hs = False
     buttons.clear()
-    screen.blit(green_background, (0, 0))
+    screen.blit(mech_background, (0, 0))
 
     in_game = load_language(lang_code).get('in_game', {})
     messages = load_language(lang_code).get('messages', {})
@@ -7111,7 +6991,7 @@ def create_lvl11_screen():
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                set_page("levels")
+                set_page("mech_levels")
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -7270,31 +7150,7 @@ def create_lvl11_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["lvls"]["complete_levels"] < 11:
-                progress["lvls"]["complete_levels"] = 11
-
-            if not is_mute:
-                warp_sound.play()
-
-            if current_time < progress["lvls"]["times"]["lvl11"] or progress["lvls"]["times"]["lvl11"] == 0:
-                progress["lvls"]["times"]["lvl11"] = round(current_time, 2)
-            
-            progress["lvls"]["medals"]["lvl11"] = get_medal(11, progress["lvls"]["times"]["lvl11"])
-
-            update_locked_levels()
-            medal = get_medal(11, current_time)
-            if medal == "Gold" and deathcount == 0:
-                medal = "Diamond"
-                progress["lvls"]["medals"]["lvl11"] = medal
-            score_calc()
-            if medal == "Gold" and deathcount == 0:
-                medal = "Diamond"
-            if progress["lvls"]["score"]["lvl11"] < score or progress["lvls"]["score"]["lvl11"] == 0:
-                new_hs = True
-                progress["lvls"]["score"]["lvl11"] = score
-            if not new_hs:
-                hs = progress["lvls"]["score"]["lvl11"]
-            stars = get_stars(11, score)
+            fin_lvl_logic(11)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
@@ -7324,7 +7180,7 @@ def create_lvl11_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(green_background, (0, 0))
+        screen.blit(mech_background, (0, 0))
 
         if checkpoint_reached:
             screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
@@ -7765,7 +7621,7 @@ def create_lvl12_screen():
     char_assets()
     new_hs = False
     buttons.clear()
-    screen.blit(green_background, (0, 0))
+    screen.blit(mech_background, (0, 0))
 
     in_game = load_language(lang_code).get('in_game', {})
     in_game_ice = load_language(lang_code).get('in_game_ice', {})
@@ -7903,7 +7759,7 @@ def create_lvl12_screen():
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                set_page("levels")
+                set_page("mech_levels")
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -8006,33 +7862,7 @@ def create_lvl12_screen():
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            if progress["lvls"]["complete_levels"] < 12:
-                progress["lvls"]["complete_levels"] = 12
-                # You might want to update locked_levels here as well if needed
-
-            if not is_mute:
-                warp_sound.play()
-
-            if current_time < progress["lvls"]["times"]["lvl12"] or progress["lvls"]["times"]["lvl12"] == 0:
-                progress["lvls"]["times"]["lvl12"] = round(current_time, 2)
-            
-            progress["lvls"]["medals"]["lvl12"] = get_medal(13, progress["lvls"]["times"]["lvl12"])
-
-            update_locked_levels()
-            medal = get_medal(13, current_time)
-            if medal == "Gold" and deathcount == 0:
-                medal = "Diamond"
-                progress["lvls"]["medals"]["lvl12"] = medal
-            if medal == "Gold" and deathcount == 0:
-                medal = "Diamond"
-            score_calc()
-            
-            if progress["lvls"]["score"]["lvl12"] < score or progress["lvls"]["score"]["lvl12"] == 0:
-                new_hs = True
-                progress["lvls"]["score"]["lvl12"] = score
-            if not new_hs:
-                hs = progress["lvls"]["score"]["lvl12"]
-            stars = get_stars(13, score)
+            fin_lvl_logic(12)
             level_complete()
             save_progress(progress)  # Save progress to JSON file
            
@@ -8058,7 +7888,7 @@ def create_lvl12_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(green_background, (0, 0))
+        screen.blit(mech_background, (0, 0))
 
         if checkpoint_reached:
             screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
@@ -8220,7 +8050,7 @@ def create_lvl12_screen():
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        medal = get_medal(13, current_time)
+        medal = get_medal(12, current_time)
         if medal == "Gold":
             if deathcount == 0:
                 screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
@@ -8448,7 +8278,7 @@ def handle_action(key):
     if current_page == 'main_menu':
         if key == "start":
             complete = progress["lvls"]["complete_levels"]
-            level_page = "levels"
+            level_page = "mech_levels"
             if not is_transitioning:
                 transition.start(level_page)
                 transition_time = pygame.time.get_ticks()  # Start the wait time
@@ -8516,17 +8346,23 @@ def handle_action(key):
                     set_page("main_menu")
                     is_transitioning = False
                     transition_time = None
-    elif current_page == 'levels':
+    elif current_page == 'levels' or current_page == 'mech_levels':
         if key is None:  # Ignore clicks on locked levels
             return
         elif key == "back":
             if not is_transitioning:
-                transition.start("main_menu")
+                if current_page == "levels":
+                    transition.start("mech_levels")
+                else:  
+                    transition.start("levels")
                 transition_time = pygame.time.get_ticks()  # Start the wait time
                 is_transitioning = True
             if is_transitioning and transition_time is not None:
                 if transition_time - pygame.time.get_ticks() > 2000:
-                    set_page("main_menu")
+                    if current_page == "levels":
+                        set_page("levels")
+                    else:
+                        set_page("mech_levels")
                     is_transitioning = False
                     transition_time = None
         else:  # Trigger a level's screen
@@ -8635,7 +8471,7 @@ while running:
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
             # Only process clicks if enough time has passed since last page change
-                if current_page != "levels" or current_page != "quit_confirm":
+                if current_page != "levels" or current_page == "mech_levels" or current_page != "quit_confirm":
                         if is_locked is not None:
                             for _, rect, key, is_locked in buttons:
                                 if rect.collidepoint(event.pos):
@@ -8643,7 +8479,7 @@ while running:
                                         click_sound.play()
                                     handle_action(key)
                                     last_page_change_time = time.time()
-                elif current_page == "levels":
+                elif current_page == "levels" or current_page == "mech_levels":
                     for rendered, rect, key, is_locked in buttons:
                         if rect.collidepoint(event.pos):
                             if key is not None:
@@ -8860,9 +8696,13 @@ while running:
         elif current_page == "lvl12_screen":
             create_lvl12_screen()
         
-        elif current_page == "levels":
-            screen.blit(green_background, (0, 0))
-
+        elif current_page == "levels" or current_page == "mech_levels":
+            if current_page == "levels":
+                screen.blit(green_background, (0, 0))
+                disk_img = greendisk_img
+            else:
+                screen.blit(mech_background, (0, 0))
+                disk_img = mechdisk_img
             # Fetch the localized "Select a Level" text dynamically
             select_text = current_lang.get("level_display", "Select a Level")
             rendered_select_text = render_text(select_text, True, (255, 255, 255))
@@ -8929,7 +8769,7 @@ while running:
             
             for text_surface, disk_rect, key, is_locked in buttons: 
                 if key is not None:
-                    screen.blit(greendisk_img, disk_rect)
+                    screen.blit(disk_img, disk_rect)
                 else:
                     screen.blit(lockeddisk_img, disk_rect)
                 text_rect = text_surface.get_rect(center=(disk_rect.x + 50, disk_rect.y + 50))
