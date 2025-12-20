@@ -474,8 +474,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 38)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.86", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.86.1", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 195, SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -488,7 +488,6 @@ def load_language(lang_code):
         save_progress(progress)
         with open("lang/en.json", "r", encoding="utf-8") as f:
             return json.load(f)
-
 
 current_lang = load_language(lang_code)
 # Page states
@@ -1207,14 +1206,13 @@ def resetting():
     global ctime
     if ctime is None:
         ctime = pygame.time.get_ticks()
-    print(pygame.time.get_ticks() - ctime)
 
 # ALgorithm for logic stuff when level is completed
 def fin_lvl_logic(lvl):
             global medal, hs, stars, new_hs
             if progress["lvls"]["complete_levels"] < lvl:
                 progress["lvls"]["complete_levels"] = lvl
-                update_locked_levels()
+                
 
             if not is_mute:
                 warp_sound.play()
@@ -1226,7 +1224,6 @@ def fin_lvl_logic(lvl):
                 progress["lvls"]["medals"][f"lvl{lvl}"] = get_medal(lvl, progress["lvls"]["times"][f"lvl{lvl}"])
             else:
                 progress["lvls"]["medals"][f"lvl{lvl}"] = "Diamond"
-            update_locked_levels()
 
             medal = get_medal(lvl, current_time)
             if medal == "Gold" and deathcount == 0:
@@ -1238,6 +1235,7 @@ def fin_lvl_logic(lvl):
                 new_hs = True
             if not new_hs:
                 hs = progress["lvls"]["score"][f"lvl{lvl}"]
+            update_locked_levels()
             stars = get_stars(lvl, score)
 
 def create_lvl1_screen():
