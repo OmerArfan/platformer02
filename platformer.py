@@ -32,7 +32,7 @@ pygame.init()
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 SCREEN_WIDTH, SCREEN_HEIGHT = screen.get_size()
 pygame.display.set_caption("Roboquix")
-MIN_WIDTH, MIN_HEIGHT = 1300, 800
+MIN_WIDTH, MIN_HEIGHT = 1300, 700
 
 # First of all, LOAD THE DAMN BGGG
 background_img = pygame.image.load(resource_path("bgs/Background.png")).convert()
@@ -290,6 +290,8 @@ while ps < 100:
     progress["pref"]["language"] = lang_code; ps = 91
     is_mute = progress.get("is_mute", default_progress["pref"]["is_mute"]); ps = 97  # Global variable to track mute state
     language_loaded = True
+    if is_mute:
+        pygame.mixer.music.stop()
  else:
      ps = 100
  
@@ -472,7 +474,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 38)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.85", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.86", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
@@ -594,27 +596,38 @@ quitbot = pygame.image.load(resource_path("char/greenrobot/movegreenrobot.png"))
 locked_img = pygame.image.load(resource_path("char/lockedrobot.png")).convert_alpha()
 
 def worlds():
-    # THIS IS PLACEHOLDER CODE! NOT FINAL!
     global current_lang, buttons
     buttons.clear()
 
-    # Store the rendered text and its position for later drawing
-    global text_rect, level_key
-    screen.blit(greendisk_img, (SCREEN_WIDTH // 2 - greendisk_img.get_width() // 2 - 150 , SCREEN_HEIGHT // 2 - greendisk_img.get_height() // 2))
-    screen.blit(mechdisk_img, (SCREEN_WIDTH // 2 + greendisk_img.get_width() // 2 + 150 , SCREEN_HEIGHT // 2 - greendisk_img.get_height() // 2))
-    # Get the text
+    # 1. Define Positions
+    # We define the center points so the image and the button hitbox align perfectly
+    green_center = (SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2)
+    mech_center = (SCREEN_WIDTH // 2 + 250, SCREEN_HEIGHT // 2)
+
+    # 2. Draw the Disks
+    # Use the rect to blit so the image is centered on our coordinates
+    green_rect = greendisk_img.get_rect(center=green_center)
+    mech_rect = mechdisk_img.get_rect(center=mech_center)
+    
+    screen.blit(greendisk_img, green_rect)
+    screen.blit(mechdisk_img, mech_rect)
+
+    # 3. Add Disks to the Button List
+    # Format: (surface/image, rect, action_key, is_locked)
+    buttons.append((greendisk_img, green_rect, "levels", False))
+    buttons.append((mechdisk_img, mech_rect, "mech_levels", False))
+
+    # --- Back Button Logic ---
     back_text = current_lang.get("back", "Back")        
     rendered_back = render_text(back_text, True, (255, 255, 255))
 
-    # Create a fixed 100x100 hitbox centered at the right location
-    back_rect = pygame.Rect(SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, SCREEN_HEIGHT - 175, 100, 100)
+    back_rect = pygame.Rect(0, 0, rendered_back.get_width(), rendered_back.get_height())
     back_rect.center = (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 200)
 
-    # Then during draw phase: center the text inside that fixed rect
     text_rect = rendered_back.get_rect(center=back_rect.center)
     screen.blit(rendered_back, text_rect)
 
-    # Add the button
+    # Add the back button
     buttons.append((rendered_back, back_rect, "back", False))
 
 def green_world_buttons():
@@ -783,6 +796,7 @@ def open_settings():
         is_mute = False
     else:
         is_mute = True
+        pygame.mixer.music.stop()
 
 def quit_game():
     pygame.quit()
@@ -840,14 +854,18 @@ def set_page(page):
     elif page == 'language_select':
         current_lang = load_language(lang_code).get('language_select', {})
         create_language_buttons()
+    elif page == "worlds":
+        worlds()
     elif page == 'levels':
         current_lang = load_language(lang_code).get('levels', {})
         green_world_buttons()
-        change_ambience("audio/amb/greenambience.wav")
+        if not is_mute:
+            change_ambience("audio/amb/greenambience.wav")
     elif page == 'mech_levels':
         current_lang = load_language(lang_code).get('levels', {})
         mech_world_buttons()
-        change_ambience("audio/amb/mechambience.wav")
+        if not is_mute:
+            change_ambience("audio/amb/mechambience.wav")
     elif page == 'quit_confirm':
         current_lang = load_language(lang_code).get('messages', {})
         create_quit_confirm_buttons()
@@ -936,13 +954,6 @@ def create_quit_confirm_buttons():
     buttons.append((rendered_no, no_rect, "no", False))
 
     pygame.display.flip()  # Update the display to show the quit confirmation screen
-
-def low_detail():
-    global LDM
-    if LDM:
-        LDM = False
-    else:
-        LDM = True
 
 def score_calc():
     global current_time, medal, deathcount, score
@@ -4005,7 +4016,7 @@ def create_lvl6_screen():
             Achievements.perfect6(current_time, deathcount)
             save_progress(progress)  # Save progress to JSON file
             running = False
-            set_page('lvl7_screen')
+            set_page('worlds')
 
 
         # Camera logic
@@ -8277,8 +8288,7 @@ def handle_action(key):
     
     if current_page == 'main_menu':
         if key == "start":
-            complete = progress["lvls"]["complete_levels"]
-            level_page = "mech_levels"
+            level_page = "worlds"
             if not is_transitioning:
                 transition.start(level_page)
                 transition_time = pygame.time.get_ticks()  # Start the wait time
@@ -8288,7 +8298,6 @@ def handle_action(key):
                         is_transitioning = False
                         transition_time = None
                         set_page(level_page)
-                        
         elif key == "character_select":
             if not is_transitioning:
                 transition.start("character_select")
@@ -8301,7 +8310,6 @@ def handle_action(key):
                     transition_time = None
         elif key == "settings":
             open_settings()
-            low_detail()
             progress["pref"]["is_mute"] = is_mute
             save_progress(progress)
         elif key == "quit":
@@ -8322,6 +8330,37 @@ def handle_action(key):
             if is_transitioning and transition_time is not None:
                 if transition_time - pygame.time.get_ticks() > 2000:
                     set_page("language_select")
+                    is_transitioning = False
+                    transition_time = None
+    elif current_page == 'worlds':
+        if key == "back":
+            if not is_transitioning:
+                transition.start("main_menu")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+            if is_transitioning and transition_time is not None:
+                if pygame.time.get_ticks() - transition_time > 2000:
+                    set_page("main_menu")
+                    is_transitioning = False
+                    transition_time = None
+        elif key == "levels":
+            if not is_transitioning:
+                transition.start("levels")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+            if is_transitioning and transition_time is not None:
+                if pygame.time.get_ticks() - transition_time > 2000:
+                    set_page("levels")
+                    is_transitioning = False
+                    transition_time = None
+        elif key == "mech_levels":
+            if not is_transitioning:
+                transition.start("mech_levels")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+            if is_transitioning and transition_time is not None:
+                if pygame.time.get_ticks() - transition_time > 2000:
+                    set_page("mech_levels")
                     is_transitioning = False
                     transition_time = None
     elif current_page == 'language_select':
@@ -8351,10 +8390,7 @@ def handle_action(key):
             return
         elif key == "back":
             if not is_transitioning:
-                if current_page == "levels":
-                    transition.start("mech_levels")
-                else:  
-                    transition.start("levels")
+                transition.start("worlds")
                 transition_time = pygame.time.get_ticks()  # Start the wait time
                 is_transitioning = True
             if is_transitioning and transition_time is not None:
@@ -8397,10 +8433,8 @@ button_hovered_last_frame = False
 last_hovered_key = None
 main_menu_hover = None
 wait_time = None
-disk_mode = True
 logo_hover = False
 logo_click = False
-LDM = False
 image_paths = None
 image_surfaces = None
 locked_char_sound_time = None
@@ -8471,7 +8505,7 @@ while running:
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
             # Only process clicks if enough time has passed since last page change
-                if current_page != "levels" or current_page == "mech_levels" or current_page != "quit_confirm":
+                if current_page != "levels" or current_page == "mech_levels" or current_page != "quit_confirm" or current_page != "worlds":
                         if is_locked is not None:
                             for _, rect, key, is_locked in buttons:
                                 if rect.collidepoint(event.pos):
@@ -8479,7 +8513,7 @@ while running:
                                         click_sound.play()
                                     handle_action(key)
                                     last_page_change_time = time.time()
-                elif current_page == "levels" or current_page == "mech_levels":
+                elif current_page == "levels" or current_page == "mech_levels"  or current_page == "worlds":
                     for rendered, rect, key, is_locked in buttons:
                         if rect.collidepoint(event.pos):
                             if key is not None:
