@@ -2,8 +2,8 @@
     "main_menu": {
       "start": "Starten",
       "character_select": "Charakterauswahl",
+      "achievements": "Leistungen",
       "settings": "Audio stummschalten/Stummschaltung aufheben",
-      "news": "Nachrichten",
       "quit": "aufhören",
       "language": "Sprache ändern"
     }
@@ -41,7 +41,7 @@
   ,"icelocked_message": "Dieser Roboter kommt bald!"
   ,"lavalocked_message": "Dieser Roboter kommt bald!"
   ,"greenlocked_message": "Erreiche den GOLD-Rang in allen Green World-Levels, um diesen Roboter freizuschalten!"  
-  ,"de": "Level abgeschlossen!"
+  ,"lvl_comp": "Level abgeschlossen!"
 }
   ,"in_game": {
   "dead_message": "Du bist tot!",
