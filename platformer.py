@@ -11,8 +11,7 @@ import copy
 import arabic_reshaper
 from bidi.algorithm import get_display
 
-# Path to sound folder
-SOUND_FOLDER = os.path.join("audio")
+
 
 # for compilation
 def resource_path(relative_path): 
@@ -21,6 +20,9 @@ def resource_path(relative_path):
     except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
+
+# Path to sound folder
+SOUND_FOLDER = resource_path("audio")
 
 # Initialize audio
 pygame.mixer.init()
@@ -43,12 +45,18 @@ icon = pygame.image.load(resource_path("robots.ico"))
 pygame.display.set_icon(icon)
 
 def change_ambience(new_file):
-    pygame.mixer.music.load(new_file)
+    pygame.mixer.music.load(resource_path(new_file))
     pygame.mixer.music.set_volume(2)  # Adjust as needed
     pygame.mixer.music.play(-1)
 
-# Save file name
-SAVE_FILE = "data/progress.json"
+# 2. Path for the player's save file - hidden in AppData
+# This creates a folder like: C:\Users\Name\AppData\Roaming\Roboquix
+APP_DATA_DIR = os.path.join(os.getenv('APPDATA'), "Roboquix")
+# Create the folder if it doesn't exist yet
+if not os.path.exists(APP_DATA_DIR):
+    os.makedirs(APP_DATA_DIR)
+
+SAVE_FILE = os.path.join(APP_DATA_DIR, "progress.json")
 
 notif = False
 er = False
@@ -148,11 +156,11 @@ def load_progress():
     return data
 
 # Load the fonts (ensure the font file path is correct)
-font_path_ch = 'fonts/NotoSansSC-SemiBold.ttf'
-font_path_jp = 'fonts/NotoSansJP-SemiBold.ttf'
-font_path_kr = 'fonts/NotoSansKR-SemiBold.ttf'
-font_path_ar = "fonts/NotoNaskhArabic-Bold.ttf"
-font_path = 'fonts/NotoSansDisplay-SemiBold.ttf'
+font_path_ch = resource_path('fonts/NotoSansSC-SemiBold.ttf')
+font_path_jp = resource_path('fonts/NotoSansJP-SemiBold.ttf')
+font_path_kr = resource_path('fonts/NotoSansKR-SemiBold.ttf')
+font_path_ar = resource_path("fonts/NotoNaskhArabic-Bold.ttf")
+font_path = resource_path('fonts/NotoSansDisplay-SemiBold.ttf')
 font_ch = pygame.font.Font(font_path_ch, 25)
 font_jp = pygame.font.Font(font_path_jp, 25)
 font_kr = pygame.font.Font(font_path_kr, 25)
@@ -239,7 +247,7 @@ while ps < 100:
   star2.set_volume(4.0)
   star3.set_volume(4.0)
   # Ambient themes
-  pygame.mixer.music.load("audio/amb/ambience.wav"); ps += 2
+  pygame.mixer.music.load(resource_path("audio/amb/ambience.wav")); ps += 2
   sounds_loaded = True
 
  if not images_loaded:
@@ -267,16 +275,35 @@ while ps < 100:
 
     # Load and initalize Images!
     nact_cp = pygame.image.load(resource_path("oimgs/checkpoints/yellow_flag.png")).convert_alpha()
-    act_cp = pygame.image.load(resource_path("oimgs/checkpoints/green_flag.png")).convert_alpha();
+    act_cp = pygame.image.load(resource_path("oimgs/checkpoints/green_flag.png")).convert_alpha(); ps += 1
     diam_m = pygame.image.load(resource_path("oimgs/medal/perfect.png")).convert_alpha()
-    diam_m = pygame.transform.scale(diam_m, ((diam_m.get_width() // 2), (diam_m.get_height() // 2)))
+    diam_m = pygame.transform.scale(diam_m, ((diam_m.get_width() // 2), (diam_m.get_height() // 2))); ps +=1
     gold_m = pygame.image.load(resource_path("oimgs/medal/gold.png")).convert_alpha()
-    gold_m = pygame.transform.scale(gold_m, ((gold_m.get_width() // 2), (gold_m.get_height() // 2)))
+    gold_m = pygame.transform.scale(gold_m, ((gold_m.get_width() // 2), (gold_m.get_height() // 2))); ps +=1
     silv_m = pygame.image.load(resource_path("oimgs/medal/silver.png")).convert_alpha()
-    silv_m = pygame.transform.scale(silv_m, ((silv_m.get_width() // 2), (silv_m.get_height() // 2)))
-    bron_m = pygame.image.load(resource_path("oimgs/medal/bronze.png")).convert_alpha(); ps += 1
-    bron_m = pygame.transform.scale(bron_m, ((bron_m.get_width() // 2), (bron_m.get_height() // 2)))
- 
+    silv_m = pygame.transform.scale(silv_m, ((silv_m.get_width() // 2), (silv_m.get_height() // 2))); ps+=1
+    bron_m = pygame.image.load(resource_path("oimgs/medal/bronze.png")).convert_alpha()
+    bron_m = pygame.transform.scale(bron_m, ((bron_m.get_width() // 2), (bron_m.get_height() // 2))); ps += 1
+
+    greendisk_img = pygame.image.load(resource_path("oimgs/disks/greendisk.png")).convert_alpha()
+    greendisk_img = pygame.transform.scale(greendisk_img, (100, 100)); ps +=1  # Resize as needed
+    mechdisk_img = pygame.image.load(resource_path("oimgs/disks/mechdisk.png")).convert_alpha()
+    mechdisk_img = pygame.transform.scale(mechdisk_img, (100, 100)); ps +=1
+    lockeddisk_img = pygame.image.load(resource_path("oimgs/disks/lockeddisk.png")).convert_alpha()
+    lockeddisk_img = pygame.transform.scale(lockeddisk_img, (100, 100)); ps +=1  # Resize as needed
+    star_img = pygame.image.load(resource_path("oimgs/ig/star.png")).convert_alpha()
+    star_img = pygame.transform.scale(star_img, (150, 140))
+    s_star_img = pygame.transform.scale(star_img, (20, 17)); ps +=1
+
+    # Load character images
+    robot_img = pygame.image.load(resource_path("char/robot/robot.png")).convert_alpha()
+    evilrobot_img = pygame.image.load(resource_path("char/evilrobot/evilrobot.png")).convert_alpha()
+    greenrobot_img = pygame.image.load(resource_path("char/greenrobot/greenrobot.png")).convert_alpha()
+    ironrobot_img = pygame.image.load(resource_path("char/ironrobot/ironrobo.png")).convert_alpha()
+    icerobot_img = pygame.image.load(resource_path("char/icerobot/icerobot.png")).convert_alpha()
+    quitbot = pygame.image.load(resource_path("char/greenrobot/movegreenrobot.png")).convert_alpha()
+    locked_img = pygame.image.load(resource_path("char/lockedrobot.png")).convert_alpha(); ps += 6
+
  if not progress_loaded and sounds_loaded:
     stage = "Loading progress..."
     progress = load_progress(); ps = 65
@@ -303,7 +330,7 @@ if ps == 100:
 pygame.mixer.music.set_volume(0.1)
 pygame.mixer.music.play(-1)  # Loop forever
 
-with open("data/thresholds.json", "r", encoding="utf-8") as f:
+with open(resource_path("data/thresholds.json"), "r", encoding="utf-8") as f:
     thresholds_data = json.load(f)
     level_thresholds = thresholds_data["level_thresholds"]
     score_thresholds = thresholds_data["score_thresholds"]
@@ -419,7 +446,7 @@ class Achievements:
     
     def check_green_gold():
       global show_greenrobo_unlocked, greenrobo_unlocked_message_time
-      all_gold = all(progress["lvls"]["medals"][f"lvl{i}"] == "Gold" for i in range(1, 13))
+      all_gold = all(progress["lvls"]["medals"][f"lvl{i}"] == "Gold" or progress["lvls"]["medals"][f"lvl{i}"] == "Diamond" for i in range(1, 7))
       if all_gold:
         unlock = progress["achieved"].get("golden", False)
         if not unlock:
@@ -474,19 +501,24 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 38)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.86.1", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 195, SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.86.2", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 198, SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
     try:
-        with open(f"lang/{lang_code}.json", "r", encoding="utf-8") as f:
+        # Wrap the path in resource_path()
+        path = resource_path(f"lang/{lang_code}.json")
+        with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
         print(f"[WARN] Language '{lang_code}' not found. Falling back to English.")
         progress["pref"]["language"] = "en"
         save_progress(progress)
-        with open("lang/en.json", "r", encoding="utf-8") as f:
+        
+        # Wrap the fallback path too!
+        fallback_path = resource_path("lang/en.json")
+        with open(fallback_path, "r", encoding="utf-8") as f:
             return json.load(f)
 
 current_lang = load_language(lang_code)
@@ -574,25 +606,6 @@ def create_language_buttons():
     rendered_back = render_text(back_text, True, (255, 255, 255))
     back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, y + spacing_y + 40))
     buttons.append((rendered_back, back_rect, "back", False))
-
-greendisk_img = pygame.image.load(resource_path("oimgs/disks/greendisk.png")).convert_alpha()
-greendisk_img = pygame.transform.scale(greendisk_img, (100, 100))  # Resize as needed
-mechdisk_img = pygame.image.load(resource_path("oimgs/disks/mechdisk.png")).convert_alpha()
-mechdisk_img = pygame.transform.scale(mechdisk_img, (100, 100))
-lockeddisk_img = pygame.image.load(resource_path("oimgs/disks/lockeddisk.png")).convert_alpha()
-lockeddisk_img = pygame.transform.scale(lockeddisk_img, (100, 100))  # Resize as needed
-star_img = pygame.image.load(resource_path("oimgs/ig/star.png")).convert_alpha()
-star_img = pygame.transform.scale(star_img, (150, 140))
-s_star_img = pygame.transform.scale(star_img, (20, 17))
-
-# Load character images
-robot_img = pygame.image.load(resource_path("char/robot/robot.png")).convert_alpha()
-evilrobot_img = pygame.image.load(resource_path("char/evilrobot/evilrobot.png")).convert_alpha()
-greenrobot_img = pygame.image.load(resource_path("char/greenrobot/greenrobot.png")).convert_alpha()
-ironrobot_img = pygame.image.load(resource_path("char/ironrobot/ironrobo.png")).convert_alpha()
-icerobot_img = pygame.image.load(resource_path("char/icerobot/icerobot.png")).convert_alpha()
-quitbot = pygame.image.load(resource_path("char/greenrobot/movegreenrobot.png")).convert_alpha()
-locked_img = pygame.image.load(resource_path("char/lockedrobot.png")).convert_alpha()
 
 def worlds():
     global current_lang, buttons
@@ -6185,7 +6198,7 @@ def create_lvl10_screen():
     # Camera settings
     camera_x = 300
     camera_y = -500
-    spawn_x, spawn_y =  0, 50
+    spawn_x, spawn_y =  0, 250
     player_x, player_y = spawn_x, spawn_y
     running = True
     gravity = 1
@@ -6332,7 +6345,7 @@ def create_lvl10_screen():
             strong_grav = False # Reset gravity status
             checkpoint_reached = False  # Reset checkpoint status
             checkpoint_reached2 = False  # Reset checkpoint status
-            spawn_x, spawn_y = 50, -50
+            spawn_x, spawn_y = 0, 250
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount = 0
