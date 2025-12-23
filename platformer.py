@@ -47,15 +47,25 @@ def change_ambience(new_file):
     pygame.mixer.music.set_volume(2)  # Adjust as needed
     pygame.mixer.music.play(-1)
 
-# 2. Path for the player's save file - hidden in AppData
-# This creates a folder like: C:\Users\Name\AppData\Roaming\Roboquix
-APP_DATA_DIR = os.path.join(os.getenv('APPDATA'), "Roboquix")
+# 1. Determine the correct "AppData" folder for each OS
+if sys.platform == "win32":
+    # Windows: C:\Users\Name\AppData\Roaming
+    APP_DATA_BASE = os.getenv('APPDATA')
+else:
+    # Linux/Mac: /home/name/.config
+    # We use os.path.expanduser("~") to get the user's home folder safely
+    APP_DATA_BASE = os.path.join(os.path.expanduser("~"), ".config")
+
+# 2. Path for the player's save file
+APP_DATA_DIR = os.path.join(APP_DATA_BASE, "Roboquix")
+
 # Create the folder if it doesn't exist yet
 if not os.path.exists(APP_DATA_DIR):
     os.makedirs(APP_DATA_DIR)
 
 SAVE_FILE = os.path.join(APP_DATA_DIR, "progress.json")
 
+# Variables for handling display notifications
 notif = False
 er = False
 
@@ -494,8 +504,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 38)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.87", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.87.1", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 195, SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
