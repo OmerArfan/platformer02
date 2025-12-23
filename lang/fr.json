@@ -2,8 +2,8 @@
     "main_menu": {
       "start": "Commencer",
       "character_select": "Sélection de personnage",
+      "achievements": "Réalisations",
       "settings": "Couper/Activer le son",
-      "news": "Actualités",
       "quit": "Quitter",
       "language": "Changer de langue"
     }

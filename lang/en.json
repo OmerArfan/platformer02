@@ -1,9 +1,9 @@
 {
     "main_menu": {
       "start": "Start",
+      "achievements": "Achievements",
       "character_select": "Character Select",
       "settings": "Mute/Unmute Audio",
-      "news": "News",
       "quit": "Quit",
       "language": "Change Language"
     }
