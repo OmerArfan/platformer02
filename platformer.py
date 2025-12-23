@@ -494,8 +494,8 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 38)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.86.3", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 197, SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.87", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 178, SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -1296,7 +1296,7 @@ def create_lvl1_screen():
         [(2650, 250), (2700, 200), (2750, 250)],
     ]
 
-    exit_portal = pygame.Rect(2850, 150, 50, 100)
+    exit_portal = pygame.Rect(2850, 130, 70, 120)
     clock = pygame.time.Clock()
 
     # Render the texts
@@ -1597,7 +1597,7 @@ def create_lvl2_screen():
         [(4500, 250), (4550, 300), (4600, 250)],        
         ]
 
-    exit_portal = pygame.Rect(4400, 550, 50, 100)
+    exit_portal = pygame.Rect(4400, 530, 70, 120)
     clock = pygame.time.Clock()
     
     # Render the texts
@@ -1932,7 +1932,7 @@ def create_lvl3_screen():
     [(2000, 750), (2050, 700), (2100, 750)],
     ]
 
-    exit_portal = pygame.Rect(500, -250, 50, 100)
+    exit_portal = pygame.Rect(500, -270, 70, 120)
     clock = pygame.time.Clock()
 
     saw_text = in_game.get("saws_message", "Saws are also dangerous!")
@@ -2452,7 +2452,7 @@ def create_lvl4_screen():
     [(3800, 400), (3850, 350), (3900, 400)],
     [(3900, 400), (3950, 350), (4000, 400)],
     ]
-    exit_portal = pygame.Rect(4950, 350, 50, 100)
+    exit_portal = pygame.Rect(4950, 330, 70, 120)
     clock = pygame.time.Clock()
 
     # Drawing
@@ -3126,6 +3126,12 @@ def create_lvl5_screen():
         [(4500, -50), (4550, -100), (4600, -50)],
         [(4800, -750), (4850, -800), (4900, -750)],
         [(4800, -150), (4850, -200), (4900, -150)],
+        [(3900, -20), (3950, 30), (4000, -20)],
+        [(3900, -620), (3950, -570), (4000, -620)],
+        [(4200, -420), (4250, -370), (4300, -420)],
+        [(4500, -20), (4550, 30), (4600, -20)],
+        [(4800, -720), (4850, -670), (4900, -720)],
+        [(4800, -120), (4850, -70), (4900, -120)],
     ]
 
     spikes_01 = [
@@ -3135,7 +3141,7 @@ def create_lvl5_screen():
     [(4800, -450), (4850, -500), (4900, -450)],
     ]
 
-    exit_portal = pygame.Rect(1375, 0, 50, 100)
+    exit_portal = pygame.Rect(1375, -20, 70, 120)
     clock = pygame.time.Clock()
 
     
@@ -3525,7 +3531,7 @@ def create_lvl5_screen():
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-            if block.width <= 100:
+            if block.width < 100:
                 laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
             else:
                 laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
@@ -3806,7 +3812,7 @@ def create_lvl6_screen():
     [(4400, 530), (4445, 480), (4490, 530)],
     ]
 
-    exit_portal = pygame.Rect(5700, 430, 50, 100)
+    exit_portal = pygame.Rect(5700, 430, 70, 120)
     clock = pygame.time.Clock()
 
 
@@ -4459,7 +4465,7 @@ def create_lvl7_screen():
     [(4100, 500), (4150, 450), (4200, 500)],
     ]
 
-    exit_portal = pygame.Rect(2050, -1225, 50, 100)
+    exit_portal = pygame.Rect(2050, -1245, 70, 120)
     clock = pygame.time.Clock()
 
     teleporters = [
@@ -5003,7 +5009,7 @@ def create_lvl8_screen():
     [(11300, -800), (11350, -750), (11400, -800)],
     ]
 
-    exit_portal = pygame.Rect(11050, -750, 50, 100)
+    exit_portal = pygame.Rect(11050, -770, 70, 120)
     clock = pygame.time.Clock()
 
     gravity_weakers = [
@@ -5613,7 +5619,7 @@ def create_lvl9_screen():
     [(4350, 300), (4400, 350), (4450, 300)],
     ]
 
-    exit_portal = pygame.Rect(3400, 500, 50, 100)
+    exit_portal = pygame.Rect(3400, 480, 70, 120)
     clock = pygame.time.Clock()
 
     gravity_strongers = [
@@ -6271,7 +6277,7 @@ def create_lvl10_screen():
         pygame.Rect(1300, 0, 200, 400),
     ]
 
-    exit_portal = pygame.Rect(6100, 380, 50, 100)
+    exit_portal = pygame.Rect(6100, 360, 70, 120)
     clock = pygame.time.Clock()
 
     gravity_strongers = [
@@ -6956,7 +6962,7 @@ def create_lvl11_screen():
         pygame.Rect(5300, 200, 300, 100),
     ]
 
-    exit_portal = pygame.Rect(6620, 350, 50, 100)
+    exit_portal = pygame.Rect(6620, 330, 70, 120)
     clock = pygame.time.Clock()
 
     speedsters = [
@@ -7744,7 +7750,7 @@ def create_lvl12_screen():
     [(3900, 650), (3950, 600), (4000, 650)]
     ]
 
-    exit_portal = pygame.Rect(4125, -800, 50, 100)
+    exit_portal = pygame.Rect(4125, -820 ,70, 120)
     clock = pygame.time.Clock()
 
     if transition.x <= -transition.image.get_width():
@@ -8290,28 +8296,20 @@ is_transitioning = False
 def handle_action(key):
     global current_page, pending_level, level_load_time, transition, is_transitioning, transition_time,locked_char_sound_played, locked_char_sound_time
     
+    global pending_page
     if current_page == 'main_menu':
         if key == "start":
-            level_page = "worlds"
             if not is_transitioning:
-                transition.start(level_page)
-                transition_time = pygame.time.get_ticks()  # Start the wait time
+                transition.start("worlds")
+                transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-                if is_transitioning and transition_time is not None:
-                    if pygame.time.get_ticks() - transition_time  > 2000:
-                        is_transitioning = False
-                        transition_time = None
-                        set_page(level_page)
+                pending_page = "worlds"
         elif key == "character_select":
             if not is_transitioning:
                 transition.start("character_select")
-                transition_time = pygame.time.get_ticks()  # Start the wait time
+                transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-            if is_transitioning and transition_time is not None:
-                if pygame.time.get_ticks() - transition_time > 2000:
-                    set_page("character_select")
-                    is_transitioning = False
-                    transition_time = None
+                pending_page = "character_select"
         elif key == "settings":
             open_settings()
             progress["pref"]["is_mute"] = is_mute
@@ -8319,102 +8317,73 @@ def handle_action(key):
         elif key == "quit":
             if not is_transitioning:
                 transition.start("quit_confirm")
-                transition_time = pygame.time.get_ticks()  # Start the wait time
+                transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-            if is_transitioning and transition_time is not None:
-                if pygame.time.get_ticks() - transition_time > 2000:
-                    set_page("quit_confirm")
-                    is_transitioning = False
-                    transition_time = None
+                pending_page = "quit_confirm"
         elif key == "language":
             if not is_transitioning:
                 transition.start("language_select")
-                transition_time = pygame.time.get_ticks()  # Start the wait time
+                transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-            if is_transitioning and transition_time is not None:
-                if pygame.time.get_ticks() - transition_time > 2000:
-                    set_page("language_select")
-                    is_transitioning = False
-                    transition_time = None
+                pending_page = "language_select"
     elif current_page == 'worlds':
         if key == "back":
             if not is_transitioning:
                 transition.start("main_menu")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-            if is_transitioning and transition_time is not None:
-                if pygame.time.get_ticks() - transition_time > 2000:
-                    set_page("main_menu")
-                    is_transitioning = False
-                    transition_time = None
+                pending_page = "main_menu"
         elif key == "levels":
             if not is_transitioning:
                 transition.start("levels")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-            if is_transitioning and transition_time is not None:
-                if pygame.time.get_ticks() - transition_time > 2000:
-                    set_page("levels")
-                    is_transitioning = False
-                    transition_time = None
+                pending_page = "levels"
         elif key == "mech_levels":
             if not is_transitioning:
                 transition.start("mech_levels")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-            if is_transitioning and transition_time is not None:
-                if pygame.time.get_ticks() - transition_time > 2000:
-                    set_page("mech_levels")
-                    is_transitioning = False
-                    transition_time = None
+                pending_page = "mech_levels"
     elif current_page == 'language_select':
         if key == "back":
             if not is_transitioning:
                 transition.start("main_menu")
-                transition_time = pygame.time.get_ticks()  # Start the wait time
+                transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-            if is_transitioning and transition_time is not None:
-                if pygame.time.get_ticks() - transition_time > 2000:
-                    set_page("main_menu")
-                    is_transitioning = False
-                    transition_time = None
+                pending_page = "main_menu"
         elif key in ["en", "fr", "es", "de", "zh_cn", "tr", "ru", "jp", "id", "kr", "ar", "pk"]:
-            change_language(key)
             if not is_transitioning:
+                change_language(key)
                 transition.start("main_menu")
-                transition_time = pygame.time.get_ticks()  # Start the wait time
+                transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-            if is_transitioning and transition_time is not None:
-                if pygame.time.get_ticks() - transition_time > 2000:
-                    set_page("main_menu")
-                    is_transitioning = False
-                    transition_time = None
+                pending_page = "main_menu"
     elif current_page == 'levels' or current_page == 'mech_levels':
         if key is None:  # Ignore clicks on locked levels
             return
         elif key == "back":
             if not is_transitioning:
                 transition.start("worlds")
-                transition_time = pygame.time.get_ticks()  # Start the wait time
+                transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-            if is_transitioning and transition_time is not None:
-                if pygame.time.get_ticks() - transition_time > 2000:
-                    if current_page == "levels":
-                        set_page("levels")
-                    else:
-                        set_page("mech_levels")
-                    is_transitioning = False
-                    transition_time = None
+                pending_page = "worlds"
         else:  # Trigger a level's screen
             if not is_transitioning:
                 transition.start(f"{key}_screen")
-                transition_time = pygame.time.get_ticks()  # Start the wait time
+                transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-            if is_transitioning and transition_time is not None:
-                if pygame.time.get_ticks() - transition_time > 2000:
-                    set_page(f"{key}_screen")
-                    is_transitioning = False
-                    transition_time = None
+                pending_page = f"{key}_screen"
+    elif current_page == "quit_confirm":
+        if key == "yes":
+            quit_game()
+        elif key == "no":
+            set_page("main_menu")
+    elif current_page == "character_select":
+        if key == "locked" and not locked_char_sound_played and not is_mute:
+            death_sound.play()
+            locked_char_sound_played = False
+            locked_char_sound_time = time.time()
     elif current_page == "quit_confirm":
         if key == "yes":
             quit_game()
@@ -8457,6 +8426,13 @@ while running:
     if transition_time is not None and pygame.time.get_ticks() - transition_time > 1000:
         transition_time = None
         is_transitioning = False
+
+    # Handle transition timer and page change
+    if is_transitioning and transition_time is not None and pending_page is not None:
+        if pygame.time.get_ticks() - transition_time > 650:
+            is_transitioning = False
+            transition_time = None
+            pending_page = None
 
     if SCREEN_WIDTH < MIN_WIDTH or SCREEN_HEIGHT < MIN_HEIGHT:
         countdown = 5  # seconds
@@ -8511,20 +8487,21 @@ while running:
                 set_page("quit_confirm")
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-            # Only process clicks if enough time has passed since last page change
-                if current_page != "levels" or current_page == "mech_levels" or current_page != "quit_confirm" or current_page != "worlds":
-                        if is_locked is not None:
-                            for _, rect, key, is_locked in buttons:
-                                if rect.collidepoint(event.pos):
-                                    if key is not None and not is_mute:
-                                        click_sound.play()
-                                    handle_action(key)
-                                    last_page_change_time = time.time()
-                elif current_page == "levels" or current_page == "mech_levels"  or current_page == "worlds":
+                # Only process clicks if enough time has passed since last page change
+                if current_page not in ["levels", "mech_levels", "worlds"]:
+                    for _, rect, key, is_locked in buttons:
+                        if rect.collidepoint(event.pos):
+                            if key is not None and not is_mute:
+                                click_sound.play()
+                            handle_action(key)
+                            last_page_change_time = time.time()
+                elif current_page in ["levels", "mech_levels", "worlds"]:
                     for rendered, rect, key, is_locked in buttons:
                         if rect.collidepoint(event.pos):
-                            if key is not None:
-                                handle_action(key)  # Only load level on click!
+                            print(f"[DEBUG] Click detected on level/mech button with key: {key} (page: {current_page})")
+                            if key is not None and not is_mute:
+                                click_sound.play()
+                            handle_action(key)  # Only load level on click!
 
         if current_page == "main_menu":
 
@@ -8763,51 +8740,40 @@ while running:
                         screen.blit(lockeddisk_img, rect)
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
                     button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
                     hovered = rect.collidepoint(pygame.mouse.get_pos())
                     if hovered and not button_hovered_last_frame and not is_mute:
                         hover_sound.play()
                     button_hovered_last_frame = hovered
-            # Show Level stats
-            for event in events:
-                if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
-                    for text_surface, disk_rect, key, is_locked in buttons:
-                        if disk_rect.collidepoint(event.pos):
-                            if key != "next" and key != "back" and not is_locked:
-                                hs = progress["lvls"]['score'][key]
-                                high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
-                                lvl_time_text = render_text(high_text, True, (255, 255, 0))
+            # Show Level stats - check current mouse position every frame
+            for text_surface, disk_rect, key, is_locked in buttons:
+                if disk_rect.collidepoint(mouse_pos):
+                    if key != "next" and key != "back" and not is_locked:
+                        hs = progress["lvls"]['score'][key]
+                        high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
+                        lvl_time_text = render_text(high_text, True, (255, 255, 0))
 
-                                # Adjust position as needed
-                                screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - lvl_time_text.get_width() // 2, SCREEN_HEIGHT - 50))
-                                s = key
-                                num = int(s[3:])  # Skip the first 3 characters
-                                medals = progress["lvls"]['medals'][key]
-                                if medals == "Diamond":
-                                    screen.blit(diam_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
-                                if medals == "Gold":
-                                    screen.blit(gold_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
-                                elif medals == "Silver":
-                                    screen.blit(silv_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
-                                elif medals == "Bronze":
-                                    screen.blit(bron_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
+                        # Adjust position as needed
+                        screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - lvl_time_text.get_width() // 2, SCREEN_HEIGHT - 50))
+                        s = key
+                        num = int(s[3:])  # Skip the first 3 characters
+                        medals = progress["lvls"]['medals'][key]
+                        if medals == "Diamond":
+                            screen.blit(diam_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
+                        if medals == "Gold":
+                            screen.blit(gold_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
+                        elif medals == "Silver":
+                            screen.blit(silv_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
+                        elif medals == "Bronze":
+                            screen.blit(bron_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
 
-                                stars = get_stars(num, progress["lvls"]['score'][key])
-                                if stars >= 1:
-                                 screen.blit(s_star_img, (SCREEN_WIDTH // 2 - 25, SCREEN_HEIGHT - 80))
-                                if stars >= 2:
-                                 screen.blit(s_star_img, (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 80))
-                                if stars == 3:
-                                 screen.blit(s_star_img, (SCREEN_WIDTH // 2 + 25, SCREEN_HEIGHT - 80))
-
-                    else:    
-                        if key is not None:
-                            # Unlocked level
-                            screen.blit(greendisk_img, rect)
-                        else:
-                            screen.blit(lockeddisk_img, rect)
-                        text_rect = text_surface.get_rect(center=(disk_rect.x + 50, disk_rect.y + 50))
-                        screen.blit(text_surface, text_rect)
+                        stars = get_stars(num, progress["lvls"]['score'][key])
+                        if stars >= 1:
+                            screen.blit(s_star_img, (SCREEN_WIDTH // 2 - 25, SCREEN_HEIGHT - 80))
+                        if stars >= 2:
+                            screen.blit(s_star_img, (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 80))
+                        if stars == 3:
+                            screen.blit(s_star_img, (SCREEN_WIDTH // 2 + 25, SCREEN_HEIGHT - 80))
             
             for text_surface, disk_rect, key, is_locked in buttons: 
                 if key is not None:
