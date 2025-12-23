@@ -1,9 +1,14 @@
-name: Build Roboquix EXE
+name: Build Roboquix (Win & Linux)
 on: [push]
 
 jobs:
   build:
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        # We only run on Windows and Ubuntu (Linux)
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -16,17 +21,20 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          # These are the specific libraries your game needs
           pip install pygame pyinstaller arabic-reshaper python-bidi
-          # If you have a requirements.txt, you can use: pip install -r requirements.txt
+          # Linux needs these libraries to build Pygame correctly sometimes
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install -y libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
+          fi
+        shell: bash
 
       - name: Build with PyInstaller
         run: |
-          # GitHub will find your .spec file and use all those settings
           pyinstaller platformer.spec
 
-      - name: Upload Roboquix EXE
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Roboquix-Windows-Build
-          path: dist/Roboquix.exe
+          name: Roboquix-${{ matrix.os }}
+          path: dist/
