@@ -1,4 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
+import sys
 
 block_cipher = None
 
@@ -38,19 +39,21 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='Roboquix',  # This will be the name of your EXE
+    # Logic for OS-specific naming
+    name='Roboquix' if sys.platform != 'win32' else 'Roboquix.exe',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,    # Setting this to False hides the terminal window
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='robots.ico', # Sets your custom game icon
-    version='version_info.txt', 
+    # Logic for OS-specific assets
+    icon='robots.ico' if sys.platform == 'win32' else None,
+    version='version_info.txt' if sys.platform == 'win32' else None,
 )
