@@ -11,8 +11,6 @@ import copy
 import arabic_reshaper
 from bidi.algorithm import get_display
 
-
-
 # for compilation
 def resource_path(relative_path): 
     try:
@@ -62,11 +60,6 @@ notif = False
 er = False
 
 pygame.mouse.set_visible(False)  # Hide the system cursor
-
-# Default progress dictionary
-import json
-import os
-import copy # distinct import needed for deepcopy
 
 default_progress = {
     "lvls": { 
@@ -498,11 +491,11 @@ transition = TransitionManager(screen, trans)
 site_text = font_def.render("Sound effects from: pixabay.com", True, (255, 255, 255))
 site_pos = (SCREEN_WIDTH - 398, SCREEN_HEIGHT - 68)
 logo_text = font_def.render("Logo and Background made with: canva.com", True, (255, 255, 255))
-logo_pos = (SCREEN_WIDTH - 537, SCREEN_HEIGHT - 38)
+logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 38)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.86.2", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 198, SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.86.3", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - 197, SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -8315,7 +8308,7 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()  # Start the wait time
                 is_transitioning = True
             if is_transitioning and transition_time is not None:
-                if transition_time - pygame.time.get_ticks() > 2000:
+                if pygame.time.get_ticks() - transition_time > 2000:
                     set_page("character_select")
                     is_transitioning = False
                     transition_time = None
@@ -8329,7 +8322,7 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()  # Start the wait time
                 is_transitioning = True
             if is_transitioning and transition_time is not None:
-                if transition_time - pygame.time.get_ticks() > 2000:
+                if pygame.time.get_ticks() - transition_time > 2000:
                     set_page("quit_confirm")
                     is_transitioning = False
                     transition_time = None
@@ -8339,7 +8332,7 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()  # Start the wait time
                 is_transitioning = True
             if is_transitioning and transition_time is not None:
-                if transition_time - pygame.time.get_ticks() > 2000:
+                if pygame.time.get_ticks() - transition_time > 2000:
                     set_page("language_select")
                     is_transitioning = False
                     transition_time = None
@@ -8381,7 +8374,7 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()  # Start the wait time
                 is_transitioning = True
             if is_transitioning and transition_time is not None:
-                if transition_time - pygame.time.get_ticks() > 2000:
+                if pygame.time.get_ticks() - transition_time > 2000:
                     set_page("main_menu")
                     is_transitioning = False
                     transition_time = None
@@ -8392,7 +8385,7 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()  # Start the wait time
                 is_transitioning = True
             if is_transitioning and transition_time is not None:
-                if transition_time - pygame.time.get_ticks() > 2000:
+                if pygame.time.get_ticks() - transition_time > 2000:
                     set_page("main_menu")
                     is_transitioning = False
                     transition_time = None
@@ -8405,7 +8398,7 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()  # Start the wait time
                 is_transitioning = True
             if is_transitioning and transition_time is not None:
-                if transition_time - pygame.time.get_ticks() > 2000:
+                if pygame.time.get_ticks() - transition_time > 2000:
                     if current_page == "levels":
                         set_page("levels")
                     else:
@@ -8418,7 +8411,7 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()  # Start the wait time
                 is_transitioning = True
             if is_transitioning and transition_time is not None:
-                if transition_time - pygame.time.get_ticks() > 2000:
+                if pygame.time.get_ticks() - transition_time > 2000:
                     set_page(f"{key}_screen")
                     is_transitioning = False
                     transition_time = None
@@ -8510,7 +8503,10 @@ while running:
         sys.exit()
 
     else:
-        for event in pygame.event.get():
+        # Collect events ONCE per frame
+        events = pygame.event.get()
+        
+        for event in events:
             if event.type == pygame.QUIT:
                 set_page("quit_confirm")
 
@@ -8616,7 +8612,7 @@ while running:
           pygame.draw.rect(screen, highlight_colors[selected_character], rects[selected_character].inflate(5, 5), 5)
 
             # --- Use MOUSEBUTTONDOWN instead of continuous mouse.get_pressed ---
-         for event in pygame.event.get():
+         for event in events:
            if event.type == pygame.QUIT:
             set_page("quit_confirm")
 
@@ -8772,36 +8768,37 @@ while running:
                     if hovered and not button_hovered_last_frame and not is_mute:
                         hover_sound.play()
                     button_hovered_last_frame = hovered
-            # SHow Level stats
-            if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
-                for text_surface, disk_rect, key, is_locked in buttons:
-                    if disk_rect.collidepoint(event.pos):
-                        if key != "next" and key != "back" and not is_locked:
-                            hs = progress["lvls"]['score'][key]
-                            high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
-                            lvl_time_text = render_text(high_text, True, (255, 255, 0))
+            # Show Level stats
+            for event in events:
+                if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION):
+                    for text_surface, disk_rect, key, is_locked in buttons:
+                        if disk_rect.collidepoint(event.pos):
+                            if key != "next" and key != "back" and not is_locked:
+                                hs = progress["lvls"]['score'][key]
+                                high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
+                                lvl_time_text = render_text(high_text, True, (255, 255, 0))
 
-                            # Adjust position as needed
-                            screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - lvl_time_text.get_width() // 2, SCREEN_HEIGHT - 50))
-                            s = key
-                            num = int(s[3:])  # Skip the first 3 characters
-                            medals = progress["lvls"]['medals'][key]
-                            if medals == "Diamond":
-                                screen.blit(diam_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
-                            if medals == "Gold":
-                                screen.blit(gold_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
-                            elif medals == "Silver":
-                                screen.blit(silv_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
-                            elif medals == "Bronze":
-                                screen.blit(bron_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
+                                # Adjust position as needed
+                                screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - lvl_time_text.get_width() // 2, SCREEN_HEIGHT - 50))
+                                s = key
+                                num = int(s[3:])  # Skip the first 3 characters
+                                medals = progress["lvls"]['medals'][key]
+                                if medals == "Diamond":
+                                    screen.blit(diam_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
+                                if medals == "Gold":
+                                    screen.blit(gold_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
+                                elif medals == "Silver":
+                                    screen.blit(silv_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
+                                elif medals == "Bronze":
+                                    screen.blit(bron_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
 
-                            stars = get_stars(num, progress["lvls"]['score'][key])
-                            if stars >= 1:
-                                screen.blit(s_star_img, (SCREEN_WIDTH // 2 - 25, SCREEN_HEIGHT - 80))
-                            if stars >= 2:
-                                screen.blit(s_star_img, (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 80))
-                            if stars == 3:
-                                screen.blit(s_star_img, (SCREEN_WIDTH // 2 + 25, SCREEN_HEIGHT - 80))
+                                stars = get_stars(num, progress["lvls"]['score'][key])
+                                if stars >= 1:
+                                 screen.blit(s_star_img, (SCREEN_WIDTH // 2 - 25, SCREEN_HEIGHT - 80))
+                                if stars >= 2:
+                                 screen.blit(s_star_img, (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 80))
+                                if stars == 3:
+                                 screen.blit(s_star_img, (SCREEN_WIDTH // 2 + 25, SCREEN_HEIGHT - 80))
 
                     else:    
                         if key is not None:
