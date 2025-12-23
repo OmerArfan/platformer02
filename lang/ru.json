@@ -2,12 +2,12 @@
     "main_menu":{
         "start": "Начать",
         "character_select": "Выбор персонажа",
+        "achievements": "Достижения",
         "settings": "Отключить/включить звук",
-        "news": "Новости",
         "quit": "Выйти",
         "language": "Язык"
     }
-  ,"language select": {
+    ,"language_select": {
         "back": "назад"
     }
     ,"levels": {
