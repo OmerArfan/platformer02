@@ -1,9 +1,0 @@
-As of Version 1.2.87.1, the game can be run on Windows 11(not sure about 10 for .exe) and Ubuntu and Ubuntu based Linux distros.
-
-For Windows:
-Just install the .exe file(if you can access it in any release since at the time of writing this there is no way anyone aside from me can download the game...)
-
-For Ubuntu and related:
-Using terminal, go to the folder where the extracted version of the zip folder is. Then type this in the terminal:
-"SDL_VIDEODRIVER=x11 ./Roboquix"
-After that, your game will work, however! The Ubuntu version is super buggy with display and audio issues at the time of writing this... so yeah please do stay patient things might get better!
