@@ -31,8 +31,12 @@ pygame.init()
 # Initializing screen resolution
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 SCREEN_WIDTH, SCREEN_HEIGHT = screen.get_size()
+
+if sys.platform.startswith('linux'):
+    os.environ['SDL_VIDEODRIVER'] = 'x11'
+
 pygame.display.set_caption("Roboquix")
-MIN_WIDTH, MIN_HEIGHT = 1300, 700
+MIN_WIDTH, MIN_HEIGHT = 1250, 750
 
 # First of all, LOAD THE DAMN BGGG
 background_img = pygame.image.load(resource_path("bgs/Background.png")).convert()
@@ -504,7 +508,7 @@ logo_text = font_def.render("Logo and Background made with: canva.com", True, (2
 logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 38)
 credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.87.1", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.87.2", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - 195, SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
