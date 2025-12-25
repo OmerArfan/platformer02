@@ -502,14 +502,14 @@ class TransitionManager:
 
 transition = TransitionManager(screen, trans)
 
-site_text = font_def.render("Sound effects from: pixabay.com", True, (255, 255, 255))
-site_pos = (SCREEN_WIDTH - 398, SCREEN_HEIGHT - 68)
-logo_text = font_def.render("Logo and Background made with: canva.com", True, (255, 255, 255))
-logo_pos = (SCREEN_WIDTH - 538, SCREEN_HEIGHT - 38)
-credit_text = font_def.render("Made by: Omer Arfan", True, (255, 255, 255))
-credit_pos = (SCREEN_WIDTH - 264, SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.87.2", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - 195, SCREEN_HEIGHT - 128)
+site_text = font_def.render("Sound effects used from pixabay.com and edited using Audacity", True, (255, 255, 255))
+site_pos = (SCREEN_WIDTH - (site_text.get_width() + 10), SCREEN_HEIGHT - 38)
+logo_text = font_def.render("Logo and Background made with canva.com", True, (255, 255, 255))
+logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
+credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
+credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
+ver_text = font_def.render("Version 1.2.88", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -1029,6 +1029,7 @@ def level_complete():
     rendered_lvl_comp = render_text(lvl_comp, True, (255, 255, 255))
     while running:
         screen.blit(end, (0, 0))
+        keys = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -1099,29 +1100,39 @@ def level_complete():
                     high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
                     hs_text = render_text(high_text, True, (158, 158, 158))
                     screen.blit(hs_text, (SCREEN_WIDTH // 2 - hs_text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
-        if time.time() - star_time > 6:
+        
+        if time.time() - star_time > 6 or keys[pygame.K_SPACE]:
                 running = False
-
+        else: 
+            next_left = -(int(time.time() - star_time) - 6)
+            time_text = render_text("Press the spacebar to", True, (158, 158, 158))
+            screen.blit(time_text, (SCREEN_WIDTH // 2 - time_text.get_width() // 2, SCREEN_HEIGHT // 2 + 250))
+            time_text_2 = render_text(f"continue or wait for {next_left}", True, (158, 158, 158))
+            screen.blit(time_text_2, (SCREEN_WIDTH // 2 - time_text_2.get_width() // 2, SCREEN_HEIGHT // 2 + 275))
         pygame.display.update()
         clock.tick(60)
 
 def char_assets():
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
+    global selected_character, player_img, blink_img, moving_img, moving_img_l, img_width, img_height
  # Load player image
     if selected_character == "robot": 
         player_img = pygame.image.load(resource_path(f"char/robot/robot.png")).convert_alpha()
+        blink_img = pygame.image.load(resource_path(f"char/robot/blinkrobot.png"))
         moving_img_l = pygame.image.load(resource_path(f"char/robot/smilerobotL.png")) # Resize to fit the game
         moving_img = pygame.image.load(resource_path(f"char/robot/smilerobot.png")) # Resize to fit the game
     elif selected_character == "evilrobot":
         player_img = pygame.image.load(resource_path(f"char/evilrobot/evilrobot.png")).convert_alpha()
+        blink_img = pygame.image.load(resource_path(f"char/evilrobot/blinkevilrobot.png"))
         moving_img_l = pygame.image.load(resource_path(f"char/evilrobot/movevilrobotL.png")) # Resize to fit the game
         moving_img = pygame.image.load(resource_path(f"char/evilrobot/movevilrobot.png")) # Resize to fit the game
     elif selected_character == "greenrobot":
         player_img = pygame.image.load(resource_path(f"char/greenrobot/greenrobot.png")).convert_alpha()
+        blink_img = pygame.image.load(resource_path(f"char/greenrobot/greenrobot.png"))
         moving_img_l = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobotL.png")) # Resize to fit the game
         moving_img = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobot.png")) # Resize to fit the game
     elif selected_character == "ironrobot":
         player_img = pygame.image.load(resource_path(f"char/ironrobot/ironrobo.png")).convert_alpha()
+        blink_img = pygame.image.load(resource_path(f"char/ironrobot/blinkironrobo.png")).convert_alpha()
         moving_img_l = pygame.image.load(resource_path(f"char/ironrobot/ironrobomoveL.png")) # Resize to fit the game
         moving_img = pygame.image.load(resource_path(f"char/ironrobot/ironrobomove.png")) # Resize to fit the game
     img_width, img_height = player_img.get_size()
@@ -1257,6 +1268,16 @@ def fin_lvl_logic(lvl):
                 hs = progress["lvls"]["score"][f"lvl{lvl}"]
             update_locked_levels()
             stars = get_stars(lvl, score)
+
+def player_image(keys, player_x, player_y, camera_x, camera_y):
+    if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+    elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+    else:
+        screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        if round(current_time % 4, 0) == 0:
+            screen.blit(blink_img, (player_x - camera_x, player_y - camera_y))
 
 def create_lvl1_screen():
     global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, is_transitioning, transition_time, current_time, medal, deathcount, score
@@ -1454,12 +1475,7 @@ def create_lvl1_screen():
 
         pygame.draw.rect(screen, (129, 94, 123), (exit_portal.x - camera_x, exit_portal.y - camera_y, exit_portal.width, exit_portal.height))
         
-        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
-            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
-            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        else:
-            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        player_image(keys, player_x, player_y, camera_x, camera_y)
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -1794,12 +1810,7 @@ def create_lvl2_screen():
 
         pygame.draw.rect(screen, (129, 94, 123), (exit_portal.x - camera_x, exit_portal.y - camera_y, exit_portal.width, exit_portal.height))
         
-        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
-            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
-            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        else:
-            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        player_image(keys, player_x, player_y, camera_x, camera_y)
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -2298,12 +2309,7 @@ def create_lvl3_screen():
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
         
-        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
-            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
-            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        else:
-            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        player_image(keys, player_x, player_y, camera_x, camera_y)
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -2466,7 +2472,7 @@ def create_lvl4_screen():
     [(3800, 400), (3850, 350), (3900, 400)],
     [(3900, 400), (3950, 350), (4000, 400)],
     ]
-    exit_portal = pygame.Rect(4950, 330, 70, 120)
+    exit_portal = pygame.Rect(4930, 315, 70, 120)
     clock = pygame.time.Clock()
 
     # Drawing
@@ -2976,12 +2982,7 @@ def create_lvl4_screen():
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
         
-        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
-            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
-            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        else:
-            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        player_image(keys, player_x, player_y, camera_x, camera_y)
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -3661,12 +3662,7 @@ def create_lvl5_screen():
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
        
-        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
-            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
-            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        else:
-            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        player_image(keys, player_x, player_y, camera_x, camera_y)
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -3826,7 +3822,7 @@ def create_lvl6_screen():
     [(4400, 530), (4445, 480), (4490, 530)],
     ]
 
-    exit_portal = pygame.Rect(5700, 430, 70, 120)
+    exit_portal = pygame.Rect(5700, 410, 70, 120)
     clock = pygame.time.Clock()
 
 
@@ -4329,12 +4325,7 @@ def create_lvl6_screen():
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
         
-        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
-            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
-            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        else:
-            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        player_image(keys, player_x, player_y, camera_x, camera_y)
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -4479,7 +4470,7 @@ def create_lvl7_screen():
     [(4100, 500), (4150, 450), (4200, 500)],
     ]
 
-    exit_portal = pygame.Rect(2050, -1245, 70, 120)
+    exit_portal = pygame.Rect(2030, -1245, 70, 120)
     clock = pygame.time.Clock()
 
     teleporters = [
@@ -4872,12 +4863,7 @@ def create_lvl7_screen():
                     break
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
-        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
-            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
-            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        else:
-            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        player_image(keys, player_x, player_y, camera_x, camera_y)          
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -5428,12 +5414,7 @@ def create_lvl8_screen():
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
         
-        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
-            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
-            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        else:
-            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        player_image(keys, player_x, player_y, camera_x, camera_y)
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -5633,7 +5614,7 @@ def create_lvl9_screen():
     [(4350, 300), (4400, 350), (4450, 300)],
     ]
 
-    exit_portal = pygame.Rect(3400, 480, 70, 120)
+    exit_portal = pygame.Rect(3370, 480, 70, 120)
     clock = pygame.time.Clock()
 
     gravity_strongers = [
@@ -6132,12 +6113,7 @@ def create_lvl9_screen():
             pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
-        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
-            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
-            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        else:
-            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        player_image(keys, player_x, player_y, camera_x, camera_y)
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
@@ -6291,7 +6267,7 @@ def create_lvl10_screen():
         pygame.Rect(1300, 0, 200, 400),
     ]
 
-    exit_portal = pygame.Rect(6100, 360, 70, 120)
+    exit_portal = pygame.Rect(6080, 360, 70, 120)
     clock = pygame.time.Clock()
 
     gravity_strongers = [
@@ -6746,12 +6722,7 @@ def create_lvl10_screen():
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
         
-        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
-            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
-            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        else:
-            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        player_image(keys, player_x, player_y, camera_x, camera_y)
 
         # Draw the texts
 
@@ -7596,12 +7567,7 @@ def create_lvl11_screen():
                             player_x = block.x + block.width
 
 
-        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
-            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
-            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        else:
-            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        player_image(keys, player_x, player_y, camera_x, camera_y)
 
         levels = load_language(lang_code).get('levels', {})
         lvl11_text = levels.get("lvl11", "Level 11")  # Render the level text
@@ -7764,7 +7730,7 @@ def create_lvl12_screen():
     [(3900, 650), (3950, 600), (4000, 650)]
     ]
 
-    exit_portal = pygame.Rect(4125, -820 ,70, 120)
+    exit_portal = pygame.Rect(4113, -820 ,70, 120)
     clock = pygame.time.Clock()
 
     if transition.x <= -transition.image.get_width():
@@ -8288,12 +8254,7 @@ def create_lvl12_screen():
             deathcount += 1
 
         # Player Image
-        if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
-            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
-            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-        else:
-            screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        player_image(keys, player_x, player_y, camera_x, camera_y)
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
@@ -8512,7 +8473,6 @@ while running:
                 elif current_page in ["levels", "mech_levels", "worlds"]:
                     for rendered, rect, key, is_locked in buttons:
                         if rect.collidepoint(event.pos):
-                            print(f"[DEBUG] Click detected on level/mech button with key: {key} (page: {current_page})")
                             if key is not None and not is_mute:
                                 click_sound.play()
                             handle_action(key)  # Only load level on click!
