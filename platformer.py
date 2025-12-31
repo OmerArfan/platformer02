@@ -43,7 +43,7 @@ background_img = pygame.image.load(resource_path("bgs/Background.png")).convert(
 background = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Load and set window icon
-icon = pygame.image.load(resource_path("robots.ico"))
+icon = pygame.image.load(resource_path("robots.ico")).convert_alpha()
 pygame.display.set_icon(icon)
 
 def change_ambience(new_file):
@@ -75,7 +75,27 @@ er = False
 
 pygame.mouse.set_visible(False)  # Hide the system cursor
 
+# Initalizing Player ID
+HEX = "0123456789ABCDEF"
+
+def generate_player_id():
+    roll = random.random() * 100  # 0.0 → 100.0
+
+    if roll < 0.1:        # 0.1%
+        length = 3
+    elif roll < 5.1:     # next 5%
+        length = 4
+    else:                 # rest
+        length = 5
+
+    return "".join(random.choices(HEX, k=length))
+
 default_progress = {
+    "player": {
+        "ID": "",
+        "XP": 0,
+        "Level": 1,
+    },
     "lvls": { 
         "complete_levels": 0,
         "locked_levels": {f"lvl{i}" for i in range(2, 13)},
@@ -98,8 +118,10 @@ default_progress = {
         "zen_os": False,
         "over_9k": False,
         "chase_escape": False,
+    
     },
 }
+
 
 notification_time = None
 
@@ -160,7 +182,15 @@ def load_progress():
     if "lvls" in data and "locked_levels" not in data["lvls"]:
         data["lvls"]["locked_levels"] = default_progress["lvls"]["locked_levels"]
 
+    if "player" in data and "ID" not in data["player"]:
+        data["player"]["ID"] = default_progress["player"]["ID"]
+    
+    if data["player"]["ID"] == "":
+        data["player"]["ID"] = generate_player_id()
+
     return data
+
+print()
 
 # Load the fonts (ensure the font file path is correct)
 font_path_ch = resource_path('fonts/NotoSansSC-SemiBold.ttf')
@@ -301,6 +331,8 @@ while ps < 100:
     star_img = pygame.image.load(resource_path("oimgs/ig/star.png")).convert_alpha()
     star_img = pygame.transform.scale(star_img, (150, 140))
     s_star_img = pygame.transform.scale(star_img, (20, 17)); ps +=1
+    exit_img = pygame.image.load(resource_path("oimgs/ig/exit.png")).convert_alpha()
+    exit_img = pygame.transform.scale(exit_img, (140, 180)); ps += 1
 
     # Load character images
     robot_img = pygame.image.load(resource_path("char/robot/robot.png")).convert_alpha()
@@ -502,14 +534,6 @@ class TransitionManager:
 
 transition = TransitionManager(screen, trans)
 
-site_text = font_def.render("Sound effects used from pixabay.com and edited using Audacity", True, (255, 255, 255))
-site_pos = (SCREEN_WIDTH - (site_text.get_width() + 10), SCREEN_HEIGHT - 38)
-logo_text = font_def.render("Logo and Background made with canva.com", True, (255, 255, 255))
-logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
-credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
-credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.88", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 
 # Load language function and rendering part remain the same
 def load_language(lang_code):
@@ -771,6 +795,47 @@ def mech_world_buttons():
     # Now switch the page
    # buttons.clear()
 
+def xp():
+    # XP from scores
+    scores = progress["lvls"]["score"]
+    score_xp = sum(scores.values()) // 1000
+
+# XP from achievements
+    achievements = progress["achieved"]  # your achievements dict
+    achievement_xp = {
+     "speedy_starter": 30,
+     "zen_os": 150,
+     "over_9k": 100,
+     "chase_escape": 25,
+     "golden": 200
+    }
+
+    # Sum XP for unlocked achievements
+    ach_xp = sum(xp for ach, unlocked in achievements.items() if unlocked for name, xp in achievement_xp.items() if ach == name)
+
+    # Total XP
+    total_xp = score_xp + ach_xp
+    progress["player"]["XP"] = total_xp
+    print("Total XP:", total_xp)
+    def xp_needed(level):
+        return int(50 * (1.1 ** (level - 1)))  # or tweak multiplier
+
+    def calculate_level(total_xp):
+        level = 1
+        xp_left = total_xp
+        while xp_left >= xp_needed(level):
+            xp_left -= xp_needed(level)
+            level += 1
+        return level, xp_left
+
+    level, xp_in_level = calculate_level(total_xp)
+    progress["player"]["Level"] = level
+    if level < 17:
+        print(f"Level: {level}, XP towards next level: {xp_in_level}/{xp_needed(level)}")
+    else:
+        print("Level 17! MAX LEVEL!")
+    return level, xp_in_level, xp_needed(level)
+
 #Initialize default character
 selected_character = progress.get("character", default_progress["pref"]["character"])
 
@@ -859,6 +924,29 @@ def update_locked_levels():
     progress["lvls"]["locked_levels"] = list(locked)
     save_progress(progress)
 
+def settings_menu():
+
+    global current_lang, buttons
+    current_lang = load_language(lang_code)['main_menu']
+    buttons.clear()
+    button_texts = ["audio", "perfo"]
+
+    # Center buttons vertically and horizontally
+    button_spacing = 72
+    start_y = (SCREEN_HEIGHT // 2) - (len(button_texts) * button_spacing // 2) + 150
+
+    for i, key in enumerate(button_texts):
+        text = current_lang[key]
+        rendered = render_text(text, True, (255, 255, 255))
+        rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, start_y + i * button_spacing)) 
+        buttons.append((rendered, rect, key, False))
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            set_page("quit_confirm")
+    
+    pygame.display.flip()
+
 # Central page switcher
 def set_page(page):
     global current_page, current_lang  # Explicitly mark current_page and current_lang as global
@@ -875,6 +963,8 @@ def set_page(page):
         create_language_buttons()
     elif page == "worlds":
         worlds()
+    elif page == "settings":
+        settings_menu()
     elif page == 'levels':
         current_lang = load_language(lang_code).get('levels', {})
         green_world_buttons()
@@ -1109,6 +1199,8 @@ def level_complete():
             screen.blit(time_text, (SCREEN_WIDTH // 2 - time_text.get_width() // 2, SCREEN_HEIGHT // 2 + 250))
             time_text_2 = render_text(f"continue or wait for {next_left}", True, (158, 158, 158))
             screen.blit(time_text_2, (SCREEN_WIDTH // 2 - time_text_2.get_width() // 2, SCREEN_HEIGHT // 2 + 275))
+
+        xp()
         pygame.display.update()
         clock.tick(60)
 
@@ -1117,24 +1209,24 @@ def char_assets():
  # Load player image
     if selected_character == "robot": 
         player_img = pygame.image.load(resource_path(f"char/robot/robot.png")).convert_alpha()
-        blink_img = pygame.image.load(resource_path(f"char/robot/blinkrobot.png"))
-        moving_img_l = pygame.image.load(resource_path(f"char/robot/smilerobotL.png")) # Resize to fit the game
-        moving_img = pygame.image.load(resource_path(f"char/robot/smilerobot.png")) # Resize to fit the game
+        blink_img = pygame.image.load(resource_path(f"char/robot/blinkrobot.png")).convert_alpha()
+        moving_img_l = pygame.image.load(resource_path(f"char/robot/smilerobotL.png")).convert_alpha() # Resize to fit the game
+        moving_img = pygame.image.load(resource_path(f"char/robot/smilerobot.png")).convert_alpha() # Resize to fit the game
     elif selected_character == "evilrobot":
         player_img = pygame.image.load(resource_path(f"char/evilrobot/evilrobot.png")).convert_alpha()
-        blink_img = pygame.image.load(resource_path(f"char/evilrobot/blinkevilrobot.png"))
-        moving_img_l = pygame.image.load(resource_path(f"char/evilrobot/movevilrobotL.png")) # Resize to fit the game
-        moving_img = pygame.image.load(resource_path(f"char/evilrobot/movevilrobot.png")) # Resize to fit the game
+        blink_img = pygame.image.load(resource_path(f"char/evilrobot/blinkevilrobot.png")).convert_alpha()
+        moving_img_l = pygame.image.load(resource_path(f"char/evilrobot/movevilrobotL.png")).convert_alpha() # Resize to fit the game
+        moving_img = pygame.image.load(resource_path(f"char/evilrobot/movevilrobot.png")).convert_alpha() # Resize to fit the game
     elif selected_character == "greenrobot":
         player_img = pygame.image.load(resource_path(f"char/greenrobot/greenrobot.png")).convert_alpha()
-        blink_img = pygame.image.load(resource_path(f"char/greenrobot/greenrobot.png"))
-        moving_img_l = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobotL.png")) # Resize to fit the game
-        moving_img = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobot.png")) # Resize to fit the game
+        blink_img = pygame.image.load(resource_path(f"char/greenrobot/greenrobot.png")).convert_alpha()
+        moving_img_l = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobotL.png")).convert_alpha() # Resize to fit the game
+        moving_img = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobot.png")).convert_alpha() # Resize to fit the game
     elif selected_character == "ironrobot":
         player_img = pygame.image.load(resource_path(f"char/ironrobot/ironrobo.png")).convert_alpha()
         blink_img = pygame.image.load(resource_path(f"char/ironrobot/blinkironrobo.png")).convert_alpha()
-        moving_img_l = pygame.image.load(resource_path(f"char/ironrobot/ironrobomoveL.png")) # Resize to fit the game
-        moving_img = pygame.image.load(resource_path(f"char/ironrobot/ironrobomove.png")) # Resize to fit the game
+        moving_img_l = pygame.image.load(resource_path(f"char/ironrobot/ironrobomoveL.png")).convert_alpha() # Resize to fit the game
+        moving_img = pygame.image.load(resource_path(f"char/ironrobot/ironrobomove.png")).convert_alpha() # Resize to fit the game
     img_width, img_height = player_img.get_size()
 
 def point_in_triangle(px, py, a, b, c):
@@ -1331,7 +1423,7 @@ def create_lvl1_screen():
         [(2650, 250), (2700, 200), (2750, 250)],
     ]
 
-    exit_portal = pygame.Rect(2850, 130, 70, 120)
+    exit_portal = pygame.Rect(2780, 60, 140, 180)
     clock = pygame.time.Clock()
 
     # Render the texts
@@ -1349,7 +1441,7 @@ def create_lvl1_screen():
 
     pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
 
-    pygame.draw.rect(screen, (129, 94, 123), (exit_portal.x - camera_x, exit_portal.y - camera_y, exit_portal.width, exit_portal.height))
+    screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
 
             # Inside the game loop:
     screen.blit(rendered_up_text, (700 - camera_x, 200 - camera_y))  # Draws the rendered up text
@@ -1371,7 +1463,7 @@ def create_lvl1_screen():
 
     if transition.x <= -transition.image.get_width():
        while running:
-        clock.tick(60)
+        clock.tick_busy_loop(60)
         keys = pygame.key.get_pressed()
 
         current_time = time.time() - start_time
@@ -1438,8 +1530,7 @@ def create_lvl1_screen():
 
             save_progress(progress)  # Save progress to JSON file
             running = False
-            if display_score == score:
-               set_page('lvl2_screen')
+            set_page('lvl2_screen')
         
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
@@ -1473,7 +1564,7 @@ def create_lvl1_screen():
                     elif player_x + img_width > moving_block.x + moving_block.width:  # Colliding with the right side
                         player_x = moving_block.x + moving_block.width
 
-        pygame.draw.rect(screen, (129, 94, 123), (exit_portal.x - camera_x, exit_portal.y - camera_y, exit_portal.width, exit_portal.height))
+        screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
         
         player_image(keys, player_x, player_y, camera_x, camera_y)
 
@@ -1627,7 +1718,7 @@ def create_lvl2_screen():
         [(4500, 250), (4550, 300), (4600, 250)],        
         ]
 
-    exit_portal = pygame.Rect(4400, 530, 70, 120)
+    exit_portal = pygame.Rect(4330, 460, 140, 180)
     clock = pygame.time.Clock()
     
     # Render the texts
@@ -1646,7 +1737,7 @@ def create_lvl2_screen():
     for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (jump_block.x - camera_x, jump_block.y - camera_y, jump_block.width, jump_block.height))
 
-    pygame.draw.rect(screen, (129, 94, 123), (exit_portal.x - camera_x, exit_portal.y - camera_y, exit_portal.width, exit_portal.height))
+    screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
 
             # Inside the game loop:
     screen.blit(rendered_jump_text, (900 - camera_x, 500 - camera_y))  # Draws the rendered up text
@@ -1808,7 +1899,7 @@ def create_lvl2_screen():
         for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (jump_block.x - camera_x, jump_block.y - camera_y, jump_block.width, jump_block.height))
 
-        pygame.draw.rect(screen, (129, 94, 123), (exit_portal.x - camera_x, exit_portal.y - camera_y, exit_portal.width, exit_portal.height))
+        screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
         
         player_image(keys, player_x, player_y, camera_x, camera_y)
 
@@ -1957,7 +2048,7 @@ def create_lvl3_screen():
     [(2000, 750), (2050, 700), (2100, 750)],
     ]
 
-    exit_portal = pygame.Rect(500, -270, 70, 120)
+    exit_portal = pygame.Rect(430, -330, 140, 180)
     clock = pygame.time.Clock()
 
     saw_text = in_game.get("saws_message", "Saws are also dangerous!")
@@ -1996,7 +2087,7 @@ def create_lvl3_screen():
      if not pair["collected"]:
         pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
-    pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+    screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
 
         # Draw the texts
     screen.blit(rendered_saw_text, (int(550 - camera_x), int(600 - camera_y)))  # Draws the rendered up text
@@ -2307,7 +2398,7 @@ def create_lvl3_screen():
             if not pair["collected"]:
                 pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
-        pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+        screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
         
         player_image(keys, player_x, player_y, camera_x, camera_y)
 
@@ -2472,7 +2563,7 @@ def create_lvl4_screen():
     [(3800, 400), (3850, 350), (3900, 400)],
     [(3900, 400), (3950, 350), (4000, 400)],
     ]
-    exit_portal = pygame.Rect(4930, 315, 70, 120)
+    exit_portal = pygame.Rect(4870, 265, 140, 180)
     clock = pygame.time.Clock()
 
     # Drawing
@@ -2527,7 +2618,7 @@ def create_lvl4_screen():
         pygame.draw.rect(screen, (128, 0, 128), rect.move(-camera_x, -camera_y))
 
 
-    pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+    screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
 
     if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
@@ -2630,18 +2721,20 @@ def create_lvl4_screen():
                     block['speed'] = -speed  # Reverse direction
 
     # Check if the player is standing on the block
+            
             if player_rect.colliderect(rect):
-        # Falling onto the block
+                # Falling onto a block
                 if velocity_y > 0 and player_y + img_height - velocity_y <= rect.y:
                     player_y = rect.y - img_height
                     velocity_y = 0
                     on_ground = True
 
-            # Move the player with the block
-                    if axis == 'x':
-                        player_x += speed
-                    elif axis == 'y':
-                        player_y += speed
+                # Horizontal collision (left or right side of the block)
+                elif player_x + img_width > rect.x and player_x < rect.x + rect.width:
+                    if player_x < rect.x:  # Colliding with the left side of the block
+                        player_x = rect.x - img_width
+                    elif player_x + img_width > rect.x + rect.width:  # Colliding with the right side
+                        player_x = rect.x + rect.width
 
         # Jump block logic
         for jump_block in jump_blocks:
@@ -2980,7 +3073,7 @@ def create_lvl4_screen():
             pygame.draw.rect(screen, (128, 0, 128), rect.move(-camera_x, -camera_y))
 
 
-        pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+        screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
         
         player_image(keys, player_x, player_y, camera_x, camera_y)
 
@@ -3072,7 +3165,7 @@ def create_lvl5_screen():
     key_block_pairs = [
         {
             "key": (4250, -900, 30, (255, 255, 0)),
-            "block": pygame.Rect(1300, -250, 200, 200),
+            "block": pygame.Rect(1300, -250, 200, 250),
             "collected": False
         },
     ]
@@ -3156,7 +3249,7 @@ def create_lvl5_screen():
     [(4800, -450), (4850, -500), (4900, -450)],
     ]
 
-    exit_portal = pygame.Rect(1375, -20, 70, 120)
+    exit_portal = pygame.Rect(1360, 20, 140, 180)
     clock = pygame.time.Clock()
 
     
@@ -3200,7 +3293,7 @@ def create_lvl5_screen():
             pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
 
-    pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+    screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
 
     if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
@@ -3660,7 +3753,7 @@ def create_lvl5_screen():
                         break
 
 
-        pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+        screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
        
         player_image(keys, player_x, player_y, camera_x, camera_y)
 
@@ -3822,7 +3915,7 @@ def create_lvl6_screen():
     [(4400, 530), (4445, 480), (4490, 530)],
     ]
 
-    exit_portal = pygame.Rect(5700, 410, 70, 120)
+    exit_portal = pygame.Rect(5630, 340, 140, 180)
     clock = pygame.time.Clock()
 
 
@@ -3868,7 +3961,7 @@ def create_lvl6_screen():
             pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
             pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
-    pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+    screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
 
     if show_greenrobo_unlocked:
             messages = load_language(lang_code).get('messages', {})
@@ -4323,7 +4416,7 @@ def create_lvl6_screen():
             if not pair["collected"]:
                 pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
-        pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+        screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
         
         player_image(keys, player_x, player_y, camera_x, camera_y)
 
@@ -8286,6 +8379,11 @@ def handle_action(key):
                 is_transitioning = True
                 pending_page = "character_select"
         elif key == "settings":
+            if not is_transitioning:
+                transition.start("settings")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "settings"
             open_settings()
             progress["pref"]["is_mute"] = is_mute
             save_progress(progress)
@@ -8390,8 +8488,27 @@ locked_char_sound_played = False
 if not is_mute and SCREEN_WIDTH > MIN_WIDTH or SCREEN_HEIGHT > MIN_HEIGHT:
     click_sound.play()
 
-# Main loop
+# Info
 
+site_text = font_def.render("Sound effects used from pixabay.com and edited using Audacity", True, (255, 255, 255))
+site_pos = (SCREEN_WIDTH - (site_text.get_width() + 10), SCREEN_HEIGHT - 38)
+logo_text = font_def.render("Logo and Background made with canva.com", True, (255, 255, 255))
+logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
+credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
+credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
+ver_text = font_def.render("Version 1.2.89", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
+ID_text = font_def.render(f"ID: {progress["player"]["ID"]}", True, (255, 255, 255))
+ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
+
+# First define current XP outside the loop
+level, xp_needed, xp_total = xp()
+XP_text = render_text(f"XP Level {level}", True, (255, 255, 255))
+if level < 17:
+    XP_text2 = render_text(f"XP to next level: {xp_needed}/{xp_total}", True, (255, 255, 255))
+else:
+    XP_text2 = render_text("MAX LEVEL!", True, (255, 255, 255))
+    
 while running:
     messages = load_language(lang_code).get('messages', {})
     # Clear screen!
@@ -8405,10 +8522,19 @@ while running:
     # Handle transition timer and page change
     if is_transitioning and transition_time is not None and pending_page is not None:
         if pygame.time.get_ticks() - transition_time > 650:
+            # Then recheck if XP has been added or not.
+            level, xp_needed, xp_total = xp()
+            XP_text = render_text(f"XP Level {level}", True, (255, 255, 255))
+            XP_text2 = render_text(f"XP to next level: {xp_needed}/{xp_total}", True, (255, 255, 255))
+            # Then let transition loop play as normal
             is_transitioning = False
+            current_pending = pending_page
             transition_time = None
             pending_page = None
+            set_page(current_pending)
 
+    XP_pos = (SCREEN_WIDTH - (XP_text.get_width() + 10), 30)
+    XP_pos2 = (SCREEN_WIDTH - (XP_text2.get_width() + 10), 60)
     if SCREEN_WIDTH < MIN_WIDTH or SCREEN_HEIGHT < MIN_HEIGHT:
         countdown = 5  # seconds
         clock = pygame.time.Clock()
@@ -8484,6 +8610,9 @@ while running:
             screen.blit(site_text, site_pos)
             screen.blit(credit_text, credit_pos)
             screen.blit(ver_text, ver_pos)
+            screen.blit(ID_text, ID_pos)
+            screen.blit(XP_text, XP_pos)
+            screen.blit(XP_text2, XP_pos2)
         # Render the main menu buttons
             hovered_key = None
             for rendered, rect, key, is_locked in buttons:
