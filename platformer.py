@@ -8496,9 +8496,9 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.89", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.89.1", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
-ID_text = font_def.render(f"ID: {progress["player"]["ID"]}", True, (255, 255, 255))
+ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
 
 # First define current XP outside the loop
@@ -8508,7 +8508,7 @@ if level < 17:
     XP_text2 = render_text(f"XP to next level: {xp_needed}/{xp_total}", True, (255, 255, 255))
 else:
     XP_text2 = render_text("MAX LEVEL!", True, (255, 255, 255))
-    
+
 while running:
     messages = load_language(lang_code).get('messages', {})
     # Clear screen!
