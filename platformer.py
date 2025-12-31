@@ -460,10 +460,10 @@ class Achievements:
     def lvl90000(score):
         global notification_text, notification_time, notif
         unlock = progress["achieved"].get("over_9k", False)
-        if score >= 90000:
+        if score >= 105000:
          if not unlock:
             progress["achieved"]["over_9k"] = True          
-            notification_text = font_def.render("Achievement Unlocked: It's over 9000(0)!!", True, (255, 255, 0))
+            notification_text = font_def.render("Achievement Unlocked: It's over 9000!!", True, (255, 255, 0))
             notify_sound.play()
             if notification_time is None:
              notif = True
@@ -830,10 +830,6 @@ def xp():
 
     level, xp_in_level = calculate_level(total_xp)
     progress["player"]["Level"] = level
-    if level < 17:
-        print(f"Level: {level}, XP towards next level: {xp_in_level}/{xp_needed(level)}")
-    else:
-        print("Level 17! MAX LEVEL!")
     return level, xp_in_level, xp_needed(level)
 
 #Initialize default character
@@ -5932,6 +5928,7 @@ def create_lvl9_screen():
             fin_lvl_logic(9)
             level_complete()
             # Check if all medals from lvl1 to lvl11 are "Gold"
+            Achievements.lvl90000(score)
             Achievements.check_green_gold()
 
             save_progress(progress)  # Save progress to JSON file
@@ -8496,7 +8493,7 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.89.1", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.89.2", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
@@ -8507,7 +8504,7 @@ XP_text = render_text(f"XP Level {level}", True, (255, 255, 255))
 if level < 17:
     XP_text2 = render_text(f"XP to next level: {xp_needed}/{xp_total}", True, (255, 255, 255))
 else:
-    XP_text2 = render_text("MAX LEVEL!", True, (255, 255, 255))
+    XP_text2 = render_text("MAX LEVEL!", True, (225, 212, 31))
 
 while running:
     messages = load_language(lang_code).get('messages', {})
@@ -8525,7 +8522,10 @@ while running:
             # Then recheck if XP has been added or not.
             level, xp_needed, xp_total = xp()
             XP_text = render_text(f"XP Level {level}", True, (255, 255, 255))
-            XP_text2 = render_text(f"XP to next level: {xp_needed}/{xp_total}", True, (255, 255, 255))
+            if level < 17:
+                XP_text2 = render_text(f"XP to next level: {xp_needed}/{xp_total}", True, (255, 255, 255))
+            else:
+                XP_text2 = render_text("MAX LEVEL!", True, (225, 212, 31))
             # Then let transition loop play as normal
             is_transitioning = False
             current_pending = pending_page
