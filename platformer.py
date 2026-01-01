@@ -1121,7 +1121,7 @@ def level_complete():
                 pygame.quit()
                 sys.exit()
 
-        screen.blit(rendered_lvl_comp, (SCREEN_WIDTH // 2 - rendered_lvl_comp.get_width() // 2, 150))
+        screen.blit(rendered_lvl_comp, (SCREEN_WIDTH // 2 - rendered_lvl_comp.get_width() // 2, 50))
 
         # Animate score
         
@@ -1130,26 +1130,26 @@ def level_complete():
             hover_sound.play()
           display_score += max(5, (score // 71))
         if stars >= 1 and (time.time() - star_time > 0.5):
-                screen.blit(star_img, (SCREEN_WIDTH // 2 - 231, 230))
+                screen.blit(star_img, (SCREEN_WIDTH // 2 - 231, 130))
                 if not star1_p:
                  for _ in range(40):  # Add some particles at star position
-                    stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 230 + star_img.get_width() // 2, 230 + star_img.get_height() // 2)) 
+                    stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 230 + star_img.get_width() // 2, 130 + star_img.get_height() // 2)) 
                  if not is_mute:
                   star_channel.play(star1)
                 star1_p = True
         if stars >= 2 and (time.time() - star_time > 1.5):
-                screen.blit(star_img, (SCREEN_WIDTH // 2 - 76, 230))
+                screen.blit(star_img, (SCREEN_WIDTH // 2 - 76, 130))
                 if not star2_p and star1_p: 
                     for _ in range(40):  # Add some particles at star position
-                     stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 75 + star_img.get_width() // 2, 230 + star_img.get_height() // 2))  
+                     stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 75 + star_img.get_width() // 2, 130 + star_img.get_height() // 2))  
                     if not is_mute:
                      star_channel.play(star2)
                     star2_p = True
         if stars >= 3 and (time.time() - star_time  >  2.5):
-                screen.blit(star_img, (SCREEN_WIDTH // 2 + 79, 230)) 
+                screen.blit(star_img, (SCREEN_WIDTH // 2 + 79, 130)) 
                 if  not star3_p and star2_p: 
                     for _ in range(40):  # Add some particles at star position
-                      stareffects.append(StarParticles(SCREEN_WIDTH // 2 + 80 + star_img.get_width() // 2, 230 + star_img.get_height() // 2)) 
+                      stareffects.append(StarParticles(SCREEN_WIDTH // 2 + 80 + star_img.get_width() // 2, 130 + star_img.get_height() // 2)) 
                     if not is_mute:
                      star_channel.play(star3)
                     star3_p = True
@@ -8493,7 +8493,7 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.89.2", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.89.3", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
