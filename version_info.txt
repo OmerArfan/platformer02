@@ -17,11 +17,11 @@ VSVersionInfo(
           [
             StringStruct('CompanyName', 'Lil Robo Studios'),
             StringStruct('FileDescription', 'Roboquix'),
-            StringStruct('FileVersion', '1.2.89.2'),
+            StringStruct('FileVersion', '1.2.89.3'),
             StringStruct('InternalName', 'Roboquix'),
             StringStruct('OriginalFilename', 'Roboquix.exe'),
             StringStruct('ProductName', 'Roboquix'),
-            StringStruct('ProductVersion', '1.2.89.2')
+            StringStruct('ProductVersion', '1.2.89.3')
           ]
         )
       ]
