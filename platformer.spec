@@ -20,7 +20,7 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=added_files,
-    hiddenimports=['arabic_reshaper', 'bidi.algorithm', "requests],
+    hiddenimports=['arabic_reshaper', 'bidi.algorithm', "requests"],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -56,4 +56,5 @@ exe = EXE(
     # Logic for OS-specific assets
     icon='robots.ico' if sys.platform == 'win32' else None,
     version='version_info.txt' if sys.platform == 'win32' else None,
+
 )
