@@ -11,6 +11,8 @@ import webbrowser
 import shutil
 import copy
 import arabic_reshaper
+import hashlib
+from datetime import datetime, date
 from bidi.algorithm import get_display
 
 # for compilation
@@ -53,24 +55,6 @@ def change_ambience(new_file):
     pygame.mixer.music.set_volume(2)  # Adjust as needed
     pygame.mixer.music.play(-1)
 
-# 1. Determine the correct "AppData" folder for each OS
-if sys.platform == "win32":
-    # Windows: C:\Users\Name\AppData\Roaming
-    APP_DATA_BASE = os.getenv('APPDATA')
-else:
-    # Linux/Mac: /home/name/.config
-    # We use os.path.expanduser("~") to get the user's home folder safely
-    APP_DATA_BASE = os.path.join(os.path.expanduser("~"), ".config")
-
-# 2. Path for the player's save file
-APP_DATA_DIR = os.path.join(APP_DATA_BASE, "Roboquix")
-
-# Create the folder if it doesn't exist yet
-if not os.path.exists(APP_DATA_DIR):
-    os.makedirs(APP_DATA_DIR)
-
-SAVE_FILE = os.path.join(APP_DATA_DIR, "progress.json")
-
 # Variables for handling display notifications
 notif = False
 er = False
@@ -95,6 +79,8 @@ def generate_player_id():
 default_progress = {
     "player": {
         "ID": "",
+        "Username": "",
+        "Pass": "",
         "XP": 0,
         "Level": 1,
     },
@@ -125,27 +111,57 @@ default_progress = {
 }
 
 
+# 1. Determine the correct "AppData" folder for each OS
+if sys.platform == "win32":
+    # Using LOCAL instead of ROAMING often bypasses the VirtualStore redirect
+    APP_DATA_BASE = os.getenv('LOCALAPPDATA') 
+else:
+    APP_DATA_BASE = os.path.join(os.path.expanduser("~"), ".config")
+
+print(f"DEBUG: Saving/Loading from: {APP_DATA_BASE}")
+
+# 2. Path for the player's save file
+APP_DATA_DIR = os.path.join(APP_DATA_BASE, "Roboquix")
+
+# Create the folder if it doesn't exist yet
+if not os.path.exists(APP_DATA_DIR):
+    os.makedirs(APP_DATA_DIR)
+
+SAVE_FILE = os.path.join(APP_DATA_DIR, "progress.json")
+
+
 notification_time = None
 
 def sync_vault_to_cloud(data):
-    # The 'formResponse' version of Data form URL
-    url = "https://docs.google.com/forms/d/e/1FAIpQLSdxJp4Ex2ueT9Ci10NrT3hHj-hnXK2SVnm2XRDz5WEZuAvvuQ/formResponse"
+    # The 'formResponse' version of your Data form URL
+    url = "https://docs.google.com/forms/d/e/1FAIpQLSfB2alAMj3qNMm5DFw-p_4HkGyzA_U2zw9lul3HSmi15Msxjg/formResponse"
     
-    # Let's turn the whole dictionary into a string to fit in the box
+    # 1. Prepare your data strings
+    progress_data = json.dumps(data, indent=4, ensure_ascii=False)
+    player_id = str(data["player"]["ID"]+data["player"]["Pass"])
+    today_date = date.today().strftime("%Y-%m-%d") # Standard Google Form date format
+    now_time = datetime.now().strftime("%H:%M:%S")
+
+    # 2. Map everything to the Google Form entry IDs
     payload = {
-        "entry.92201882": json.dumps(data, indent=4, ensure_ascii=False)
+        "entry.92201882": progress_data,    # Progress (Long-answer)
+        "entry.829022223": player_id,      # ID (Short-answer)
+        "entry.2000835960": today_date,    # Date (Calendar field)
+        "entry.1017947451": now_time       # Time (Short-answer)
     }
 
-    print("test")
-
     try:
-        # Background post
+        # 3. Send the request
+        # Setting a timeout is good practice so the app doesn't hang if the internet is slow
         response = requests.post(url, data=payload, timeout=7)
-        print(response)
+        
         if response.status_code == 200:
-            print(f"Cloud Vault: Backup for {data['player']['ID']} successful.")
+            print(f"Cloud Vault: Backup for {player_id} successful.")
+        else:
+            print(f"Cloud Vault: Sync failed. Server returned status {response.status_code}")
+            
     except Exception as e:
-        print(f"Cloud Vault: Sync failed (Offline?)")
+        print(f"Cloud Vault: Sync failed (Offline or Connection Error)")
 
 def load_progress():
     global notification_time 
@@ -204,9 +220,14 @@ def load_progress():
     if "lvls" in data and "locked_levels" not in data["lvls"]:
         data["lvls"]["locked_levels"] = default_progress["lvls"]["locked_levels"]
 
-    if "player" in data and "ID" not in data["player"]:
-        data["player"]["ID"] = default_progress["player"]["ID"]
-    
+    if "player" in data:
+        if "ID" not in data["player"]:
+            data["player"]["ID"] = default_progress["player"]["ID"]
+        if "Pass" not in data["player"]:
+            data["player"]["Pass"] = default_progress["player"]["Pass"]
+        if "Username" not in data["player"]:
+            data["player"]["Username"] = default_progress["player"]["Username"]
+
     if data["player"]["ID"] == "":
         data["player"]["ID"] = generate_player_id()
 
@@ -8518,8 +8539,80 @@ image_paths = None
 image_surfaces = None
 locked_char_sound_time = None
 locked_char_sound_played = False
-if not is_mute and SCREEN_WIDTH > MIN_WIDTH or SCREEN_HEIGHT > MIN_HEIGHT:
+
+## ACCOUNTS LOGIC
+
+username = ""
+user_pass = ""
+input_mode = "ID"  # Toggle between typing ID or Password
+login_done = False
+session_timeout = 3600 * 24 * 60
+last_login = 0
+
+def hash_password(password):
+    # Convert the string to bytes, then create a SHA-256 hash
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def show_login_screen():
+    global username, user_pass, input_mode, login_done
+    
+    while not login_done:
+        screen.fill((30, 30, 30))
+        
+        # Draw Instructions
+        instr = font_def.render("Press TAB to switch, ENTER to Login", True, (200, 200, 200))
+        screen.blit(instr, (SCREEN_WIDTH // 2 - instr.get_width() // 2 , 50))
+
+        # Draw ID Box
+        id_color = (255, 255, 255) if input_mode == "ID" else (100, 100, 100)
+        id_surf = font_def.render(f"Name: {username}", True, id_color)
+        screen.blit(id_surf, (SCREEN_WIDTH // 2 - id_surf.get_width() // 2, 150))
+
+        # Draw Password Box (Hidden with *)
+        pass_color = (255, 255, 255) if input_mode == "PASS" else (100, 100, 100)
+        stars = "*" * len(user_pass)
+        pass_surf = font_def.render(f"Password: {stars}", True, pass_color)
+        screen.blit(pass_surf, (SCREEN_WIDTH // 2 - pass_surf.get_width() // 2, 250))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit(); exit()
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_TAB:
+                    input_mode = "PASS" if input_mode == "ID" else "ID"
+                
+                elif event.key == pygame.K_RETURN:
+                    if username and user_pass:
+                    # Hash the password before it ever touches your data file or the cloud
+                      hashed_p = hash_password(user_pass)
+                      if progress["player"]["Username"] == "":
+                          progress["player"]["Username"] = username
+                      if progress["player"]["Pass"] == "":
+                          progress["player"]["Pass"] = hashed_p # Save the fingerprint, not the plain text
+                      save_progress(progress)
+                      sync_vault_to_cloud(progress) # Sync to Google Form
+                      if progress["player"]["Pass"] == hashed_p and progress["player"]["Username"] == username:
+                          login_done = True
+                      else:
+                          death_sound.play()
+                
+                elif event.key == pygame.K_BACKSPACE:
+                    if input_mode == "ID": username = username[:-1]
+                    else: user_pass = user_pass[:-1]
+                
+                else:
+                    # This captures the actual letter/number typed
+                    if input_mode == "ID": username += event.unicode
+                    else: user_pass += event.unicode
+
+        pygame.display.update()
+
+if not is_mute and SCREEN_WIDTH > MIN_WIDTH and SCREEN_HEIGHT > MIN_HEIGHT:
     click_sound.play()
+    # Call this before your game loop
+    show_login_screen()
+
 
 # Info
 
@@ -8529,7 +8622,7 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.90.1", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.90.2", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
