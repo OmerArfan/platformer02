@@ -1,4 +1,6 @@
 import pygame
+import threading
+import requests
 import json
 import os
 import math
@@ -125,6 +127,26 @@ default_progress = {
 
 notification_time = None
 
+def sync_vault_to_cloud(data):
+    # The 'formResponse' version of Data form URL
+    url = "https://docs.google.com/forms/d/e/1FAIpQLSdxJp4Ex2ueT9Ci10NrT3hHj-hnXK2SVnm2XRDz5WEZuAvvuQ/formResponse"
+    
+    # Let's turn the whole dictionary into a string to fit in the box
+    payload = {
+        "entry.92201882": json.dumps(data, indent=4, ensure_ascii=False)
+    }
+
+    print("test")
+
+    try:
+        # Background post
+        response = requests.post(url, data=payload, timeout=7)
+        print(response)
+        if response.status_code == 200:
+            print(f"Cloud Vault: Backup for {data['player']['ID']} successful.")
+    except Exception as e:
+        print(f"Cloud Vault: Sync failed (Offline?)")
+
 def load_progress():
     global notification_time 
     
@@ -188,9 +210,21 @@ def load_progress():
     if data["player"]["ID"] == "":
         data["player"]["ID"] = generate_player_id()
 
-    return data
+    # To change the save file path if it still uses legacy "progress.json"!
+    if data["player"]["ID"] != "":
+        player_id = data["player"]["ID"]
+        new_save_name = os.path.join(APP_DATA_DIR, f"{player_id}.json")
+        
+        # If the generic 'progress.json' exists, migrate it to '[ID].json'
+        if os.path.exists(SAVE_FILE) and not os.path.exists(new_save_name):
+            try:
+                shutil.copy(SAVE_FILE, new_save_name)
+                # Keep progress.json as a secondary backup or remove it
+                print(f"Migrated save to {player_id}.json")
+            except Exception as e:
+                print(f"Migration failed: {e}")
 
-print()
+    return data
 
 # Load the fonts (ensure the font file path is correct)
 font_path_ch = resource_path('fonts/NotoSansSC-SemiBold.ttf')
@@ -227,6 +261,8 @@ def save_progress(data):
         # Now it is safe to overwrite the main file
         with open(SAVE_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
+
+        threading.Thread(target=sync_vault_to_cloud, args=(data,), daemon=True).start()
 
     except PermissionError:
         hit_sound.play()
@@ -8493,7 +8529,7 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.89.3", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.90", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
