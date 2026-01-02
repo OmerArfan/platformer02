@@ -138,7 +138,7 @@ def sync_vault_to_cloud(data):
     
     # 1. Prepare your data strings
     progress_data = json.dumps(data, indent=4, ensure_ascii=False)
-    player_id = str(data["player"]["ID"]+data["player"]["Pass"])
+    player_id = str(data["player"]["ID"])
     today_date = date.today().strftime("%Y-%m-%d") # Standard Google Form date format
     now_time = datetime.now().strftime("%H:%M:%S")
 
@@ -390,6 +390,12 @@ while ps < 100:
     s_star_img = pygame.transform.scale(star_img, (20, 17)); ps +=1
     exit_img = pygame.image.load(resource_path("oimgs/ig/exit.png")).convert_alpha()
     exit_img = pygame.transform.scale(exit_img, (140, 180)); ps += 1
+    mechexit_img = pygame.image.load(resource_path("oimgs/ig/mech_exit.png")).convert_alpha()
+    mechexit_img = pygame.transform.scale(mechexit_img, (140, 180)); ps += 1
+    badge = pygame.image.load(resource_path("oimgs/ig/badge.png")).convert_alpha()
+    badge = pygame.transform.scale(badge, (70, 70)); ps += 1
+    max_badge = pygame.image.load(resource_path("oimgs/ig/max-badge.png")).convert_alpha()
+    max_badge = pygame.transform.scale(max_badge, (70, 70)); ps += 1
 
     # Load character images
     robot_img = pygame.image.load(resource_path("char/robot/robot.png")).convert_alpha()
@@ -8622,18 +8628,18 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.90.2", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.90.3", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
 
 # First define current XP outside the loop
 level, xp_needed, xp_total = xp()
-XP_text = render_text(f"XP Level {level}", True, (255, 255, 255))
+XP_text = font_text.render(f"{level}", True, (255, 255, 255))
 if level < 17:
-    XP_text2 = render_text(f"XP to next level: {xp_needed}/{xp_total}", True, (255, 255, 255))
+    XP_text2 = font_def.render(f"{xp_needed}/{xp_total}", True, (255, 255, 255))
 else:
-    XP_text2 = render_text("MAX LEVEL!", True, (225, 212, 31))
+    XP_text2 = font_def.render("MAX LEVEL!", True, (225, 212, 31))
 
 while running:
     messages = load_language(lang_code).get('messages', {})
@@ -8650,20 +8656,21 @@ while running:
         if pygame.time.get_ticks() - transition_time > 650:
             # Then recheck if XP has been added or not.
             level, xp_needed, xp_total = xp()
-            XP_text = render_text(f"XP Level {level}", True, (255, 255, 255))
+            XP_text = font_text.render(f"{level}", True, (255, 255, 255))
             if level < 17:
-                XP_text2 = render_text(f"XP to next level: {xp_needed}/{xp_total}", True, (255, 255, 255))
+                XP_text2 = font_def.render(f"{xp_needed}/{xp_total}", True, (255, 255, 255))
             else:
-                XP_text2 = render_text("MAX LEVEL!", True, (225, 212, 31))
+                XP_text2 = font_def.render("MAX LEVEL!", True, (225, 212, 31))
             # Then let transition loop play as normal
             is_transitioning = False
             current_pending = pending_page
             transition_time = None
             pending_page = None
             set_page(current_pending)
-
-    XP_pos = (SCREEN_WIDTH - (XP_text.get_width() + 10), 30)
-    XP_pos2 = (SCREEN_WIDTH - (XP_text2.get_width() + 10), 60)
+    
+    XP_pos2 = (SCREEN_WIDTH - (XP_text2.get_width() + 10), 50)
+    XP_pos = (SCREEN_WIDTH - (XP_text.get_width() + XP_text2.get_width() + 20), 30)
+    badge_pos = (SCREEN_WIDTH - (XP_text.get_width() + XP_text2.get_width() + 23), 32)
     if SCREEN_WIDTH < MIN_WIDTH or SCREEN_HEIGHT < MIN_HEIGHT:
         countdown = 5  # seconds
         clock = pygame.time.Clock()
@@ -8740,6 +8747,10 @@ while running:
             screen.blit(credit_text, credit_pos)
             screen.blit(ver_text, ver_pos)
             screen.blit(ID_text, ID_pos)
+            if level < 17:
+                screen.blit(badge, badge_pos)
+            else:
+                screen.blit(max_badge, badge_pos)
             screen.blit(XP_text, XP_pos)
             screen.blit(XP_text2, XP_pos2)
         # Render the main menu buttons
