@@ -8707,11 +8707,12 @@ def show_login_screen():
     
     print("Logging in")
     # Check if a session already exists to skip this screen
-    if progress["player"]["ID"] != "" and not check_session_expired(progress["player"]["ID"]):
+    has_creds = progress["player"].get("Username") != "" 
+    if progress["player"]["ID"] != "" and has_creds and not check_session_expired(progress["player"]["ID"]):
         login_done = True
-        print("Login!")
+        print("Session active: Skipping login.")
         return
-
+ 
     # If we are here, we need a name/pass. 
     # If the player is brand new, let's show them their newly generated Rare ID!
     if progress["player"]["ID"] == "":
@@ -8811,7 +8812,7 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.90.7", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.90.8", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
