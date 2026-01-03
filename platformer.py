@@ -12,6 +12,8 @@ import shutil
 import copy
 import arabic_reshaper
 import hashlib
+import csv
+from io import StringIO
 from datetime import datetime, date
 from bidi.algorithm import get_display
 
@@ -130,6 +132,62 @@ if not os.path.exists(APP_DATA_DIR):
 
 SAVE_FILE = os.path.join(APP_DATA_DIR, "progress.json")
 
+# To keep track of multiple accounts in future updates, and only store login of current account.
+ACCOUNTS_FILE = os.path.join(APP_DATA_DIR, "local.json")
+
+def update_local_manifest(data):
+    # 1. Load existing manifest or start fresh
+    manifest = {"last_used": "", "users": {}}
+    if os.path.exists(ACCOUNTS_FILE):
+        try:
+            with open(ACCOUNTS_FILE, "r") as f:
+                manifest = json.load(f)
+        except:
+            pass
+
+    # 2. Get current player info
+    p_id = data["player"]["ID"]
+    p_name = data["player"].get("Username", "Unknown")
+    
+    # Calculate furthest level reached
+    # Assuming locked_levels is a list of level names that ARE locked
+    # so the current level is len(locked_levels) + 1 or similar logic
+    current_lvl = len(data["lvls"]["times"]) 
+
+    # 3. Update the entry for this ID
+    manifest["last_used"] = p_id
+    manifest["users"][p_id] = {
+        "username": p_name,
+        "id": p_id,
+        "level": current_lvl,
+        "last_login": date.today().strftime("%Y-%m-%d")
+    }
+
+    # 4. Save it back
+    with open(ACCOUNTS_FILE, "w") as f:
+        json.dump(manifest, f, indent=4)
+
+    print(f"Local Manifest: Updated entry for {p_id}")
+    print(manifest)
+
+def check_session_expired(p_id):
+    if os.path.exists(ACCOUNTS_FILE):
+        with open(ACCOUNTS_FILE, "r") as f:
+            manifest = json.load(f)
+        
+        if p_id in manifest["users"]:
+            last_str = manifest["users"][p_id]["last_login"]
+            last_date = datetime.strptime(last_str, "%Y-%m-%d").date()
+            
+            days_passed = (date.today() - last_date).days
+            
+            if days_passed > 60:
+                print("Session expired! Back to Login Screen.")
+                return True # Show login
+            else:
+                print(f"Welcome back! Day {days_passed}/60 of your session.")
+                return False # Stay logged in
+    return True # No record found, show login
 
 notification_time = None
 
@@ -166,6 +224,52 @@ def sync_vault_to_cloud(data):
             
     except Exception as e:
         print(f"Cloud Vault: Sync failed (Offline or Connection Error)")
+
+def recover_account_from_cloud(target_id, target_user, target_pass):
+    # Your specific CSV link
+    CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQzrQ0ffS8s9vbBB5uQM29yVJnex6AkQwpnj0i43j2nCqw-P9i1DEfknzF3hb-3vualG0WSWxkCQOEn/pub?gid=2042268068&single=true&output=csv"
+    
+    try:
+        print(f"Cloud Vault: Searching for ID {target_id}...")
+        response = requests.get(CSV_URL, timeout=10)
+        
+        if response.status_code == 200:
+            # Use the csv module to handle the commas inside the JSON correctly
+            f = StringIO(response.text)
+            reader = csv.reader(f)
+            rows = list(reader)
+            
+            # Skip header, then reverse to check the newest saves first
+            for row in reversed(rows[1:]):
+                # row[0] = Timestamp
+                # row[1] = JSON Progress
+                # row[2] = ID (The key)
+                
+                cloud_id = row[2]
+                
+                if cloud_id == target_id:
+                    # Found the ID! Now parse the JSON to check credentials
+                    cloud_data = json.loads(row[1])
+                    
+                    # Hash the entered password to compare with the cloud's hashed pass
+                    hashed_input = hashlib.sha256(target_pass.encode()).hexdigest()
+                    
+                    if cloud_data["player"]["Username"] == target_user and \
+                       cloud_data["player"]["Pass"] == hashed_input:
+                        print("Cloud Vault: Credentials verified. Syncing...")
+                        return cloud_data
+                    else:
+                        print("Cloud Vault: ID found, but Username/Password is wrong.")
+                        return "WRONG_AUTH"
+                        
+            print("Cloud Vault: ID not found in database.")
+            return "NOT_FOUND"
+            
+    except Exception as e:
+        print(f"Cloud Vault: Connection error: {e}")
+        return "CONN_ERROR"
+    
+    return "NOT_FOUND"
 
 def load_progress():
     global notification_time 
@@ -268,7 +372,13 @@ font_text = pygame.font.Font(font_path, 55)
 def save_progress(data):
     global notification_text, notification_time, error_code, notif, er
     global save_count
+    global SAVE_FILE # Allow updating the path
     
+    # Update SAVE_FILE to be the ID-specific one if it isn't already
+    p_id = data["player"].get("ID", "")
+    if p_id:
+        SAVE_FILE = os.path.join(APP_DATA_DIR, f"{p_id}.json")
+
     #check if 'lvls' is missing, because that is the root of your structure.
     if not data or "lvls" not in data:
         hit_sound.play()
@@ -288,6 +398,8 @@ def save_progress(data):
         with open(SAVE_FILE, "w", encoding="utf-8") as f:
             save_count += 1 
             json.dump(data, f, indent=4, ensure_ascii=False)
+        
+        update_local_manifest(data)
 
         if save_count % 4 == 0:
             threading.Thread(target=sync_vault_to_cloud, args=(data,), daemon=True).start()
@@ -8580,56 +8692,94 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def show_login_screen():
-    global username, user_pass, input_mode, login_done
+    global username, user_pass, input_mode, login_done, progress
     
+    # Check if a session already exists to skip this screen
+    if progress["player"]["ID"] != "" and not check_session_expired(progress["player"]["ID"]):
+        login_done = True
+        return
+
+    # If we are here, we need a name/pass. 
+    # If the player is brand new, let's show them their newly generated Rare ID!
+    if progress["player"]["ID"] == "":
+        progress["player"]["ID"] = generate_player_id()
+    
+    display_id = progress["player"]["ID"]
+    
+    # Determining ID rarity for visual flair
+    id_color = (200, 200, 200) # Default
+    rarity_text = ""
+    if len(display_id) == 3:
+        id_color = (255, 215, 0) # Gold
+        rarity_text = "ULTRA RARE ID!"
+    elif len(display_id) == 4:
+        id_color = (0, 255, 255) # Cyan/Rare
+        rarity_text = "RARE ID"
+
     while not login_done:
         screen.fill((30, 30, 30))
         
-        # Draw Instructions
-        instr = font_def.render("Press TAB to switch, ENTER to Login", True, (200, 200, 200))
-        screen.blit(instr, (SCREEN_WIDTH // 2 - instr.get_width() // 2 , 50))
+        # 1. Show the Generated ID
+        id_title = font_def.render("YOUR UNIQUE PLAYER ID:", True, (150, 150, 150))
+        id_val = font_text.render(display_id, True, id_color)
+        screen.blit(id_title, (SCREEN_WIDTH // 2 - id_title.get_width() // 2, 80))
+        screen.blit(id_val, (SCREEN_WIDTH // 2 - id_val.get_width() // 2, 130))
+        
+        if rarity_text:
+            rare_surf = font_def.render(rarity_text, True, id_color)
+            screen.blit(rare_surf, (SCREEN_WIDTH // 2 - rare_surf.get_width() // 2, 200))
 
-        # Draw ID Box
-        id_color = (255, 255, 255) if input_mode == "ID" else (100, 100, 100)
-        id_surf = font_def.render(f"Name: {username}", True, id_color)
-        screen.blit(id_surf, (SCREEN_WIDTH // 2 - id_surf.get_width() // 2, 150))
+        # 2. Input Fields
+        instr = font_def.render("Set Username & Password to protect your account", True, (180, 180, 180))
+        screen.blit(instr, (SCREEN_WIDTH // 2 - instr.get_width() // 2 , 280))
 
-        # Draw Password Box (Hidden with *)
-        pass_color = (255, 255, 255) if input_mode == "PASS" else (100, 100, 100)
+        # Username
+        u_color = (255, 255, 255) if input_mode == "USER" else (80, 80, 80)
+        u_surf = font_def.render(f"Username: {username}", True, u_color)
+        screen.blit(u_surf, (SCREEN_WIDTH // 2 - u_surf.get_width() // 2, 350))
+
+        # Password
+        p_color = (255, 255, 255) if input_mode == "PASS" else (80, 80, 80)
         stars = "*" * len(user_pass)
-        pass_surf = font_def.render(f"Password: {stars}", True, pass_color)
-        screen.blit(pass_surf, (SCREEN_WIDTH // 2 - pass_surf.get_width() // 2, 250))
+        p_surf = font_def.render(f"Password: {stars}", True, p_color)
+        screen.blit(p_surf, (SCREEN_WIDTH // 2 - p_surf.get_width() // 2, 420))
+
+        submit_txt = font_def.render("Press ENTER to Save and Play", True, (0, 255, 0))
+        screen.blit(submit_txt, (SCREEN_WIDTH // 2 - submit_txt.get_width() // 2, 550))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit(); exit()
+                pygame.quit(); sys.exit()
             
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_TAB:
-                    input_mode = "PASS" if input_mode == "ID" else "ID"
+                    input_mode = "PASS" if input_mode == "USER" else "USER"
                 
                 elif event.key == pygame.K_RETURN:
-                    if username and user_pass:
-                    # Hash the password before it ever touches your data file or the cloud
-                      hashed_p = hash_password(user_pass)
-                      if progress["player"]["Username"] == "":
-                          progress["player"]["Username"] = username
-                      if progress["player"]["Pass"] == "":
-                          progress["player"]["Pass"] = hashed_p # Save the fingerprint, not the plain text
-                      save_progress(progress)
-                      if progress["player"]["Pass"] == hashed_p and progress["player"]["Username"] == username:
-                          login_done = True
-                      else:
-                          death_sound.play()
+                    if len(username) > 2 and len(user_pass) > 3:
+                        hashed_p = hashlib.sha256(user_pass.encode()).hexdigest()
+                        
+                        # Apply to progress
+                        progress["player"]["Username"] = username
+                        progress["player"]["Pass"] = hashed_p
+                        
+                        # Finalize save
+                        save_progress(progress)
+                        login_done = True
+                    else:
+                        death_sound.play()
                 
                 elif event.key == pygame.K_BACKSPACE:
-                    if input_mode == "ID": username = username[:-1]
+                    if input_mode == "USER": username = username[:-1]
                     else: user_pass = user_pass[:-1]
                 
                 else:
-                    # This captures the actual letter/number typed
-                    if input_mode == "ID": username += event.unicode
-                    else: user_pass += event.unicode
+                    # Filter to only allow standard characters
+                    if event.unicode.isalnum() or event.unicode in " _-":
+                        if input_mode == "USER" and len(username) < 15:
+                            username += event.unicode
+                        elif input_mode == "PASS" and len(user_pass) < 20:
+                            user_pass += event.unicode
 
         pygame.display.update()
 
@@ -8647,8 +8797,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.90.4", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 12), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.90.5", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
 
