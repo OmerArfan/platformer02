@@ -272,39 +272,37 @@ def recover_account_from_cloud(target_id, target_user, target_pass):
     return "NOT_FOUND"
 
 def load_progress():
-    global notification_time 
+    global SAVE_FILE # We need to update the global path
     
-    # Use deepcopy so we don't accidentally edit the default_progress dictionary later
+    # 1. Start with defaults
     data = copy.deepcopy(default_progress) 
 
+    # 2. NEW STEP: Check the manifest to see who played last!
+    if os.path.exists(ACCOUNTS_FILE):
+        try:
+            with open(ACCOUNTS_FILE, "r") as f:
+                manifest = json.load(f)
+                last_id = manifest.get("last_used", "")
+                
+                # If we found an ID, update our SAVE_FILE path
+                if last_id:
+                    SAVE_FILE = os.path.join(APP_DATA_DIR, f"{last_id}.json")
+                    print(f"Manifest found! Loading last user: {last_id}")
+        except:
+            pass # If manifest is broken, we'll just fall back to default
+
+    # 3. Now try to load the file (it will now be the correct ID-specific one)
     if os.path.exists(SAVE_FILE):
         try:
             with open(SAVE_FILE, "r", encoding="utf-8") as f:
                 loaded_data = json.load(f)
-                if not loaded_data:
-                    raise ValueError("Empty save file")
-                data.update(loaded_data)
-                
+                if loaded_data:
+                    data.update(loaded_data)
+                    print(f"Loaded data from {SAVE_FILE}")
         except Exception as e:
             print(f"Main save corrupted: {e}")
-            # Try to load from backup
-            if os.path.exists(SAVE_FILE + ".bak"):
-                print("Loading from backup...")
-                try:
-                    with open(SAVE_FILE + ".bak", "r", encoding="utf-8") as f:
-                        loaded_data = json.load(f)
-                        data.update(loaded_data)
-                        
-                        # Restore backup to main
-                        with open(SAVE_FILE, "w", encoding="utf-8") as f:
-                            json.dump(data, f, indent=4, ensure_ascii=False)
-                        print("Backup restored to main save file.")
-
-                except Exception as e:
-                    print(f"Backup also corrupted: {e}")
-                    # data is already set to default via deepcopy above
-            else:
-                print("No backup found. Using default progress.")
+        else:
+            print("No backup found. Using default progress.")
     else:
         print("Save file not found. Using default progress.")
 
@@ -8797,7 +8795,7 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.90.5", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.90.6", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
