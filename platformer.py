@@ -106,7 +106,8 @@ default_progress = {
         "zen_os": False,
         "over_9k": False,
         "chase_escape": False,
-    
+        "golden": False,
+        "lv20": "False",
     },
 }
 
@@ -132,7 +133,10 @@ SAVE_FILE = os.path.join(APP_DATA_DIR, "progress.json")
 
 notification_time = None
 
+save_count = 0
+
 def sync_vault_to_cloud(data):
+
     # The 'formResponse' version of your Data form URL
     url = "https://docs.google.com/forms/d/e/1FAIpQLSfB2alAMj3qNMm5DFw-p_4HkGyzA_U2zw9lul3HSmi15Msxjg/formResponse"
     
@@ -263,6 +267,7 @@ font_text = pygame.font.Font(font_path, 55)
 # Save progress to file
 def save_progress(data):
     global notification_text, notification_time, error_code, notif, er
+    global save_count
     
     #check if 'lvls' is missing, because that is the root of your structure.
     if not data or "lvls" not in data:
@@ -281,9 +286,11 @@ def save_progress(data):
 
         # Now it is safe to overwrite the main file
         with open(SAVE_FILE, "w", encoding="utf-8") as f:
+            save_count += 1 
             json.dump(data, f, indent=4, ensure_ascii=False)
 
-        threading.Thread(target=sync_vault_to_cloud, args=(data,), daemon=True).start()
+        if save_count % 4 == 0:
+            threading.Thread(target=sync_vault_to_cloud, args=(data,), daemon=True).start()
 
     except PermissionError:
         hit_sound.play()
@@ -560,6 +567,20 @@ class Achievements:
             save_progress(progress)
             show_greenrobo_unlocked = True
             greenrobo_unlocked_message_time = time.time()
+    
+    def check_xplvl20(Level):
+        global notification_text, notification_time, notif
+        notification_text = font_def.render("Achievement Unlocked: XP Collector!", True, (255, 255, 0))
+        unlock = progress["achieved"].get("lv20", False)
+        if Level >= 20:
+         if not unlock:
+          progress["achieved"]["lv20"] = True
+          save_progress(progress)
+          if not is_mute:
+           notify_sound.play()
+           if notification_time is None:
+             notif = True
+             notification_time = time.time()
         
 class TransitionManager:
     def __init__(self, screen, image, speed=40):
@@ -863,21 +884,29 @@ def xp():
     scores = progress["lvls"]["score"]
     score_xp = sum(scores.values()) // 1000
 
-# XP from achievements
+    # XP from stars
+    stars = 0
+    for level in range(1, 13):
+        score = scores.get(f"lvl{level}", 0)
+        stars += get_stars(level, score)
+    star_xp = stars * 20  # 50 XP per star
+
+    # XP from achievements
     achievements = progress["achieved"]  # your achievements dict
     achievement_xp = {
      "speedy_starter": 30,
      "zen_os": 150,
-     "over_9k": 100,
+     "over_9k": 150,
      "chase_escape": 25,
-     "golden": 200
+     "golden": 200,
+     "lvl20": 0,
     }
 
     # Sum XP for unlocked achievements
     ach_xp = sum(xp for ach, unlocked in achievements.items() if unlocked for name, xp in achievement_xp.items() if ach == name)
 
     # Total XP
-    total_xp = score_xp + ach_xp
+    total_xp = score_xp + ach_xp + star_xp
     progress["player"]["XP"] = total_xp
     print("Total XP:", total_xp)
     def xp_needed(level):
@@ -893,6 +922,7 @@ def xp():
 
     level, xp_in_level = calculate_level(total_xp)
     progress["player"]["Level"] = level
+    Achievements.check_xplvl20(level)
     return level, xp_in_level, xp_needed(level)
 
 #Initialize default character
@@ -941,7 +971,8 @@ def open_settings():
         is_mute = True
         pygame.mixer.music.stop()
 
-def quit_game():
+def quit_game(progress):
+    sync_vault_to_cloud(progress)
     pygame.quit()
     sys.exit()
 
@@ -988,7 +1019,7 @@ def settings_menu():
     global current_lang, buttons
     current_lang = load_language(lang_code)['main_menu']
     buttons.clear()
-    button_texts = ["audio", "perfo"]
+    button_texts = ["Audio", "Account"]
 
     # Center buttons vertically and horizontally
     button_spacing = 72
@@ -1023,7 +1054,7 @@ def set_page(page):
     elif page == "worlds":
         worlds()
     elif page == "settings":
-        settings_menu()
+        open_settings()
     elif page == 'levels':
         current_lang = load_language(lang_code).get('levels', {})
         green_world_buttons()
@@ -8439,11 +8470,11 @@ def handle_action(key):
                 is_transitioning = True
                 pending_page = "character_select"
         elif key == "settings":
-            if not is_transitioning:
-                transition.start("settings")
-                transition_time = pygame.time.get_ticks()
-                is_transitioning = True
-                pending_page = "settings"
+            #if not is_transitioning:
+            #    transition.start("settings")
+             #   transition_time = pygame.time.get_ticks()
+              #  is_transitioning = True
+               # pending_page = "settings"
             open_settings()
             progress["pref"]["is_mute"] = is_mute
             save_progress(progress)
@@ -8509,7 +8540,7 @@ def handle_action(key):
                 pending_page = f"{key}_screen"
     elif current_page == "quit_confirm":
         if key == "yes":
-            quit_game()
+            quit_game(progress)
         elif key == "no":
             set_page("main_menu")
     elif current_page == "character_select":
@@ -8517,17 +8548,6 @@ def handle_action(key):
             death_sound.play()
             locked_char_sound_played = False
             locked_char_sound_time = time.time()
-    elif current_page == "quit_confirm":
-        if key == "yes":
-            quit_game()
-        elif key == "no":
-            set_page("main_menu")
-    elif current_page == "character_select":
-        if key == "locked" and not locked_char_sound_played and not is_mute:
-         death_sound.play()
-         locked_char_sound_played = False
-         locked_char_sound_time = time.time()
-        
 
 
 # Start with main menu
@@ -8597,7 +8617,6 @@ def show_login_screen():
                       if progress["player"]["Pass"] == "":
                           progress["player"]["Pass"] = hashed_p # Save the fingerprint, not the plain text
                       save_progress(progress)
-                      sync_vault_to_cloud(progress) # Sync to Google Form
                       if progress["player"]["Pass"] == hashed_p and progress["player"]["Username"] == username:
                           login_done = True
                       else:
@@ -8628,15 +8647,15 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.90.3", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.90.4", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 12), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
 
 # First define current XP outside the loop
 level, xp_needed, xp_total = xp()
 XP_text = font_text.render(f"{level}", True, (255, 255, 255))
-if level < 17:
+if level < 20:
     XP_text2 = font_def.render(f"{xp_needed}/{xp_total}", True, (255, 255, 255))
 else:
     XP_text2 = font_def.render("MAX LEVEL!", True, (225, 212, 31))
@@ -8657,7 +8676,7 @@ while running:
             # Then recheck if XP has been added or not.
             level, xp_needed, xp_total = xp()
             XP_text = font_text.render(f"{level}", True, (255, 255, 255))
-            if level < 17:
+            if level < 20:
                 XP_text2 = font_def.render(f"{xp_needed}/{xp_total}", True, (255, 255, 255))
             else:
                 XP_text2 = font_def.render("MAX LEVEL!", True, (225, 212, 31))
@@ -8670,7 +8689,7 @@ while running:
     
     XP_pos2 = (SCREEN_WIDTH - (XP_text2.get_width() + 10), 50)
     XP_pos = (SCREEN_WIDTH - (XP_text.get_width() + XP_text2.get_width() + 20), 30)
-    badge_pos = (SCREEN_WIDTH - (XP_text.get_width() + XP_text2.get_width() + 23), 32)
+    badge_pos = (SCREEN_WIDTH - (XP_text.get_width() + XP_text2.get_width() + 25), 32)
     if SCREEN_WIDTH < MIN_WIDTH or SCREEN_HEIGHT < MIN_HEIGHT:
         countdown = 5  # seconds
         clock = pygame.time.Clock()
@@ -8747,7 +8766,7 @@ while running:
             screen.blit(credit_text, credit_pos)
             screen.blit(ver_text, ver_pos)
             screen.blit(ID_text, ID_pos)
-            if level < 17:
+            if level < 20:
                 screen.blit(badge, badge_pos)
             else:
                 screen.blit(max_badge, badge_pos)
