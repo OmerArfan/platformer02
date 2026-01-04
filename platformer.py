@@ -152,7 +152,7 @@ def update_local_manifest(data):
     # Calculate furthest level reached
     # Assuming locked_levels is a list of level names that ARE locked
     # so the current level is len(locked_levels) + 1 or similar logic
-    current_lvl = len(data["lvls"]["times"])
+    current_lvl = data["Player"]["Level"]
 
     # 3. Update the entry for this ID
     manifest["last_used"] = p_id
@@ -1138,11 +1138,11 @@ def update_locked_levels():
     save_progress(progress)
 
 def settings_menu():
-
     global current_lang, buttons
-    current_lang = load_language(lang_code)['main_menu']
+    current_lang = load_language(lang_code)['settings']
     buttons.clear()
-    button_texts = ["Audio", "Account"]
+    screen.blit(green_background, (0, 0))
+    button_texts = ["Audio", "Account", "Back"]
 
     # Center buttons vertically and horizontally
     button_spacing = 72
@@ -1159,6 +1159,61 @@ def settings_menu():
             set_page("quit_confirm")
     
     pygame.display.flip()
+
+class Slider:
+    def __init__(self, x, y, width, initial_val):
+        self.rect = pygame.Rect(x, y, width, 10)
+        self.handle_rect = pygame.Rect(x + (width * initial_val) - 10, y - 10, 20, 30)
+        self.dragging = False
+        self.value = initial_val
+
+    def draw(self, screen):
+        # Draw the bar
+        pygame.draw.rect(screen, (100, 100, 100), self.rect)
+        # Draw the handle
+        color = (200, 200, 200) if not self.dragging else (255, 255, 255)
+        pygame.draw.rect(screen, color, self.handle_rect)
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.handle_rect.collidepoint(event.pos):
+                self.dragging = True
+        elif event.type == pygame.MOUSEBUTTONUP:
+            self.dragging = False
+        elif event.type == pygame.MOUSEMOTION and self.dragging:
+            # Keep handle within the bar limits
+            self.handle_rect.centerx = max(self.rect.left, min(event.pos[0], self.rect.right))
+            self.value = (self.handle_rect.centerx - self.rect.left) / self.rect.width
+            return True # Value changed
+        return False
+
+music_slider = Slider(SCREEN_WIDTH // 2 - 150, 350, 300, 0.5)
+
+def audio_settings_menu():
+    global current_lang, buttons
+    current_lang = load_language(lang_code)['settings']
+    buttons.clear()
+
+    # Title
+    title = render_text(current_lang["Audio"], True, (255, 255, 255))
+    screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 150))
+
+    # Label for Slider
+    vol_label = render_text("Music Volume", True, (200, 200, 200))
+    screen.blit(vol_label, (SCREEN_WIDTH // 2 - vol_label.get_width() // 2, 300))
+
+    # Draw Slider
+    music_slider.draw(screen)
+
+    # Back Button
+    back_text = current_lang["Back"]
+    rendered = render_text(back_text, True, (255, 255, 255))
+    rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, 550))
+    buttons.append((rendered, rect, "back_to_settings", False))
+
+    for rendered, rect, key, _ in buttons:
+        screen.blit(rendered, rect)
+
 
 # Central page switcher
 def set_page(page):
@@ -1177,7 +1232,9 @@ def set_page(page):
     elif page == "worlds":
         worlds()
     elif page == "settings":
-        open_settings()
+        settings_menu()
+    elif current_page == "Audio":
+        audio_settings_menu()
     elif page == 'levels':
         current_lang = load_language(lang_code).get('levels', {})
         green_world_buttons()
@@ -8593,12 +8650,11 @@ def handle_action(key):
                 is_transitioning = True
                 pending_page = "character_select"
         elif key == "settings":
-            #if not is_transitioning:
-            #    transition.start("settings")
-             #   transition_time = pygame.time.get_ticks()
-              #  is_transitioning = True
-               # pending_page = "settings"
-            open_settings()
+            if not is_transitioning:
+                transition.start("settings")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "settings"
             progress["pref"]["is_mute"] = is_mute
             save_progress(progress)
         elif key == "quit":
@@ -8613,6 +8669,22 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "language_select"
+    elif current_page == "settings":
+        if key == "Back":
+            if not is_transitioning:
+                transition.start("main_menu")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "main_menu"
+        if key == "Audio": # Note: Ensure capitalization matches your button_texts
+            if not is_transitioning:
+                transition.start("Audio")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "Audio"
+    elif current_page == "Audio":
+        if key == "Back":
+          set_page("settings")
     elif current_page == 'worlds':
         if key == "back":
             if not is_transitioning:
@@ -8665,7 +8737,11 @@ def handle_action(key):
         if key == "yes":
             quit_game(progress)
         elif key == "no":
-            set_page("main_menu")
+            if not is_transitioning:
+                transition.start("main_menu")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "main_menu"
     elif current_page == "character_select":
         if key == "locked" and not locked_char_sound_played and not is_mute:
             death_sound.play()
@@ -8799,6 +8875,63 @@ def show_login_screen():
 
         pygame.display.update()
 
+def show_account_selector():
+    global progress, login_done, current_page
+    
+    # 1. Load the manifest
+    if os.path.exists(ACCOUNTS_FILE):
+        with open(ACCOUNTS_FILE, "r") as f:
+            manifest = json.load(f)
+    else:
+        # If no manifest, force a new account creation
+        current_page = "login_screen"
+        return
+
+    selecting = True
+    while selecting:
+        screen.fill((30, 30, 30))
+        title = font_text.render("WHO IS PLAYING?", True, (255, 255, 255))
+        screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 50))
+
+        # 2. List existing accounts as buttons
+        account_buttons = []
+        y_offset = 150
+        for p_id, info in manifest["users"].items():
+            txt = f"{info['username']} (Lvl {info['level']})"
+            surf = font_def.render(txt, True, (200, 200, 200))
+            rect = surf.get_rect(center=(SCREEN_WIDTH // 2, y_offset))
+            screen.blit(surf, rect)
+            account_buttons.append((rect, p_id))
+            y_offset += 60
+
+        # 3. Add a "New Account" button at the bottom
+        new_txt = font_def.render("+ Create New Account", True, (0, 255, 0))
+        new_rect = new_txt.get_rect(center=(SCREEN_WIDTH // 2, y_offset + 40))
+        screen.blit(new_txt, new_rect)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit(); sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # Check if an existing account was clicked
+                for rect, p_id in account_buttons:
+                    if rect.collidepoint(event.pos):
+                        # LOAD THIS SPECIFIC ACCOUNT
+                        # Temporarily set SAVE_FILE so load_progress picks the right one
+                        globals()['SAVE_FILE'] = os.path.join(APP_DATA_DIR, f"{p_id}.json")
+                        progress = load_progress()
+                        selecting = False
+                
+                # Check if "New Account" was clicked
+                if new_rect.collidepoint(event.pos):
+                    # Reset to defaults and go to login screen
+                    progress = copy.deepcopy(default_progress)
+                    progress["player"]["ID"] = generate_player_id()
+                    current_page = "login_screen"
+                    selecting = False
+
+        pygame.display.update()
+
 if not is_mute and SCREEN_WIDTH > MIN_WIDTH and SCREEN_HEIGHT > MIN_HEIGHT:
     click_sound.play()
     # Call this before your game loop
@@ -8812,8 +8945,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.90.8", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.91", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
 
@@ -8922,6 +9055,12 @@ while running:
                             if key is not None and not is_mute:
                                 click_sound.play()
                             handle_action(key)  # Only load level on click!
+                if current_page == "Audio":
+                  if music_slider.handle_event(event):
+                     # Update the actual game volume
+                     pygame.mixer.music.set_volume(music_slider.value)
+                     # Update your progress dictionary
+                     progress["pref"]["volume"] = music_slider.value
 
         if current_page == "main_menu":
 
@@ -9210,6 +9349,8 @@ while running:
                 text_rect = text_surface.get_rect(center=(disk_rect.x + 50, disk_rect.y + 50))
                 screen.blit(text_surface, text_rect)
 
+        elif current_page == "Audio":
+            audio_settings_menu()
 
         else:
             # Render buttons for other pages
@@ -9247,10 +9388,11 @@ while running:
             notif = False
 
         if er:
-            if time.time() - notification_time < 4:  # Show for 4 seconds
+            if notification_time is not None and time.time() - notification_time < 4:  # Show for 4 seconds
                 screen.blit(error_code, (SCREEN_WIDTH // 2 - error_code.get_width() // 2, 120))
         else:
             er = False
+            
         mouse_pos = pygame.mouse.get_pos()
         screen.blit(cursor_img, mouse_pos)
 
