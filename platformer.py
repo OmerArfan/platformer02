@@ -152,7 +152,7 @@ def update_local_manifest(data):
     # Calculate furthest level reached
     # Assuming locked_levels is a list of level names that ARE locked
     # so the current level is len(locked_levels) + 1 or similar logic
-    current_lvl = len(data["lvls"]["times"]) 
+    current_lvl = len(data["lvls"]["times"])
 
     # 3. Update the entry for this ID
     manifest["last_used"] = p_id
@@ -272,46 +272,68 @@ def recover_account_from_cloud(target_id, target_user, target_pass):
     return "NOT_FOUND"
 
 def load_progress():
-    global SAVE_FILE # We need to update the global path
+    global SAVE_FILE, notification_time 
     
-    # 1. Start with defaults
     data = copy.deepcopy(default_progress) 
 
-    # 2. NEW STEP: Check the manifest to see who played last!
+    # 1. Check manifest for the last used ID
+    current_id = ""
     if os.path.exists(ACCOUNTS_FILE):
         try:
             with open(ACCOUNTS_FILE, "r") as f:
                 manifest = json.load(f)
-                last_id = manifest.get("last_used", "")
-                
-                # If we found an ID, update our SAVE_FILE path
-                if last_id:
-                    SAVE_FILE = os.path.join(APP_DATA_DIR, f"{last_id}.json")
-                    print(f"Manifest found! Loading last user: {last_id}")
-        except:
-            pass # If manifest is broken, we'll just fall back to default
+                current_id = manifest.get("last_used", "")
+        except: pass
 
-    # 3. Now try to load the file (it will now be the correct ID-specific one)
-    if os.path.exists(SAVE_FILE):
+    # 2. Determine the path (ID-specific or generic)
+    if current_id:
+        target_file = os.path.join(APP_DATA_DIR, f"{current_id}.json")
+    else:
+        target_file = os.path.join(APP_DATA_DIR, "progress.json")
+
+    # 3. Load the data
+    if os.path.exists(target_file):
         try:
-            with open(SAVE_FILE, "r", encoding="utf-8") as f:
+            with open(target_file, "r", encoding="utf-8") as f:
                 loaded_data = json.load(f)
                 if loaded_data:
                     data.update(loaded_data)
-                    print(f"Loaded data from {SAVE_FILE}")
+                    # Sync missing sub-keys (levels, player info)
+                    sync_missing_data(data) 
+                    SAVE_FILE = target_file
+                    print(f"DEBUG: Successfully loaded {target_file}")
         except Exception as e:
-            print(f"Main save corrupted: {e}")
-        else:
-            print("No backup found. Using default progress.")
-    else:
-        print("Save file not found. Using default progress.")
+            print(f"Load Error: {e}")
 
+    # 4. Handle Migration/New ID
+    # If we loaded progress.json but have an ID inside it, migrate the filename
+    p_id = data["player"].get("ID", "")
+    if p_id == "":
+        p_id = generate_player_id()
+        data["player"]["ID"] = p_id
+
+    # Update SAVE_FILE to the correct ID-specific path
+    SAVE_FILE = os.path.join(APP_DATA_DIR, f"{p_id}.json")
+
+    # 5. Migration: If we just loaded from progress.json, copy it to ID.json
+    legacy_path = os.path.join(APP_DATA_DIR, "progress.json")
+    if os.path.exists(legacy_path) and not os.path.exists(SAVE_FILE):
+        try:
+            shutil.copy(legacy_path, SAVE_FILE)
+            print(f"Migrated legacy save to {p_id}.json")
+        except Exception as e:
+            print(f"Migration error: {e}")
+
+    return data
+
+def sync_missing_data(data):
+    # Helper to ensure all default keys exist in loaded data.
     for key, value in default_progress.items():
         if key not in data:
             data[key] = value
 
     target_subkeys = ["times", "medals", "score"]
-    
+
     if "lvls" in data:
         for subkey in target_subkeys:
             # Check if the subkey (e.g., "score") exists in the loaded data
@@ -321,7 +343,7 @@ def load_progress():
                 # If it exists, check if new levels (e.g., lvl13) were added to the game
                 for lvl_key, lvl_val in default_progress["lvls"][subkey].items():
                     if lvl_key not in data["lvls"][subkey]:
-                        data["lvls"][subkey][lvl_key] = lvl_val
+                       data["lvls"][subkey][lvl_key] = lvl_val
 
     if "lvls" in data and "locked_levels" not in data["lvls"]:
         data["lvls"]["locked_levels"] = default_progress["lvls"]["locked_levels"]
@@ -329,29 +351,15 @@ def load_progress():
     if "player" in data:
         if "ID" not in data["player"]:
             data["player"]["ID"] = default_progress["player"]["ID"]
+
         if "Pass" not in data["player"]:
             data["player"]["Pass"] = default_progress["player"]["Pass"]
+        
         if "Username" not in data["player"]:
             data["player"]["Username"] = default_progress["player"]["Username"]
-
+    
     if data["player"]["ID"] == "":
         data["player"]["ID"] = generate_player_id()
-
-    # To change the save file path if it still uses legacy "progress.json"!
-    if data["player"]["ID"] != "":
-        player_id = data["player"]["ID"]
-        new_save_name = os.path.join(APP_DATA_DIR, f"{player_id}.json")
-        
-        # If the generic 'progress.json' exists, migrate it to '[ID].json'
-        if os.path.exists(SAVE_FILE) and not os.path.exists(new_save_name):
-            try:
-                shutil.copy(SAVE_FILE, new_save_name)
-                # Keep progress.json as a secondary backup or remove it
-                print(f"Migrated save to {player_id}.json")
-            except Exception as e:
-                print(f"Migration failed: {e}")
-
-    return data
 
 # Load the fonts (ensure the font file path is correct)
 font_path_ch = resource_path('fonts/NotoSansSC-SemiBold.ttf')
@@ -370,50 +378,55 @@ font_text = pygame.font.Font(font_path, 55)
 def save_progress(data):
     global notification_text, notification_time, error_code, notif, er
     global save_count
-    global SAVE_FILE # Allow updating the path
-    
-    # Update SAVE_FILE to be the ID-specific one if it isn't already
+    global SAVE_FILE 
+
+    # 1. Basic Validation: Ensure we aren't saving an empty/broken object
+    if not data or "lvls" not in data or "player" not in data:
+        hit_sound.play()
+        notification_text = font_def.render("Refusing to save: Invalid data structure!", True, (255, 0, 0))
+        notif = True
+        notification_time = time.time()
+        return
+
+    # 2. Folder & Path Logic
+    if not os.path.exists(APP_DATA_DIR):
+        os.makedirs(APP_DATA_DIR)
+        
     p_id = data["player"].get("ID", "")
     if p_id:
         SAVE_FILE = os.path.join(APP_DATA_DIR, f"{p_id}.json")
-
-    #check if 'lvls' is missing, because that is the root of your structure.
-    if not data or "lvls" not in data:
-        hit_sound.play()
-        notification_text = font_def.render("Refusing to save: Invalid data structure!", True, (255, 0, 0))
-        if notification_time is None:
-            notif = True
-            notification_time = time.time()
+    else:
+        # Emergency fallback: if no ID, don't overwrite other files!
+        print("Save Error: Player has no ID.")
         return
 
     try:
-        # Create the backup BEFORE opening the file to write. 
-        # If writing fails (computer crash/disk full), the .bak file preserves the previous valid save.
+        # 3. Create backup of the PREVIOUS version
         if os.path.exists(SAVE_FILE):
             shutil.copy(SAVE_FILE, SAVE_FILE + ".bak")
 
-        # Now it is safe to overwrite the main file
+        # 4. Write the new version
         with open(SAVE_FILE, "w", encoding="utf-8") as f:
             save_count += 1 
             json.dump(data, f, indent=4, ensure_ascii=False)
         
+        # 5. Update the "Map" (local.json)
         update_local_manifest(data)
 
+        # 6. Periodic Cloud Sync (Every 4 saves)
         if save_count % 4 == 0:
             threading.Thread(target=sync_vault_to_cloud, args=(data,), daemon=True).start()
 
     except PermissionError:
         hit_sound.play()
-        notification_text = font_def.render("Error: Permission denied (File open elsewhere?)", True, (255, 0, 0))
-        if notification_time is None:
-            notif = True
-            notification_time = time.time()
+        notification_text = font_def.render("Error: Save file is locked by another program.", True, (255, 0, 0))
+        notif = True
+        notification_time = time.time()
             
     except Exception as e:
         er = True
-        # Using str(e) ensures the error text is readable
         error_code = font_def.render(f"Save Error: {str(e)}", True, (255, 0, 0))
-        print(f"Detailed save error: {e}") # helpful for debugging in console
+        print(f"Detailed save error: {e}")
 
 # Load progress at start
 progress_loaded = False
@@ -8692,11 +8705,14 @@ def hash_password(password):
 def show_login_screen():
     global username, user_pass, input_mode, login_done, progress
     
+    print("Logging in")
     # Check if a session already exists to skip this screen
-    if progress["player"]["ID"] != "" and not check_session_expired(progress["player"]["ID"]):
+    has_creds = progress["player"].get("Username") != "" 
+    if progress["player"]["ID"] != "" and has_creds and not check_session_expired(progress["player"]["ID"]):
         login_done = True
+        print("Session active: Skipping login.")
         return
-
+ 
     # If we are here, we need a name/pass. 
     # If the player is brand new, let's show them their newly generated Rare ID!
     if progress["player"]["ID"] == "":
@@ -8717,6 +8733,8 @@ def show_login_screen():
     while not login_done:
         screen.fill((30, 30, 30))
         
+        print("Ligging now")
+
         # 1. Show the Generated ID
         id_title = font_def.render("YOUR UNIQUE PLAYER ID:", True, (150, 150, 150))
         id_val = font_text.render(display_id, True, id_color)
@@ -8786,7 +8804,6 @@ if not is_mute and SCREEN_WIDTH > MIN_WIDTH and SCREEN_HEIGHT > MIN_HEIGHT:
     # Call this before your game loop
     show_login_screen()
 
-
 # Info
 
 site_text = font_def.render("Sound effects used from pixabay.com and edited using Audacity", True, (255, 255, 255))
@@ -8795,7 +8812,7 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.90.6", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.90.8", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
