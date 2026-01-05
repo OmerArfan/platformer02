@@ -481,15 +481,17 @@ while ps < 100:
     # Load logo images
     logo = pygame.image.load(resource_path("oimgs/logos/logo.png")).convert_alpha(); ps += 1
     studio_logo = pygame.image.load(resource_path("oimgs/logos/studiologodef.png")).convert_alpha()
-    studio_logo = pygame.transform.scale(studio_logo, (390, 150))
-    studio_logo_rect = studio_logo.get_rect(topleft=(20, SCREEN_HEIGHT - 170)); ps += 2
+    studio_logo = pygame.transform.scale(studio_logo, (220, 220))
+    studio_logo_rect = studio_logo.get_rect(topleft=(20, SCREEN_HEIGHT - 240)); ps += 2
     studio_glow = pygame.image.load(resource_path("oimgs/logos/studiologoglow.png")).convert_alpha()
-    studio_glow = pygame.transform.scale(studio_glow, (420, 170))
-    studio_glow_rect = studio_glow.get_rect(topleft=(20, SCREEN_HEIGHT - 190)); ps += 2
+    studio_glow = pygame.transform.scale(studio_glow, (280, 280))
+    studio_glow_rect = studio_glow.get_rect(topleft=(20, SCREEN_HEIGHT - 300)); ps += 2
 
     # Load and scale backgrounds
     green_background_img = pygame.image.load(resource_path("bgs/GreenBackground.png")).convert()
     green_background = pygame.transform.scale(green_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT)); ps += 1
+    plain_background_img = pygame.image.load(resource_path("bgs/PlainBackground.png")).convert()
+    plain_background = pygame.transform.scale(plain_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT)); ps += 1
     mech_background_img = pygame.image.load(resource_path("bgs/MechBackground.png")).convert()
     mech_background = pygame.transform.scale(mech_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT)); ps += 1
     trans = pygame.image.load(resource_path("bgs/trans.png")).convert()
@@ -848,6 +850,8 @@ def create_language_buttons():
 def worlds():
     global current_lang, buttons
     buttons.clear()
+
+    screen.blit(plain_background, (0, 0))
 
     # 1. Define Positions
     # We define the center points so the image and the button hitbox align perfectly
@@ -1301,7 +1305,6 @@ def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg):
             save_progress(progress)
             if not is_mute:
                 click_sound.play()
-            set_page("main_menu")
         else:
             handle_action("locked")
             if not locked_char_sound_played or time.time() - locked_char_sound_time > 1.5: # type: ignore
@@ -8753,7 +8756,12 @@ def handle_action(key):
             death_sound.play()
             locked_char_sound_played = False
             locked_char_sound_time = time.time()
-
+        if key == "back":
+            if not is_transitioning:
+                transition.start("main_menu")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "main_menu"
 
 # Start with main menu
 set_page('main_menu')
@@ -8951,8 +8959,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.91.2", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.91.3", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
 
@@ -9103,35 +9111,24 @@ while running:
 
                 if rect.collidepoint(mouse_pos):
                     hovered_key = key
-                    button_surface = pygame.Surface(rect.inflate(30, 15).size, pygame.SRCALPHA)
-                    button_surface.fill((150, 255, 150, 255))  # RGBA: Hover color
-                    screen.blit(button_surface, rect.inflate(30, 15).topleft)
-                    pygame.draw.rect(screen, (0, 255, 0), rect.inflate(30, 15), 6)  # Border for hover effect
-
                     if hovered_key != last_hovered_key and not is_mute:
                         hover_sound.play()
-
-                else:
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((0, 180, 0, 255))  # RGBA: 100 is alpha (transparency)
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 213, 0), rect.inflate(30, 15), 6)
 
                 screen.blit(rendered, rect)
             last_hovered_key = hovered_key
 
         if current_page == "character_select":
-         screen.blit(green_background, (0, 0))
+         screen.blit(plain_background, (0, 0))
 
-    # Initialize locked sound effect and mouse position
+         # Initialize locked sound effect and mouse position
          locked_sound_played = False
          mouse_pos = pygame.mouse.get_pos()
 
          messages = load_language(lang_code).get('messages', {})  # Fetch localized messages
-         char_text = render_text("Select your Robo!", True, (0, 0, 0))
+         char_text = render_text("Select your Robo!", True, (255, 255, 255))
          screen.blit(char_text, (SCREEN_WIDTH // 2 - 100, 50))
 
-    # Check if characters are locked
+         # Check if characters are locked
          robo_unlock = True
          evilrobo_unlock = progress["char"].get("evilrobo", False)
          greenrobo_unlock = progress["char"].get("greenrobo", False)
@@ -9141,7 +9138,7 @@ while running:
          screen.blit(evilrobot_img if evilrobo_unlock else locked_img, evilrobot_rect)
          screen.blit(greenrobot_img if greenrobo_unlock else locked_img, greenrobot_rect)
          screen.blit(ironrobot_img if ironrobo_unlock else locked_img, ironrobot_rect)
-     # Draw a highlight border around the selected character
+         # Draw a highlight border around the selected character
          highlight_colors = {
           "robot": (63, 72, 204),
           "evilrobot": (128, 0, 128),
@@ -9174,9 +9171,7 @@ while running:
             elif ironrobot_rect.collidepoint(mouse_pos):
                 try_select_robo(ironrobo_unlock, "ironrobot", ironrobot_rect, "ironlocked_message", "Unlock the Zenith Of Six achievement to get this character!")
             elif rect.collidepoint(mouse_pos):
-                set_page("main_menu")
-                if not is_mute:
-                    click_sound.play()
+                handle_action(key)
 
          keys = pygame.key.get_pressed()
          if keys[pygame.K_ESCAPE]:
@@ -9190,34 +9185,12 @@ while running:
             else:
              wait_time = None
 
-    # Render buttons
-         for rendered, rect, key, is_locked in buttons:
-            hovered = rect.collidepoint(mouse_pos)
-            button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-            if hovered:
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((0, 180, 0, 255))  # RGBA: 100 is alpha (transparency)
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 213, 0), rect.inflate(30, 15), 6)
-                    button_surface.fill((200, 200, 250, 100))
-                    if not button_hovered_last_frame and not is_mute:
-                        hover_sound.play()
-                    button_hovered_last_frame = True
-            else:
-             button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-             button_surface.fill((0, 180, 0, 255))  # RGBA: 100 is alpha (transparency)
-             screen.blit(button_surface, rect.inflate(20, 10).topleft)
-             pygame.draw.rect(screen, (0, 213, 0), rect.inflate(30, 15), 6)
-             button_hovered_last_frame = False
-            screen.blit(rendered, rect)
-
-
         if current_page == "language_select":
-            screen.blit(green_background, (0, 0))
+            screen.blit(plain_background, (0, 0))
             screen.blit(heading_text, (SCREEN_WIDTH // 2 - heading_text.get_width() // 2, 50))
 
         if current_page == "quit_confirm":
-            screen.blit(green_background, (0, 0))
+            screen.blit(plain_background, (0, 0))
             # Render the quit confirmation text
             screen.blit(quit_text, quit_text_rect)
             screen.blit(quitbot, (SCREEN_WIDTH // 2 - robot_img.get_width() // 2, SCREEN_HEIGHT // 2 - 200))
@@ -9226,9 +9199,9 @@ while running:
             for rendered, rect, key, is_locked in buttons:
                 if rect.collidepoint(mouse_pos):
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((0, 180, 0, 255))  # RGBA: 100 is alpha (transparency)
+                    button_surface.fill((8, 81, 179, 255))
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 213, 0), rect.inflate(30, 15), 6)
+                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
                     button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)      
@@ -9238,9 +9211,9 @@ while running:
                     button_hovered_last_frame = hovered
                 else:
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((0, 180, 0, 255))  # RGBA: 100 is alpha (transparency)
+                    button_surface.fill((8, 81, 179, 255))
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 213, 0), rect.inflate(30, 15), 6)
+                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
                 screen.blit(rendered, rect)
 
             # Allow returning to the main menu with ESC
@@ -9362,9 +9335,9 @@ while running:
             for rendered, rect, key, is_locked in buttons:
                 if rect.collidepoint(mouse_pos):
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((0, 180, 0, 255))  # RGBA: 100 is alpha (transparency)
+                    button_surface.fill((8, 81, 179, 255))
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 213, 0), rect.inflate(30, 15), 6)
+                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
                     button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
@@ -9374,9 +9347,9 @@ while running:
                     button_hovered_last_frame = hovered
                 else:
                     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((0, 180, 0, 255))  # RGBA: 100 is alpha (transparency)
+                    button_surface.fill((8, 81, 179, 255))
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 213, 0), rect.inflate(30, 15), 6)
+                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
                 screen.blit(rendered, rect)
 
         if show_greenrobo_unlocked:
