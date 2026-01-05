@@ -147,12 +147,12 @@ def update_local_manifest(data):
 
     # 2. Get current player info
     p_id = data["player"]["ID"]
-    p_name = data["player"].get("Username", "Unknown")
+    p_name = data["player"].get("Username", "User")
     
     # Calculate furthest level reached
     # Assuming locked_levels is a list of level names that ARE locked
     # so the current level is len(locked_levels) + 1 or similar logic
-    current_lvl = data["Player"]["Level"]
+    current_lvl = data["player"]["Level"]
 
     # 3. Update the entry for this ID
     manifest["last_used"] = p_id
@@ -8951,7 +8951,7 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.91.1", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.91.2", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
