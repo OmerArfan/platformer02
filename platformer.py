@@ -1139,26 +1139,37 @@ def update_locked_levels():
 
 def settings_menu():
     global current_lang, buttons
+    # 1. Load language (only once per page change is better, but this works)
     current_lang = load_language(lang_code)['settings']
     buttons.clear()
-    screen.blit(green_background, (0, 0))
-    button_texts = ["Audio", "Account", "Back"]
-
-    # Center buttons vertically and horizontally
-    button_spacing = 72
-    start_y = (SCREEN_HEIGHT // 2) - (len(button_texts) * button_spacing // 2) + 150
-
-    for i, key in enumerate(button_texts):
-        text = current_lang[key]
-        rendered = render_text(text, True, (255, 255, 255))
-        rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, start_y + i * button_spacing)) 
-        buttons.append((rendered, rect, key, False))
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            set_page("quit_confirm")
     
-    pygame.display.flip()
+    # 2. Match these keys EXACTLY to handle_action
+    # format: (Display Text, Internal Key)
+    button_data = [
+        (current_lang["Audio"], "Audio"),
+        (current_lang["Account"], "Account"),
+        (current_lang["Back"], "Back")
+    ]
+
+    button_spacing = 72
+    start_y = (SCREEN_HEIGHT // 2) - (len(button_data) * button_spacing // 2) + 150
+
+    for i, (display_text, internal_key) in enumerate(button_data):
+        rendered = render_text(display_text, True, (255, 255, 255))
+        rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, start_y + i * button_spacing)) 
+        # Store the internal_key so handle_action knows what was clicked
+        buttons.append((rendered, rect, internal_key, False))
+
+    # 3. DRAWING ONLY (No flip/update here!)
+    screen.blit(background, (0, 0))
+    # Mouse pos for hover effects
+    mouse_pos = pygame.mouse.get_pos()
+    
+    for rendered, rect, key, _ in buttons:
+        if rect.collidepoint(mouse_pos):
+            # Add a small glow or background for hover feedback
+            pygame.draw.rect(screen, (0, 213, 0), rect.inflate(20, 10), 2)
+        screen.blit(rendered, rect)
 
 class Slider:
     def __init__(self, x, y, width, initial_val):
@@ -1187,33 +1198,28 @@ class Slider:
             return True # Value changed
         return False
 
-music_slider = Slider(SCREEN_WIDTH // 2 - 150, 350, 300, 0.5)
+music_slider = Slider(SCREEN_WIDTH // 2 - 150, 400, 300, pygame.mixer.music.get_volume())
 
 def audio_settings_menu():
-    global current_lang, buttons
-    current_lang = load_language(lang_code)['settings']
+    global buttons
     buttons.clear()
+    screen.blit(background, (0, 0))
 
-    # Title
-    title = render_text(current_lang["Audio"], True, (255, 255, 255))
-    screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 150))
+    # 1. Draw Title
+    title = render_text("Audio Settings", True, (255, 255, 255))
+    screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 200))
 
-    # Label for Slider
-    vol_label = render_text("Music Volume", True, (200, 200, 200))
-    screen.blit(vol_label, (SCREEN_WIDTH // 2 - vol_label.get_width() // 2, 300))
-
-    # Draw Slider
+    # 2. Draw Slider and Label
+    vol_label = render_text(f"Volume: {int(music_slider.value * 100)}%", True, (200, 200, 200))
+    screen.blit(vol_label, (SCREEN_WIDTH // 2 - vol_label.get_width() // 2, 350))
     music_slider.draw(screen)
 
-    # Back Button
-    back_text = current_lang["Back"]
-    rendered = render_text(back_text, True, (255, 255, 255))
+    # 3. Back Button
+    rendered = render_text("Back", True, (255, 255, 255))
     rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, 550))
-    buttons.append((rendered, rect, "back_to_settings", False))
-
-    for rendered, rect, key, _ in buttons:
-        screen.blit(rendered, rect)
-
+    buttons.append((rendered, rect, "Back", False))
+    
+    screen.blit(rendered, rect)
 
 # Central page switcher
 def set_page(page):
@@ -8945,7 +8951,7 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.91", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.91.1", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
@@ -8970,7 +8976,7 @@ while running:
 
     # Handle transition timer and page change
     if is_transitioning and transition_time is not None and pending_page is not None:
-        if pygame.time.get_ticks() - transition_time > 650:
+        if transition.x >= 0:
             # Then recheck if XP has been added or not.
             level, xp_needed, xp_total = xp()
             XP_text = font_text.render(f"{level}", True, (255, 255, 255))
@@ -9042,6 +9048,11 @@ while running:
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # Only process clicks if enough time has passed since last page change
+                if current_page == "Audio":
+                    if music_slider.handle_event(event):
+                        # This line updates the actual volume and saves it to your progress
+                        pygame.mixer.music.set_volume(music_slider.value)
+                        progress["pref"]["is_mute"] = (music_slider.value == 0)
                 if current_page not in ["levels", "mech_levels", "worlds"]:
                     for _, rect, key, is_locked in buttons:
                         if rect.collidepoint(event.pos):
@@ -9055,12 +9066,6 @@ while running:
                             if key is not None and not is_mute:
                                 click_sound.play()
                             handle_action(key)  # Only load level on click!
-                if current_page == "Audio":
-                  if music_slider.handle_event(event):
-                     # Update the actual game volume
-                     pygame.mixer.music.set_volume(music_slider.value)
-                     # Update your progress dictionary
-                     progress["pref"]["volume"] = music_slider.value
 
         if current_page == "main_menu":
 
