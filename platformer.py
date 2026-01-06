@@ -156,7 +156,7 @@ def update_local_manifest(data):
         "last_used": p_id,
         "language": lang_code,
         "sfx": not is_mute,
-        "ambience": not is_mute
+        "ambience": not is_mute_amb
     }
     
     manifest["users"][p_id] = {
@@ -796,7 +796,7 @@ def create_main_menu_buttons():
     global current_lang, buttons
     current_lang = load_language(lang_code)['main_menu']
     buttons.clear()
-    button_texts = ["start", "achievements", "character_select", "settings", "language", "quit"]
+    button_texts = ["start", "achievements", "character_select", "settings", "quit"]
 
     # Center buttons vertically and horizontally
     button_spacing = 72
@@ -1166,6 +1166,7 @@ def settings_menu():
     button_data = [
         (current_lang["Audio"], "Audio"),
         (current_lang["Account"], "Account"),
+        (setting_lang["language"], "Language"),
         (current_lang["Back"], "Back")
     ]
 
@@ -1256,18 +1257,25 @@ def audio_settings_menu():
 
 def muting_sfx():
     global is_mute
-    if is_mute:
-        is_mute = False
-    else:
-        is_mute = True
+    is_mute = not is_mute
+    # Save directly to manifest (pass 'progress' so it can see player ID/Level)
+    update_local_manifest(progress)
 
 def muting_amb():
     global is_mute_amb
+    # Toggle the state
+    is_mute_amb = not is_mute_amb
+    
+    # Apply the change to the mixer
     if is_mute_amb:
-        is_mute_amb = False
-    else:
         pygame.mixer.music.stop()
-        is_mute_amb = True
+    else:
+        # If your game has a specific music file, trigger it here
+        pygame.mixer.music.play(-1) 
+        pass
+        
+    # Save directly to manifest
+    update_local_manifest(progress)
     
 
 # Central page switcher
@@ -1293,13 +1301,11 @@ def set_page(page):
     elif page == 'levels':
         current_lang = load_language(lang_code).get('levels', {})
         green_world_buttons()
-        if not is_mute:
-            change_ambience("audio/amb/greenambience.wav")
+        change_ambience("audio/amb/greenambience.wav")
     elif page == 'mech_levels':
         current_lang = load_language(lang_code).get('levels', {})
         mech_world_buttons()
-        if not is_mute:
-            change_ambience("audio/amb/mechambience.wav")
+        change_ambience("audio/amb/mechambience.wav")
     elif page == 'quit_confirm':
         current_lang = load_language(lang_code).get('messages', {})
         create_quit_confirm_buttons()
@@ -8715,12 +8721,6 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "quit_confirm"
-        elif key == "language":
-            if not is_transitioning:
-                transition.start("language_select")
-                transition_time = pygame.time.get_ticks()
-                is_transitioning = True
-                pending_page = "language_select"
     elif current_page == "settings":
         if key == "Back":
             if not is_transitioning:
@@ -8734,6 +8734,12 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "Audio"
+        if key == "Language":
+            if not is_transitioning:
+                transition.start("language_select")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "language_select"
     elif current_page == "Audio":
         if key == "Back":
           set_page("settings")
@@ -9006,7 +9012,7 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 8), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.92.1", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.92.2", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
