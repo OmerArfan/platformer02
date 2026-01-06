@@ -10,20 +10,13 @@
   "language_select": {
     "back": "Geri"
   },
+  "settings": {
+    "Audio": "Ses",
+    "Account": "Hesap",
+    "Back": "Geri"
+  },
   "levels": {
     "level_display": "BİR SEVİYE SEÇ",
-    "1": "1",
-    "2": "2",
-    "3": "3",
-    "4": "4",
-    "5": "5",
-    "6": "6",
-    "7": "7",
-    "8": "8",
-    "9": "9",
-    "10": "10",
-    "11": "11",
-    "12": "12",
     "lvl1": "Seviye 1",
     "lvl2": "Seviye 2",
     "lvl3": "Seviye 3",

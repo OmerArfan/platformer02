@@ -3,14 +3,19 @@
       "start": "Commencer",
       "character_select": "Sélection de personnage",
       "achievements": "Réalisations",
-      "settings": "Couper/Activer le son",
+      "settings": "Paramètres",
       "quit": "Quitter",
       "language": "Changer de langue"
     }
     ,"language_select": {
       "back": "Retour"
-  }
-  ,"levels": {
+  },
+  "settings": {
+    "Audio": "Audio",
+    "Account": "Compte",
+    "Back": "Retour"
+  },
+  "levels": {
   "level_display": "CHOISIR UN NIVEAU",
   "lvl1": "Niveau 1", 
   "lvl2": "Niveau 2",

@@ -2,13 +2,18 @@
   "main_menu": {
     "start": "ابدأ",
     "character_select": "اختيار الروبوت",
-    "settings": "تشغيل/إيقاف الصوت",
+    "settings": "الإعدادات",
     "achievements": "إنجازات",
     "quit": "خروج",
     "language": "تغيير اللغة"
   },
   "language_select": {
     "back": "رجوع"
+  },
+  "settings": {
+    "Audio": "الصوت",
+    "Account": "الحساب",
+    "Back": "رجوع"
   },
   "levels": {
     "level_display": "اختر المرحلة",

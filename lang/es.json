@@ -3,12 +3,17 @@
       "start": "Iniciar",
       "character_select": "Selección de personaje",
       "achievements": "Logros",
-      "settings": "Silenciar/Activar audio",
+      "settings": "Ajustes",
       "quit": "Salir",
       "language": "Cambiar idioma"
     }
   ,"language_select": {
     "back": "Volver"
+},
+"settings": {
+    "Audio": "Audio",
+    "Account": "Cuenta",
+    "Back": "Atrás"
 }
   ,"levels": {
   "level_display": "SELECCIONA UN NIVEL",

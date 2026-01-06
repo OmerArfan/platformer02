@@ -3,12 +3,17 @@
       "start": "Start",
       "achievements": "Achievements",
       "character_select": "Character Select",
-      "settings": "Mute/Unmute Audio",
+      "settings": "Settings",
       "quit": "Quit",
       "language": "Change Language"
     }
     ,"language_select": {
       "back": "Back"
+  }
+  ,"settings": {
+    "Audio": "Audio",
+    "Account": "Account",
+    "Back": "Back"
   }
   ,"levels": {
   "level_display": "SELECT A LEVEL",

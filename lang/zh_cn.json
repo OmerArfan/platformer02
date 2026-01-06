@@ -3,13 +3,18 @@
       "start": "开始",
       "character_select": "角色选择",
       "achievements": "成就",
-      "settings": "静音/取消静音",
+      "settings": "设置",
       "quit": "辞职",
       "language": "更改语言"
     }
     ,"language_select": {
           "back": "返回"
-      }
+      },
+  "settings": {
+    "Audio": "音频",
+    "Account": "账户",
+    "Back": "返回"
+  }
   ,"levels": {
     "level_display": "选择一个级别",
     "lvl1": "第1关",

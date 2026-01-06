@@ -2,13 +2,18 @@
   "main_menu": {
     "start": "スタート",
     "character_select": "キャラクター選択",
-    "settings": "音声オン/オフ",
+    "settings": "設定",
     "achievements": "実績",
     "quit": "終了",
     "language": "言語を変更"
   },
   "language_select": {
     "back": "戻る"
+  },
+  "settings": {
+    "Audio": "オーディオ",
+    "Account": "アカウント",
+    "Back": "戻る"
   },
   "levels": {
     "level_display": "レベルを選択",

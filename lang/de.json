@@ -3,12 +3,17 @@
       "start": "Starten",
       "character_select": "Charakterauswahl",
       "achievements": "Leistungen",
-      "settings": "Audio stummschalten/Stummschaltung aufheben",
+      "settings": "Einstellungen",
       "quit": "aufhören",
       "language": "Sprache ändern"
     }
     ,"language_select": {
       "back": "Zurückkehren"
+  },
+  "settings": {
+    "Audio": "Audio",
+    "Account": "Konto",
+    "Back": "Zurück"
   }
   ,"levels": {
   "level_display": "WÄHLE EINEN LEVEL",

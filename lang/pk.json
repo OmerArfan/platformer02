@@ -2,13 +2,18 @@
   "main_menu": {
     "start": "شروع کریں",
     "character_select": "کردار منتخب کریں",
-    "settings": "آواز بند/چلائیں",
+    "settings": "ترتیبات",
     "achievements": "کامیابیاں",
     "quit": "بند کریں",
     "language": "زبان تبدیل کریں"
   },
   "language_select": {
     "back": "پیچھے"
+  },
+  "settings": {
+    "Audio": "آڈیو",
+    "Account": "اکاؤنٹ",
+    "Back": "پیچھے"
   },
   "levels": {
     "level_display": "ایک سطح منتخب کریں",

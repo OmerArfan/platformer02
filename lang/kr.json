@@ -2,13 +2,18 @@
   "main_menu": {
     "start": "시작",
     "character_select": "캐릭터 선택",
-    "settings": "오디오 음소거/해제",
+    "settings": "설정",
     "achievements": "성과",
     "quit": "종료",
     "language": "언어 변경"
   },
   "language_select": {
     "back": "뒤로"
+  },
+  "settings": {
+    "Audio": "오디오",
+    "Account": "계정",
+    "Back": "뒤로"
   },
   "levels": {
     "level_display": "레벨 선택",

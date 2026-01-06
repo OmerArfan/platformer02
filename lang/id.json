@@ -2,13 +2,18 @@
   "main_menu": {
     "start": "Mulai",
     "character_select": "Pilih Karakter",
-    "settings": "Bunyikan/Senyapkan Audio",
+    "settings": "Pengaturan",
     "achievements": "Prestasi",
     "quit": "Keluar",
     "language": "Ganti Bahasa"
   },
   "language_select": {
     "back": "Kembali"
+  },
+  "settings": {
+    "Audio": "Audio",
+    "Account": "Akun",
+    "Back": "Kembali"
   },
   "levels": {
     "level_display": "PILIH LEVEL",

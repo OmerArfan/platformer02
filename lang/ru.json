@@ -3,13 +3,18 @@
         "start": "Начать",
         "character_select": "Выбор персонажа",
         "achievements": "Достижения",
-        "settings": "Отключить/включить звук",
+        "settings": "Настройки",
         "quit": "Выйти",
         "language": "Язык"
     }
     ,"language_select": {
         "back": "назад"
     }
+    ,"settings": {
+    "Audio": "Аудио",
+    "Account": "Аккаунт",
+    "Back": "Назад"
+  }
     ,"levels": {
             "level_display": "ВЫБЕРИТЕ УРОВЕНЬ",
             "lvl1": "Уровень 1", 
