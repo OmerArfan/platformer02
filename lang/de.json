@@ -8,7 +8,7 @@
       "language": "Sprache ändern"
     }
     ,"language_select": {
-      "back": "Zurückkehren"
+      "back": "Zurück"
   },
   "settings": {
     "Audio": "Audio",
@@ -29,7 +29,7 @@
   "lvl10": "Stufe 10",
   "lvl11": "Stufe 11",
   "lvl12": "Stufe 12",
-  "back": "zurückkehren"
+  "back": "Zurück"
   ,"next": "Nächste"
    }
   ,"messages": {
