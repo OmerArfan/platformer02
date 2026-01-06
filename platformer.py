@@ -1156,9 +1156,11 @@ def update_locked_levels():
 def settings_menu():
     global current_lang, buttons
     # 1. Load language (only once per page change is better, but this works)
-    current_lang = load_language(lang_code)['settings']
+    current_lang = load_language(lang_code).get('settings', {})
+    setting_lang = load_language(lang_code).get('main_menu', {})
     buttons.clear()
-    
+    screen.blit(plain_background, (0, 0))
+
     # 2. Match these keys EXACTLY to handle_action
     # format: (Display Text, Internal Key)
     button_data = [
@@ -1166,6 +1168,10 @@ def settings_menu():
         (current_lang["Account"], "Account"),
         (current_lang["Back"], "Back")
     ]
+
+    heading = setting_lang.get("settings", "Settings")
+    heading_text = render_text(heading, True, (255 , 255, 255))
+    screen.blit(heading_text, (SCREEN_WIDTH // 2 - heading_text.get_width() // 2, 200))
 
     button_spacing = 72
     start_y = (SCREEN_HEIGHT // 2) - (len(button_data) * button_spacing // 2) + 150
@@ -1176,8 +1182,6 @@ def settings_menu():
         # Store the internal_key so handle_action knows what was clicked
         buttons.append((rendered, rect, internal_key, False))
 
-    # 3. DRAWING ONLY (No flip/update here!)
-    screen.blit(background, (0, 0))
     # Mouse pos for hover effects
     mouse_pos = pygame.mouse.get_pos()
     
@@ -1218,7 +1222,7 @@ class Slider:
 def audio_settings_menu():
     global buttons
     buttons.clear()
-    screen.blit(background, (0, 0))
+    screen.blit(plain_background, (0, 0))
 
     # 1. Draw Title
     title = render_text("Audio Settings", True, (255, 255, 255))
@@ -9001,8 +9005,8 @@ site_pos = (SCREEN_WIDTH - (site_text.get_width() + 10), SCREEN_HEIGHT - 38)
 logo_text = font_def.render("Logo and Background made with canva.com", True, (255, 255, 255))
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
-credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.92", True, (255, 255, 255))
+credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 8), SCREEN_HEIGHT - 98)
+ver_text = font_def.render("Version 1.2.92.1", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
@@ -9365,7 +9369,32 @@ while running:
                 text_rect = text_surface.get_rect(center=(disk_rect.x + 50, disk_rect.y + 50))
                 screen.blit(text_surface, text_rect)
 
+        elif current_page == "settings":
+            screen.blit(plain_background, (0, 0))
+            settings_menu()
+            
+            for rendered, rect, key, is_locked in buttons:
+                if rect.collidepoint(mouse_pos):
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((8, 81, 179, 255))
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
+                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
+                    hovered = rect.collidepoint(pygame.mouse.get_pos())
+                    if hovered and not button_hovered_last_frame and not is_mute:
+                        hover_sound.play()
+                    button_hovered_last_frame = hovered
+                else:
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((8, 81, 179, 255))
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
+                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
+                screen.blit(rendered, rect)
+
         elif current_page == "Audio":
+            screen.blit(plain_background, (0, 0))
             audio_settings_menu()
             
             for rendered, rect, key, is_locked in buttons:
