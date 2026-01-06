@@ -53,9 +53,11 @@ icon = pygame.image.load(resource_path("robots.ico")).convert_alpha()
 pygame.display.set_icon(icon)
 
 def change_ambience(new_file):
-    pygame.mixer.music.load(resource_path(new_file))
-    pygame.mixer.music.set_volume(2)  # Adjust as needed
-    pygame.mixer.music.play(-1)
+    global is_mute_amb
+    if not is_mute_amb:
+     pygame.mixer.music.load(resource_path(new_file))
+     pygame.mixer.music.set_volume(2)  # Adjust as needed
+     pygame.mixer.music.play(-1)
 
 # Variables for handling display notifications
 notif = False
@@ -94,9 +96,7 @@ default_progress = {
         "score": {f"lvl{i}": 0 for i in range(1, 13)},
     },
     "pref" : { 
-        "language": "en",
         "character": "robot",
-        "is_mute": False,
     },
     "char": { 
         "evilrobo": False, 
@@ -136,8 +136,8 @@ SAVE_FILE = os.path.join(APP_DATA_DIR, "progress.json")
 ACCOUNTS_FILE = os.path.join(APP_DATA_DIR, "local.json")
 
 def update_local_manifest(data):
-    # 1. Load existing manifest or start fresh
-    manifest = {"last_used": "", "users": {}}
+    # 1. Load existing manifest
+    manifest = {"last_used": "", "users": {}, "pref": {"language": "en", "sfx": True, "ambience": True}}
     if os.path.exists(ACCOUNTS_FILE):
         try:
             with open(ACCOUNTS_FILE, "r") as f:
@@ -148,14 +148,17 @@ def update_local_manifest(data):
     # 2. Get current player info
     p_id = data["player"]["ID"]
     p_name = data["player"].get("Username", "User")
-    
-    # Calculate furthest level reached
-    # Assuming locked_levels is a list of level names that ARE locked
-    # so the current level is len(locked_levels) + 1 or similar logic
     current_lvl = data["player"]["Level"]
 
-    # 3. Update the entry for this ID
-    manifest["last_used"] = p_id
+    # 3. Update Preferences (Now handled globally in the manifest)
+    # Use global variables 'lang_code' and 'is_mute' currently active in the session
+    manifest["pref"] = {
+        "last_used": p_id,
+        "language": lang_code,
+        "sfx": not is_mute,
+        "ambience": not is_mute
+    }
+    
     manifest["users"][p_id] = {
         "username": p_name,
         "id": p_id,
@@ -163,12 +166,11 @@ def update_local_manifest(data):
         "last_login": date.today().strftime("%Y-%m-%d")
     }
 
-    # 4. Save it back
+    # 4. Save
     with open(ACCOUNTS_FILE, "w") as f:
         json.dump(manifest, f, indent=4)
-
-    print(f"Local Manifest: Updated entry for {p_id}")
-    print(manifest)
+    
+    print("Updated local manifest:", manifest)
 
 def check_session_expired(p_id):
     if os.path.exists(ACCOUNTS_FILE):
@@ -358,6 +360,11 @@ def sync_missing_data(data):
         if "Username" not in data["player"]:
             data["player"]["Username"] = default_progress["player"]["Username"]
     
+    if "pref" in data:
+        # .pop(key, None) safely removes the key if it exists, otherwise does nothing
+        data["pref"].pop("is_mute", None)
+        data["pref"].pop("language", None)
+
     if data["player"]["ID"] == "":
         data["player"]["ID"] = generate_player_id()
 
@@ -544,15 +551,30 @@ while ps < 100:
     complete_levels = progress.get("complete_levels", 0); ps = 75
     progress_loaded = True
 
+# In the loading loop section:
  if not language_loaded and progress_loaded:
-# Get just the language code, default to English
     stage = "Loading configured settings..."
-    lang_code = progress["pref"].get("language", "en"); ps = 82
-    progress["pref"]["language"] = lang_code; ps = 91
-    is_mute = progress.get("is_mute", default_progress["pref"]["is_mute"]); ps = 97  # Global variable to track mute state
+    
+    # NEW: Load from manifest instead of progress
+    if os.path.exists(ACCOUNTS_FILE):
+        with open(ACCOUNTS_FILE, "r") as f:
+            manifest = json.load(f)
+            global_pref = manifest.get("pref", {})
+            lang_code = global_pref.get("language", "en")
+            # Invert 'sfx' back to 'is_mute'
+            is_mute = not global_pref.get("sfx", True) 
+            is_mute_amb = not global_pref.get("ambience", True)
+    else:
+        lang_code = "en"
+        is_mute = False
+        is_mute_amb = False
+
     language_loaded = True
-    if is_mute:
+    if is_mute_amb:
         pygame.mixer.music.stop()
+    else:
+        pygame.mixer.music.set_volume(0.1)
+        pygame.mixer.music.play(-1)  # Loop forever
  else:
      ps = 100
  
@@ -561,8 +583,7 @@ while ps < 100:
 if ps == 100:
  running = True
 
-pygame.mixer.music.set_volume(0.1)
-pygame.mixer.music.play(-1)  # Loop forever
+
 
 with open(resource_path("data/thresholds.json"), "r", encoding="utf-8") as f:
     thresholds_data = json.load(f)
@@ -753,8 +774,8 @@ def load_language(lang_code):
             return json.load(f)
     except FileNotFoundError:
         print(f"[WARN] Language '{lang_code}' not found. Falling back to English.")
-        progress["pref"]["language"] = "en"
-        save_progress(progress)
+        manifest["pref"]["language"] = "en"
+        update_local_manifest(manifest)
         
         # Wrap the fallback path too!
         fallback_path = resource_path("lang/en.json")
@@ -850,7 +871,7 @@ def create_language_buttons():
 def worlds():
     global current_lang, buttons
     buttons.clear()
-
+    current_lang = load_language(lang_code).get('language_select', {})
     screen.blit(plain_background, (0, 0))
 
     # 1. Define Positions
@@ -1035,7 +1056,6 @@ def xp():
     # Total XP
     total_xp = score_xp + ach_xp + star_xp
     progress["player"]["XP"] = total_xp
-    print("Total XP:", total_xp)
     def xp_needed(level):
         return int(50 * (1.1 ** (level - 1)))  # or tweak multiplier
 
@@ -1090,14 +1110,6 @@ def character_select():
     pygame.display.flip()
 
 
-def open_settings():
-    global is_mute
-    if is_mute:
-        is_mute = False
-    else:
-        is_mute = True
-        pygame.mixer.music.stop()
-
 def quit_game(progress):
     sync_vault_to_cloud(progress)
     pygame.quit()
@@ -1108,8 +1120,8 @@ def change_language(lang):
     lang_code = lang
     last_page_change_time = time.time()  # Track the time when the language changes
     current_lang = load_language(lang_code)  # Reload the language data
-    progress["pref"]["language"] = lang_code
-    save_progress(progress)
+    manifest["pref"]["language"] = lang_code
+    update_local_manifest(progress)
     if lang_code == "zh_cn":
         font = font_ch
     elif lang_code == "jp":
@@ -1202,7 +1214,6 @@ class Slider:
             return True # Value changed
         return False
 
-music_slider = Slider(SCREEN_WIDTH // 2 - 150, 400, 300, pygame.mixer.music.get_volume())
 
 def audio_settings_menu():
     global buttons
@@ -1212,11 +1223,23 @@ def audio_settings_menu():
     # 1. Draw Title
     title = render_text("Audio Settings", True, (255, 255, 255))
     screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 200))
+    
+    if is_mute:
+        sfx_txt = "Unmute Sound"
+    else:
+        sfx_txt = "Mute Sound"
+    
+    if is_mute_amb:
+        amb_txt = "Unmute Ambience"
+    else:
+        amb_txt = "Mute Ambience"
+    renderedsfx = render_text(sfx_txt, True, (255, 255, 255))
+    rectsfx = renderedsfx.get_rect(center=(SCREEN_WIDTH // 2, 350))
+    buttons.append((renderedsfx, rectsfx, "SFX", False))
 
-    # 2. Draw Slider and Label
-    vol_label = render_text(f"Volume: {int(music_slider.value * 100)}%", True, (200, 200, 200))
-    screen.blit(vol_label, (SCREEN_WIDTH // 2 - vol_label.get_width() // 2, 350))
-    music_slider.draw(screen)
+    renderedamb = render_text(amb_txt, True, (255, 255, 255))
+    rectamb = renderedamb.get_rect(center=(SCREEN_WIDTH // 2, 450))
+    buttons.append((renderedamb, rectamb, "Ambience", False))
 
     # 3. Back Button
     rendered = render_text("Back", True, (255, 255, 255))
@@ -1224,6 +1247,24 @@ def audio_settings_menu():
     buttons.append((rendered, rect, "Back", False))
     
     screen.blit(rendered, rect)
+    screen.blit(renderedsfx, rectsfx)
+    screen.blit(renderedamb, rectamb)
+
+def muting_sfx():
+    global is_mute
+    if is_mute:
+        is_mute = False
+    else:
+        is_mute = True
+
+def muting_amb():
+    global is_mute_amb
+    if is_mute_amb:
+        is_mute_amb = False
+    else:
+        pygame.mixer.music.stop()
+        is_mute_amb = True
+    
 
 # Central page switcher
 def set_page(page):
@@ -8664,8 +8705,6 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "settings"
-            progress["pref"]["is_mute"] = is_mute
-            save_progress(progress)
         elif key == "quit":
             if not is_transitioning:
                 transition.start("quit_confirm")
@@ -8694,6 +8733,10 @@ def handle_action(key):
     elif current_page == "Audio":
         if key == "Back":
           set_page("settings")
+        elif key == "SFX":
+            muting_sfx()
+        elif key == "Ambience":
+            muting_amb()
     elif current_page == 'worlds':
         if key == "back":
             if not is_transitioning:
@@ -8959,7 +9002,7 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.91.3", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.92", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
@@ -9056,11 +9099,6 @@ while running:
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # Only process clicks if enough time has passed since last page change
-                if current_page == "Audio":
-                    if music_slider.handle_event(event):
-                        # This line updates the actual volume and saves it to your progress
-                        pygame.mixer.music.set_volume(music_slider.value)
-                        progress["pref"]["is_mute"] = (music_slider.value == 0)
                 if current_page not in ["levels", "mech_levels", "worlds"]:
                     for _, rect, key, is_locked in buttons:
                         if rect.collidepoint(event.pos):
@@ -9329,7 +9367,26 @@ while running:
 
         elif current_page == "Audio":
             audio_settings_menu()
-
+            
+            for rendered, rect, key, is_locked in buttons:
+                if rect.collidepoint(mouse_pos):
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((8, 81, 179, 255))
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
+                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
+                    hovered = rect.collidepoint(pygame.mouse.get_pos())
+                    if hovered and not button_hovered_last_frame and not is_mute:
+                        hover_sound.play()
+                    button_hovered_last_frame = hovered
+                else:
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((8, 81, 179, 255))
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
+                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
+                screen.blit(rendered, rect)
         else:
             # Render buttons for other pages
             for rendered, rect, key, is_locked in buttons:
