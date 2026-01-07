@@ -1511,7 +1511,8 @@ def level_complete():
         
         if time.time() - star_time > 4:  # Show for 3 seconds
                 if new_hs:
-                    new_hs_text = render_text("New High Score!", True, (255, 215, 0))
+                    hs_text = messages.get("new_hs", "New High Score!")
+                    new_hs_text = render_text(hs_text, True, (255, 215, 0))
                     screen.blit(new_hs_text, (SCREEN_WIDTH // 2 - new_hs_text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
                     if not is_mute and not notified:
                         hscore.play()
@@ -8346,10 +8347,10 @@ def create_lvl12_screen():
 
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
 
-        timed_coin_text = in_game_ice.get("timed_coin_message", "Orange coins are timed! They open blocks for a limited")
+        timed_coin_text = in_game.get("timed_coin_message", "Orange coins are timed! They open blocks for a limited")
         rendered_timed_text = render_text(timed_coin_text, True, (0, 0, 0))
         screen.blit(rendered_timed_text, (0 - camera_x, -80 - camera_y))
-        timed_coin_text_2 = in_game_ice.get("timed_coin_message_2", "time. Run before they close again, or at worst, crush you...")
+        timed_coin_text_2 = in_game.get("timed_coin_message_2", "time. Run before they close again, or at worst, crush you...")
         rendered_timed_text_2 = render_text(timed_coin_text_2, True, (0, 0, 0))
         screen.blit(rendered_timed_text_2, (-20 - camera_x, -30 - camera_y))
         
@@ -8742,7 +8743,11 @@ def handle_action(key):
                 pending_page = "language_select"
     elif current_page == "Audio":
         if key == "Back":
-          set_page("settings")
+            if not is_transitioning:
+                transition.start("settings")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "settings"
         elif key == "SFX":
             muting_sfx()
         elif key == "Ambience":
@@ -8769,10 +8774,10 @@ def handle_action(key):
     elif current_page == 'language_select':
         if key == "back":
             if not is_transitioning:
-                transition.start("main_menu")
+                transition.start("settings")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-                pending_page = "main_menu"
+                pending_page = "settings"
         elif key in ["en", "fr", "es", "de", "zh_cn", "tr", "ru", "jp", "id", "kr", "ar", "pk"]:
             if not is_transitioning:
                 change_language(key)
@@ -9012,8 +9017,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 8), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.92.2", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.92.3", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
 
@@ -9023,7 +9028,8 @@ XP_text = font_text.render(f"{level}", True, (255, 255, 255))
 if level < 20:
     XP_text2 = font_def.render(f"{xp_needed}/{xp_total}", True, (255, 255, 255))
 else:
-    XP_text2 = font_def.render("MAX LEVEL!", True, (225, 212, 31))
+    max_txt = load_language(lang_code).get('messages', {}).get("max_level", "MAX LEVEL!")
+    XP_text2 = render_text(max_txt, True, (225, 212, 31))
 
 while running:
     messages = load_language(lang_code).get('messages', {})
@@ -9044,7 +9050,8 @@ while running:
             if level < 20:
                 XP_text2 = font_def.render(f"{xp_needed}/{xp_total}", True, (255, 255, 255))
             else:
-                XP_text2 = font_def.render("MAX LEVEL!", True, (225, 212, 31))
+                max_txt = load_language(lang_code).get('messages', {}).get("max_level", "MAX LEVEL!")
+                XP_text2 = render_text(max_txt, True, (225, 212, 31))
             # Then let transition loop play as normal
             is_transitioning = False
             current_pending = pending_page
@@ -9343,21 +9350,21 @@ while running:
                     if key != "next" and key != "back" and not is_locked:
                         hs = progress["lvls"]['score'][key]
                         high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
-                        lvl_time_text = render_text(high_text, True, (255, 255, 0))
+                        lvl_score_text = render_text(high_text, True, (255, 255, 0))
 
                         # Adjust position as needed
-                        screen.blit(lvl_time_text, (SCREEN_WIDTH // 2 - lvl_time_text.get_width() // 2, SCREEN_HEIGHT - 50))
+                        screen.blit(lvl_score_text, (SCREEN_WIDTH // 2 - lvl_score_text.get_width() // 2, SCREEN_HEIGHT - 50))
                         s = key
                         num = int(s[3:])  # Skip the first 3 characters
                         medals = progress["lvls"]['medals'][key]
                         if medals == "Diamond":
-                            screen.blit(diam_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
+                            screen.blit(diam_m, (SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT - 80))
                         if medals == "Gold":
-                            screen.blit(gold_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
+                            screen.blit(gold_m, (SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT - 80))
                         elif medals == "Silver":
-                            screen.blit(silv_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
+                            screen.blit(silv_m, (SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT - 80))
                         elif medals == "Bronze":
-                            screen.blit(bron_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT - 80))
+                            screen.blit(bron_m, (SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT - 80))
 
                         stars = get_stars(num, progress["lvls"]['score'][key])
                         if stars >= 1:
