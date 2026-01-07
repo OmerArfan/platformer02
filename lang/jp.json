@@ -48,6 +48,8 @@
     "greenlocked_message": "グリーンワールドのすべてのレベルでゴールドランクを獲得してこのロボットをアンロック！",
     "lvl_comp": "レベルクリア！",
     "hs_m": "ハイスコア: {hs}"
+    ,"new_hs": "新記録達成！"
+    ,"max_level": "レベル最大"
   },
   "in_game": {
     "dead_message": "やられた！",
@@ -72,6 +74,8 @@
     "clarify_message2": "ジャンプブロックのジャンプにも影響するよ！",
     "button3_message": "紫のボタンを押すと、ほとんどのライトが消える！",
     "button4_message": "緑のボタンを押すとスピードが大幅アップ！"
+    ,"timed_coin_message": "オレンジコインは時間制限あり！一定時間ブロックを"
+    ,"timed_coin_message_2": "開きます。再び閉じて押しつぶされる前に走り抜けましょう..."
   },
   "in_game_ice": {
     "temp": "温度: {current_temp}",

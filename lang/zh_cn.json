@@ -46,7 +46,9 @@
   ,"icelocked_message": "这个机器人即将推出!"
   ,"lavalocked_message": "这个机器人即将推出!"
   ,"greenlocked_message": "在所有绿色世界关卡中达到黄金等级即可解锁这个机器人!"
-  ,"lvl_comp": "关卡完成！"
+  ,"lvl_comp": "关卡完成"
+  ,"new_hs": "最高分新纪录"
+  ,"max_level": "最高等级"
   }
   ,"in_game": {
     "dead_message": "你死了！",
@@ -71,6 +73,8 @@
     ,"clarify_message2": "它们还会影响你在跳跃方块上的跳跃！"
     ,"button3_message": "紫色按钮激活时会关闭几乎所有灯光！"
     ,"button4_message": "绿色按钮激活时会给你一个巨大的速度提升！"
+    ,"timed_coin_message": "橙色硬币是计时的！它们会开启方块一段"
+    ,"timed_coin_message_2": "有限的时间。在它们再次关闭前快跑，否则最糟的情况是被压碎..."
   }
   ,"in_game_ice":{
   "temp": "温度: {current_temp}"

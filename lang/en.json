@@ -48,6 +48,8 @@
   ,"greenlocked_message": "Get GOLD rank in all Green World Levels to unlock this robot!"
   ,"lvl_comp": "Level Complete!"
   ,"hs_m":"Highscore: {hs}" 
+  ,"new_hs": "New High Score!"
+  ,"max_level": "MAX LEVEL!"
 }
   ,"in_game": {
   "dead_message": "You died!",
@@ -72,6 +74,8 @@
   ,"clarify_message2": "They also affect your jumps on jump blocks!"
   ,"button3_message": "Purple buttons, upon activation, will turn out almost all the lights!"
   ,"button4_message": "Green buttons, upon activation, will give you a massive speed boost!"
+  ,"timed_coin_message": "Orange coins are timed! They open blocks for a limited"
+  ,"timed_coin_message_2": "time. Run before they close again, or at worst, crush you..."
 }
   ,"in_game_ice":{
     "temp": "Temperature: {current_temp}",

@@ -48,6 +48,8 @@
     "greenlocked_message": "Dapatkan peringkat EMAS di semua level Dunia Hijau untuk membuka robot ini!",
     "lvl_comp": "Level Selesai!",
     "hs_m": "Skor Tertinggi: {hs}"
+    ,"new_hs": "Skor Tinggi Baru!"
+    ,"max_level": "LEVEL MAKS!"
   },
   "in_game": {
     "dead_message": "Kamu mati!",
@@ -72,6 +74,8 @@
     "clarify_message2": "Itu juga memengaruhi lompatan pada blok lompat!",
     "button3_message": "Tombol ungu akan mematikan hampir semua cahaya!",
     "button4_message": "Tombol hijau akan memberikan dorongan kecepatan besar!"
+    ,"timed_coin_message": "Koin oranye terbatas waktu! Mereka membuka balok untuk waktu"
+    ,"timed_coin_message_2": "terbatas. Lari sebelum mereka tertutup lagi, atau paling buruk, menghancurkanmu..."
   },
   "in_game_ice": {
     "temp": "Suhu: {current_temp}",

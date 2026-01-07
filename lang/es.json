@@ -47,6 +47,9 @@
   ,"lavalocked_message": "¡Este robot llegará pronto!"
   ,"greenlocked_message": "¡Consigue el rango ORO en todos los niveles del Mundo Verde para desbloquearlo!"
   ,"lvl_comp": "¡Nivel completado!"
+  ,"hs_m": "Puntuación más alta: {hs}"
+  ,"new_hs": "¡Nueva puntuación máxima!"
+  ,"max_level": "NIVEL MÁX."
   }
   ,"in_game": {
   "dead_message": "¡Has muerto!", 
@@ -71,6 +74,8 @@
   ,"clarify_message2": "¡También afectan tus saltos en bloques de salto!"
   ,"button3_message": "¡Los botones morados apagan casi todas las luces al activarse!"
   ,"button4_message": "¡Los botones verdes, al activarse, te darán un gran impulso de velocidad!"
+  ,"timed_coin_message": "¡Las monedas naranjas tienen tiempo! Abren bloques por un tiempo"
+  ,"timed_coin_message_2": "limitado. Corra antes de que se cierren o, en el peor de los casos, lo aplasten..."
   }
   ,"in_game_ice":{
   "temp": "Temperatura: {current_temp}"
@@ -78,6 +83,5 @@
   "freeze_message": "¡Pero recuerda calentarte un poco o podrías congelarte!",
   "overheat_message1": "Recuerda también vigilar tu temperatura, y si",
   "overheat_message2": "te calientas demasiado, párate sobre un bloque de hielo cercano."
-
 }
 }

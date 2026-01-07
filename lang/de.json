@@ -47,6 +47,9 @@
   ,"lavalocked_message": "Dieser Roboter kommt bald!"
   ,"greenlocked_message": "Erreiche den GOLD-Rang in allen Green World-Levels, um diesen Roboter freizuschalten!"  
   ,"lvl_comp": "Level abgeschlossen!"
+  ,"hs_m": "Der Highscore: {hs}"
+  ,"new_hs": "Neuer Highscore!"
+  ,"max_level": "MAX. LEVEL!"
 }
   ,"in_game": {
   "dead_message": "Du bist tot!",
@@ -71,6 +74,8 @@
   ,"clarify_message2": "Sie beeinflussen auch deine Sprünge auf Sprungblöcken!"
   ,"button3_message": "Lilafarbene Tasten schalten bei Aktivierung fast alle Lichter aus!"
   ,"button4_message": "Grüne Tasten geben bei Aktivierung einen massiven Geschwindigkeitsschub!"
+  ,"timed_coin_message": "Orangefarbene Münzen sind zeitlich begrenzt! Sie öffnen Blöcke für eine"
+  ,"timed_coin_message_2": "begrenzte Zeit. Lauf, bevor sie sich wieder schließen oder dich zerquetschen..."
   }
   ,"in_game_ice":{
   "temp": "Temperatur: {current_temp}",

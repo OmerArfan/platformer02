@@ -48,7 +48,8 @@
     "greenlocked_message": "그린 월드의 모든 레벨에서 GOLD 랭크를 달성하여 이 로봇을 잠금 해제하세요!",
     "lvl_comp": "레벨 완료!",
     "hs_m": "최고 점수: {hs}"
-    
+    ,"new_hs": "새로운 최고 기록!"
+    ,"max_level": "레벨 최대"
   },
   "in_game": {
     "dead_message": "사망했습니다!",
@@ -73,6 +74,8 @@
     "clarify_message2": "점프 블록의 점프에도 영향을 줍니다!",
     "button3_message": "보라색 버튼을 누르면 대부분의 조명이 꺼집니다!",
     "button4_message": "초록색 버튼을 누르면 엄청난 속도 부스트가 주어집니다!"
+    ,"timed_coin_message": "오렌지 코인은 시간 제한이 있습니다! 짧은 시간 동안 블록을"
+    ,"timed_coin_message_2": "엽니다. 다시 닫혀서 깔리기 전에 서둘러 뛰세요..."
   },
   "in_game_ice": {
     "temp": "온도: {current_temp}",

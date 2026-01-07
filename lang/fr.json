@@ -38,43 +38,47 @@
   ,"messages": {
   "you_are_in": "Vous êtes dans {level}",
   "loading": "Chargement...",
-  "confirm_quit": "Êtes-vous sûr de vouloir quitter?",
+  "confirm_quit": "Êtes-vous sûr de vouloir quitter ?",
   "yes": "Oui",
   "no": "Non"
-  ,"deny_message": "Accès refusé!",
-  "error_message": "Votre résolution d'écran est trop faible! Augmentez-la"
+  ,"deny_message": "Accès refusé !",
+  "error_message": "Votre résolution d'écran est trop faible ! Augmentez-la"
   ,"error_message2": "dans les Préférences Système.",
   "countdown_message": "Fermeture dans {countdown} seconde(s)…"
   ,"evillocked_message": "Rencontrez ce robot sur un chemin alternatif pour le débloquer !"
-  ,"icelocked_message": "Ce robot arrive bientôt!"
-  ,"lavalocked_message": "Ce robot arrive bientôt!"
-  ,"greenlocked_message": "Obtenez le rang OR dans tous les niveaux du Monde Vert pour débloquer ce robot!"
+  ,"icelocked_message": "Ce robot arrive bientôt !"
+  ,"lavalocked_message": "Ce robot arrive bientôt !"
+  ,"greenlocked_message": "Obtenez le rang OR dans tous les niveaux du Monde Vert pour débloquer ce robot !"
   ,"lvl_comp": "Niveau terminé !"
-  ,"hs_m":"Meilleur score : {hs}"
+  ,"hs_m":"Meilleur score : {hs}"
+  ,"new_hs": "Nouveau record !"
+  ,"max_level": "NIVEAU MAX !"
   }
   ,"in_game": {
-  "dead_message": "Vous êtes mort!",
-  "fall_message": "Est tombé trop loin!",
+  "dead_message": "Vous êtes mort !",
+  "fall_message": "Est tombé trop loin !",
   "deaths_no": "Morts: {deathcount}",
-  "warning_message": "Faites attention aux épines!",
-  "up_message": "Appuyez sur HAUT pour sauter!",
+  "warning_message": "Faites attention aux épines !",
+  "up_message": "Appuyez sur HAUT pour sauter !",
   "stamina_message": "Endurance: ",
-  "exit_message": "Sortie du portail! Venez ici pour gagner!",
+  "exit_message": "Sortie du portail! Venez ici pour gagner !",
   "moving_message": "Tous les blocs ne restent pas immobiles..."
   ,"mock_message": "Mauvais chemin mon gars rien de spécial ici...",
-  "jump_message": "Utilisez des blocs orange pour sauter de grandes distances!",
-  "saws_message": "Les scies sont aussi dangereuses!"
-  ,"sawed_message": "Scié en morceaux!"
-  ,"key_message": "Prenez la pièce et ouvrez le bloc!"
-  ,"laser_message": "Tué par un laser!"
+  "jump_message": "Utilisez des blocs orange pour sauter de grandes distances !",
+  "saws_message": "Les scies sont aussi dangereuses !"
+  ,"sawed_message": "Scié en morceaux !"
+  ,"key_message": "Prenez la pièce et ouvrez le bloc !"
+  ,"laser_message": "Tué par un laser !"
   ,"invisible_message": "Ces scies ne vous blesseront pas... promis!"
   ,"portal_message": "Ces portails bleus vous téléportent ! Mais surtout vers de bons endroits !"
-  ,"button1_message": "Les boutons bleus, une fois activés, vous feront sauter plus haut!",
-  "button2_message": "Les boutons lavande, une fois activés, vous feront sauter plus bas!",
-  "clarify_message": "Jusqu'à ce que vous atteigniez un point de contrôle, bien sûr!"
-  ,"clarify_message2": "Ils affectent également vos sauts sur les blocs de saut!"
-  ,"button3_message": "Les boutons violets éteignent presque toutes les lumières lorsqu'ils sont activés!"
-  ,"button4_message": "Les boutons verts, une fois activés, vous donneront un énorme coup de pouce de vitesse!"
+  ,"button1_message": "Les boutons bleus, une fois activés, vous feront sauter plus haut !",
+  "button2_message": "Les boutons lavande, une fois activés, vous feront sauter plus bas !",
+  "clarify_message": "Jusqu'à ce que vous atteigniez un point de contrôle, bien sûr !"
+  ,"clarify_message2": "Ils affectent également vos sauts sur les blocs de saut !"
+  ,"button3_message": "Les boutons violets éteignent presque toutes les lumières lorsqu'ils sont activés !"
+  ,"button4_message": "Les boutons verts, une fois activés, vous donneront un énorme coup de pouce de vitesse !"
+  ,"timed_coin_message": "Les pièces oranges sont chronométrées ! Elles ouvrent des blocs pour un temps"
+  ,"timed_coin_message_2": "Les pièces oranges sont chronométrées ! Elles ouvrent des blocs pour un temps"
 }
 ,"in_game_ice":{
 "temp": "Température: {current_temp}"

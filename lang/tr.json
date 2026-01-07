@@ -47,6 +47,8 @@
     "lavalocked_message": "Bu robot yakında geliyor!",
     "greenlocked_message": "Tüm Yeşil Dünya seviyelerinde ALTIN derece al ve bu robotun kilidini aç!"
     ,"lvl_comp": "Bölüm Tamamlandı!"
+    ,"new_hs": "Yeni Yüksek Skor!"
+    ,"max_level": "MAKS. SEVİYE"
   },
   "in_game": {
     "dead_message": "Öldün!",
@@ -71,6 +73,8 @@
     "clarify_message2": "Ayrıca zıplama bloklarındaki zıplamanı da etkilerler!",
     "button3_message": "Mor butonlar, etkinleştirildiğinde neredeyse tüm ışıkları kapatır!",
     "button4_message": "Yeşil butonlar, etkinleştirildiğinde sana büyük bir hız verir!"
+    ,"timed_coin_message": "Turuncu paralar süreli! Blokları sınırlı bir süre için"
+    ,"timed_coin_message_2": "açarlar. Tekrar kapanmadan veya seni ezmeden önce koş..."  
   },
   "in_game_ice": {
     "temp": "Sıcaklık: {current_temp}",
