@@ -195,8 +195,50 @@ notification_time = None
 
 save_count = 0
 
-def sync_vault_to_cloud(data):
+is_syncing = False
 
+def draw_notifications():
+    global notif, er, notification_time
+    if notif:
+            if time.time() - notification_time < 4:  # Show for 4 seconds
+                screen.blit(notification_text, (SCREEN_WIDTH // 2 - notification_text.get_width() // 2, 100))
+    else:
+        notif = False
+
+    if er:
+            if notification_time is not None and time.time() - notification_time < 4:  # Show for 4 seconds
+                screen.blit(error_code, (SCREEN_WIDTH // 2 - error_code.get_width() // 2, 130))
+    else:
+        er = False
+
+def draw_syncing_status():
+    global is_syncing
+    if is_syncing:
+        # 1. Render and draw the text
+        syncing_text = render_text("Syncing Vault to Cloud...", True, (255, 255, 255))
+        text_x = SCREEN_WIDTH - syncing_text.get_width() - 10
+        text_y = SCREEN_HEIGHT - 60
+        screen.blit(syncing_text, (text_x, text_y))
+
+        # 2. Calculate the orbit position using current time
+        # Multiply time by a number to control speed (e.g., * 8)
+        angle_rad = time.time() * 8 
+        orbit_radius = 15
+        
+        # Define the center point for the circle to orbit around
+        orbit_center_x = text_x - 30
+        orbit_center_y = text_y + 15 # Adjusted to center it vertically with text
+        
+        # Math for circular motion
+        x = orbit_center_x + orbit_radius * math.cos(angle_rad)
+        y = orbit_center_y + orbit_radius * math.sin(angle_rad)
+        
+        # 3. Draw the orbiting circle
+        pygame.draw.circle(screen, (200, 200, 200), (int(x), int(y)), 5)
+        
+def sync_vault_to_cloud(data):
+    global is_syncing
+    is_syncing = True
     # The 'formResponse' version of your Data form URL
     url = "https://docs.google.com/forms/d/e/1FAIpQLSfB2alAMj3qNMm5DFw-p_4HkGyzA_U2zw9lul3HSmi15Msxjg/formResponse"
     
@@ -226,6 +268,9 @@ def sync_vault_to_cloud(data):
             
     except Exception as e:
         print(f"Cloud Vault: Sync failed (Offline or Connection Error)")
+
+    finally:
+        is_syncing = False
 
 def recover_account_from_cloud(target_id, target_user, target_pass):
     # Your specific CSV link
@@ -1111,6 +1156,7 @@ def character_select():
 
 
 def quit_game(progress):
+    draw_syncing_status()
     sync_vault_to_cloud(progress)
     pygame.quit()
     sys.exit()
@@ -1532,6 +1578,8 @@ def level_complete():
             screen.blit(time_text_2, (SCREEN_WIDTH // 2 - time_text_2.get_width() // 2, SCREEN_HEIGHT // 2 + 275))
 
         xp()
+        draw_notifications()
+        draw_syncing_status()
         pygame.display.update()
         clock.tick(60)
 
@@ -1792,6 +1840,8 @@ def create_lvl1_screen():
     else:
         show_greenrobo_unlocked = False
 
+    draw_notifications()
+    draw_syncing_status()
     if transition.x <= -transition.image.get_width():
        while running:
         clock.tick_busy_loop(60)
@@ -1962,7 +2012,8 @@ def create_lvl1_screen():
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
-
+        draw_notifications()
+        draw_syncing_status()
         pygame.display.update()    
 
 def create_lvl2_screen():
@@ -2081,7 +2132,8 @@ def create_lvl2_screen():
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
-
+    draw_notifications()
+    draw_syncing_status()
     if transition.x <= -transition.image.get_width():
       while running:
         clock.tick(60)
@@ -2298,7 +2350,8 @@ def create_lvl2_screen():
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
-
+        draw_notifications()
+        draw_syncing_status()
         pygame.display.update()    
 
 def create_lvl3_screen():
@@ -2431,7 +2484,8 @@ def create_lvl3_screen():
             screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
         show_greenrobo_unlocked = False
-
+    draw_notifications()
+    draw_syncing_status()
     if transition.x <= -transition.image.get_width():
       while running:
         clock.tick(60)
@@ -2781,7 +2835,8 @@ def create_lvl3_screen():
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
-
+        draw_notifications()
+        draw_syncing_status()
         pygame.display.update()    
 
 def create_lvl4_screen():
@@ -2959,7 +3014,8 @@ def create_lvl4_screen():
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
-
+    draw_notifications()
+    draw_syncing_status()
     if transition.x <= -transition.image.get_width():
        while running:
         clock.tick(60)
@@ -3454,7 +3510,8 @@ def create_lvl4_screen():
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
-
+        draw_notifications()
+        draw_syncing_status()
         pygame.display.update()   
 
 def create_lvl5_screen():
@@ -3634,7 +3691,8 @@ def create_lvl5_screen():
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
-
+    draw_notifications()
+    draw_syncing_status()
     if transition.x <= -transition.image.get_width():
       while running:
         clock.tick(60)
@@ -4134,7 +4192,8 @@ def create_lvl5_screen():
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
-
+        draw_notifications()
+        draw_syncing_status()
         pygame.display.update()   
 
 def create_lvl6_screen():
@@ -4302,7 +4361,8 @@ def create_lvl6_screen():
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
-
+    draw_notifications()
+    draw_syncing_status()
     if transition.x <= -transition.image.get_width():
       while running:
         clock.tick(60)
@@ -4814,7 +4874,8 @@ def create_lvl6_screen():
                 wait_time = None
                 val = None
 
-
+        draw_notifications()
+        draw_syncing_status()
         pygame.display.update()   
 
 def create_lvl7_screen():
@@ -4942,7 +5003,8 @@ def create_lvl7_screen():
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
-
+    draw_notifications()
+    draw_syncing_status()
     if transition.x <= -transition.image.get_width():
        while running:
         clock.tick(60)
@@ -5338,7 +5400,8 @@ def create_lvl7_screen():
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
-
+        draw_notifications()
+        draw_syncing_status()
         pygame.display.update()   
 
 def create_lvl8_screen():
@@ -5470,7 +5533,8 @@ def create_lvl8_screen():
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
-
+    draw_notifications()
+    draw_syncing_status()
     if transition.x <= -transition.image.get_width():
        while running:
         clock.tick(60)
@@ -5895,7 +5959,8 @@ def create_lvl8_screen():
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
-
+        draw_notifications()
+        draw_syncing_status()
         pygame.display.update()   
 
 def create_lvl9_screen():
@@ -6078,7 +6143,8 @@ def create_lvl9_screen():
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
-
+    draw_notifications()
+    draw_syncing_status()
     if transition.x <= -transition.image.get_width():
        while running:
         clock.tick(60)
@@ -6592,7 +6658,8 @@ def create_lvl9_screen():
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
-
+        draw_notifications()
+        draw_syncing_status()
         pygame.display.update() 
 
 def create_lvl10_screen():
@@ -6745,7 +6812,8 @@ def create_lvl10_screen():
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
-
+    draw_notifications()
+    draw_syncing_status()
     if transition.x <= -transition.image.get_width():
        while running:
         clock.tick(60)
@@ -7236,7 +7304,8 @@ def create_lvl10_screen():
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
-
+        draw_notifications()
+        draw_syncing_status()
         pygame.display.update() 
 
 def create_lvl11_screen():
@@ -7398,7 +7467,8 @@ def create_lvl11_screen():
                 screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
     else:
             show_greenrobo_unlocked = False
-
+    draw_notifications()
+    draw_syncing_status()
     if transition.x <= -transition.image.get_width():
        while running:
         clock.tick(60)
@@ -8037,7 +8107,8 @@ def create_lvl11_screen():
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
-
+        draw_notifications()
+        draw_syncing_status()
         pygame.display.update()
 
 def create_lvl12_screen():
@@ -8157,7 +8228,8 @@ def create_lvl12_screen():
 
     exit_portal = pygame.Rect(4113, -820 ,70, 120)
     clock = pygame.time.Clock()
-
+    draw_notifications()
+    draw_syncing_status()
     if transition.x <= -transition.image.get_width():
       while running:
 
@@ -8686,7 +8758,8 @@ def create_lvl12_screen():
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
-        
+        draw_notifications()
+        draw_syncing_status()
         pygame.display.update() 
 
 transition_time = None
@@ -8944,7 +9017,8 @@ def show_login_screen():
                             username += event.unicode
                         elif input_mode == "PASS" and len(user_pass) < 20:
                             user_pass += event.unicode
-
+        draw_notifications()
+        draw_syncing_status()
         pygame.display.update()
 
 def show_account_selector():
@@ -9001,7 +9075,8 @@ def show_account_selector():
                     progress["player"]["ID"] = generate_player_id()
                     current_page = "login_screen"
                     selecting = False
-
+        draw_notifications()
+        draw_syncing_status()
         pygame.display.update()
 
 if not is_mute and SCREEN_WIDTH > MIN_WIDTH and SCREEN_HEIGHT > MIN_HEIGHT:
@@ -9017,8 +9092,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 8), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.92.3", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.92.4", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
 
@@ -9458,18 +9533,10 @@ while running:
         else:
             show_greenrobo_unlocked = False
         
-        if notif:
-            if time.time() - notification_time < 4:  # Show for 4 seconds
-                screen.blit(notification_text, (SCREEN_WIDTH // 2 - notification_text.get_width() // 2, 100))
-        else:
-            notif = False
+        draw_notifications()
 
-        if er:
-            if notification_time is not None and time.time() - notification_time < 4:  # Show for 4 seconds
-                screen.blit(error_code, (SCREEN_WIDTH // 2 - error_code.get_width() // 2, 120))
-        else:
-            er = False
-            
+        draw_syncing_status()
+        
         mouse_pos = pygame.mouse.get_pos()
         screen.blit(cursor_img, mouse_pos)
 
