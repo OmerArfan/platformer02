@@ -1344,6 +1344,8 @@ def set_page(page):
         settings_menu()
     elif current_page == "Audio":
         audio_settings_menu()
+    elif current_page == "Account":
+        create_account_selector()
     elif page == 'levels':
         current_lang = load_language(lang_code).get('levels', {})
         green_world_buttons()
@@ -8808,6 +8810,12 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "Audio"
+        if key == "Account": # Note: Ensure capitalization matches your button_texts
+            if not is_transitioning:
+                transition.start("Account")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "Account"
         if key == "Language":
             if not is_transitioning:
                 transition.start("language_select")
@@ -8825,6 +8833,31 @@ def handle_action(key):
             muting_sfx()
         elif key == "Ambience":
             muting_amb()
+    elif current_page == "Account":
+        if key == "new_account":
+            # Go to your existing login/ID generation screen
+            if not is_transitioning:
+                transition.start("login_screen") 
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "login_screen"
+        elif key and key.startswith("load_user_"):
+            # Extract ID from the key string
+            selected_id = key.replace("load_user_", "")
+            # Update manifest to set 'last_used' so load_progress knows which one to grab
+            if os.path.exists(ACCOUNTS_FILE):
+                with open(ACCOUNTS_FILE, "r") as f:
+                    manifest = json.load(f)
+                manifest["last_used"] = selected_id
+                with open(ACCOUNTS_FILE, "w") as f:
+                    json.dump(manifest, f, indent=4)
+            # Load the data and move to main menu
+            progress = load_progress()
+            if not is_transitioning:
+                transition.start("main_menu")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "main_menu"
     elif current_page == 'worlds':
         if key == "back":
             if not is_transitioning:
@@ -9021,68 +9054,39 @@ def show_login_screen():
         draw_syncing_status()
         pygame.display.update()
 
-def show_account_selector():
-    global progress, login_done, current_page
+def create_account_selector():
+    global buttons
+    buttons.clear()
     
-    # 1. Load the manifest
+    # 1. Load the local manifest
+    manifest = {"users": {}}
     if os.path.exists(ACCOUNTS_FILE):
-        with open(ACCOUNTS_FILE, "r") as f:
-            manifest = json.load(f)
-    else:
-        # If no manifest, force a new account creation
-        current_page = "login_screen"
-        return
+        try:
+            with open(ACCOUNTS_FILE, "r") as f:
+                manifest = json.load(f)
+        except: pass
+    
+    accounts = manifest.get("users", {})
+    
+    # 2. Create Account Buttons
+    y_pos = 200
+    for p_id, info in accounts.items():
+        name_str = info.get("username", "Unknown")
+        
+        rendered_name = render_text(name_str, True, (255, 255, 255))
+        rect = rendered_name.get_rect(center=(SCREEN_WIDTH // 2, y_pos))
+        
+        # Append to buttons list
+        buttons.append((rendered_name, rect, f"load_user_{p_id}", False))
+        y_pos += 50
 
-    selecting = True
-    while selecting:
-        screen.fill((30, 30, 30))
-        title = font_text.render("WHO IS PLAYING?", True, (255, 255, 255))
-        screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 50))
-
-        # 2. List existing accounts as buttons
-        account_buttons = []
-        y_offset = 150
-        for p_id, info in manifest["users"].items():
-            txt = f"{info['username']} (Lvl {info['level']})"
-            surf = font_def.render(txt, True, (200, 200, 200))
-            rect = surf.get_rect(center=(SCREEN_WIDTH // 2, y_offset))
-            screen.blit(surf, rect)
-            account_buttons.append((rect, p_id))
-            y_offset += 60
-
-        # 3. Add a "New Account" button at the bottom
-        new_txt = font_def.render("+ Create New Account", True, (0, 255, 0))
-        new_rect = new_txt.get_rect(center=(SCREEN_WIDTH // 2, y_offset + 40))
-        screen.blit(new_txt, new_rect)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit(); sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                # Check if an existing account was clicked
-                for rect, p_id in account_buttons:
-                    if rect.collidepoint(event.pos):
-                        # LOAD THIS SPECIFIC ACCOUNT
-                        # Temporarily set SAVE_FILE so load_progress picks the right one
-                        globals()['SAVE_FILE'] = os.path.join(APP_DATA_DIR, f"{p_id}.json")
-                        progress = load_progress()
-                        selecting = False
-                
-                # Check if "New Account" was clicked
-                if new_rect.collidepoint(event.pos):
-                    # Reset to defaults and go to login screen
-                    progress = copy.deepcopy(default_progress)
-                    progress["player"]["ID"] = generate_player_id()
-                    current_page = "login_screen"
-                    selecting = False
-        draw_notifications()
-        draw_syncing_status()
-        pygame.display.update()
+    # 3. "New Player" Button
+    new_txt_rendered = render_text("+ NEW PLAYER", True, (255, 255, 255))
+    new_rect = new_txt_rendered.get_rect(center=(SCREEN_WIDTH // 2, y_pos + 40))
+    buttons.append((new_txt_rendered, new_rect, "new_account", False))
 
 if not is_mute and SCREEN_WIDTH > MIN_WIDTH and SCREEN_HEIGHT > MIN_HEIGHT:
     click_sound.play()
-    # Call this before your game loop
-    show_login_screen()
 
 # Info
 
@@ -9092,8 +9096,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 8), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.92.4", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.92.5", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
 
@@ -9204,9 +9208,8 @@ while running:
                             if key is not None and not is_mute:
                                 click_sound.play()
                             handle_action(key)  # Only load level on click!
-
+                    
         if current_page == "main_menu":
-
             screen.blit(logo, ((SCREEN_WIDTH // 2 - logo.get_width() // 2), 30))
             screen.blit(logo_text, logo_pos)
             screen.blit(site_text, site_pos)
@@ -9503,6 +9506,35 @@ while running:
                     button_surface.fill((8, 81, 179, 255))
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)
                     pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
+                screen.blit(rendered, rect)
+
+        elif current_page == "Account":
+            screen.blit(plain_background, (0, 0))
+            
+            # 1. Draw the Title Manually Here
+            title = font_text.render("SELECT PROFILE", True, (255, 255, 255))
+            screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 80))
+
+            # 2. Draw the Buttons (Using the standard button loop)
+            for rendered, rect, key, is_locked in buttons:
+                if rect.collidepoint(mouse_pos):
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((8, 81, 179, 255))
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
+                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
+                    hovered = rect.collidepoint(pygame.mouse.get_pos())
+                    if hovered and not button_hovered_last_frame and not is_mute:
+                        hover_sound.play()
+                    button_hovered_last_frame = hovered
+                else:
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((8, 81, 179, 255))
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
+                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
+
                 screen.blit(rendered, rect)
         else:
             # Render buttons for other pages
