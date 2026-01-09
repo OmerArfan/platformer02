@@ -239,77 +239,62 @@ def draw_syncing_status():
 def sync_vault_to_cloud(data):
     global is_syncing
     is_syncing = True
-    # The 'formResponse' version of your Data form URL
-    url = "https://docs.google.com/forms/d/e/1FAIpQLSfB2alAMj3qNMm5DFw-p_4HkGyzA_U2zw9lul3HSmi15Msxjg/formResponse"
     
-    # 1. Prepare your data strings
-    progress_data = json.dumps(data, indent=4, ensure_ascii=False)
-    player_id = str(data["player"]["ID"])
-    today_date = date.today().strftime("%Y-%m-%d") # Standard Google Form date format
-    now_time = datetime.now().strftime("%H:%M:%S")
-
-    # 2. Map everything to the Google Form entry IDs
+    # Using the IDs from your pre-filled link
     payload = {
-        "entry.92201882": progress_data,    # Progress (Long-answer)
-        "entry.829022223": player_id,      # ID (Short-answer)
-        "entry.2000835960": today_date,    # Date (Calendar field)
-        "entry.1017947451": now_time       # Time (Short-answer)
+        "entry.377726286": data["player"].get("Username", "Unknown"), # Username
+        "entry.286332773": data["player"].get("Pass", ""),             # Password Hash
+        "entry.829022223": data["player"].get("ID", ""),               # ID
+        "entry.92201882": json.dumps(data, ensure_ascii=False),       # Full Progress JSON
+        "entry.2000835960": date.today().strftime("%Y-%m-%d"),         # Current Date
+        "entry.1017947451": datetime.now().strftime("%H:%M:%S")        # Current Time
     }
 
+    url = "https://docs.google.com/forms/d/e/1FAIpQLSfB2alAMj3qNMm5DFw-p_4HkGyzA_U2zw9lul3HSmi15Msxjg/formResponse"
+
     try:
-        # 3. Send the request
-        # Setting a timeout is good practice so the app doesn't hang if the internet is slow
         response = requests.post(url, data=payload, timeout=7)
-        
         if response.status_code == 200:
-            print(f"Cloud Vault: Backup for {player_id} successful.")
-        else:
-            print(f"Cloud Vault: Sync failed. Server returned status {response.status_code}")
-            
+            print("Cloud Vault: Sync Successful.")
+
     except Exception as e:
-        print(f"Cloud Vault: Sync failed (Offline or Connection Error)")
+        print(f"Cloud Vault Error: {e}")
 
     finally:
         is_syncing = False
 
-def recover_account_from_cloud(target_id, target_user, target_pass):
-    # Your specific CSV link
-    CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQzrQ0ffS8s9vbBB5uQM29yVJnex6AkQwpnj0i43j2nCqw-P9i1DEfknzF3hb-3vualG0WSWxkCQOEn/pub?gid=2042268068&single=true&output=csv"
+def recover_account_from_cloud(target_user, target_pass):
+    # This is your 'Latest Progress' CSV link
+    CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQNm-8l1C38UGFt-lJT3ft5DARYZcjMwsWfVYGrtAqDy0bR8MQFcLJSRFqYYX7mbra_P2cWl1-i0WYW/pub?gid=1459647032&single=true&output=csv"
     
     try:
-        print(f"Cloud Vault: Searching for ID {target_id}...")
+        print(f"Cloud Vault: Searching for user {target_user}...")
         response = requests.get(CSV_URL, timeout=10)
         
         if response.status_code == 200:
-            # Use the csv module to handle the commas inside the JSON correctly
             f = StringIO(response.text)
-            reader = csv.reader(f)
-            rows = list(reader)
+            # DictReader uses the first row of your sheet as keys
+            reader = csv.DictReader(f)
             
-            # Skip header, then reverse to check the newest saves first
-            for row in reversed(rows[1:]):
-                # row[0] = Timestamp
-                # row[1] = JSON Progress
-                # row[2] = ID (The key)
+            # Hash the input password to compare with the cloud
+            hashed_input = hashlib.sha256(target_pass.encode()).hexdigest()
+
+            for row in reader:
+                # We check the columns by their EXACT names in the sheet
+                # Note: Using .get() with both the typo and corrected versions just in case!
+                cloud_user = row.get('Useranem') or row.get('Username')
+                cloud_pass = row.get('Password9hashed)') or row.get('Password(hashed)')
                 
-                cloud_id = row[2]
-                
-                if cloud_id == target_id:
-                    # Found the ID! Now parse the JSON to check credentials
-                    cloud_data = json.loads(row[1])
-                    
-                    # Hash the entered password to compare with the cloud's hashed pass
-                    hashed_input = hashlib.sha256(target_pass.encode()).hexdigest()
-                    
-                    if cloud_data["player"]["Username"] == target_user and \
-                       cloud_data["player"]["Pass"] == hashed_input:
-                        print("Cloud Vault: Credentials verified. Syncing...")
-                        return cloud_data
+                if cloud_user == target_user:
+                    if cloud_pass == hashed_input:
+                        print("Cloud Vault: Credentials verified. Downloading progress...")
+                        # Grab the JSON from the 'Progress' column
+                        return json.loads(row.get('Progress'))
                     else:
-                        print("Cloud Vault: ID found, but Username/Password is wrong.")
+                        print("Cloud Vault: User found, but password was incorrect.")
                         return "WRONG_AUTH"
-                        
-            print("Cloud Vault: ID not found in database.")
+            
+            print("Cloud Vault: No matching account found.")
             return "NOT_FOUND"
             
     except Exception as e:
@@ -1342,11 +1327,11 @@ def set_page(page):
         worlds()
     elif page == "settings":
         settings_menu()
-    elif current_page == "Audio":
+    elif page == "Audio":
         audio_settings_menu()
-    elif current_page == "Account":
+    elif page == "Account":
         create_account_selector()
-    elif current_page == "login_screen":
+    elif page == "login_screen":
         show_login_screen()
     elif page == 'levels':
         current_lang = load_language(lang_code).get('levels', {})
@@ -8950,7 +8935,6 @@ locked_char_sound_played = False
 username = ""
 user_pass = ""
 input_mode = "ID"  # Toggle between typing ID or Password
-login_done = False
 session_timeout = 3600 * 24 * 60
 last_login = 0
 
@@ -8960,78 +8944,124 @@ def hash_password(password):
 
 def show_login_screen():
     global username, user_pass, input_mode, login_done, progress, buttons
-    buttons.clear()
-    print("Logging in")
-
-    # If the player is brand new, let's show them their newly generated Rare ID!
-    if progress["player"]["ID"] == "":
-        progress["player"]["ID"] = generate_player_id()
-    
-    display_id = progress["player"]["ID"]
-
-    while not login_done:
-        screen.fill((30, 30, 30))
-        
-        print("Ligging now")
-
-        # 1. Show the Generated ID
-        id_title = font_def.render(f"YOUR UNIQUE PLAYER ID: {display_id}", True, (255, 255, 255))
+    login_done = False
+    status_msg = ""
+    status_color = (180, 180, 180)
+    if transition.x <= -transition.image.get_width():
+       while not login_done:
+        screen.blit(background, (0, 0))
+        # 1. Header
+        id_title = render_text(f"LOGIN / REGISTER", True, (255, 255, 255))
         screen.blit(id_title, (SCREEN_WIDTH // 2 - id_title.get_width() // 2, 80))
 
-        # 2. Input Fields
-        instr = font_def.render("Login to your already existing account.", True, (180, 180, 180))
-        screen.blit(instr, (SCREEN_WIDTH // 2 - instr.get_width() // 2 , 280))
+        # 2. Instructions
+        instr = render_text("Enter your username and the password for your account.", True, (255, 255, 255))
+        screen.blit(instr, (SCREEN_WIDTH // 2 - instr.get_width() // 2 , 200))
+        
+        instr2 = render_text("If the account does not exist, a new account will be created for you.", True, (255, 255, 255))
+        screen.blit(instr2, (SCREEN_WIDTH // 2 - instr2.get_width() // 2 , 230))
 
-        # Username
+        instr3 = render_text("Press TAB to switch between inputting Password and Username. To return, press ESC.", True, (255, 255, 255))
+        screen.blit(instr3, (SCREEN_WIDTH // 2 - instr3.get_width() // 2 , 260))
+        
+        # 3. Status Message (Errors, Success, etc.)
+        if status_msg:
+            s_surf = render_text(status_msg, True, status_color)
+            screen.blit(s_surf, (SCREEN_WIDTH // 2 - s_surf.get_width() // 2, 300))
+
+        # 4. Inputs
         u_color = (255, 255, 255) if input_mode == "USER" else (80, 80, 80)
-        u_surf = font_def.render(f"Username: {username}", True, u_color)
+        u_surf = render_text(f"Username: {username}", True, u_color)
         screen.blit(u_surf, (SCREEN_WIDTH // 2 - u_surf.get_width() // 2, 350))
 
-        # Password
         p_color = (255, 255, 255) if input_mode == "PASS" else (80, 80, 80)
         stars = "*" * len(user_pass)
-        p_surf = font_def.render(f"Password: {stars}", True, p_color)
+        p_surf = render_text(f"Password: {stars}", True, p_color)
         screen.blit(p_surf, (SCREEN_WIDTH // 2 - p_surf.get_width() // 2, 420))
 
-        submit_txt = font_def.render("Press ENTER to Save and Play", True, (0, 255, 0))
+        submit_txt = render_text("Press ENTER to Continue", True, (0, 255, 0))
         screen.blit(submit_txt, (SCREEN_WIDTH // 2 - submit_txt.get_width() // 2, 550))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit(); sys.exit()
-            
+                login_done = True
+                set_page("quit_confirm")
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_TAB:
                     input_mode = "PASS" if input_mode == "USER" else "USER"
                 
+                if event.key == pygame.K_ESCAPE:
+                    login_done = True
+                    set_page("Account")
+
                 elif event.key == pygame.K_RETURN:
                     if len(username) > 2 and len(user_pass) > 3:
-                        hashed_p = hashlib.sha256(user_pass.encode()).hexdigest()
+                        status_msg = "Checking Cloud Vault..."
+                        status_color = (255, 255, 0)
                         
-                        # Apply to progress
-                        progress["player"]["Username"] = username
-                        progress["player"]["Pass"] = hashed_p
+                        # Draw immediately so user sees "Checking..."
+                        pygame.display.update()
                         
-                        # Finalize save
-                        save_progress(progress)
-                        login_done = True
+                        # --- CLOUD CHECK LOGIC ---
+                        result = recover_account_from_cloud(username, user_pass)
+                        
+                        if isinstance(result, dict):
+                            # [SCENARIO 1] FOUND: Sync existing
+                            progress = result
+                            status_msg = "Account Recovered!"
+                            status_color = (0, 255, 0)
+                            # This saves to [OLD_ID].json
+                            save_progress(progress)
+                            login_done = True
+                            
+                        elif result == "WRONG_AUTH":
+                            # [SCENARIO 2] FOUND BUT WRONG PASS
+                            status_msg = "Wrong Password for this user!"
+                            status_color = (255, 50, 50)
+                            death_sound.play()
+                            
+                        else:
+                            # [SCENARIO 3] NOT FOUND: Create New
+                            # 1. Wipe progress to default so we don't clone the previous player's stats
+                            progress = copy.deepcopy(default_progress)
+                            
+                            # 2. Generate FRESH ID (This creates the new file!)
+                            new_id = generate_player_id()
+                            hashed_p = hashlib.sha256(user_pass.encode()).hexdigest()
+                            
+                            progress["player"]["ID"] = new_id
+                            progress["player"]["Username"] = username
+                            progress["player"]["Pass"] = hashed_p
+                            
+                            status_msg = f"New Account Created! (ID: {new_id})"
+                            status_color = (0, 255, 255)
+                            
+                            # 3. Save locally -> Creates [NEW_ID].json
+                            save_progress(progress)
+                            login_done = True
+                            
                     else:
                         death_sound.play()
+                        status_msg = "Username/Password too short!"
+                        status_color = (255, 50, 50)
                 
                 elif event.key == pygame.K_BACKSPACE:
                     if input_mode == "USER": username = username[:-1]
                     else: user_pass = user_pass[:-1]
                 
                 else:
-                    # Filter to only allow standard characters
                     if event.unicode.isalnum() or event.unicode in " _-":
                         if input_mode == "USER" and len(username) < 15:
                             username += event.unicode
                         elif input_mode == "PASS" and len(user_pass) < 20:
                             user_pass += event.unicode
+        
         draw_notifications()
         draw_syncing_status()
-        pygame.display.update()
+        pygame.display.flip()
+    pygame.display.update()
+
 
 def create_account_selector():
     global buttons
@@ -9057,7 +9087,7 @@ def create_account_selector():
         
         # Append to buttons list
         buttons.append((rendered_name, rect, f"load_user_{p_id}", False))
-        y_pos += 50
+        y_pos += 100
 
     # 3. "New Player" Button
     new_txt_rendered = render_text("+ NEW PLAYER", True, (255, 255, 255))
@@ -9075,11 +9105,10 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.92.6", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.93", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
-ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
-ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
 
+print(progress)
 # First define current XP outside the loop
 level, xp_needed, xp_total = xp()
 XP_text = font_text.render(f"{level}", True, (255, 255, 255))
@@ -9090,6 +9119,10 @@ else:
     XP_text2 = render_text(max_txt, True, (225, 212, 31))
 
 while running:
+    # This is in the main loop, unlike the other texts, because it needs to update if the player changes!
+    ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
+    ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
+
     messages = load_language(lang_code).get('messages', {})
     # Clear screen!
     screen.blit(background, (0, 0))
@@ -9116,10 +9149,13 @@ while running:
             transition_time = None
             pending_page = None
             set_page(current_pending)
-    
+
     XP_pos2 = (SCREEN_WIDTH - (XP_text2.get_width() + 10), 50)
-    XP_pos = (SCREEN_WIDTH - (XP_text.get_width() + XP_text2.get_width() + 20), 30)
-    badge_pos = (SCREEN_WIDTH - (XP_text.get_width() + XP_text2.get_width() + 25), 32)
+    XP_pos = (SCREEN_WIDTH - (XP_text.get_width() + XP_text2.get_width() + 30), 30)
+    xp_center_x = XP_pos[0] + (XP_text.get_width() / 2)
+    badge_x = xp_center_x - (badge.get_width() / 2)
+    badge_pos = (badge_x, 32)
+
     if SCREEN_WIDTH < MIN_WIDTH or SCREEN_HEIGHT < MIN_HEIGHT:
         countdown = 5  # seconds
         clock = pygame.time.Clock()
@@ -9516,6 +9552,10 @@ while running:
                     pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
 
                 screen.blit(rendered, rect)
+
+        elif current_page == "login_screen":
+            show_login_screen()
+        
         else:
             # Render buttons for other pages
             for rendered, rect, key, is_locked in buttons:
