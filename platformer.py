@@ -228,13 +228,15 @@ def draw_syncing_status():
         # Define the center point for the circle to orbit around
         orbit_center_x = text_x - 30
         orbit_center_y = text_y + 15 # Adjusted to center it vertically with text
-        
-        # Math for circular motion
-        x = orbit_center_x + orbit_radius * math.cos(angle_rad)
-        y = orbit_center_y + orbit_radius * math.sin(angle_rad)
-        
-        # 3. Draw the orbiting circle
-        pygame.draw.circle(screen, (200, 200, 200), (int(x), int(y)), 5)
+
+        for i in range(3):
+            # offset each dot by 0.5 radians so they follow each other
+            dot_angle = angle_rad - (i * 0.5) 
+            x = orbit_center_x + orbit_radius * math.cos(dot_angle)
+            y = orbit_center_y + orbit_radius * math.sin(dot_angle)
+            # Make trailing dots smaller or dimmer
+            alpha = 255 - (i * 80) 
+            pygame.draw.circle(screen, (alpha, alpha, alpha), (int(x), int(y)), 5 - i)
         
 def sync_vault_to_cloud(data):
     global is_syncing
@@ -9105,8 +9107,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.93", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.93.1", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
 
 print(progress)
 # First define current XP outside the loop
