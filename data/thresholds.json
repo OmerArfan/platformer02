@@ -6,7 +6,7 @@
     {"level": 4 ,"gold": 40, "silver": 50, "bronze": 60},
     {"level": 5 ,"gold": 50, "silver": 65, "bronze": 80},
     {"level": 6 ,"gold": 45, "silver": 65, "bronze": 90},
-    {"level": 7 ,"gold": 35, "silver": 40, "bronze": 45},
+    {"level": 7 ,"gold": 35, "silver": 45, "bronze": 55},
     {"level": 8 ,"gold": 25, "silver": 35, "bronze": 45},
     {"level": 9 ,"gold": 50, "silver": 75, "bronze": 100},
     {"level": 10,"gold": 35, "silver": 50, "bronze": 60},
