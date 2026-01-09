@@ -45,7 +45,7 @@ pygame.display.set_caption("Roboquix")
 MIN_WIDTH, MIN_HEIGHT = 1250, 750
 
 # First of all, LOAD THE DAMN BGGG
-background_img = pygame.image.load(resource_path("bgs/Background.png")).convert()
+background_img = pygame.image.load(resource_path("bgs/PlainBackground.png")).convert()
 background = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Load and set window icon
@@ -540,10 +540,10 @@ while ps < 100:
     studio_glow_rect = studio_glow.get_rect(topleft=(20, SCREEN_HEIGHT - 300)); ps += 2
 
     # Load and scale backgrounds
+    lilrobopeek = pygame.image.load(resource_path("bgs/lilrobopeek.png")).convert_alpha(); ps += 1
+    lilrobopeek = pygame.transform.scale(lilrobopeek, (390, 360))
     green_background_img = pygame.image.load(resource_path("bgs/GreenBackground.png")).convert()
     green_background = pygame.transform.scale(green_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT)); ps += 1
-    plain_background_img = pygame.image.load(resource_path("bgs/PlainBackground.png")).convert()
-    plain_background = pygame.transform.scale(plain_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT)); ps += 1
     mech_background_img = pygame.image.load(resource_path("bgs/MechBackground.png")).convert()
     mech_background = pygame.transform.scale(mech_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT)); ps += 1
     trans = pygame.image.load(resource_path("bgs/trans.png")).convert()
@@ -917,7 +917,7 @@ def worlds():
     global current_lang, buttons
     buttons.clear()
     current_lang = load_language(lang_code).get('language_select', {})
-    screen.blit(plain_background, (0, 0))
+    screen.blit(background, (0, 0))
 
     # 1. Define Positions
     # We define the center points so the image and the button hitbox align perfectly
@@ -1179,10 +1179,10 @@ def change_language(lang):
     else:
         font = font_def
 
-def go_back():
-    global last_page_change_time
-    last_page_change_time = time.time()  # Track the time when going back
-    set_page('main_menu')
+#def go_back():
+#    global last_page_change_time
+#    last_page_change_time = time.time()  # Track the time when going back
+#    set_page('main_menu')
 
 def update_locked_levels():
     all_levels = ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
@@ -1205,7 +1205,7 @@ def settings_menu():
     current_lang = load_language(lang_code).get('settings', {})
     setting_lang = load_language(lang_code).get('main_menu', {})
     buttons.clear()
-    screen.blit(plain_background, (0, 0))
+    screen.blit(background, (0, 0))
 
     # 2. Match these keys EXACTLY to handle_action
     # format: (Display Text, Internal Key)
@@ -1269,7 +1269,7 @@ class Slider:
 def audio_settings_menu():
     global buttons
     buttons.clear()
-    screen.blit(plain_background, (0, 0))
+    screen.blit(background, (0, 0))
 
     # 1. Draw Title
     title = render_text("Audio Settings", True, (255, 255, 255))
@@ -1346,6 +1346,8 @@ def set_page(page):
         audio_settings_menu()
     elif current_page == "Account":
         create_account_selector()
+    elif current_page == "login_screen":
+        show_login_screen()
     elif page == 'levels':
         current_lang = load_language(lang_code).get('levels', {})
         green_world_buttons()
@@ -8422,10 +8424,10 @@ def create_lvl12_screen():
         pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
 
         timed_coin_text = in_game.get("timed_coin_message", "Orange coins are timed! They open blocks for a limited")
-        rendered_timed_text = render_text(timed_coin_text, True, (0, 0, 0))
+        rendered_timed_text = render_text(timed_coin_text, True, (255, 128, 0))
         screen.blit(rendered_timed_text, (0 - camera_x, -80 - camera_y))
         timed_coin_text_2 = in_game.get("timed_coin_message_2", "time. Run before they close again, or at worst, crush you...")
-        rendered_timed_text_2 = render_text(timed_coin_text_2, True, (0, 0, 0))
+        rendered_timed_text_2 = render_text(timed_coin_text_2, True, (255, 128, 0))
         screen.blit(rendered_timed_text_2, (-20 - camera_x, -30 - camera_y))
         
         for pair in key_block_pairs_timed:
@@ -8769,7 +8771,7 @@ is_transitioning = False
 
 # Handle actions based on current page
 def handle_action(key):
-    global current_page, pending_level, level_load_time, transition, is_transitioning, transition_time,locked_char_sound_played, locked_char_sound_time
+    global progress, current_page, pending_level, level_load_time, transition, is_transitioning, transition_time,locked_char_sound_played, locked_char_sound_time
     
     global pending_page
     if current_page == 'main_menu':
@@ -8957,32 +8959,15 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def show_login_screen():
-    global username, user_pass, input_mode, login_done, progress
-    
+    global username, user_pass, input_mode, login_done, progress, buttons
+    buttons.clear()
     print("Logging in")
-    # Check if a session already exists to skip this screen
-    has_creds = progress["player"].get("Username") != "" 
-    if progress["player"]["ID"] != "" and has_creds and not check_session_expired(progress["player"]["ID"]):
-        login_done = True
-        print("Session active: Skipping login.")
-        return
- 
-    # If we are here, we need a name/pass. 
+
     # If the player is brand new, let's show them their newly generated Rare ID!
     if progress["player"]["ID"] == "":
         progress["player"]["ID"] = generate_player_id()
     
     display_id = progress["player"]["ID"]
-    
-    # Determining ID rarity for visual flair
-    id_color = (200, 200, 200) # Default
-    rarity_text = ""
-    if len(display_id) == 3:
-        id_color = (255, 215, 0) # Gold
-        rarity_text = "ULTRA RARE ID!"
-    elif len(display_id) == 4:
-        id_color = (0, 255, 255) # Cyan/Rare
-        rarity_text = "RARE ID"
 
     while not login_done:
         screen.fill((30, 30, 30))
@@ -8990,17 +8975,11 @@ def show_login_screen():
         print("Ligging now")
 
         # 1. Show the Generated ID
-        id_title = font_def.render("YOUR UNIQUE PLAYER ID:", True, (150, 150, 150))
-        id_val = font_text.render(display_id, True, id_color)
+        id_title = font_def.render(f"YOUR UNIQUE PLAYER ID: {display_id}", True, (255, 255, 255))
         screen.blit(id_title, (SCREEN_WIDTH // 2 - id_title.get_width() // 2, 80))
-        screen.blit(id_val, (SCREEN_WIDTH // 2 - id_val.get_width() // 2, 130))
-        
-        if rarity_text:
-            rare_surf = font_def.render(rarity_text, True, id_color)
-            screen.blit(rare_surf, (SCREEN_WIDTH // 2 - rare_surf.get_width() // 2, 200))
 
         # 2. Input Fields
-        instr = font_def.render("Set Username & Password to protect your account", True, (180, 180, 180))
+        instr = font_def.render("Login to your already existing account.", True, (180, 180, 180))
         screen.blit(instr, (SCREEN_WIDTH // 2 - instr.get_width() // 2 , 280))
 
         # Username
@@ -9095,9 +9074,9 @@ site_pos = (SCREEN_WIDTH - (site_text.get_width() + 10), SCREEN_HEIGHT - 38)
 logo_text = font_def.render("Logo and Background made with canva.com", True, (255, 255, 255))
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
-credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 8), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.92.5", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
+credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
+ver_text = font_def.render("Version 1.2.92.6", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
 ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
 
@@ -9211,6 +9190,7 @@ while running:
                     
         if current_page == "main_menu":
             screen.blit(logo, ((SCREEN_WIDTH // 2 - logo.get_width() // 2), 30))
+            screen.blit(lilrobopeek, ((SCREEN_WIDTH - lilrobopeek.get_width()), (SCREEN_HEIGHT - lilrobopeek.get_height())))
             screen.blit(logo_text, logo_pos)
             screen.blit(site_text, site_pos)
             screen.blit(credit_text, credit_pos)
@@ -9251,7 +9231,7 @@ while running:
             last_hovered_key = hovered_key
 
         if current_page == "character_select":
-         screen.blit(plain_background, (0, 0))
+         screen.blit(background, (0, 0))
 
          # Initialize locked sound effect and mouse position
          locked_sound_played = False
@@ -9319,11 +9299,11 @@ while running:
              wait_time = None
 
         if current_page == "language_select":
-            screen.blit(plain_background, (0, 0))
+            screen.blit(background, (0, 0))
             screen.blit(heading_text, (SCREEN_WIDTH // 2 - heading_text.get_width() // 2, 50))
 
         if current_page == "quit_confirm":
-            screen.blit(plain_background, (0, 0))
+            screen.blit(background, (0, 0))
             # Render the quit confirmation text
             screen.blit(quit_text, quit_text_rect)
             screen.blit(quitbot, (SCREEN_WIDTH // 2 - robot_img.get_width() // 2, SCREEN_HEIGHT // 2 - 200))
@@ -9461,7 +9441,7 @@ while running:
                 screen.blit(text_surface, text_rect)
 
         elif current_page == "settings":
-            screen.blit(plain_background, (0, 0))
+            screen.blit(background, (0, 0))
             settings_menu()
             
             for rendered, rect, key, is_locked in buttons:
@@ -9485,7 +9465,7 @@ while running:
                 screen.blit(rendered, rect)
 
         elif current_page == "Audio":
-            screen.blit(plain_background, (0, 0))
+            screen.blit(background, (0, 0))
             audio_settings_menu()
             
             for rendered, rect, key, is_locked in buttons:
@@ -9509,7 +9489,7 @@ while running:
                 screen.blit(rendered, rect)
 
         elif current_page == "Account":
-            screen.blit(plain_background, (0, 0))
+            screen.blit(background, (0, 0))
             
             # 1. Draw the Title Manually Here
             title = font_text.render("SELECT PROFILE", True, (255, 255, 255))
