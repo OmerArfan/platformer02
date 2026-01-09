@@ -78,7 +78,7 @@
   ,"button3_message": "Les boutons violets éteignent presque toutes les lumières lorsqu'ils sont activés !"
   ,"button4_message": "Les boutons verts, une fois activés, vous donneront un énorme coup de pouce de vitesse !"
   ,"timed_coin_message": "Les pièces oranges sont chronométrées ! Elles ouvrent des blocs pour un temps"
-  ,"timed_coin_message_2": "Les pièces oranges sont chronométrées ! Elles ouvrent des blocs pour un temps"
+  ,"timed_coin_message_2": "limité. Courez avant qu'ils ne se referment, ou pire, vous écrasent..."
 }
 ,"in_game_ice":{
 "temp": "Température: {current_temp}"

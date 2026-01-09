@@ -47,6 +47,7 @@
   ,"lavalocked_message": "这个机器人即将推出!"
   ,"greenlocked_message": "在所有绿色世界关卡中达到黄金等级即可解锁这个机器人!"
   ,"lvl_comp": "关卡完成"
+  ,"hs_m": "最高分: {hs}"
   ,"new_hs": "最高分新纪录"
   ,"max_level": "最高等级"
   }
