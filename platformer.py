@@ -283,16 +283,17 @@ def recover_account_from_cloud(target_user, target_pass):
 
             for row in reader:
                 # We check the columns by their EXACT names in the sheet
-                # Note: Using .get() with both the typo and corrected versions just in case!
-                cloud_user = row.get('Useranem') or row.get('Username')
-                cloud_pass = row.get('Password9hashed)') or row.get('Password(hashed)')
+                cloud_user = row.get('Username')
+                cloud_pass = row.get('Password(Hashed)')
                 
                 if cloud_user == target_user:
                     if cloud_pass == hashed_input:
                         print("Cloud Vault: Credentials verified. Downloading progress...")
+                        notify_sound.play()
                         # Grab the JSON from the 'Progress' column
                         return json.loads(row.get('Progress'))
                     else:
+                        print(f"Comparing: {cloud_pass} vs {hashed_input}")
                         print("Cloud Vault: User found, but password was incorrect.")
                         return "WRONG_AUTH"
             
@@ -9000,6 +9001,7 @@ def show_login_screen():
                 elif event.key == pygame.K_RETURN:
                     if len(username) > 2 and len(user_pass) > 3:
                         status_msg = "Checking Cloud Vault..."
+                        print(status_msg)
                         status_color = (255, 255, 0)
                         
                         # Draw immediately so user sees "Checking..."
@@ -9107,8 +9109,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.93.1", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.93.2", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 12), SCREEN_HEIGHT - 128)
 
 print(progress)
 # First define current XP outside the loop
