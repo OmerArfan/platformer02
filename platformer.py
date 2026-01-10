@@ -1106,7 +1106,7 @@ def xp():
     return level, xp_in_level, xp_needed(level)
 
 #Initialize default character
-selected_character = progress.get("character", default_progress["pref"]["character"])
+selected_character = progress["pref"].get("character", default_progress["pref"]["character"])
 
 # Get rects and position them
 robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT // 2 - 50))
@@ -1407,7 +1407,7 @@ def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg):
             locked_text = messages.get(locked_msg_key, fallback_msg)
 
 def create_quit_confirm_buttons():
-    global current_lang, buttons, quit_text, quit_text_rect, selected_character
+    global current_lang, buttons, quit_text, quit_text_rect
     buttons.clear()
 
     # Get the quit confirmation text from the current language
@@ -1577,6 +1577,7 @@ def level_complete():
 
 def char_assets():
     global selected_character, player_img, blink_img, moving_img, moving_img_l, img_width, img_height
+    selected_character = progress["pref"].get("character", default_progress["pref"]["character"])
  # Load player image
     if selected_character == "robot": 
         player_img = pygame.image.load(resource_path(f"char/robot/robot.png")).convert_alpha()
@@ -8015,6 +8016,8 @@ def create_lvl11_screen():
         rendered_button4_text = render_text(button4_text, True, (51, 255, 51))
         screen.blit(rendered_button4_text, (-320 - camera_x, 300 - camera_y))
 
+        player_image(keys, player_x, player_y, camera_x, camera_y)
+
         if player_rect.colliderect(light_off_button) and evilrobo_phase != 1:
             if not is_mute and lights_off:
                 button_sound.play()
@@ -8052,9 +8055,6 @@ def create_lvl11_screen():
                             player_x = block.x - img_width
                         elif player_x + img_width > block.x + block.width:  # Colliding with the right side
                             player_x = block.x + block.width
-
-
-        player_image(keys, player_x, player_y, camera_x, camera_y)
 
         levels = load_language(lang_code).get('levels', {})
         lvl11_text = levels.get("lvl11", "Level 11")  # Render the level text
@@ -9063,6 +9063,7 @@ def show_login_screen():
         
         draw_notifications()
         draw_syncing_status()
+
         pygame.display.flip()
     pygame.display.update()
 
@@ -9109,8 +9110,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.93.2", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 12), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.93.3", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 
 print(progress)
 # First define current XP outside the loop
@@ -9286,6 +9287,8 @@ while running:
          evilrobo_unlock = progress["char"].get("evilrobo", False)
          greenrobo_unlock = progress["char"].get("greenrobo", False)
          ironrobo_unlock = progress["char"].get("ironrobo", False)
+         # Get currently selected character
+         selected_character = progress["pref"].get("character", default_progress["pref"]["character"])
          # Draw images
          screen.blit(robot_img, robot_rect)     
          screen.blit(evilrobot_img if evilrobo_unlock else locked_img, evilrobot_rect)
