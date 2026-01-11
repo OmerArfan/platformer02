@@ -18,7 +18,15 @@
     "select": "プロフィール選択",
     "sync_stat1": "保管庫をクラウドに同期中...",
     "sync_stat2": "同期に失敗しました！",
-    "sync_stat3": "成功しました！"
+    "sync_stat3": "成功しました！",
+    "login_header": "ログイン / 新規登録",
+    "login_instr1": "ユーザー名とアカウントのパスワードを入力してください。",
+    "login_instr2": "アカウントが存在しない場合は、新規作成されます。",
+    "login_instr3": "TABでパスワードとユーザー名を切り替え、ESCで戻ります。",
+    "case_warning": "ユーザー名とパスワードは大文字と小文字を区別します！"
+    ,"username_label": "ユーザー名",
+    "password_label": "パスワード",
+    "submit_prompt": "ENTERを押して続行"
   }
   ,"char_select": {
     "select": "ロボを選ぼう！",

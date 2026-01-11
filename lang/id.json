@@ -19,6 +19,14 @@
     "sync_stat1": "Menyinkronkan Vault ke Cloud...",
     "sync_stat2": "Sinkronisasi gagal!",
     "sync_stat3": "Berhasil!"
+    ,"login_header": "MASUK / DAFTAR",
+    "login_instr1": "Masukkan nama pengguna dan kata sandi untuk akun Anda.",
+    "login_instr2": "Jika akun tidak ada, akun baru akan dibuat untuk Anda.",
+    "login_instr3": "Tekan TAB untuk beralih antara Kata Sandi dan Nama Pengguna. Tekan ESC untuk kembali.",
+    "case_warning": "Nama pengguna dan Kata sandi peka terhadap huruf besar/kecil!"
+    ,"username_label": "Nama Pengguna",
+    "password_label": "Kata Sandi",
+    "submit_prompt": "Tekan ENTER untuk Melanjutkan"
   },
   "char_select": {
     "select": "Pilih Robo-mu!",

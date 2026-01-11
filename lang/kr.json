@@ -18,7 +18,15 @@
     "select": "프로필 선택",
     "sync_stat1": "금고를 클라우드에 동기화 중...",
     "sync_stat2": "동기화 실패!",
-    "sync_stat3": "성공!"
+    "sync_stat3": "성공!",
+    "login_header": "로그인 / 회원가입",
+    "login_instr1": "사용자 이름과 계정 비밀번호를 입력하세요.",
+    "login_instr2": "계정이 존재하지 않으면 새 계정이 생성됩니다.",
+    "login_instr3": "TAB을 눌러 비밀번호와 사용자 이름 전환, ESC를 눌러 돌아가기.",
+    "case_warning": "사용자 이름과 비밀번호는 대소문자를 구분합니다!"
+    ,"username_label": "사용자 이름",
+    "password_label": "비밀번호",
+    "submit_prompt": "계속하려면 ENTER를 누르세요"
   },
   "char_select": {
     "select": "로봇을 선택하세요!",

@@ -19,7 +19,15 @@
     "sync_stat1": "Sincronizando cámara con la nube...",
     "sync_stat2": "¡Sincronización fallida!",
     "sync_stat3": "¡Éxito!"
-},
+    ,"login_header": "INICIAR SESIÓN / REGISTRARSE",
+    "login_instr1": "Ingresa tu nombre de usuario y la contraseña de tu cuenta.",
+    "login_instr2": "Si la cuenta no existe, se creará una cuenta nueva para ti.",
+    "login_instr3": "Pulsa TAB para cambiar entre Contraseña y Usuario. Pulsa ESC para volver.",
+    "case_warning": "¡Los nombres de usuario y contraseñas distinguen mayúsculas!"
+    ,"username_label": "Usuario",
+    "password_label": "Contraseña",
+    "submit_prompt": "Pulsa ENTER para continuar"
+  },
 "char_select": {
     "select": "¡Selecciona tu Robo!",
     "evillocked_message": "¡Desbloquea el logro «Perseguido y Escapado» para obtener este robot!",

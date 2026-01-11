@@ -18,7 +18,15 @@
     "select": "SÉLECTIONNER UN PROFIL",
     "sync_stat1": "Synchronisation du coffre vers le Cloud...",
     "sync_stat2": "Échec de la synchronisation !",
-    "sync_stat3": "Succès !"
+    "sync_stat3": "Succès !",
+    "login_header": "CONNEXION / S'INSCRIRE",
+    "login_instr1": "Entrez votre nom d'utilisateur et le mot de passe de votre compte.",
+    "login_instr2": "Si le compte n'existe pas, un nouveau compte sera créé pour vous.",
+    "login_instr3": "Appuyez sur TAB pour basculer entre le mot de passe et l'utilisateur. ÉCHAP pour revenir.",
+    "case_warning": "Les noms d'utilisateur et mots de passe sont sensibles à la casse !"
+    ,"username_label": "Nom d'utilisateur",
+    "password_label": "Mot de passe",
+    "submit_prompt": "Appuyez sur ENTRÉE pour continuer"
   },
   "char_select": {
     "select": "Sélectionnez votre Robo !",

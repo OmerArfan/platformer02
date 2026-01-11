@@ -19,6 +19,14 @@
     "sync_stat1": "Kasa Bulut ile senkronize ediliyor...",
     "sync_stat2": "Senkronizasyon başarısız!",
     "sync_stat3": "Başarılı!"
+    ,"login_header": "GİRİŞ YAP / KAYIT OL",
+    "login_instr1": "Hesabınız için kullanıcı adınızı ve şifrenizi girin.",
+    "login_instr2": "Hesap mevcut değilse, sizin için yeni bir hesap oluşturulacaktır.",
+    "login_instr3": "Şifre ve Kullanıcı Adı arasında geçiş için TAB, dönmek için ESC tuşuna basın.",
+    "case_warning": "Kullanıcı adları ve şifreler büyük/küçük harfe duyarlıdır!"
+    ,"username_label": "Kullanıcı Adı",
+    "password_label": "Şifre",
+    "submit_prompt": "Devam etmek için ENTER'a basın"
   },
   "char_select": {
     "select": "Robo'nu seç!",

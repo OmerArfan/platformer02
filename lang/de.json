@@ -19,6 +19,14 @@
     "sync_stat1": "Tresor mit Cloud synchronisieren...",
     "sync_stat2": "Synchronisierung fehlgeschlagen! ",
     "sync_stat3": "Erfolgreich!"
+    ,"login_header": "ANMELDEN / REGISTRIEREN",
+    "login_instr1": "Geben Sie Ihren Benutzernamen und das Passwort für Ihr Konto ein.",
+    "login_instr2": "Wenn das Konto nicht existiert, wird ein neues Konto für Sie erstellt.",
+    "login_instr3": "TAB zum Wechseln zwischen Passwort/Nutzer. ESC zum Zurückkehren.",
+    "case_warning": "Benutzernamen und Passwörter sind fallsensitiv (Groß-/Kleinschreibung)!"
+    ,"username_label": "Benutzername",
+    "password_label": "Passwort",
+    "submit_prompt": "Drücke ENTER zum Fortfahren"
   },
   "char_select": {
     "select": "Wähle deinen Robo!",

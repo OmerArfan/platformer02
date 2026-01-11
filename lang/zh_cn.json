@@ -18,7 +18,15 @@
     "select": "选择存档",
     "sync_stat1": "正在将保险库同步到云端...",
     "sync_stat2": "同步失败！",
-    "sync_stat3": "成功！"
+    "sync_stat3": "成功！",
+    "login_header": "登录 / 注册",
+    "login_instr1": "请输入您的用户名和帐户密码。",
+    "login_instr2": "如果帐户不存在，将为您创建一个新帐户。",
+    "login_instr3": "按 TAB 键切换密码和用户名简。按 ESC 返回。",
+    "case_warning": "用户名和密码区分大小写！"
+    ,"username_label": "用户名",
+    "password_label": "密码",
+    "submit_prompt": "按回车键 (ENTER) 继续"
   },
   "char_select": {
     "select": "选择你的机器人！",
