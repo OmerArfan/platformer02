@@ -13,7 +13,21 @@
   "settings": {
     "Audio": "オーディオ",
     "Account": "アカウント",
-    "Back": "戻る"
+    "Back": "戻る",
+    "new_acc": "+ 新規プレイヤー",
+    "select": "プロフィール選択",
+    "sync_stat1": "保管庫をクラウドに同期中...",
+    "sync_stat2": "同期に失敗しました！",
+    "sync_stat3": "成功しました！"
+  }
+  ,"char_select": {
+    "select": "ロボを選ぼう！",
+    "evillocked_message": "このロボットをアンロックするには実績「追跡と脱出」を解除してください！",
+    "icelocked_message": "このロボットは近日登場予定です！",
+    "lavalocked_message": "このロボットは近日登場予定です！",
+    "greenlocked_message": "このロボットをアンロックするには「黄金の実績」を解除してください！",
+    "ironlocked_message": "このロボットをアンロックするには実績「六つの頂点」を解除してください！",
+    "back": "戻る"
   },
   "levels": {
     "level_display": "レベルを選択",
@@ -42,10 +56,6 @@
     "confirm_quit": "本当に終了しますか？",
     "yes": "はい",
     "no": "いいえ",
-    "evillocked_message": "別ルートでこのロボットに出会ってアンロックしよう！",
-    "icelocked_message": "このロボットは近日登場！",
-    "lavalocked_message": "このロボットは近日登場！",
-    "greenlocked_message": "グリーンワールドのすべてのレベルでゴールドランクを獲得してこのロボットをアンロック！",
     "lvl_comp": "レベルクリア！",
     "hs_m": "ハイスコア: {hs}"
     ,"new_hs": "新記録達成！"

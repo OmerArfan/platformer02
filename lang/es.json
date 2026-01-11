@@ -13,8 +13,22 @@
 "settings": {
     "Audio": "Audio",
     "Account": "Cuenta",
-    "Back": "Volver"
-}
+    "Back": "Volver",
+    "new_acc": "+ NUEVO JUGADOR",
+    "select": "SELECCIONAR PERFIL",
+    "sync_stat1": "Sincronizando cámara con la nube...",
+    "sync_stat2": "¡Sincronización fallida!",
+    "sync_stat3": "¡Éxito!"
+},
+"char_select": {
+    "select": "¡Selecciona tu Robo!",
+    "evillocked_message": "¡Desbloquea el logro «Perseguido y Escapado» para obtener este robot!",
+    "icelocked_message": "¡Este robot llegará pronto!",
+    "lavalocked_message": "¡Este robot llegará pronto!",
+    "greenlocked_message": "¡Desbloquea el «Logro de Oro» para obtener este robot!",
+    "ironlocked_message": "¡Desbloquea el logro «Cénit de los Seis» para obtener este robot!",
+    "back": "Volver"
+  }    
   ,"levels": {
   "level_display": "SELECCIONA UN NIVEL",
   "lvl1": "Nivel 1", 
@@ -42,10 +56,6 @@
   "error_message": "¡La resolución de tu pantalla es demasiado baja! Aumenta"
   ,"error_message2": "la resolución en la configuración del sistema.",
   "countdown_message": "Cerrando en {countdown} segundo(s)..."
-  ,"evillocked_message": "¡Encuentra a este robot en una ruta alternativa para desbloquearlo!"
-  ,"icelocked_message": "¡Este robot llegará pronto!"
-  ,"lavalocked_message": "¡Este robot llegará pronto!"
-  ,"greenlocked_message": "¡Consigue el rango ORO en todos los niveles del Mundo Verde para desbloquearlo!"
   ,"lvl_comp": "¡Nivel completado!"
   ,"hs_m": "Puntuación más alta: {hs}"
   ,"new_hs": "¡Nueva puntuación máxima!"

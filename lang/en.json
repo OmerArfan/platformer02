@@ -10,10 +10,24 @@
     ,"language_select": {
       "back": "Back"
   }
+  ,"char_select":{
+    "select": "Select your Robo!"
+    ,"evillocked_message": "Unlock the Chased and Escaped achievement to unlock this robot!"
+    ,"icelocked_message": "This robot is coming soon!"
+    ,"lavalocked_message": "This robot is coming soon!"
+    ,"greenlocked_message": "Unlock the Golden Achievement to unlock this robot!"
+    ,"ironlocked_message": "Unlock the Zenith of Six Achievement to unlock this robot!",
+    "back": "Back"
+  }
   ,"settings": {
     "Audio": "Audio",
     "Account": "Account",
-    "Back": "Back"
+    "Back": "Back",
+    "new_acc": "+ NEW PLAYER",
+    "select": "SELECT PROFILE",
+    "sync_stat1": "Syncing Vault to Cloud...",
+    "sync_stat2": "Sync failed!",
+    "sync_stat3": "Success!"
   }
   ,"levels": {
   "level_display": "SELECT A LEVEL",
@@ -42,10 +56,6 @@
   "confirm_quit": "Are you sure you want to quit?",
   "yes": "Yes",
   "no": "No"
-  ,"evillocked_message": "Encounter this robot in an alternative route to unlock him!"
-  ,"icelocked_message": "This robot is coming soon!"
-  ,"lavalocked_message": "This robot is coming soon!"
-  ,"greenlocked_message": "Get GOLD rank in all Green World Levels to unlock this robot!"
   ,"lvl_comp": "Level Complete!"
   ,"hs_m":"Highscore: {hs}" 
   ,"new_hs": "New High Score!"

@@ -13,7 +13,21 @@
   "settings": {
     "Audio": "Audio",
     "Account": "Akun",
-    "Back": "Kembali"
+    "Back": "Kembali",
+    "new_acc": "+ PEMAIN BARU",
+    "select": "PILIH PROFIL",
+    "sync_stat1": "Menyinkronkan Vault ke Cloud...",
+    "sync_stat2": "Sinkronisasi gagal!",
+    "sync_stat3": "Berhasil!"
+  },
+  "char_select": {
+    "select": "Pilih Robo-mu!",
+    "evillocked_message": "Buka pencapaian 'Dikejar dan Lolos' untuk membuka robot ini!",
+    "icelocked_message": "Robot ini akan segera hadir!",
+    "lavalocked_message": "Robot ini akan segera hadir!",
+    "greenlocked_message": "Buka 'Pencapaian Emas' untuk membuka robot ini!",
+    "ironlocked_message": "Buka pencapaian 'Puncak dari Enam' untuk membuka robot ini!",
+    "back": "Kembali"
   },
   "levels": {
     "level_display": "PILIH LEVEL",
@@ -42,10 +56,6 @@
     "confirm_quit": "Yakin ingin keluar?",
     "yes": "Ya",
     "no": "Tidak",
-    "evillocked_message": "Temui robot ini di rute alternatif untuk membukanya!",
-    "icelocked_message": "Robot ini akan segera hadir!",
-    "lavalocked_message": "Robot ini akan segera hadir!",
-    "greenlocked_message": "Dapatkan peringkat EMAS di semua level Dunia Hijau untuk membuka robot ini!",
     "lvl_comp": "Level Selesai!",
     "hs_m": "Skor Tertinggi: {hs}"
     ,"new_hs": "Skor Tinggi Baru!"

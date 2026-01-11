@@ -13,7 +13,21 @@
   "settings": {
     "Audio": "Ses",
     "Account": "Hesap",
-    "Back": "Geri"
+    "Back": "Geri",
+    "new_acc": "+ YENİ OYUNCU",
+    "select": "PROFİL SEÇ",
+    "sync_stat1": "Kasa Bulut ile senkronize ediliyor...",
+    "sync_stat2": "Senkronizasyon başarısız!",
+    "sync_stat3": "Başarılı!"
+  },
+  "char_select": {
+    "select": "Robo'nu seç!",
+    "evillocked_message": "Bu robotun kilidini açmak için 'Kovalandı ve Kaçtı' başarımını kazan!",
+    "icelocked_message": "Bu robot yakında geliyor!",
+    "lavalocked_message": "Bu robot yakında geliyor!",
+    "greenlocked_message": "Bu robotun kilidini açmak için 'Altın Başarım' kazan!",
+    "ironlocked_message": "Bu robotun kilidini açmak için 'Altının Zirvesi' başarımını kazan!",
+    "back": "Geri"
   },
   "levels": {
     "level_display": "BİR SEVİYE SEÇ",
@@ -41,11 +55,7 @@
     "deny_message": "Erişim reddedildi!",
     "error_message": "Ekran çözünürlüğünüz çok düşük! Sistem ayarlarından"
     ,"error_message2": "çözünürlüğü artırın.",
-    "countdown_message": "{countdown} saniye içinde kaybedeceksiniz...",
-    "evillocked_message": "Bu robotu alternatif bir rotada bul ve kilidini aç!",
-    "icelocked_message": "Bu robot yakında geliyor!",
-    "lavalocked_message": "Bu robot yakında geliyor!",
-    "greenlocked_message": "Tüm Yeşil Dünya seviyelerinde ALTIN derece al ve bu robotun kilidini aç!"
+    "countdown_message": "{countdown} saniye içinde kaybedeceksiniz..."
     ,"lvl_comp": "Bölüm Tamamlandı!"
     ,"hs_m": "Yüksek Puan: {hs}"
     ,"new_hs": "Yeni Yüksek Skor!"

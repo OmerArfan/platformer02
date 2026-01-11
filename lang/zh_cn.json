@@ -13,7 +13,21 @@
   "settings": {
     "Audio": "音频",
     "Account": "账户",
-    "Back": "返回"
+    "Back": "返回",
+    "new_acc": "+ 新玩家",
+    "select": "选择存档",
+    "sync_stat1": "正在将保险库同步到云端...",
+    "sync_stat2": "同步失败！",
+    "sync_stat3": "成功！"
+  },
+  "char_select": {
+    "select": "选择你的机器人！",
+    "evillocked_message": "获得“追逐与逃脱”成就以解锁此机器人！",
+    "icelocked_message": "此机器人即将推出！",
+    "lavalocked_message": "此机器人即将推出！",
+    "greenlocked_message": "获得“黄金成就”以解锁此机器人！",
+    "ironlocked_message": "获得“六之巅峰”成就以解锁此机器人！",
+    "back": "返回"
   }
   ,"levels": {
     "level_display": "选择一个级别",
@@ -42,10 +56,6 @@
   "error_message": "您的屏幕分辨率太低！请在“系统偏好设置”中提高屏幕分辨率。"
   ,"error_message2": "   ",
   "countdown_message": "即将于 {countdown} 秒后关闭……"
-  ,"evillocked_message": "在另一条路线上遇到这个机器人并解锁它！"
-  ,"icelocked_message": "这个机器人即将推出!"
-  ,"lavalocked_message": "这个机器人即将推出!"
-  ,"greenlocked_message": "在所有绿色世界关卡中达到黄金等级即可解锁这个机器人!"
   ,"lvl_comp": "关卡完成"
   ,"hs_m": "最高分: {hs}"
   ,"new_hs": "最高分新纪录"

@@ -13,7 +13,21 @@
   "settings": {
     "Audio": "Audio",
     "Account": "Compte",
-    "Back": "Retour"
+    "Back": "Retour",
+    "new_acc": "+ NOUVEAU JOUEUR",
+    "select": "SÉLECTIONNER UN PROFIL",
+    "sync_stat1": "Synchronisation du coffre vers le Cloud...",
+    "sync_stat2": "Échec de la synchronisation !",
+    "sync_stat3": "Succès !"
+  },
+  "char_select": {
+    "select": "Sélectionnez votre Robo !",
+    "evillocked_message": "Débloquez le succès « Poursuivi et Évadé » pour déverrouiller ce robot !",
+    "icelocked_message": "Ce robot arrive bientôt !",
+    "lavalocked_message": "Ce robot arrive bientôt !",
+    "greenlocked_message": "Débloquez le « Succès d'Or » pour déverrouiller ce robot !",
+    "ironlocked_message": "Débloquez le succès « Zénith des Six » pour déverrouiller ce robot !",
+    "back": "Retour"
   },
   "levels": {
   "level_display": "CHOISIR UN NIVEAU",
@@ -34,8 +48,8 @@
   "lvl15": "Niveau 15",
   "back": "retour"
   ,"next": "prochain"
-   }
-  ,"messages": {
+},
+  "messages": {
   "you_are_in": "Vous êtes dans {level}",
   "loading": "Chargement...",
   "confirm_quit": "Êtes-vous sûr de vouloir quitter ?",
@@ -45,10 +59,6 @@
   "error_message": "Votre résolution d'écran est trop faible ! Augmentez-la"
   ,"error_message2": "dans les Préférences Système.",
   "countdown_message": "Fermeture dans {countdown} seconde(s)…"
-  ,"evillocked_message": "Rencontrez ce robot sur un chemin alternatif pour le débloquer !"
-  ,"icelocked_message": "Ce robot arrive bientôt !"
-  ,"lavalocked_message": "Ce robot arrive bientôt !"
-  ,"greenlocked_message": "Obtenez le rang OR dans tous les niveaux du Monde Vert pour débloquer ce robot !"
   ,"lvl_comp": "Niveau terminé !"
   ,"hs_m":"Meilleur score : {hs}"
   ,"new_hs": "Nouveau record !"

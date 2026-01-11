@@ -13,7 +13,21 @@
   "settings": {
     "Audio": "Audio",
     "Account": "Konto",
-    "Back": "Zurück"
+    "Back": "Zurück",
+    "new_acc": "+ NEUER SPIELER",
+    "select": "PROFIL AUSWÄHLEN",
+    "sync_stat1": "Tresor mit Cloud synchronisieren...",
+    "sync_stat2": "Synchronisierung fehlgeschlagen! ",
+    "sync_stat3": "Erfolgreich!"
+  },
+  "char_select": {
+    "select": "Wähle deinen Robo!",
+    "evillocked_message": "Schalte den Erfolg „Verfolgt und Entkommen“ frei, um diesen Roboter freizuschalten!",
+    "icelocked_message": "Dieser Roboter ist demnächst verfügbar!",
+    "lavalocked_message": "Dieser Roboter ist demnächst verfügbar!",
+    "greenlocked_message": "Schalte den „Goldenen Erfolg“ frei, um diesen Roboter freizuschalten!",
+    "ironlocked_message": "Schalte den Erfolg „Zenit der Sechs“ frei, um diesen Roboter freizuschalten!",
+    "back": "Zurück"
   }
   ,"levels": {
   "level_display": "WÄHLE EINEN LEVEL",
@@ -42,10 +56,6 @@
   "error_message": "Ihre Bildschirmauflösung ist zu niedrig! Erhöhen Sie"
   ,"error_message2": "die Bildschirmauflösung in den Systemeinstellungen.",
   "countdown_message": "Schließt in {countdown} Sekunden..."
-  ,"evillocked_message": "Begegne diesem Roboter auf einer alternativen Route, um ihn freizuschalten!"
-  ,"icelocked_message": "Dieser Roboter kommt bald!"
-  ,"lavalocked_message": "Dieser Roboter kommt bald!"
-  ,"greenlocked_message": "Erreiche den GOLD-Rang in allen Green World-Levels, um diesen Roboter freizuschalten!"  
   ,"lvl_comp": "Level abgeschlossen!"
   ,"hs_m": "Der Highscore: {hs}"
   ,"new_hs": "Neuer Highscore!"
