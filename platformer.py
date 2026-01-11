@@ -8940,6 +8940,7 @@ def hash_password(password):
 
 def show_login_screen():
     global username, user_pass, input_mode, login_done, progress, buttons
+    settings = load_language(lang_code).get('settings', {})
     login_done = False
     status_msg = ""
     status_color = (180, 180, 180)
@@ -8947,37 +8948,51 @@ def show_login_screen():
        while not login_done:
         screen.blit(background, (0, 0))
         # 1. Header
-        id_title = render_text(f"LOGIN / REGISTER", True, (255, 255, 255))
+        id_title_text = settings.get("login_header", "LOGIN / REGISTER")
+        id_title = render_text(id_title_text, True, (255, 255, 255))
         screen.blit(id_title, (SCREEN_WIDTH // 2 - id_title.get_width() // 2, 80))
 
         # 2. Instructions
-        instr = render_text("Enter your username and the password for your account.", True, (255, 255, 255))
+        instr_txt = settings.get("login_instr1", "Enter your username and password to access your account, or create a new one.")
+        instr = render_text(instr_txt, True, (255, 255, 255))
         screen.blit(instr, (SCREEN_WIDTH // 2 - instr.get_width() // 2 , 200))
         
-        instr2 = render_text("If the account does not exist, a new account will be created for you.", True, (255, 255, 255))
+        instr_txt2 = settings.get("login_instr2", "If the account does not exist, a new account will be created for you.")
+        instr2 = render_text(instr_txt2, True, (255, 255, 255))
         screen.blit(instr2, (SCREEN_WIDTH // 2 - instr2.get_width() // 2 , 230))
 
-        instr3 = render_text("Press TAB to switch between inputting Password and Username. To return, press ESC.", True, (255, 255, 255))
+        instr_txt3 = settings.get("login_instr3", "Press TAB to switch between inputting Password and Username. To return, press ESC.")
+        instr3 = render_text(instr_txt3, True, (255, 255, 255))
         screen.blit(instr3, (SCREEN_WIDTH // 2 - instr3.get_width() // 2 , 260))
         
+        instr_txt4 = settings.get("case_warning", "Usernames and Passwords are case sensitive!")
+        instr4 = render_text(instr_txt4, True, (255, 255, 255))
+        screen.blit(instr4, (SCREEN_WIDTH // 2 - instr4.get_width() // 2 , 290))
+
         # 3. Status Message (Errors, Success, etc.)
         if status_msg:
             s_surf = render_text(status_msg, True, status_color)
-            screen.blit(s_surf, (SCREEN_WIDTH // 2 - s_surf.get_width() // 2, 300))
+            screen.blit(s_surf, (SCREEN_WIDTH // 2 - s_surf.get_width() // 2, 350))
 
         # 4. Inputs
+        # USERNAME
         u_color = (255, 255, 255) if input_mode == "USER" else (80, 80, 80)
-        u_surf = render_text(f"Username: {username}", True, u_color)
-        screen.blit(u_surf, (SCREEN_WIDTH // 2 - u_surf.get_width() // 2, 350))
+        u_text = settings.get("username_label", "Username") # Just gets the word
+        u_surf = render_text(f"{u_text}: {username}", True, u_color) # Stick them together here
+        screen.blit(u_surf, (SCREEN_WIDTH // 2 - u_surf.get_width() // 2, 400))
 
-        p_color = (255, 255, 255) if input_mode == "PASS" else (80, 80, 80)
+        # PASSWORD
+        p_color = (255, 255, 255) if input_mode == "PASS" else (80, 80, 80) 
+        p_text = settings.get("password_label", "Password") # Just gets the word
         stars = "*" * len(user_pass)
-        p_surf = render_text(f"Password: {stars}", True, p_color)
-        screen.blit(p_surf, (SCREEN_WIDTH // 2 - p_surf.get_width() // 2, 420))
-
-        submit_txt = render_text("Press ENTER to Continue", True, (0, 255, 0))
-        screen.blit(submit_txt, (SCREEN_WIDTH // 2 - submit_txt.get_width() // 2, 550))
-
+        p_surf = render_text(f"{p_text}: {stars}", True, p_color) # Stick them together here
+        screen.blit(p_surf, (SCREEN_WIDTH // 2 - p_surf.get_width() // 2, 450))
+        
+        # Submit button
+        submit_txt = settings.get("submit_prompt", "Press ENTER to Continue")
+        submit_surf = render_text(submit_txt, True, (0, 255, 0))
+        screen.blit(submit_surf, (SCREEN_WIDTH // 2 - submit_surf.get_width() // 2, 550))
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 login_done = True
@@ -9105,8 +9120,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.94.1", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.94.2", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 
 # First define current XP outside the loop
 level, xp_needed, xp_total = xp()
