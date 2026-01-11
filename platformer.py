@@ -42,7 +42,7 @@ if sys.platform.startswith('linux'):
     os.environ['SDL_VIDEODRIVER'] = 'x11'
 
 pygame.display.set_caption("Roboquix")
-MIN_WIDTH, MIN_HEIGHT = 1250, 750
+MIN_WIDTH, MIN_HEIGHT = 1250, 700
 
 # First of all, LOAD THE DAMN BGGG
 background_img = pygame.image.load(resource_path("bgs/PlainBackground.png")).convert()
@@ -86,22 +86,22 @@ default_progress = {
         "Username": "",
         "Pass": "",
         "XP": 0,
-        "Level": 1,
+        "Level": 1
     },
     "lvls": { 
         "complete_levels": 0,
-        "locked_levels": {f"lvl{i}" for i in range(2, 13)},
+        "locked_levels": [f"lvl{i}" for i in range(2, 13)],
         "times": {f"lvl{i}": 0 for i in range(1, 13)},
         "medals": {f"lvl{i}": "None" for i in range(1, 13)},
-        "score": {f"lvl{i}": 0 for i in range(1, 13)},
+        "score": {f"lvl{i}": 0 for i in range(1, 13)}
     },
     "pref" : { 
-        "character": "robot",
+        "character": "robot"
     },
     "char": { 
         "evilrobo": False, 
         "greenrobo": False,
-        "ironrobo": False,
+        "ironrobo": False
     },
     "achieved": { 
         "speedy_starter": False,
@@ -109,8 +109,8 @@ default_progress = {
         "over_9k": False,
         "chase_escape": False,
         "golden": False,
-        "lv20": "False",
-    },
+        "lv20": False
+    }
 }
 
 
@@ -169,27 +169,6 @@ def update_local_manifest(data):
     # 4. Save
     with open(ACCOUNTS_FILE, "w") as f:
         json.dump(manifest, f, indent=4)
-    
-    print("Updated local manifest:", manifest)
-
-def check_session_expired(p_id):
-    if os.path.exists(ACCOUNTS_FILE):
-        with open(ACCOUNTS_FILE, "r") as f:
-            manifest = json.load(f)
-        
-        if p_id in manifest["users"]:
-            last_str = manifest["users"][p_id]["last_login"]
-            last_date = datetime.strptime(last_str, "%Y-%m-%d").date()
-            
-            days_passed = (date.today() - last_date).days
-            
-            if days_passed > 60:
-                print("Session expired! Back to Login Screen.")
-                return True # Show login
-            else:
-                print(f"Welcome back! Day {days_passed}/60 of your session.")
-                return False # Stay logged in
-    return True # No record found, show login
 
 notification_time = None
 
@@ -212,10 +191,16 @@ def draw_notifications():
         er = False
 
 def draw_syncing_status():
-    global is_syncing
+    global sync_status, sync_finish_time, is_syncing
     if is_syncing:
+        if sync_finish_time is not None:
+            if time.time() - sync_finish_time > 1:
+                is_syncing = False
+                sync_finish_time = None
+                return
+
         # 1. Render and draw the text
-        syncing_text = render_text("Syncing Vault to Cloud...", True, (255, 255, 255))
+        syncing_text = render_text(sync_status, True, (255, 255, 255))
         text_x = SCREEN_WIDTH - syncing_text.get_width() - 10
         text_y = SCREEN_HEIGHT - 60
         screen.blit(syncing_text, (text_x, text_y))
@@ -229,7 +214,8 @@ def draw_syncing_status():
         orbit_center_x = text_x - 30
         orbit_center_y = text_y + 15 # Adjusted to center it vertically with text
 
-        for i in range(3):
+        if sync_finish_time is None:
+          for i in range(3):
             # offset each dot by 0.5 radians so they follow each other
             dot_angle = angle_rad - (i * 0.5) 
             x = orbit_center_x + orbit_radius * math.cos(dot_angle)
@@ -237,11 +223,17 @@ def draw_syncing_status():
             # Make trailing dots smaller or dimmer
             alpha = 255 - (i * 80) 
             pygame.draw.circle(screen, (alpha, alpha, alpha), (int(x), int(y)), 5 - i)
-        
+
+# To handle sync status message output.        
+sync_status = ""
+sync_finish_time = None
+
 def sync_vault_to_cloud(data):
-    global is_syncing
+    global is_syncing, sync_status, sync_finish_time
     is_syncing = True
-    
+    settings = load_language(lang_code)['settings']
+    sync_status = settings.get("sync_stat1", "Syncing Vault to Cloud...")
+
     # Using the IDs from your pre-filled link
     payload = {
         "entry.377726286": data["player"].get("Username", "Unknown"), # Username
@@ -257,13 +249,13 @@ def sync_vault_to_cloud(data):
     try:
         response = requests.post(url, data=payload, timeout=7)
         if response.status_code == 200:
-            print("Cloud Vault: Sync Successful.")
+            sync_status = settings.get("sync_stat3", "Success!")
 
     except Exception as e:
-        print(f"Cloud Vault Error: {e}")
+        sync_status = settings.get("sync_stat2", "Failed!")
 
     finally:
-        is_syncing = False
+        sync_finish_time = time.time()
 
 def recover_account_from_cloud(target_user, target_pass):
     # This is your 'Latest Progress' CSV link
@@ -1118,7 +1110,7 @@ def character_select():
     
     # Clear screen
     buttons.clear()
-    current_lang = load_language(lang_code)['language_select']
+    current_lang = load_language(lang_code)['char_select']
     button_texts = ["back"]
 
     for i, key in enumerate(button_texts):
@@ -1387,6 +1379,7 @@ def set_page(page):
 def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg):
     if rect.collidepoint(pygame.mouse.get_pos()):
         global wait_time, selected_character, locked_char_sound_time, locked_char_sound_played
+        charsel = load_language(lang_code).get('char_select', {})
 
         if unlock_flag:
             selected_character = char_key
@@ -1404,7 +1397,7 @@ def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg):
             if wait_time is None:
                 wait_time = pygame.time.get_ticks()
             global locked_text
-            locked_text = messages.get(locked_msg_key, fallback_msg)
+            locked_text = charsel.get(locked_msg_key, fallback_msg)
 
 def create_quit_confirm_buttons():
     global current_lang, buttons, quit_text, quit_text_rect
@@ -1502,37 +1495,37 @@ def level_complete():
             hover_sound.play()
           display_score += max(5, (score // 71))
         if stars >= 1 and (time.time() - star_time > 0.5):
-                screen.blit(star_img, (SCREEN_WIDTH // 2 - 231, 130))
+                screen.blit(star_img, (SCREEN_WIDTH // 2 - 231, 110))
                 if not star1_p:
                  for _ in range(40):  # Add some particles at star position
-                    stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 230 + star_img.get_width() // 2, 130 + star_img.get_height() // 2)) 
+                    stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 230 + star_img.get_width() // 2, 110 + star_img.get_height() // 2)) 
                  if not is_mute:
                   star_channel.play(star1)
                 star1_p = True
         if stars >= 2 and (time.time() - star_time > 1.5):
-                screen.blit(star_img, (SCREEN_WIDTH // 2 - 76, 130))
+                screen.blit(star_img, (SCREEN_WIDTH // 2 - 76, 110))
                 if not star2_p and star1_p: 
                     for _ in range(40):  # Add some particles at star position
-                     stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 75 + star_img.get_width() // 2, 130 + star_img.get_height() // 2))  
+                     stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 75 + star_img.get_width() // 2, 110 + star_img.get_height() // 2))  
                     if not is_mute:
                      star_channel.play(star2)
                     star2_p = True
         if stars >= 3 and (time.time() - star_time  >  2.5):
-                screen.blit(star_img, (SCREEN_WIDTH // 2 + 79, 130)) 
+                screen.blit(star_img, (SCREEN_WIDTH // 2 + 79, 110)) 
                 if  not star3_p and star2_p: 
                     for _ in range(40):  # Add some particles at star position
-                      stareffects.append(StarParticles(SCREEN_WIDTH // 2 + 80 + star_img.get_width() // 2, 130 + star_img.get_height() // 2)) 
+                      stareffects.append(StarParticles(SCREEN_WIDTH // 2 + 80 + star_img.get_width() // 2, 110 + star_img.get_height() // 2)) 
                     if not is_mute:
                      star_channel.play(star3)
                     star3_p = True
         if medal == "Diamond":
-            screen.blit(diam_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - gold_m.get_height() // 2))
+            screen.blit(diam_m, (SCREEN_WIDTH // 2 - 200, 300 - gold_m.get_height() // 2))
         elif medal == "Gold":
-            screen.blit(gold_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - gold_m.get_height() // 2))
+            screen.blit(gold_m, (SCREEN_WIDTH // 2 - 200, 300 - gold_m.get_height() // 2))
         elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - gold_m.get_height() // 2))
+            screen.blit(silv_m, (SCREEN_WIDTH // 2 - 200, 300 - gold_m.get_height() // 2))
         elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - gold_m.get_height() // 2))
+            screen.blit(bron_m, (SCREEN_WIDTH // 2 - 200, 300 - gold_m.get_height() // 2))
 
         for particle in stareffects[:]:
          particle.update()
@@ -1544,30 +1537,30 @@ def level_complete():
                 display_score = score
 
         score_text = font_text.render(str(display_score), True, (255, 255, 255))
-        screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, SCREEN_HEIGHT // 2 - score_text.get_height() // 2))
+        screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, 300 - score_text.get_height() // 2))
 
         
         if time.time() - star_time > 4:  # Show for 3 seconds
                 if new_hs:
                     hs_text = messages.get("new_hs", "New High Score!")
                     new_hs_text = render_text(hs_text, True, (255, 215, 0))
-                    screen.blit(new_hs_text, (SCREEN_WIDTH // 2 - new_hs_text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
+                    screen.blit(new_hs_text, (SCREEN_WIDTH // 2 - new_hs_text.get_width() // 2, 360))
                     if not is_mute and not notified:
                         hscore.play()
                         notified = True
                 else:
                     high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
                     hs_text = render_text(high_text, True, (158, 158, 158))
-                    screen.blit(hs_text, (SCREEN_WIDTH // 2 - hs_text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
+                    screen.blit(hs_text, (SCREEN_WIDTH // 2 - hs_text.get_width() // 2, 380))
         
         if time.time() - star_time > 6 or keys[pygame.K_SPACE]:
                 running = False
         else: 
             next_left = -(int(time.time() - star_time) - 6)
             time_text = render_text("Press the spacebar to", True, (158, 158, 158))
-            screen.blit(time_text, (SCREEN_WIDTH // 2 - time_text.get_width() // 2, SCREEN_HEIGHT // 2 + 250))
+            screen.blit(time_text, (SCREEN_WIDTH // 2 - time_text.get_width() // 2, SCREEN_HEIGHT - 75))
             time_text_2 = render_text(f"continue or wait for {next_left}", True, (158, 158, 158))
-            screen.blit(time_text_2, (SCREEN_WIDTH // 2 - time_text_2.get_width() // 2, SCREEN_HEIGHT // 2 + 275))
+            screen.blit(time_text_2, (SCREEN_WIDTH // 2 - time_text_2.get_width() // 2, SCREEN_HEIGHT - 50))
 
         xp()
         draw_notifications()
@@ -9071,7 +9064,8 @@ def show_login_screen():
 def create_account_selector():
     global buttons
     buttons.clear()
-    
+    settings = load_language(lang_code).get('settings', {})
+
     # 1. Load the local manifest
     manifest = {"users": {}}
     if os.path.exists(ACCOUNTS_FILE):
@@ -9092,11 +9086,12 @@ def create_account_selector():
         
         # Append to buttons list
         buttons.append((rendered_name, rect, f"load_user_{p_id}", False))
-        y_pos += 100
+        y_pos += 72
 
     # 3. "New Player" Button
-    new_txt_rendered = render_text("+ NEW PLAYER", True, (255, 255, 255))
-    new_rect = new_txt_rendered.get_rect(center=(SCREEN_WIDTH // 2, y_pos + 40))
+    new_txt = settings.get("new_acc", "+ NEW PLAYER")
+    new_txt_rendered = render_text(new_txt, True, (255, 255, 255))
+    new_rect = new_txt_rendered.get_rect(center=(SCREEN_WIDTH // 2, y_pos))
     buttons.append((new_txt_rendered, new_rect, "new_account", False))
 
 if not is_mute and SCREEN_WIDTH > MIN_WIDTH and SCREEN_HEIGHT > MIN_HEIGHT:
@@ -9110,10 +9105,9 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.93.3", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.94", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 
-print(progress)
 # First define current XP outside the loop
 level, xp_needed, xp_total = xp()
 XP_text = font_text.render(f"{level}", True, (255, 255, 255))
@@ -9337,7 +9331,7 @@ while running:
          if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 5000:
              rendered_locked_text = render_text(locked_text, True, (255, 255, 0))
-             screen.blit(rendered_locked_text, ((SCREEN_WIDTH // 2 - rendered_locked_text.get_width() // 2), SCREEN_HEIGHT - 700))
+             screen.blit(rendered_locked_text, ((SCREEN_WIDTH // 2 - rendered_locked_text.get_width() // 2), 100))
             else:
              wait_time = None
 
@@ -9533,9 +9527,11 @@ while running:
 
         elif current_page == "Account":
             screen.blit(background, (0, 0))
-            
+            settings = load_language(lang_code).get('settings', {})  # Fetch localized messages
             # 1. Draw the Title Manually Here
-            title = font_text.render("SELECT PROFILE", True, (255, 255, 255))
+
+            title_text = settings.get("select", "SELECT PROFILE")
+            title = render_text(title_text, True, (255, 255, 255))
             screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 80))
 
             # 2. Draw the Buttons (Using the standard button loop)
