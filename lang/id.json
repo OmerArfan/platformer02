@@ -56,6 +56,10 @@
     "confirm_quit": "Yakin ingin keluar?",
     "yes": "Ya",
     "no": "Tidak",
+    "deny_message": "Akses ditolak!",
+    "error_message": "Resolusi layar terlalu rendah! Tingkatkan",
+    "error_message2": "resolusi di pengaturan sistem Anda.",
+    "countdown_message": "Menutup dalam {countdown} detik...",
     "lvl_comp": "Level Selesai!",
     "hs_m": "Skor Tertinggi: {hs}"
     ,"new_hs": "Skor Tinggi Baru!"

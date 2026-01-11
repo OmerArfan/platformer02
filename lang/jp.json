@@ -56,6 +56,10 @@
     "confirm_quit": "本当に終了しますか？",
     "yes": "はい",
     "no": "いいえ",
+    "deny_message": "アクセスが拒否されました！",
+    "error_message": "画面の解像度が低すぎます！システム設定で",
+    "error_message2": "解像度を上げてください。",
+    "countdown_message": "{countdown} 秒後に終了します...",
     "lvl_comp": "レベルクリア！",
     "hs_m": "ハイスコア: {hs}"
     ,"new_hs": "新記録達成！"

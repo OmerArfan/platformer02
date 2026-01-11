@@ -56,6 +56,10 @@
     "confirm_quit": "정말로 종료하시겠습니까?",
     "yes": "예",
     "no": "아니요",
+    "deny_message": "액세스가 거부되었습니다!",
+    "error_message": "화면 해상도가 너무 낮습니다! 시스템 설정에서",
+    "error_message2": "해상도를 높여주세요.",
+    "countdown_message": "{countdown}초 후에 닫힙니다...",
     "lvl_comp": "레벨 완료!",
     "hs_m": "최고 점수: {hs}"
     ,"new_hs": "새로운 최고 기록!"
