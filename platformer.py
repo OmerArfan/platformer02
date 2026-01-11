@@ -9105,8 +9105,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.94", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.94.1", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
 
 # First define current XP outside the loop
 level, xp_needed, xp_total = xp()
