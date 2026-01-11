@@ -527,7 +527,7 @@ while ps < 100:
     mech_background_img = pygame.image.load(resource_path("bgs/MechBackground.png")).convert()
     mech_background = pygame.transform.scale(mech_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT)); ps += 1
     trans = pygame.image.load(resource_path("bgs/trans.png")).convert()
-    trans = pygame.transform.scale(trans, ((SCREEN_WIDTH), (SCREEN_HEIGHT))); ps += 1
+    trans = pygame.transform.scale(trans, ((SCREEN_WIDTH * 1.1), (SCREEN_HEIGHT))); ps += 1
     end = pygame.image.load(resource_path("bgs/EndScreen.png")).convert_alpha()
     end = pygame.transform.scale(end, ((SCREEN_WIDTH), (SCREEN_HEIGHT))); ps += 1
 
@@ -775,9 +775,10 @@ class TransitionManager:
 
         self.x += self.speed * self.direction
 
-        if self.direction == 1 and self.x >= 0:
+        if self.direction == 1 and self.x >= -50:
             self.x = 0
             # Switch page when screen is fully covered
+            pygame.event.wait(10)
             set_page(self.target_page)
             self.direction = -2  # Start sliding out
 
@@ -9120,7 +9121,7 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.94.2", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.94.3", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 
 # First define current XP outside the loop
