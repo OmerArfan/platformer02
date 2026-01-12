@@ -28,6 +28,15 @@
     "password_label": "パスワード",
     "submit_prompt": "ENTERを押して続行"
   }
+  ,"achieve": {
+    "unlock": "実績を解除しました：",
+    "zen_os": "六つの頂点！",
+    "speedy_starter": "スピーディースター！",
+    "over_9k": "戦闘力9000以上だ！",
+    "chase_escape": "追跡と脱出！",
+    "golden": "ゴールデン！",
+    "lv20": "XPコレクター！"
+  }
   ,"char_select": {
     "select": "ロボを選ぼう！",
     "evillocked_message": "このロボットをアンロックするには実績「追跡と脱出」を解除してください！",

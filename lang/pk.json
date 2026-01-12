@@ -27,6 +27,15 @@
     ,"username_label": "صارف نام",
     "password_label": "پاس ورڈ",
     "submit_prompt": "آگے بڑھنے کے لیے ENTER دبائیں"
+  }
+  ,"achieve": {
+    "unlock": "اچیومنٹ انلاک ہو گئی:",
+    "zen_os": "چھ کا عروج!",
+    "speedy_starter": "تیز آغاز!",
+    "over_9k": "یہ 9000 سے اوپر ہے!",
+    "chase_escape": "تعاقب اور فرار!",
+    "golden": "سنہری!",
+    "lv20": "تجربہ جمع کرنے والا!"
   },
   "char_select": {
     "select": "اپنا روبوٹ منتخب کریں!",

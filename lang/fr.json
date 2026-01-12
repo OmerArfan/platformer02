@@ -36,6 +36,15 @@
     "greenlocked_message": "Débloquez le « Succès d'Or » pour déverrouiller ce robot !",
     "ironlocked_message": "Débloquez le succès « Zénith des Six » pour déverrouiller ce robot !",
     "back": "Retour"
+  }
+  ,"achieve": {
+    "unlock": "Succès déverrouillé :",
+    "zen_os": "Zénith des Six !",
+    "speedy_starter": "Démarrage Rapide !",
+    "over_9k": "Plus de 9000 !",
+    "chase_escape": "Poursuivi et Évadé !",
+    "golden": "Doré !",
+    "lv20": "Collectionneur d'XP !"
   },
   "levels": {
   "level_display": "CHOISIR UN NIVEAU",

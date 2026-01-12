@@ -36,8 +36,17 @@
     "greenlocked_message": "Bu robotun kilidini açmak için 'Altın Başarım' kazan!",
     "ironlocked_message": "Bu robotun kilidini açmak için 'Altının Zirvesi' başarımını kazan!",
     "back": "Geri"
-  },
-  "levels": {
+  }
+  ,"achieve": {
+    "unlock": "Başarım açıldı:",
+    "zen_os": "Altının Zirvesi!",
+    "speedy_starter": "Hızlı Başlangıç!",
+    "over_9k": "9000'in üzerinde!",
+    "chase_escape": "Kovalandı ve Kaçtı!",
+    "golden": "Altın!",
+    "lv20": "XP Koleksiyoncusu!"
+  }
+  ,"levels": {
     "level_display": "BİR SEVİYE SEÇ",
     "lvl1": "Seviye 1",
     "lvl2": "Seviye 2",

@@ -27,6 +27,15 @@
     ,"username_label": "사용자 이름",
     "password_label": "비밀번호",
     "submit_prompt": "계속하려면 ENTER를 누르세요"
+  }
+  ,"achieve": {
+    "unlock": "업적 달성:",
+    "zen_os": "여섯의 정점!",
+    "speedy_starter": "스피디 스타터!",
+    "over_9k": "전투력이 9000을 넘었다!",
+    "chase_escape": "추격과 탈출!",
+    "golden": "황금빛!",
+    "lv20": "XP 수집가!"
   },
   "char_select": {
     "select": "로봇을 선택하세요!",

@@ -37,6 +37,15 @@
     "password_label": "Password",
     "submit_prompt": "Press ENTER to Continue"
   }
+  ,"achieve": {
+    "unlock": "Achievement unlocked:",
+    "zen_os": "Zenith of Six!",
+    "speedy_starter": "Speedy Starter!",
+    "over_9k": "Its over 9000!",
+    "chase_escape": "Chased and Escaped!",
+    "golden": "Golden!",
+    "lv20": "XP Collector!"
+  }
   ,"levels": {
   "level_display": "SELECT A LEVEL",
   "lvl1": "Level 1",

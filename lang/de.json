@@ -37,6 +37,15 @@
     "ironlocked_message": "Schalte den Erfolg „Zenit der Sechs“ frei, um diesen Roboter freizuschalten!",
     "back": "Zurück"
   }
+  ,"achieve": {
+    "unlock": "Erfolg freigeschaltet:",
+    "zen_os": "Zenit der Sechs!",
+    "speedy_starter": "Schneller Starter!",
+    "over_9k": "Über 9000!",
+    "chase_escape": "Verfolgt und Entkommen!",
+    "golden": "Golden!",
+    "lv20": "EP-Sammler!"
+  }
   ,"levels": {
   "level_display": "WÄHLE EINEN LEVEL",
   "lvl1": "Stufe 1",    

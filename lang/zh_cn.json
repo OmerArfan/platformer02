@@ -37,6 +37,15 @@
     "ironlocked_message": "获得“六之巅峰”成就以解锁此机器人！",
     "back": "返回"
   }
+  ,"achieve": {
+    "unlock": "达成成就：",
+    "zen_os": "六之巅峰！",
+    "speedy_starter": "极速启航！",
+    "over_9k": "战力破九千！",
+    "chase_escape": "追逐与逃脱！",
+    "golden": "黄金成就！",
+    "lv20": "经验收藏家！"
+  }
   ,"levels": {
     "level_display": "选择一个级别",
     "lvl1": "第1关",

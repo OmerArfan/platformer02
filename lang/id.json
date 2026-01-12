@@ -36,6 +36,15 @@
     "greenlocked_message": "Buka 'Pencapaian Emas' untuk membuka robot ini!",
     "ironlocked_message": "Buka pencapaian 'Puncak dari Enam' untuk membuka robot ini!",
     "back": "Kembali"
+  }
+  ,"achieve": {
+    "unlock": "Pencapaian terbuka:",
+    "zen_os": "Puncak dari Enam!",
+    "speedy_starter": "Pemula Cepat!",
+    "over_9k": "Lebih dari 9000!",
+    "chase_escape": "Dikejar dan Lolos!",
+    "golden": "Emas!",
+    "lv20": "Pengumpul XP!"
   },
   "levels": {
     "level_display": "PILIH LEVEL",

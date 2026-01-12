@@ -37,6 +37,15 @@
     "ironlocked_message": "¡Desbloquea el logro «Cénit de los Seis» para obtener este robot!",
     "back": "Volver"
   }    
+  ,"achieve": {
+    "unlock": "Logro desbloqueado:",
+    "zen_os": "¡Cénit de los Seis!",
+    "speedy_starter": "¡Principiante Veloz!",
+    "over_9k": "¡Es más de 9000!",
+    "chase_escape": "¡Perseguido y Escapado!",
+    "golden": "¡Dorado!",
+    "lv20": "¡Coleccionista de XP!"
+  }
   ,"levels": {
   "level_display": "SELECCIONA UN NIVEL",
   "lvl1": "Nivel 1", 
