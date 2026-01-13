@@ -672,17 +672,63 @@ def render_text(text, Boolean, color):
     return font_def.render(text, True, color)
 
 def create_achieve_screen():
+    global current_lang
     buttons.clear()
-    try:
-     header = load_language(current_lang).get["main_menu", {}]
-     ach = load_language(current_lang).get["achieve", {}]
+    current_lang = load_language(lang_code)
+    # 1. Load the sections with fallback to the root dictionary
+    # This covers both nested: current_lang["achieve"]["zen_os"] 
+    # and flat: current_lang["zen_os"]
+    ach_data = current_lang.get("achieve", {}) 
+    header_data = current_lang.get("main_menu", {})
 
-     ach_txt = header.get("achievements", "Achievements")
-     ach_header = font_text.render(ach_txt, True, (255, 255, 255))
-     screen.blit(ach_header, (SCREEN_WIDTH // 2 - ach_header.get_width() // 2, 50))
-    except Exception as e:
-        screen.blit(render_text("This page is coming soon!(Press ALT+F4 to go to exit screen and press No to continue.)", True, (255, 255, 255)) , (50, 50))
+    # 1. Render Main Header
+    ach_txt = header_data.get("achievements", "Achievements")
+    ach_header = render_text(ach_txt, True, (255, 255, 255))
+    screen.blit(ach_header, (SCREEN_WIDTH // 2 - ach_header.get_width() // 2, 50))
 
+    ach_list = [
+        "zen_os",
+        "zen_os_desc",
+        "speedy_starter", 
+        "speedy_starter_desc",
+        "over_9k",
+        "over_9k_desc",
+        "chase_escape",
+        "chase_escape_desc",
+        "golden", 
+        "golden_desc",
+        "lv20", 
+        "lv20_desc"
+    ]
+
+    y_offset = 120 
+    
+    count = 0
+
+    for title_key in ach_list:
+        # We try to get from ach_data first, then fallback to current_lang directly
+        title_str = ach_data.get(title_key, "?")
+
+        # Render Title
+        if title_key[-5:] != "_desc":
+         if progress["achieved"][title_key]:
+           color = (0, 204, 0)
+         else:
+           color = (255, 255, 0)
+
+        title_surf = render_text(title_str, True, color)
+        screen.blit(title_surf, (100, y_offset))
+
+        count += 1
+        if count % 2 == 0:
+           y_offset += 52
+        else:
+           y_offset += 25
+
+    back_text = current_lang.get("back", "Back")
+    rendered_back = render_text(back_text, True, (255, 255, 255))
+    back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100))
+    buttons.append((rendered_back, back_rect, "back", False))
 
 class Achievements:
     def lvl1speed(ctime):
@@ -8645,6 +8691,13 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "quit_confirm"
+    elif current_page == "achievements":
+        if key == "back":
+            if not is_transitioning:
+                transition.start("main_menu")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "main_menu"
     elif current_page == "settings":
         if key == "Back":
             if not is_transitioning:
@@ -8985,8 +9038,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.94.4", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 11), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.95", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 
 # First define current XP outside the loop
 level, xp_needed, xp_total = xp()
