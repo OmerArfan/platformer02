@@ -40,11 +40,20 @@
   ,"achieve": {
     "unlock": "Succès déverrouillé :",
     "zen_os": "Zénith des Six !",
+    "zen_os_desc": "Terminez le niveau 6 en moins de 30 secondes sans mourir !",
     "speedy_starter": "Démarrage Rapide !",
+    "speedy_starter_desc": "Terminez le niveau 1 en moins de 4,5 secondes !",
     "over_9k": "Plus de 9000 !",
+    "over_9k_desc": "Obtenez un score de 105 000 ou plus au niveau 9 !",
     "chase_escape": "Poursuivi et Évadé !",
+    "chase_escape_desc": "Secret...",
     "golden": "Doré !",
-    "lv20": "Collectionneur d'XP !"
+    "golden_desc": "Obtenez une médaille d'or ou plus dans tous les niveaux du Monde Vert !",
+    "lv20": "Collectionneur d'XP !",
+    "lv20_desc": "Atteignez le niveau d'XP 20 !",
+    "rew": "Récompense :",
+    "char_rew": "Nouveau Robot",
+    "xp_rew": "{XP} XP"
   },
   "levels": {
   "level_display": "CHOISIR UN NIVEAU",

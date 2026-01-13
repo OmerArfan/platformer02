@@ -40,11 +40,20 @@
   ,"achieve": {
     "unlock": "Achievement unlocked:",
     "zen_os": "Zenith of Six!",
+    "zen_os_desc": "Complete Level 6 in less than 30 seconds with no deaths!",
     "speedy_starter": "Speedy Starter!",
+    "speedy_starter_desc": "Complete Level 1 in under 4.5 seconds!",
     "over_9k": "Its over 9000!",
+    "over_9k_desc": "Achieve a score of 105000 or above in Level 9!",
     "chase_escape": "Chased and Escaped!",
+    "chase_escape_desc": "Secret...",
     "golden": "Golden!",
-    "lv20": "XP Collector!"
+    "golden_desc": "Get a Gold or higher medal in all Green World Levels!",
+    "lv20": "XP Collector!",
+    "lv20_desc": "Reach XP Level 20!",
+    "rew": "Reward:",
+    "char_rew": "New Robot",
+    "xp_rew": "{XP} XP"
   }
   ,"levels": {
   "level_display": "SELECT A LEVEL",

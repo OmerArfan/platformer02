@@ -31,11 +31,20 @@
   ,"achieve": {
     "unlock": "実績を解除しました：",
     "zen_os": "六つの頂点！",
+    "zen_os_desc": "ミスなしで、30秒以内にレベル6をクリアせよ！",
     "speedy_starter": "スピーディースター！",
+    "speedy_starter_desc": "4.5秒以内にレベル1をクリアせよ！",
     "over_9k": "戦闘力9000以上だ！",
+    "over_9k_desc": "レベル9で105,000点以上のスコアを達成せよ！",
     "chase_escape": "追跡と脱出！",
+    "chase_escape_desc": "秘密...",
     "golden": "ゴールデン！",
-    "lv20": "XPコレクター！"
+    "golden_desc": "グリーンワールドの全レベルでゴールド以上のメダルを獲得せよ！",
+    "lv20": "XPコレクター！",
+    "lv20_desc": "XPレベル20に到達せよ！",
+    "rew": "報酬：",
+    "char_rew": "新しいロボット",
+    "xp_rew": "{XP} XP"
   }
   ,"char_select": {
     "select": "ロボを選ぼう！",

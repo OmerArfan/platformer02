@@ -40,11 +40,20 @@
   ,"achieve": {
     "unlock": "Pencapaian terbuka:",
     "zen_os": "Puncak dari Enam!",
+    "zen_os_desc": "Selesaikan Level 6 dalam waktu kurang dari 30 detik tanpa mati!",
     "speedy_starter": "Pemula Cepat!",
+    "speedy_starter_desc": "Selesaikan Level 1 dalam waktu kurang dari 4,5 detik!",
     "over_9k": "Lebih dari 9000!",
+    "over_9k_desc": "Capai skor 105.000 atau lebih di Level 9!",
     "chase_escape": "Dikejar dan Lolos!",
+    "chase_escape_desc": "Rahasia...",
     "golden": "Emas!",
-    "lv20": "Pengumpul XP!"
+    "golden_desc": "Dapatkan medali Emas atau lebih tinggi di semua Level Dunia Hijau!",
+    "lv20": "Pengumpul XP!",
+    "lv20_desc": "Capai XP Level 20!",
+    "rew": "Hadiah:",
+    "char_rew": "Robot Baru",
+    "xp_rew": "{XP} XP"
   },
   "levels": {
     "level_display": "PILIH LEVEL",

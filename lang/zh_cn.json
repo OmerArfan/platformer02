@@ -38,13 +38,22 @@
     "back": "返回"
   }
   ,"achieve": {
-    "unlock": "达成成就：",
+   "unlock": "达成成就：",
     "zen_os": "六之巅峰！",
+    "zen_os_desc": "在 30 秒内完成第 6 关且无死亡！",
     "speedy_starter": "极速启航！",
+    "speedy_starter_desc": "在 4.5 秒内完成第 1 关！",
     "over_9k": "战力破九千！",
+    "over_9k_desc": "在第 9 关获得 105,000 分或以上！",
     "chase_escape": "追逐与逃脱！",
+    "chase_escape_desc": "秘密...",
     "golden": "黄金成就！",
-    "lv20": "经验收藏家！"
+    "golden_desc": "在所有绿色世界关卡中获得金牌或更高勋章！",
+    "lv20": "经验收藏家！",
+    "lv20_desc": "等级达到 20 级！",
+    "rew": "奖励：",
+    "char_rew": "新机器人",
+    "xp_rew": "{XP} 经验值"
   }
   ,"levels": {
     "level_display": "选择一个级别",
