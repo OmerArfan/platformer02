@@ -281,7 +281,8 @@ def recover_account_from_cloud(target_user, target_pass):
                 if cloud_user == target_user:
                     if cloud_pass == hashed_input:
                         print("Cloud Vault: Credentials verified. Downloading progress...")
-                        notify_sound.play()
+                        if not is_mute:
+                            notify_sound.play()
                         # Grab the JSON from the 'Progress' column
                         return json.loads(row.get('Progress'))
                     else:
@@ -414,7 +415,8 @@ def save_progress(data):
 
     # 1. Basic Validation: Ensure we aren't saving an empty/broken object
     if not data or "lvls" not in data or "player" not in data:
-        hit_sound.play()
+        if not is_mute:
+            hit_sound.play()
         notification_text = font_def.render("Refusing to save: Invalid data structure!", True, (255, 0, 0))
         notif = True
         notification_time = time.time()
@@ -450,7 +452,8 @@ def save_progress(data):
             threading.Thread(target=sync_vault_to_cloud, args=(data,), daemon=True).start()
 
     except PermissionError:
-        hit_sound.play()
+        if not is_mute:
+            hit_sound.play()
         notification_text = font_def.render("Error: Save file is locked by another program.", True, (255, 0, 0))
         notif = True
         notification_time = time.time()
@@ -458,7 +461,8 @@ def save_progress(data):
     except Exception as e:
         er = True
         error_code = font_def.render(f"Save Error: {str(e)}", True, (255, 0, 0))
-        hit_sound.play()
+        if not is_mute:
+            hit_sound.play()
         notification_time = time.time()
         print(f"Detailed save error: {e}")
 
@@ -679,7 +683,6 @@ def create_achieve_screen():
     global current_lang
     buttons.clear()
     current_lang = load_language(lang_code)
-    print(current_lang)
     # 1. Load the sections with fallback to the root dictionary
     # This covers both nested: current_lang["achieve"]["zen_os"] 
     # and flat: current_lang["zen_os"]
@@ -763,7 +766,8 @@ class Achievements:
             progress["achieved"]["speedy_starter"] = True  
             # LOCALIZED HERE
             notification_text = Achievements.get_notif_text("speedy_starter", "Speedy Starter")
-            notify_sound.play()
+            if not is_mute:
+                notify_sound.play()
             if notification_time is None:
                 notif = True
                 notification_time = time.time()
@@ -777,7 +781,8 @@ class Achievements:
             save_progress(progress)
             # LOCALIZED HERE
             notification_text = Achievements.get_notif_text("zen_os", "Zenith of Six")
-            notify_sound.play()
+            if not is_mute:
+                notify_sound.play()
             if notification_time is None:
                 notif = True
                 notification_time = time.time()
@@ -789,7 +794,8 @@ class Achievements:
             progress["achieved"]["over_9k"] = True          
             # LOCALIZED HERE
             notification_text = Achievements.get_notif_text("over_9k", "It's over 9000!!")
-            notify_sound.play()
+            if not is_mute:
+                notify_sound.play()
             if notification_time is None:
                 notif = True
                 notification_time = time.time()
@@ -1803,7 +1809,6 @@ def fin_lvl_logic(lvl):
             global medal, hs, stars, new_hs
             if progress["lvls"]["complete_levels"] < lvl:
                 progress["lvls"]["complete_levels"] = lvl
-                
 
             if not is_mute:
                 warp_sound.play()
@@ -5071,7 +5076,7 @@ def create_lvl7_screen():
 
     # Draw the saw
             angle = (pygame.time.get_ticks() // 3) % 360
-            saw_ig_img = get_rotated_saw(saw_img, r, angle)
+            saw_ig_img = get_rotated_saw(saw_img, rotating_saw['r'], angle)
             curr_w, curr_h = saw_ig_img.get_size()
             center_x = x - camera_x
             center_y = y - camera_y
@@ -7275,7 +7280,8 @@ def create_lvl10_screen():
            # Check if the player collides with the entry rectangle
             if player_rect.colliderect(teleporter["entry"]):
                 # Teleport the player to the exit rectangle
-                warp_sound.play()
+                if not is_mute:
+                    warp_sound.play()
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
         
         saw_angle += 5 
@@ -8636,7 +8642,8 @@ def create_lvl12_screen():
                     # Check if player is inside block when it reappears
             
                     if player_rect.colliderect(pair["block"]):
-                        hit_sound.play()
+                        if not is_mute:
+                         hit_sound.play()
                         deathcount += 1
                         stamina = False  # Reset stamina status
                         lights_off = True
@@ -9221,7 +9228,6 @@ def show_login_screen():
                 elif event.key == pygame.K_RETURN:
                     if len(username) > 2 and len(user_pass) > 3:
                         status_msg = "Checking Cloud Vault..."
-                        print(status_msg)
                         status_color = (255, 255, 0)
                         
                         # Draw immediately so user sees "Checking..."
@@ -9243,7 +9249,8 @@ def show_login_screen():
                             # [SCENARIO 2] FOUND BUT WRONG PASS
                             status_msg = "Wrong Password for this user!"
                             status_color = (255, 50, 50)
-                            death_sound.play()
+                            if not is_mute:
+                               death_sound.play()
                             
                         else:
                             # [SCENARIO 3] NOT FOUND: Create New
@@ -9266,7 +9273,8 @@ def show_login_screen():
                             login_done = True
                             
                     else:
-                        death_sound.play()
+                        if not is_mute:
+                            death_sound.play()
                         status_msg = "Username/Password too short!"
                         status_color = (255, 50, 50)
                 
@@ -9332,8 +9340,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.96.1", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.96.2", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 
 # First define current XP outside the loop
 level, xp_needed, xp_total = xp()
