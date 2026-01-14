@@ -514,6 +514,7 @@ while ps < 100:
 
     # Load logo images
     logo = pygame.image.load(resource_path("oimgs/logos/logo.png")).convert_alpha(); ps += 1
+    logo = pygame.transform.rotate(logo, 5)
     studio_logo = pygame.image.load(resource_path("oimgs/logos/studiologodef.png")).convert_alpha()
     studio_logo = pygame.transform.scale(studio_logo, (220, 220))
     studio_logo_rect = studio_logo.get_rect(topleft=(20, SCREEN_HEIGHT - 240)); ps += 2
@@ -562,6 +563,7 @@ while ps < 100:
     badge = pygame.transform.scale(badge, (70, 70)); ps += 1
     max_badge = pygame.image.load(resource_path("oimgs/ig/max-badge.png")).convert_alpha()
     max_badge = pygame.transform.scale(max_badge, (70, 70)); ps += 1
+    saw_img = pygame.image.load(resource_path("oimgs/ig/saw.png")).convert_alpha()
 
     # Load character images
     robot_img = pygame.image.load(resource_path("char/robot/robot.png")).convert_alpha()
@@ -2419,6 +2421,7 @@ def create_lvl3_screen():
     camera_speed = 0.5
     deathcount = 0
     was_moving = False
+    saw_angle = 0
 
     # Draw flag
     flag = pygame.Rect(200, 200, 100, 125)  # x, y, width, height
@@ -2488,7 +2491,8 @@ def create_lvl3_screen():
  
         # Draw all saws first
     for x, y, r, color in saws:
-            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+            saw_ig_img = pygame.transform.scale(saw_img, (int(r*2), int(r*2)))
+            screen.blit(saw_ig_img, (int(x - r - camera_x), int(y - r - camera_y)))
 
     for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
@@ -2709,11 +2713,18 @@ def create_lvl3_screen():
             screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
  
         # Draw all saws first
+        # Assuming 'saw_angle' is a variable that increases every frame
+        saw_angle += 5 
+
         for x, y, r, color in saws:
-            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+         scale_factor = (r * 2.5) / saw_img.get_width()
+         rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+         rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+         screen.blit(rotated_saw, rect)
 
         # Now check for collision with all saws
         collision_detected = False
+        
         for x, y, r, color in saws:
             closest_x = max(player_rect.left, min(x, player_rect.right))
             closest_y = max(player_rect.top, min(y, player_rect.bottom))
@@ -2892,6 +2903,7 @@ def create_lvl4_screen():
     camera_speed = 0.5
     deathcount = 0
     was_moving = False
+    saw_angle = 0
 
     # Draw flag
     flag = pygame.Rect(1500, 550, 100, 125)  # x, y, width, height
@@ -2996,11 +3008,16 @@ def create_lvl4_screen():
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
     # Draw the saw
-            pygame.draw.circle(screen, (255, 0, 0), (int(x - camera_x), int(y - camera_y)), rotating_saw['r'])
-
+            scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     for x, y, r, color in saws:
-        pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+        scale_factor = (r * 2.5) / saw_img.get_width()
+        rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+        rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+        screen.blit(rotated_saw, rect)
 
         # Draw all lasers first
     for laser in lasers:
@@ -3278,7 +3295,10 @@ def create_lvl4_screen():
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
     # Draw the saw
-            pygame.draw.circle(screen, (255, 0, 0), (int(x - camera_x), int(y - camera_y)), rotating_saw['r'])
+            scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection
             closest_x = max(player_rect.left, min(x, player_rect.right))
@@ -3310,7 +3330,10 @@ def create_lvl4_screen():
                 saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
     # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection (if needed)
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
@@ -3329,9 +3352,16 @@ def create_lvl4_screen():
                 velocity_y = 0
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
+        saw_angle += 5
+
         # Draw all saws first
         for x, y, r, color in saws:
-            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+        # 1. Scale and Rotate the original 'saw_img' in one go
+        # The '1' is the scale multiplier; we calculate scale based on radius 'r'
+         scale_factor = (r * 2.5) / saw_img.get_width()
+         rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+         rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+         screen.blit(rotated_saw, rect)
 
         # Now check for collision with all saws
         for saw in saws:
@@ -3551,6 +3581,7 @@ def create_lvl5_screen():
     camera_speed = 0.5
     deathcount = 0
     was_moving = False
+    saw_angle = 0
 
     # Draw flag
     flag = pygame.Rect(2100, -150, 100, 125)  # x, y, width, height
@@ -3633,10 +3664,15 @@ def create_lvl5_screen():
         [(4800, -750), (4850, -800), (4900, -750)],
         [(4800, -150), (4850, -200), (4900, -150)],
         [(3900, -20), (3950, 30), (4000, -20)],
+        [(3900, -320), (3950, -270), (4000, -320)],
         [(3900, -620), (3950, -570), (4000, -620)],
+        [(4200, -120), (4250, -70), (4300, -120)],
         [(4200, -420), (4250, -370), (4300, -420)],
         [(4500, -20), (4550, 30), (4600, -20)],
+        [(4500, -320), (4550, -270), (4600, -320)],
+        [(4500, -620), (4550, -570), (4600, -620)],
         [(4800, -720), (4850, -670), (4900, -720)],
+        [(4800, -420), (4850, -370), (4900, -420)],
         [(4800, -120), (4850, -70), (4900, -120)],
     ]
 
@@ -3667,11 +3703,16 @@ def create_lvl5_screen():
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
     # Draw the saw
-            pygame.draw.circle(screen, (255, 0, 0), (int(x - camera_x), int(y - camera_y)), rotating_saw['r'])
-
-
+            scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+            screen.blit(rotated_saw, rect)
+    
     for x, y, r, color in saws:
-        pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+        scale_factor = (r * 2.5) / saw_img.get_width()
+        rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+        rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+        screen.blit(rotated_saw, rect)
 
     for block in blocks:
         pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
@@ -3918,7 +3959,10 @@ def create_lvl5_screen():
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
     # Draw the saw
-            pygame.draw.circle(screen, (255, 0, 0), (int(x - camera_x), int(y - camera_y)), rotating_saw['r'])
+            scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection
             closest_x = max(player_rect.left, min(x, player_rect.right))
@@ -3950,7 +3994,10 @@ def create_lvl5_screen():
                 saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
     # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection (if needed)
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
@@ -3977,7 +4024,10 @@ def create_lvl5_screen():
                 saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
     # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection (if needed)
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
@@ -3995,10 +4045,13 @@ def create_lvl5_screen():
                 velocity_y = 0
                 deathcount += 1
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
-
+        saw_angle += 5 
         for x, y, r, color in saws:
             # Draw the saw as a circle
-            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+         scale_factor = (r * 2.5) / saw_img.get_width()
+         rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+         rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+         screen.blit(rotated_saw, rect)
 
         for saw in saws:
             saw_x, saw_y, saw_radius, _ = saw
@@ -4221,6 +4274,7 @@ def create_lvl6_screen():
     was_moving = False
     val = 1
     guide = False
+    saw_angle = 0
 
     # Draw flag
     flag = pygame.Rect(2400, 380, 100, 125)  # x, y, width, height
@@ -4320,11 +4374,16 @@ def create_lvl6_screen():
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
     # Draw the saw
-            pygame.draw.circle(screen, (255, 0, 0), (int(x - camera_x), int(y - camera_y)), rotating_saw['r'])
-
+            scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     for x, y, r, color in saws:
-        pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+         scale_factor = (r * 2.5) / saw_img.get_width()
+         rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+         rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+         screen.blit(rotated_saw, rect)
 
         # Draw all lasers first
     for laser in lasers:
@@ -4587,7 +4646,10 @@ def create_lvl6_screen():
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
     # Draw the saw
-            pygame.draw.circle(screen, (255, 0, 0), (int(x - camera_x), int(y - camera_y)), rotating_saw['r'])
+            scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection
             closest_x = max(player_rect.left, min(x, player_rect.right))
@@ -4618,7 +4680,10 @@ def create_lvl6_screen():
                 saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
     # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection (if needed)
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
@@ -4646,6 +4711,10 @@ def create_lvl6_screen():
 
     # Draw the moving circle (saw)
             pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection (if needed)
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
@@ -4664,10 +4733,13 @@ def create_lvl6_screen():
                 velocity_y = 0
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
-
+        saw_angle += 5 
         for x, y, r, color in saws:
             # Draw the saw as a circle
-            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+         scale_factor = (r * 2.5) / saw_img.get_width()
+         rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+         rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+         screen.blit(rotated_saw, rect)
 
         for saw in saws:
             saw_x, saw_y, saw_radius, _ = saw
@@ -4692,7 +4764,6 @@ def create_lvl6_screen():
                     death_sound.play() 
                 velocity_y = 0
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
-
 
         for laser in lasers:
             pygame.draw.rect(screen, (255, 0, 0), (int(laser.x - camera_x), int(laser.y - camera_y), laser.width, laser.height))
@@ -4835,8 +4906,6 @@ def create_lvl6_screen():
         invisible_text = in_game.get("invisible_message", "These saws won't hurt you... promise!")
         screen.blit(render_text(invisible_text, True, (255, 51, 153)), (900 - camera_x, 250 - camera_y)) # Render the invisible block text
 
-        
-
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
                 if val > 0.3:
@@ -4887,6 +4956,7 @@ def create_lvl7_screen():
     camera_speed = 0.5
     deathcount = 0
     was_moving = False
+    saw_angle = 0
 
     # Draw flag
     flag = pygame.Rect(2600, 300, 100, 125)  # x, y, width, height
@@ -4963,11 +5033,16 @@ def create_lvl7_screen():
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
     # Draw the saw
-            pygame.draw.circle(screen, (255, 0, 0), (int(x - camera_x), int(y - camera_y)), rotating_saw['r'])
-
+            scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     for x, y, r, color in saws:
-        pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+         scale_factor = (r * 2.5) / saw_img.get_width()
+         rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+         rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+         screen.blit(rotated_saw, rect)
 
     for block in blocks:
         pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
@@ -5144,7 +5219,10 @@ def create_lvl7_screen():
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
     # Draw the saw
-            pygame.draw.circle(screen, (255, 0, 0), (int(x - camera_x), int(y - camera_y)), rotating_saw['r'])
+            scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection
             closest_x = max(player_rect.left, min(x, player_rect.right))
@@ -5175,7 +5253,10 @@ def create_lvl7_screen():
                 saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
     # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection (if needed)
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
@@ -5201,7 +5282,10 @@ def create_lvl7_screen():
                 saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
     # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection (if needed)
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
@@ -5232,10 +5316,13 @@ def create_lvl7_screen():
                 if not is_mute:
                     warp_sound.play()
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
-        
+        saw_angle += 5 
         for x, y, r, color in saws:
             # Draw the saw as a circle
-            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+         scale_factor = (r * 2.5) / saw_img.get_width()
+         rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+         rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+         screen.blit(rotated_saw, rect)
 
         for saw in saws:
             saw_x, saw_y, saw_radius, _ = saw
@@ -5404,6 +5491,7 @@ def create_lvl8_screen():
     camera_speed = 0.5
     deathcount = 0
     was_moving = False
+    saw_angle = 0
 
     # Draw flag
     flag = pygame.Rect(8470, -320, 100, 125)  # x, y, width, height
@@ -5483,7 +5571,10 @@ def create_lvl8_screen():
     screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
  
     for x, y, r, color in saws:
-        pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+         scale_factor = (r * 2.5) / saw_img.get_width()
+         rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+         rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+         screen.blit(rotated_saw, rect)
 
     for block in blocks:
         pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
@@ -5680,7 +5771,10 @@ def create_lvl8_screen():
                 saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
     # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection (if needed)
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
@@ -5707,7 +5801,10 @@ def create_lvl8_screen():
                 saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
     # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection (if needed)
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
@@ -5739,10 +5836,14 @@ def create_lvl8_screen():
                 if not is_mute:
                     warp_sound.play()
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
-        
+
+        saw_angle += 5 
         for x, y, r, color in saws:
             # Draw the saw as a circle
-            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+         scale_factor = (r * 2.5) / saw_img.get_width()
+         rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+         rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+         screen.blit(rotated_saw, rect)
 
         for saw in saws:
             saw_x, saw_y, saw_radius, _ = saw
@@ -5951,6 +6052,7 @@ def create_lvl9_screen():
     weak_grav = False
     move_speed = 8
     on_ground = False
+    saw_angle = 0
 
     # Draw flag
     flag = pygame.Rect(2350, 300, 100, 125)  # x, y, width, height
@@ -6358,6 +6460,7 @@ def create_lvl9_screen():
             if not pair["collected"]:
                 pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
+        saw_angle += 5 
         for saw in moving_saws:
     # Update the circle's position (move vertically)
             saw['cy'] += saw['speed']  # Move down or up depending on speed
@@ -6367,7 +6470,10 @@ def create_lvl9_screen():
                 saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
     # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection (if needed)
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
@@ -6396,7 +6502,10 @@ def create_lvl9_screen():
                 saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
     # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection (if needed)
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
@@ -6636,6 +6745,7 @@ def create_lvl10_screen():
     deathcount = 0
     was_moving = False
     lights_off = True
+    saw_angle = 0
 
     # Draw flag
     flag = pygame.Rect(3100, 370, 100, 125)  # x, y, width, height
@@ -6735,14 +6845,20 @@ def create_lvl10_screen():
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
     # Draw the saw
-            pygame.draw.circle(screen, (255, 0, 0), (int(x - camera_x), int(y - camera_y)), rotating_saw['r'])
+            scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     for block in blocks:
         pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
 
     for x, y, r, color in saws:
             # Draw the saw as a circle
-            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+         scale_factor = (r * 2.5) / saw_img.get_width()
+         rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+         rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+         screen.blit(rotated_saw, rect)
 
     
     draw_notifications()
@@ -6975,7 +7091,10 @@ def create_lvl10_screen():
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
     # Draw the saw
-            pygame.draw.circle(screen, (255, 0, 0), (int(x - camera_x), int(y - camera_y)), rotating_saw['r'])
+            scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection
             closest_x = max(player_rect.left, min(x, player_rect.right))
@@ -7008,7 +7127,10 @@ def create_lvl10_screen():
                 saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
     # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection (if needed)
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
@@ -7036,7 +7158,10 @@ def create_lvl10_screen():
                 saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
     # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection (if needed)
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
@@ -7069,9 +7194,13 @@ def create_lvl10_screen():
                 warp_sound.play()
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
         
+        saw_angle += 5 
         for x, y, r, color in saws:
             # Draw the saw as a circle
-            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+         scale_factor = (r * 2.5) / saw_img.get_width()
+         rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+         rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+         screen.blit(rotated_saw, rect)
 
         for saw in saws:
             saw_x, saw_y, saw_radius, _ = saw
@@ -7276,6 +7405,7 @@ def create_lvl11_screen():
     deathcount = 0
     was_moving = False
     lights_off = True
+    saw_angle = 0
 
     # Preparation for fight with Evil Robo
     suspicious_x = 4200
@@ -7296,6 +7426,7 @@ def create_lvl11_screen():
     checkpoint_reached2 = False
     flag_1_x, flag_1_y = 1400, 420
     flag_2_x, flag_2_y = 5600, 330
+
 
     key_block_pairs = [
         {
@@ -7375,9 +7506,13 @@ def create_lvl11_screen():
         (2450, -400, 30, (51, 255, 51)),
     ]
 
+    
     for x, y, r, color in saws:
             # Draw the saw as a circle
-            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+         scale_factor = (r * 2.5) / saw_img.get_width()
+         rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+         rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+         screen.blit(rotated_saw, rect)
 
     for spike in spikes:
         pygame.draw.polygon(screen, (255, 0, 0), [((x - camera_x),( y - camera_y)) for x, y in spike])
@@ -7620,7 +7755,10 @@ def create_lvl11_screen():
                 saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
     # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection (if needed)
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
@@ -7650,7 +7788,10 @@ def create_lvl11_screen():
                 saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
     # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
     # Collision detection (if needed)
             closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
@@ -7672,9 +7813,13 @@ def create_lvl11_screen():
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
 
+        saw_angle += 5 
         for x, y, r, color in saws:
             # Draw the saw as a circle
-            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+         scale_factor = (r * 2.5) / saw_img.get_width()
+         rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+         rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+         screen.blit(rotated_saw, rect)
 
         for saw in saws:
             saw_x, saw_y, saw_radius, _ = saw
@@ -7716,7 +7861,10 @@ def create_lvl11_screen():
             dy = closest_y - saw['cy']
             distance = (dx**2 + dy**2)**0.5
 
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
             if distance < saw['r']:
                 lights_off = True
@@ -8064,6 +8212,7 @@ def create_lvl12_screen():
     deathcount = 0
     was_moving = False
     lights_off = True
+    saw_angle = 0
 
     # Draw flag
     flag = pygame.Rect(3900, 200, 100, 125)  # x, y, width, height
@@ -8305,15 +8454,26 @@ def create_lvl12_screen():
 
         for saw in moving_saws:
                 # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
         for saw in moving_saws_x:
     # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
+            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
+            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
+            screen.blit(rotated_saw, rect)
 
+
+        saw_angle += 5 
         for x, y, r, color in saws:
             # Draw the saw as a circle
-            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+         scale_factor = (r * 2.5) / saw_img.get_width()
+         rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+         rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+         screen.blit(rotated_saw, rect)
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
@@ -9058,8 +9218,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.95.1", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.96", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 
 # First define current XP outside the loop
 level, xp_needed, xp_total = xp()
@@ -9177,7 +9337,7 @@ while running:
                             handle_action(key)  # Only load level on click!
                     
         if current_page == "main_menu":
-            screen.blit(logo, ((SCREEN_WIDTH // 2 - logo.get_width() // 2), 30))
+            screen.blit(logo, ((SCREEN_WIDTH // 2 - logo.get_width() // 2), -20))
             screen.blit(lilrobopeek, ((SCREEN_WIDTH - lilrobopeek.get_width()), (SCREEN_HEIGHT - lilrobopeek.get_height())))
             screen.blit(logo_text, logo_pos)
             screen.blit(site_text, site_pos)
