@@ -185,8 +185,8 @@ def draw_notifications():
         notif = False
 
     if er:
-            if notification_time is not None and time.time() - notification_time < 4:  # Show for 4 seconds
-                screen.blit(error_code, (SCREEN_WIDTH // 2 - error_code.get_width() // 2, 130))
+        if notification_time is not None and time.time() - notification_time < 4:  # Show for 4 seconds
+            screen.blit(error_code, (SCREEN_WIDTH // 2 - error_code.get_width() // 2, 130))
     else:
         er = False
 
@@ -458,6 +458,8 @@ def save_progress(data):
     except Exception as e:
         er = True
         error_code = font_def.render(f"Save Error: {str(e)}", True, (255, 0, 0))
+        hit_sound.play()
+        notification_time = time.time()
         print(f"Detailed save error: {e}")
 
 # Load progress at start
@@ -675,11 +677,13 @@ def create_achieve_screen():
     global current_lang
     buttons.clear()
     current_lang = load_language(lang_code)
+    print(current_lang)
     # 1. Load the sections with fallback to the root dictionary
     # This covers both nested: current_lang["achieve"]["zen_os"] 
     # and flat: current_lang["zen_os"]
     ach_data = current_lang.get("achieve", {}) 
     header_data = current_lang.get("main_menu", {})
+    back_data = current_lang.get("language_select", {})
 
     # 1. Render Main Header
     ach_txt = header_data.get("achievements", "Achievements")
@@ -717,7 +721,11 @@ def create_achieve_screen():
            color = (255, 255, 0)
 
         title_surf = render_text(title_str, True, color)
-        screen.blit(title_surf, (100, y_offset))
+        if lang_code == "ar" or lang_code == "pk":
+            x_pos = SCREEN_WIDTH - 100 - title_surf.get_width()
+        else:
+            x_pos = 100
+        screen.blit(title_surf, (x_pos, y_offset))
 
         count += 1
         if count % 2 == 0:
@@ -725,94 +733,109 @@ def create_achieve_screen():
         else:
            y_offset += 25
 
-    back_text = current_lang.get("back", "Back")
+    back_text = back_data.get("back", "Back")
     rendered_back = render_text(back_text, True, (255, 255, 255))
     back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100))
     buttons.append((rendered_back, back_rect, "back", False))
 
 class Achievements:
+    @staticmethod
+    def get_notif_text(ach_key, default_name):
+        # Helper to build the 'Achievement Unlocked: Name' string
+        lang = load_language(lang_code)
+        ach_data = lang.get("achieve", {})
+        
+        # Get "Achievement Unlocked:" prefix
+        prefix = ach_data.get("unlock", "Achievement unlocked:")
+        # Get the specific name (e.g., "Speedy Starter!")
+        name = ach_data.get(ach_key, default_name)
+        
+        # Combine them and render
+        full_string = f"{prefix} {name}"
+        return render_text(full_string, True, (255, 255, 0))
+
     def lvl1speed(ctime):
         global notification_text, notification_time, notif
         unlock = progress["achieved"].get("speedy_starter", False)
-        if ctime <= 4.5:
-          if not unlock:
+        if ctime <= 4.5 and not unlock:
             progress["achieved"]["speedy_starter"] = True  
-            notification_text = font_def.render("Achievement Unlocked: Speedy Starter", True, (255, 255, 0))
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("speedy_starter", "Speedy Starter")
             notify_sound.play()
             if notification_time is None:
-             notif = True
-             notification_time = time.time()
+                notif = True
+                notification_time = time.time()
     
     def perfect6(ctime, deaths):
         global notification_text, notification_time, notif
         unlock = progress["achieved"].get("zen_os", False)
-        if ctime <= 30 and deaths <= 0:
-          if not unlock:
+        if ctime <= 30 and deaths <= 0 and not unlock:
             progress["achieved"]["zen_os"] = True
             progress["char"]["ironrobo"] = True
             save_progress(progress)
-            notification_text = font_def.render("Achievement Unlocked: Zenith of Six", True, (255, 255, 0))
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("zen_os", "Zenith of Six")
             notify_sound.play()
             if notification_time is None:
-             notif = True
-             notification_time = time.time()
+                notif = True
+                notification_time = time.time()
 
     def lvl90000(score):
         global notification_text, notification_time, notif
         unlock = progress["achieved"].get("over_9k", False)
-        if score >= 105000:
-         if not unlock:
+        if score >= 105000 and not unlock:
             progress["achieved"]["over_9k"] = True          
-            notification_text = font_def.render("Achievement Unlocked: It's over 9000!!", True, (255, 255, 0))
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("over_9k", "It's over 9000!!")
             notify_sound.play()
             if notification_time is None:
-             notif = True
-             notification_time = time.time()
+                notif = True
+                notification_time = time.time()
     
     def evilchase():
         global notification_text, notification_time, notif
-        notification_text = font_def.render("Achievement Unlocked: Chased and Escaped", True, (255, 255, 0))
         unlock = progress["achieved"].get("chase_escape", False)
         if not unlock:
-          progress["achieved"]["chase_escape"] = True
-          progress["char"]["evilrobo"] = True
-          save_progress(progress)
-          if not is_mute:
-           notify_sound.play()
-           if notification_time is None:
-             notif = True
-             notification_time = time.time()
+            progress["achieved"]["chase_escape"] = True
+            progress["char"]["evilrobo"] = True
+            save_progress(progress)
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("chase_escape", "Chased and Escaped")
+            if not is_mute:
+                notify_sound.play()
+            if notification_time is None:
+                notif = True
+                notification_time = time.time()
     
     def check_green_gold():
         global notification_text, notification_time, notif
-        notification_text = font_def.render("Achievement Unlocked: Golden!", True, (255, 255, 0))
-        all_gold = all(progress["lvls"]["medals"][f"lvl{i}"] == "Gold" or progress["lvls"]["medals"][f"lvl{i}"] == "Diamond" for i in range(1, 7))
+        all_gold = all(progress["lvls"]["medals"][f"lvl{i}"] in ["Gold", "Diamond"] for i in range(1, 7))
         unlock = progress["achieved"].get("golden", False)
-        if all_gold:        
-          if not unlock:
+        if all_gold and not unlock:        
+            progress["achieved"]["golden"] = True
+            progress["char"]["greenrobo"] = True
+            save_progress(progress)
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("golden", "Golden!")
             if not is_mute:
                 notify_sound.play()
-            unlock = True
-            progress["achieved"]["golden"] = True
-            progress["char"]["greenrobo"] = unlock
-            save_progress(progress)
             if notification_time is None:
-             notif = True
-             notification_time = time.time()
+                notif = True
+                notification_time = time.time()
     
     def check_xplvl20(Level):
         global notification_text, notification_time, notif
-        notification_text = font_def.render("Achievement Unlocked: XP Collector!", True, (255, 255, 0))
         unlock = progress["achieved"].get("lv20", False)
-        if Level >= 20:
-         if not unlock:
-          progress["achieved"]["lv20"] = True
-          save_progress(progress)
-          if not is_mute:
-           notify_sound.play()
-           if notification_time is None:
-             notif = True
-             notification_time = time.time()
+        if Level >= 20 and not unlock:
+            progress["achieved"]["lv20"] = True
+            save_progress(progress)
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("lv20", "XP Collector!")
+            if not is_mute:
+                notify_sound.play()
+            if notification_time is None:
+                notif = True
+                notification_time = time.time()
         
 class TransitionManager:
     def __init__(self, screen, image, speed=40):
@@ -1599,7 +1622,6 @@ def level_complete():
         score_text = font_text.render(str(display_score), True, (255, 255, 255))
         screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, 300 - score_text.get_height() // 2))
 
-        
         if time.time() - star_time > 4:  # Show for 3 seconds
                 if new_hs:
                     hs_text = messages.get("new_hs", "New High Score!")
@@ -1631,7 +1653,7 @@ def level_complete():
 def char_assets():
     global selected_character, player_img, blink_img, moving_img, moving_img_l, img_width, img_height
     selected_character = progress["pref"].get("character", default_progress["pref"]["character"])
- # Load player image
+    # Load player image
     if selected_character == "robot": 
         player_img = pygame.image.load(resource_path(f"char/robot/robot.png")).convert_alpha()
         blink_img = pygame.image.load(resource_path(f"char/robot/blinkrobot.png")).convert_alpha()
@@ -1644,7 +1666,7 @@ def char_assets():
         moving_img = pygame.image.load(resource_path(f"char/evilrobot/movevilrobot.png")).convert_alpha() # Resize to fit the game
     elif selected_character == "greenrobot":
         player_img = pygame.image.load(resource_path(f"char/greenrobot/greenrobot.png")).convert_alpha()
-        blink_img = pygame.image.load(resource_path(f"char/greenrobot/greenrobot.png")).convert_alpha()
+        blink_img = pygame.image.load(resource_path(f"char/greenrobot/blinkgreenrobot.png")).convert_alpha()
         moving_img_l = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobotL.png")).convert_alpha() # Resize to fit the game
         moving_img = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobot.png")).convert_alpha() # Resize to fit the game
     elif selected_character == "ironrobot":
@@ -1793,7 +1815,7 @@ def player_image(keys, player_x, player_y, camera_x, camera_y):
             screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
     else:
         screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
-        if round(current_time % 4, 0) == 0:
+        if current_time % 4 < 0.25:
             screen.blit(blink_img, (player_x - camera_x, player_y - camera_y))
 
 def create_lvl1_screen():
@@ -3492,8 +3514,6 @@ def create_lvl4_screen():
         levels = load_language(lang_code).get('levels', {})
         lvl4_text = levels.get("lvl4", "Level 4")  # Render the level text
         screen.blit(render_text(lvl4_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
-
-        
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
@@ -9038,8 +9058,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.95", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.95.1", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
 
 # First define current XP outside the loop
 level, xp_needed, xp_total = xp()
