@@ -37,6 +37,24 @@
     "ironlocked_message": "Schalte den Erfolg „Zenit der Sechs“ frei, um diesen Roboter freizuschalten!",
     "back": "Zurück"
   }
+  ,"achieve": {
+    "unlock": "Erfolg freigeschaltet:",
+    "zen_os": "Zenit der Sechs!",
+    "zen_os_desc": "Schließe Level 6 in weniger als 30 Sekunden ohne Tode ab!",
+    "speedy_starter": "Schneller Starter!",
+    "speedy_starter_desc": "Schließe Level 1 in weniger als 4,5 Sekunden ab!",
+    "over_9k": "Über 9000!",
+    "over_9k_desc": "Erreiche eine Punktzahl von 105.000 oder mehr in Level 9!",
+    "chase_escape": "Verfolgt und Entkommen!",
+    "chase_escape_desc": "Geheimnis...",
+    "golden": "Golden!",
+    "golden_desc": "Hol dir eine Goldmedaille oder besser in allen Levels der Grünen Welt!",
+    "lv20": "EP-Sammler!",
+    "lv20_desc": "Erreiche EP-Level 20!",
+    "rew": "Belohnung:",
+    "char_rew": "Neuer Roboter",
+    "xp_rew": "{XP} EP"
+  }
   ,"levels": {
   "level_display": "WÄHLE EINEN LEVEL",
   "lvl1": "Stufe 1",    

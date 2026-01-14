@@ -27,6 +27,24 @@
     ,"username_label": "사용자 이름",
     "password_label": "비밀번호",
     "submit_prompt": "계속하려면 ENTER를 누르세요"
+  }
+  ,"achieve": {
+    "unlock": "업적 달성:",
+    "zen_os": "여섯의 정점!",
+    "zen_os_desc": "죽지 않고 30초 이내에 레벨 6을 완료하세요!",
+    "speedy_starter": "스피디 스타터!",
+    "speedy_starter_desc": "4.5초 이내에 레벨 1을 완료하세요!",
+    "over_9k": "전투력이 9000을 넘었다!",
+    "over_9k_desc": "레벨 9에서 105,000점 이상의 점수를 달성하세요!",
+    "chase_escape": "추격과 탈출!",
+    "chase_escape_desc": "비밀...",
+    "golden": "황금빛!",
+    "golden_desc": "그린 월드의 모든 레벨에서 금메달 이상을 획득하세요!",
+    "lv20": "XP 수집가!",
+    "lv20_desc": "XP 레벨 20을 달성하세요!",
+    "rew": "보상:",
+    "char_rew": "새로운 로봇",
+    "xp_rew": "{XP} XP"
   },
   "char_select": {
     "select": "로봇을 선택하세요!",

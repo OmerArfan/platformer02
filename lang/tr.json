@@ -36,8 +36,26 @@
     "greenlocked_message": "Bu robotun kilidini açmak için 'Altın Başarım' kazan!",
     "ironlocked_message": "Bu robotun kilidini açmak için 'Altının Zirvesi' başarımını kazan!",
     "back": "Geri"
-  },
-  "levels": {
+  }
+  ,"achieve": {
+    "unlock": "Başarım açıldı:",
+    "zen_os": "Altının Zirvesi!",
+    "zen_os_desc": "Bölüm 6'yı hiç ölmeden 30 saniyenin altında tamamla!",
+    "speedy_starter": "Hızlı Başlangıç!",
+    "speedy_starter_desc": "Bölüm 1'i 4,5 saniyenin altında tamamla!",
+    "over_9k": "9000'in üzerinde!",
+    "over_9k_desc": "Bölüm 9'da 105.000 veya üzeri puan al!",
+    "chase_escape": "Kovalandı ve Kaçtı!",
+    "chase_escape_desc": "Gizli...",
+    "golden": "Altın!",
+    "golden_desc": "Tüm Yeşil Dünya bölümlerinde Altın veya daha yüksek madalya kazan!",
+    "lv20": "XP Koleksiyoncusu!",
+    "lv20_desc": "XP Seviye 20'ye ulaş!",
+    "rew": "Ödül:",
+    "char_rew": "Yeni Robot",
+    "xp_rew": "{XP} XP"
+  }
+  ,"levels": {
     "level_display": "BİR SEVİYE SEÇ",
     "lvl1": "Seviye 1",
     "lvl2": "Seviye 2",

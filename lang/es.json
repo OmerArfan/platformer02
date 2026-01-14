@@ -37,6 +37,24 @@
     "ironlocked_message": "¡Desbloquea el logro «Cénit de los Seis» para obtener este robot!",
     "back": "Volver"
   }    
+  ,"achieve": {
+    "unlock": "Logro desbloqueado:",
+    "zen_os": "¡Cénit de los Seis!",
+    "zen_os_desc": "¡Completa el Nivel 6 en menos de 30 segundos sin morir!",
+    "speedy_starter": "¡Principiante Veloz!",
+    "speedy_starter_desc": "¡Completa el Nivel 1 en menos de 4,5 segundos!",
+    "over_9k": "¡Es más de 9000!",
+    "over_9k_desc": "¡Consigue una puntuación de 105.000 o más en el Nivel 9!",
+    "chase_escape": "¡Perseguido y Escapado!",
+    "chase_escape_desc": "Secreto...",
+    "golden": "¡Dorado!",
+    "golden_desc": "¡Consigue una medalla de Oro o superior en todos los niveles del Mundo Verde!",
+    "lv20": "¡Coleccionista de XP!",
+    "lv20_desc": "¡Llega al nivel 20 de XP!",
+    "rew": "Recompensa:",
+    "char_rew": "Nuevo Robot",
+    "xp_rew": "{XP} XP"
+  }
   ,"levels": {
   "level_display": "SELECCIONA UN NIVEL",
   "lvl1": "Nivel 1", 

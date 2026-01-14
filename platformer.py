@@ -185,8 +185,8 @@ def draw_notifications():
         notif = False
 
     if er:
-            if notification_time is not None and time.time() - notification_time < 4:  # Show for 4 seconds
-                screen.blit(error_code, (SCREEN_WIDTH // 2 - error_code.get_width() // 2, 130))
+        if notification_time is not None and time.time() - notification_time < 4:  # Show for 4 seconds
+            screen.blit(error_code, (SCREEN_WIDTH // 2 - error_code.get_width() // 2, 130))
     else:
         er = False
 
@@ -458,6 +458,8 @@ def save_progress(data):
     except Exception as e:
         er = True
         error_code = font_def.render(f"Save Error: {str(e)}", True, (255, 0, 0))
+        hit_sound.play()
+        notification_time = time.time()
         print(f"Detailed save error: {e}")
 
 # Load progress at start
@@ -670,88 +672,170 @@ def render_text(text, Boolean, color):
         return font_kr.render(text, True, color)
 
     return font_def.render(text, True, color)
+
+def create_achieve_screen():
+    global current_lang
+    buttons.clear()
+    current_lang = load_language(lang_code)
+    print(current_lang)
+    # 1. Load the sections with fallback to the root dictionary
+    # This covers both nested: current_lang["achieve"]["zen_os"] 
+    # and flat: current_lang["zen_os"]
+    ach_data = current_lang.get("achieve", {}) 
+    header_data = current_lang.get("main_menu", {})
+    back_data = current_lang.get("language_select", {})
+
+    # 1. Render Main Header
+    ach_txt = header_data.get("achievements", "Achievements")
+    ach_header = render_text(ach_txt, True, (255, 255, 255))
+    screen.blit(ach_header, (SCREEN_WIDTH // 2 - ach_header.get_width() // 2, 50))
+
+    ach_list = [
+        "zen_os",
+        "zen_os_desc",
+        "speedy_starter", 
+        "speedy_starter_desc",
+        "over_9k",
+        "over_9k_desc",
+        "chase_escape",
+        "chase_escape_desc",
+        "golden", 
+        "golden_desc",
+        "lv20", 
+        "lv20_desc"
+    ]
+
+    y_offset = 120 
     
+    count = 0
+
+    for title_key in ach_list:
+        # We try to get from ach_data first, then fallback to current_lang directly
+        title_str = ach_data.get(title_key, "?")
+
+        # Render Title
+        if title_key[-5:] != "_desc":
+         if progress["achieved"][title_key]:
+           color = (0, 204, 0)
+         else:
+           color = (255, 255, 0)
+
+        title_surf = render_text(title_str, True, color)
+        if lang_code == "ar" or lang_code == "pk":
+            x_pos = SCREEN_WIDTH - 100 - title_surf.get_width()
+        else:
+            x_pos = 100
+        screen.blit(title_surf, (x_pos, y_offset))
+
+        count += 1
+        if count % 2 == 0:
+           y_offset += 52
+        else:
+           y_offset += 25
+
+    back_text = back_data.get("back", "Back")
+    rendered_back = render_text(back_text, True, (255, 255, 255))
+    back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100))
+    buttons.append((rendered_back, back_rect, "back", False))
+
 class Achievements:
+    @staticmethod
+    def get_notif_text(ach_key, default_name):
+        # Helper to build the 'Achievement Unlocked: Name' string
+        lang = load_language(lang_code)
+        ach_data = lang.get("achieve", {})
+        
+        # Get "Achievement Unlocked:" prefix
+        prefix = ach_data.get("unlock", "Achievement unlocked:")
+        # Get the specific name (e.g., "Speedy Starter!")
+        name = ach_data.get(ach_key, default_name)
+        
+        # Combine them and render
+        full_string = f"{prefix} {name}"
+        return render_text(full_string, True, (255, 255, 0))
+
     def lvl1speed(ctime):
         global notification_text, notification_time, notif
         unlock = progress["achieved"].get("speedy_starter", False)
-        if ctime <= 4.5:
-          if not unlock:
+        if ctime <= 4.5 and not unlock:
             progress["achieved"]["speedy_starter"] = True  
-            notification_text = font_def.render("Achievement Unlocked: Speedy Starter", True, (255, 255, 0))
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("speedy_starter", "Speedy Starter")
             notify_sound.play()
             if notification_time is None:
-             notif = True
-             notification_time = time.time()
+                notif = True
+                notification_time = time.time()
     
     def perfect6(ctime, deaths):
         global notification_text, notification_time, notif
         unlock = progress["achieved"].get("zen_os", False)
-        if ctime <= 30 and deaths <= 0:
-          if not unlock:
+        if ctime <= 30 and deaths <= 0 and not unlock:
             progress["achieved"]["zen_os"] = True
             progress["char"]["ironrobo"] = True
             save_progress(progress)
-            notification_text = font_def.render("Achievement Unlocked: Zenith of Six", True, (255, 255, 0))
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("zen_os", "Zenith of Six")
             notify_sound.play()
             if notification_time is None:
-             notif = True
-             notification_time = time.time()
+                notif = True
+                notification_time = time.time()
 
     def lvl90000(score):
         global notification_text, notification_time, notif
         unlock = progress["achieved"].get("over_9k", False)
-        if score >= 105000:
-         if not unlock:
+        if score >= 105000 and not unlock:
             progress["achieved"]["over_9k"] = True          
-            notification_text = font_def.render("Achievement Unlocked: It's over 9000!!", True, (255, 255, 0))
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("over_9k", "It's over 9000!!")
             notify_sound.play()
             if notification_time is None:
-             notif = True
-             notification_time = time.time()
+                notif = True
+                notification_time = time.time()
     
     def evilchase():
         global notification_text, notification_time, notif
-        notification_text = font_def.render("Achievement Unlocked: Chased and Escaped", True, (255, 255, 0))
         unlock = progress["achieved"].get("chase_escape", False)
         if not unlock:
-          progress["achieved"]["chase_escape"] = True
-          progress["char"]["evilrobo"] = True
-          save_progress(progress)
-          if not is_mute:
-           notify_sound.play()
-           if notification_time is None:
-             notif = True
-             notification_time = time.time()
-    
-    def check_green_gold():
-      global show_greenrobo_unlocked, greenrobo_unlocked_message_time
-      all_gold = all(progress["lvls"]["medals"][f"lvl{i}"] == "Gold" or progress["lvls"]["medals"][f"lvl{i}"] == "Diamond" for i in range(1, 7))
-      if all_gold:
-        unlock = progress["achieved"].get("golden", False)
-        if not unlock:
+            progress["achieved"]["chase_escape"] = True
+            progress["char"]["evilrobo"] = True
+            save_progress(progress)
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("chase_escape", "Chased and Escaped")
             if not is_mute:
                 notify_sound.play()
-            unlock = True
+            if notification_time is None:
+                notif = True
+                notification_time = time.time()
+    
+    def check_green_gold():
+        global notification_text, notification_time, notif
+        all_gold = all(progress["lvls"]["medals"][f"lvl{i}"] in ["Gold", "Diamond"] for i in range(1, 7))
+        unlock = progress["achieved"].get("golden", False)
+        if all_gold and not unlock:        
             progress["achieved"]["golden"] = True
-            progress["char"]["greenrobo"] = unlock
+            progress["char"]["greenrobo"] = True
             save_progress(progress)
-            show_greenrobo_unlocked = True
-            greenrobo_unlocked_message_time = time.time()
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("golden", "Golden!")
+            if not is_mute:
+                notify_sound.play()
+            if notification_time is None:
+                notif = True
+                notification_time = time.time()
     
     def check_xplvl20(Level):
         global notification_text, notification_time, notif
-        notification_text = font_def.render("Achievement Unlocked: XP Collector!", True, (255, 255, 0))
         unlock = progress["achieved"].get("lv20", False)
-        if Level >= 20:
-         if not unlock:
-          progress["achieved"]["lv20"] = True
-          save_progress(progress)
-          if not is_mute:
-           notify_sound.play()
-           if notification_time is None:
-             notif = True
-             notification_time = time.time()
+        if Level >= 20 and not unlock:
+            progress["achieved"]["lv20"] = True
+            save_progress(progress)
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("lv20", "XP Collector!")
+            if not is_mute:
+                notify_sound.play()
+            if notification_time is None:
+                notif = True
+                notification_time = time.time()
         
 class TransitionManager:
     def __init__(self, screen, image, speed=40):
@@ -812,10 +896,6 @@ current_lang = load_language(lang_code)
 # Page states
 current_page = 'main_menu'
 buttons = []
-
-# Display Green Robo Unlocked for a limited time
-greenrobo_unlocked_message_time = 0
-show_greenrobo_unlocked = False
 
 def create_main_menu_buttons():
 
@@ -1314,6 +1394,8 @@ def set_page(page):
     if page == 'main_menu':
         current_lang = load_language(lang_code).get('main_menu', {})
         create_main_menu_buttons()
+    elif page == "achievements":
+        create_achieve_screen()
     elif page == 'character_select':
         character_select()
     elif page == 'language_select':
@@ -1540,7 +1622,6 @@ def level_complete():
         score_text = font_text.render(str(display_score), True, (255, 255, 255))
         screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, 300 - score_text.get_height() // 2))
 
-        
         if time.time() - star_time > 4:  # Show for 3 seconds
                 if new_hs:
                     hs_text = messages.get("new_hs", "New High Score!")
@@ -1572,7 +1653,7 @@ def level_complete():
 def char_assets():
     global selected_character, player_img, blink_img, moving_img, moving_img_l, img_width, img_height
     selected_character = progress["pref"].get("character", default_progress["pref"]["character"])
- # Load player image
+    # Load player image
     if selected_character == "robot": 
         player_img = pygame.image.load(resource_path(f"char/robot/robot.png")).convert_alpha()
         blink_img = pygame.image.load(resource_path(f"char/robot/blinkrobot.png")).convert_alpha()
@@ -1585,7 +1666,7 @@ def char_assets():
         moving_img = pygame.image.load(resource_path(f"char/evilrobot/movevilrobot.png")).convert_alpha() # Resize to fit the game
     elif selected_character == "greenrobot":
         player_img = pygame.image.load(resource_path(f"char/greenrobot/greenrobot.png")).convert_alpha()
-        blink_img = pygame.image.load(resource_path(f"char/greenrobot/greenrobot.png")).convert_alpha()
+        blink_img = pygame.image.load(resource_path(f"char/greenrobot/blinkgreenrobot.png")).convert_alpha()
         moving_img_l = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobotL.png")).convert_alpha() # Resize to fit the game
         moving_img = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobot.png")).convert_alpha() # Resize to fit the game
     elif selected_character == "ironrobot":
@@ -1734,11 +1815,11 @@ def player_image(keys, player_x, player_y, camera_x, camera_y):
             screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
     else:
         screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
-        if round(current_time % 4, 0) == 0:
+        if current_time % 4 < 0.25:
             screen.blit(blink_img, (player_x - camera_x, player_y - camera_y))
 
 def create_lvl1_screen():
-    global player_img, font, screen, complete_levels, is_mute, show_greenrobo_unlocked, is_transitioning, transition_time, current_time, medal, deathcount, score
+    global player_img, font, screen, complete_levels, is_mute, is_transitioning, transition_time, current_time, medal, deathcount, score
     global new_hs, hs, stars, ctime
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     global x, y, camera_x, camera_y, player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text,spawn_x, spawn_y,  player_rect, on_ground
@@ -1817,18 +1898,10 @@ def create_lvl1_screen():
 
     for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
-    
-    if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-    else:
-        show_greenrobo_unlocked = False
 
     draw_notifications()
     draw_syncing_status()
+
     if transition.x <= -transition.image.get_width():
        while running:
         clock.tick_busy_loop(60)
@@ -1985,26 +2058,19 @@ def create_lvl1_screen():
         lvl1_text = levels.get("lvl1", "Level 1")  # Render the level text
         screen.blit(render_text(lvl1_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
-        if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-        else:
-            show_greenrobo_unlocked = False
-
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
+
         draw_notifications()
         draw_syncing_status()
+
         pygame.display.update()    
 
 def create_lvl2_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, wait_time, transition_time, is_transitioning, current_time, medal, deathcount, score
+    global player_img, font, screen, complete_levels, is_mute, selected_character, wait_time, transition_time, is_transitioning, current_time, medal, deathcount, score
     global new_hs, hs, stars, ctime
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     global x, y, camera_x, camera_y, spawn_x, spawn_y,  player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text, player_rect, on_ground
@@ -2111,16 +2177,9 @@ def create_lvl2_screen():
             # Inside the game loop:
     screen.blit(rendered_jump_text, (900 - camera_x, 500 - camera_y))  # Draws the rendered up text
 
-    if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-    else:
-            show_greenrobo_unlocked = False
     draw_notifications()
     draw_syncing_status()
+
     if transition.x <= -transition.image.get_width():
       while running:
         clock.tick(60)
@@ -2305,15 +2364,6 @@ def create_lvl2_screen():
         levels = load_language(lang_code).get('levels', {})
         lvl2_text = levels.get("lvl2", "Level 2")  # Render the level text
         screen.blit(render_text(lvl2_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
-
-        if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-        else:
-            show_greenrobo_unlocked = False
                 
         if keys[pygame.K_r]:
             resetting()
@@ -2337,12 +2387,14 @@ def create_lvl2_screen():
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
+
         draw_notifications()
         draw_syncing_status()
+
         pygame.display.update()    
 
 def create_lvl3_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
+    global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     char_assets()
@@ -2463,16 +2515,10 @@ def create_lvl3_screen():
         # Draw the texts
     screen.blit(rendered_saw_text, (int(550 - camera_x), int(600 - camera_y)))  # Draws the rendered up text
     screen.blit(rendered_key_text, (int(2500 - camera_x), int(200 - camera_y)))  # Draws the rendered up text
-    if show_greenrobo_unlocked:
-        messages = load_language(lang_code).get('messages', {})
-        if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-            unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-            rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-            screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-    else:
-        show_greenrobo_unlocked = False
+
     draw_notifications()
     draw_syncing_status()
+
     if transition.x <= -transition.image.get_width():
       while running:
         clock.tick(60)
@@ -2807,27 +2853,20 @@ def create_lvl3_screen():
         levels = load_language(lang_code).get('levels', {})
         lvl3_text = levels.get("lvl3", "Level 3")  # Render the level text
         screen.blit(render_text(lvl3_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
-        
-        if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-        else:
-            show_greenrobo_unlocked = False
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
             else:
                 wait_time = None
+
         draw_notifications()
         draw_syncing_status()
+
         pygame.display.update()    
 
 def create_lvl4_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
+    global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     char_assets()
@@ -2993,16 +3032,9 @@ def create_lvl4_screen():
 
     screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
 
-    if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-    else:
-            show_greenrobo_unlocked = False
     draw_notifications()
     draw_syncing_status()
+    
     if transition.x <= -transition.image.get_width():
        while running:
         clock.tick(60)
@@ -3483,15 +3515,6 @@ def create_lvl4_screen():
         lvl4_text = levels.get("lvl4", "Level 4")  # Render the level text
         screen.blit(render_text(lvl4_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
-        if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-        else:
-            show_greenrobo_unlocked = False
-
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
@@ -3502,7 +3525,7 @@ def create_lvl4_screen():
         pygame.display.update()   
 
 def create_lvl5_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
+    global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     char_assets()
@@ -3670,14 +3693,7 @@ def create_lvl5_screen():
 
     screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
 
-    if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-    else:
-            show_greenrobo_unlocked = False
+    
     draw_notifications()
     draw_syncing_status()
     if transition.x <= -transition.image.get_width():
@@ -4165,14 +4181,7 @@ def create_lvl5_screen():
         lvl5_text = levels.get("lvl5", "Level 5")  # Render the level text
         screen.blit(render_text(lvl5_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
-        if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-        else:
-            show_greenrobo_unlocked = False
+        
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
@@ -4184,7 +4193,7 @@ def create_lvl5_screen():
         pygame.display.update()   
 
 def create_lvl6_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
+    global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     start_time = time.time()
     global new_hs, hs, stars
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
@@ -4340,14 +4349,7 @@ def create_lvl6_screen():
 
     screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
 
-    if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-    else:
-            show_greenrobo_unlocked = False
+    
     draw_notifications()
     draw_syncing_status()
     if transition.x <= -transition.image.get_width():
@@ -4833,14 +4835,7 @@ def create_lvl6_screen():
         invisible_text = in_game.get("invisible_message", "These saws won't hurt you... promise!")
         screen.blit(render_text(invisible_text, True, (255, 51, 153)), (900 - camera_x, 250 - camera_y)) # Render the invisible block text
 
-        if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-        else:
-            show_greenrobo_unlocked = False
+        
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
@@ -4866,7 +4861,7 @@ def create_lvl6_screen():
         pygame.display.update()   
 
 def create_lvl7_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
+    global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     start_time = time.time()
     global new_hs, hs, stars
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
@@ -4982,14 +4977,7 @@ def create_lvl7_screen():
 
     pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
 
-    if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-    else:
-            show_greenrobo_unlocked = False
+    
     draw_notifications()
     draw_syncing_status()
     if transition.x <= -transition.image.get_width():
@@ -5373,14 +5361,7 @@ def create_lvl7_screen():
         portal_text = in_game.get("portal_message", "These blue portals teleport you! But to good places... mostly!")
         screen.blit(render_text(portal_text, True, (0, 196, 255)), (4400 - camera_x, 300 - camera_y))
 
-        if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-        else:
-            show_greenrobo_unlocked = False
+        
         
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
@@ -5392,7 +5373,7 @@ def create_lvl7_screen():
         pygame.display.update()   
 
 def create_lvl8_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
+    global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     char_assets()
@@ -5512,14 +5493,7 @@ def create_lvl8_screen():
 
     pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
 
-    if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-    else:
-            show_greenrobo_unlocked = False
+    
     draw_notifications()
     draw_syncing_status()
     if transition.x <= -transition.image.get_width():
@@ -5932,14 +5906,7 @@ def create_lvl8_screen():
         elif medal == "Bronze":
             screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
 
-        if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-        else:
-            show_greenrobo_unlocked = False
+        
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
@@ -5951,7 +5918,7 @@ def create_lvl8_screen():
         pygame.display.update()   
 
 def create_lvl9_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
+    global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     char_assets()
@@ -6122,14 +6089,7 @@ def create_lvl9_screen():
 
     pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
 
-    if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-    else:
-            show_greenrobo_unlocked = False
+    
     draw_notifications()
     draw_syncing_status()
     if transition.x <= -transition.image.get_width():
@@ -6631,14 +6591,7 @@ def create_lvl9_screen():
         elif medal == "Bronze":
             screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
 
-        if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-        else:
-            show_greenrobo_unlocked = False
+        
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
@@ -6650,7 +6603,7 @@ def create_lvl9_screen():
         pygame.display.update() 
 
 def create_lvl10_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
+    global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
     new_hs = False
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
@@ -6791,14 +6744,7 @@ def create_lvl10_screen():
             # Draw the saw as a circle
             pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
 
-    if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-    else:
-            show_greenrobo_unlocked = False
+    
     draw_notifications()
     draw_syncing_status()
     if transition.x <= -transition.image.get_width():
@@ -7277,14 +7223,7 @@ def create_lvl10_screen():
         elif medal == "Bronze":
             screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
 
-        if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-        else:
-            show_greenrobo_unlocked = False
+        
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
@@ -7296,7 +7235,7 @@ def create_lvl10_screen():
         pygame.display.update() 
 
 def create_lvl11_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
+    global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     char_assets()
@@ -7446,14 +7385,7 @@ def create_lvl11_screen():
     for block in blocks:
         pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
 
-    if show_greenrobo_unlocked:
-            messages = load_language(lang_code).get('messages', {})
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-    else:
-            show_greenrobo_unlocked = False
+    
     draw_notifications()
     draw_syncing_status()
     if transition.x <= -transition.image.get_width():
@@ -8080,14 +8012,6 @@ def create_lvl11_screen():
         elif medal == "Bronze":
             screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
 
-        if show_greenrobo_unlocked:
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = messages.get("greenrobo_unlocked", "Green Robo Unlocked!")
-                rendered_unlocked_text = render_text(unlocked_text, True, (51, 255, 51))
-                screen.blit(rendered_unlocked_text, (SCREEN_WIDTH // 2 - rendered_unlocked_text.get_width() // 2, 100))
-        else:
-            show_greenrobo_unlocked = False
-
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
@@ -8098,7 +8022,7 @@ def create_lvl11_screen():
         pygame.display.update()
 
 def create_lvl12_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, show_greenrobo_unlocked, current_time, medal, deathcount, score
+    global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
     global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     char_assets()
@@ -8763,6 +8687,12 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "worlds"
+        elif key == "achievements":
+            if not is_transitioning:
+                transition.start("achievements")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "achievements"
         elif key == "character_select":
             if not is_transitioning:
                 transition.start("character_select")
@@ -8781,6 +8711,13 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "quit_confirm"
+    elif current_page == "achievements":
+        if key == "back":
+            if not is_transitioning:
+                transition.start("main_menu")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "main_menu"
     elif current_page == "settings":
         if key == "Back":
             if not is_transitioning:
@@ -9121,8 +9058,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.94.3", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.95.1", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
 
 # First define current XP outside the loop
 level, xp_needed, xp_total = xp()
@@ -9280,6 +9217,9 @@ while running:
 
                 screen.blit(rendered, rect)
             last_hovered_key = hovered_key
+
+        if current_page == "achievements":
+            create_achieve_screen()
 
         if current_page == "character_select":
          screen.blit(background, (0, 0))
@@ -9596,13 +9536,6 @@ while running:
                     screen.blit(button_surface, rect.inflate(20, 10).topleft)
                     pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
                 screen.blit(rendered, rect)
-
-        if show_greenrobo_unlocked:
-            if time.time() - greenrobo_unlocked_message_time < 4:  # Show for 4 seconds
-                unlocked_text = render_text("Green Robo Unlocked!", True, (51, 255, 51))
-                screen.blit(unlocked_text, (SCREEN_WIDTH // 2 - unlocked_text.get_width() // 2, 100))
-        else:
-            show_greenrobo_unlocked = False
         
         draw_notifications()
 
