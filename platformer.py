@@ -1518,7 +1518,7 @@ def create_quit_confirm_buttons():
 
 def score_calc():
     global current_time, medal, deathcount, score
-
+    global base_score, medal_score, death_score, time_score
     base_score = 100000 # From where the score is added to/subtracted from
     token_score = 0
     time_score = int(current_time * 160)
@@ -1560,6 +1560,7 @@ stareffects = []
 
 def level_complete():
     global score, display_score, new_hs, hs, stareffects, stars, medal
+    global base_score, medal_score, death_score, time_score
     messages = load_language(lang_code).get('messages', {})
     display_score = 0
     star1_p, star2_p, star3_p = False, False, False
@@ -1631,27 +1632,51 @@ def level_complete():
         score_text = font_text.render(str(display_score), True, (255, 255, 255))
         screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, 300 - score_text.get_height() // 2))
 
+        global base_score, medal_score, death_score, time_score
+
+        # Show Breakdown
+        if time.time() - star_time > 3.4:
+            break_text = messages.get("breakdown", "BREAKDOWN")
+            break_render = render_text(break_text, True, (158, 158, 158))
+            screen.blit(break_render, (SCREEN_WIDTH // 2 - break_render.get_width() // 2, 400))
+        if time.time() - star_time > 3.5:
+            base_text = messages.get("base_score", "Base Score: {bs}").format(bs=base_score)
+            base_render = render_text(base_text, True, (158, 158, 158))
+            screen.blit(base_render, (SCREEN_WIDTH // 2 - base_render.get_width() // 2, 440))
+        if time.time() - star_time > 3.6:
+            medal_text = messages.get("medal_score", "Medal score: {ms}").format(ms=-medal_score)
+            medal_render = render_text(medal_text, True, (158, 158, 158))
+            screen.blit(medal_render, (SCREEN_WIDTH // 2 - medal_render.get_width() // 2, 480))
+        if time.time() - star_time > 3.7:   
+            death_text = messages.get("death_score", "Death Penalty: {ds}").format(ds=-death_score)
+            death_render = render_text(death_text, True, (158, 158, 158))
+            screen.blit(death_render, (SCREEN_WIDTH // 2 - death_render.get_width() // 2, 520))
+        if time.time() - star_time > 3.8:
+            time_text = messages.get("time_score", "Time Penalty: {ts}").format(ts=-time_score)
+            time_render = render_text(time_text, True, (158, 158, 158))
+            screen.blit(time_render, (SCREEN_WIDTH // 2 - time_render.get_width() // 2, 560))
+
         if time.time() - star_time > 4:  # Show for 3 seconds
                 if new_hs:
                     hs_text = messages.get("new_hs", "New High Score!")
                     new_hs_text = render_text(hs_text, True, (255, 215, 0))
-                    screen.blit(new_hs_text, (SCREEN_WIDTH // 2 - new_hs_text.get_width() // 2, 360))
+                    screen.blit(new_hs_text, (SCREEN_WIDTH // 2 - new_hs_text.get_width() // 2, 610))
                     if not is_mute and not notified:
                         hscore.play()
                         notified = True
                 else:
                     high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
                     hs_text = render_text(high_text, True, (158, 158, 158))
-                    screen.blit(hs_text, (SCREEN_WIDTH // 2 - hs_text.get_width() // 2, 380))
+                    screen.blit(hs_text, (SCREEN_WIDTH // 2 - hs_text.get_width() // 2, 610))
         
         if time.time() - star_time > 6 or keys[pygame.K_SPACE]:
                 running = False
         else: 
             next_left = -(int(time.time() - star_time) - 6)
             time_text = render_text("Press the spacebar to", True, (158, 158, 158))
-            screen.blit(time_text, (SCREEN_WIDTH // 2 - time_text.get_width() // 2, SCREEN_HEIGHT - 75))
+            screen.blit(time_text, (SCREEN_WIDTH // 2 - time_text.get_width() // 2, SCREEN_HEIGHT - 60))
             time_text_2 = render_text(f"continue or wait for {next_left}", True, (158, 158, 158))
-            screen.blit(time_text_2, (SCREEN_WIDTH // 2 - time_text_2.get_width() // 2, SCREEN_HEIGHT - 50))
+            screen.blit(time_text_2, (SCREEN_WIDTH // 2 - time_text_2.get_width() // 2, SCREEN_HEIGHT - 35))
 
         xp()
         draw_notifications()
@@ -8149,6 +8174,7 @@ def create_lvl11_screen():
             screen.blit(evilrobo_mascot, (int(epos_x - camera_x), int(epos_y - camera_y)))
             if epos_x > player_x + 10:
                 epos_x -= 20
+                
             elif epos_x < player_x - 10:
                 epos_x += 20
             else:
@@ -8158,7 +8184,7 @@ def create_lvl11_screen():
             screen.blit(evilrobo_mascot, (int(epos_x - camera_x), int(epos_y - camera_y)))
             if player_y > -300:
                 confused_text = render_text("WHERE DID HE GO????", True, (82, 0, 0))
-                screen.blit(confused_text, ((epos_x - camera_x), (epos_y - camera_y)))
+                screen.blit(confused_text, ((epos_x - camera_x), (epos_y - camera_y - 40)))
                 if not unlock:
                     if not is_mute:
                         notify_sound.play()
@@ -9250,6 +9276,8 @@ def show_login_screen():
                             # This saves to [OLD_ID].json
                             save_progress(progress)
                             login_done = True
+                            if not is_mute:
+                               notify_sound.play()
                             
                         elif result == "WRONG_AUTH":
                             # [SCENARIO 2] FOUND BUT WRONG PASS
@@ -9346,7 +9374,7 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.96.3", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.97", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 
 # First define current XP outside the loop
