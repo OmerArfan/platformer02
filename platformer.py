@@ -417,7 +417,7 @@ def save_progress(data):
     if not data or "lvls" not in data or "player" not in data:
         if not is_mute:
             hit_sound.play()
-        notification_text = font_def.render("Refusing to save: Invalid data structure!", True, (255, 0, 0))
+        notification_text = render_text("Refusing to save: Invalid data structure!", True, (255, 0, 0))
         notif = True
         notification_time = time.time()
         return
@@ -454,13 +454,13 @@ def save_progress(data):
     except PermissionError:
         if not is_mute:
             hit_sound.play()
-        notification_text = font_def.render("Error: Save file is locked by another program.", True, (255, 0, 0))
+        notification_text = render_text("Error: Save file is locked by another program.", True, (255, 0, 0))
         notif = True
         notification_time = time.time()
             
     except Exception as e:
         er = True
-        error_code = font_def.render(f"Save Error: {str(e)}", True, (255, 0, 0))
+        error_code = render_text(f"Save Error: {str(e)}", True, (255, 0, 0))
         if not is_mute:
             hit_sound.play()
         notification_time = time.time()
@@ -662,22 +662,36 @@ else:
     font = pygame.font.Font(font_path, 25)
 
 def render_text(text, Boolean, color):
+    # 1. PICK THE FONT (Your existing Unicode Logic)
+    font_to_use = font_def # Default
+    display_text = text
+
     if any('\u0590' <= c <= '\u06FF' for c in text):  # Urdu/Arabic range
         reshaped = arabic_reshaper.reshape(text)
-        bidi_text = get_display(reshaped)
-        if any('\u0600' <= c <= '\u06FF' for c in text):
-            return font_ar.render(bidi_text, True, color)
-    
-    if any('\u4e00' <= c <= '\u9fff' for c in text):  # Chinese
-        return font_ch.render(text, True, color)
-    
-    if any('\u3040' <= c <= '\u30FF' for c in text) or any('\u4E00' <= c <= '\u9FFF' for c in text):
-        return font_jp.render(text, True, color)    
-    
-    if any('\uAC00' <= c <= '\uD7A3' for c in text):  # Korean
-        return font_kr.render(text, True, color)
+        display_text = get_display(reshaped)
+        font_to_use = font_ar
+    elif any('\u4e00' <= c <= '\u9fff' for c in text):  # Chinese
+        font_to_use = font_ch
+    elif any('\u3040' <= c <= '\u30FF' for c in text): # Japanese
+        font_to_use = font_jp
+    elif any('\uAC00' <= c <= '\uD7A3' for c in text):  # Korean
+        font_to_use = font_kr
 
-    return font_def.render(text, True, color)
+    # 2. RENDER THE SHADOW (For Readability on Green/Mech BGs)
+    shadow_color = (0, 0, 0)
+    shadow_surf = font_to_use.render(display_text, True, shadow_color)
+    
+    # 3. RENDER MAIN TEXT
+    main_surf = font_to_use.render(display_text, True, color)
+    
+    # 4. COMBINE INTO ONE SURFACE
+    w = max(1, main_surf.get_width() + 1)
+    h = max(1, main_surf.get_height() + 1)
+    combined_surf = pygame.Surface((w, h), pygame.SRCALPHA)
+    combined_surf.blit(shadow_surf, (1, 1)) # The offset shadow
+    combined_surf.blit(main_surf, (0, 0))   # The original text
+    
+    return combined_surf
 
 def create_achieve_screen():
     global current_lang
@@ -4999,10 +5013,10 @@ def create_lvl6_screen():
                         guide = True
                     
                     if val < 0.15:
-                        screen.blit(font_def.render('"The strong is not the one who overcomes the people by his strength, but the strong is', True, (255, 255, 0)), (20, 50))
-                        screen.blit(font_def.render('the one who controls himself while in anger." (Bukhari 6114)', True, (255, 255, 0)), (20, 80)) 
+                        screen.blit(render_text('"The strong is not the one who overcomes the people by his strength, but the strong is', True, (255, 255, 0)), (20, 50))
+                        screen.blit(render_text('the one who controls himself while in anger." (Bukhari 6114)', True, (255, 255, 0)), (20, 80)) 
                     else:
-                        screen.blit(font_def.render('"Indeed, with hardship comes ease." (Quran 94:6)', True, (255, 255, 0)), (20, 50))
+                        screen.blit(render_text('"Indeed, with hardship comes ease." (Quran 94:6)', True, (255, 255, 0)), (20, 50))
             
             else:
                 wait_time = None
@@ -9383,27 +9397,27 @@ if not is_mute and SCREEN_WIDTH > MIN_WIDTH and SCREEN_HEIGHT > MIN_HEIGHT:
 
 # Info
 
-site_text = font_def.render("Sound effects used from pixabay.com and edited using Audacity", True, (255, 255, 255))
+site_text = render_text("Sound effects used from pixabay.com and edited using Audacity", True, (255, 255, 255))
 site_pos = (SCREEN_WIDTH - (site_text.get_width() + 10), SCREEN_HEIGHT - 38)
-logo_text = font_def.render("Logo and Background made with canva.com", True, (255, 255, 255))
+logo_text = render_text("Logo and Background made with canva.com", True, (255, 255, 255))
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
-credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
+credit_text = render_text("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.97.1", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
+ver_text = render_text("Version 1.2.97.2", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 
 # First define current XP outside the loop
 level, xp_needed, xp_total = xp()
 XP_text = font_text.render(f"{level}", True, (255, 255, 255))
 if level < 20:
-    XP_text2 = font_def.render(f"{xp_needed}/{xp_total}", True, (255, 255, 255))
+    XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, (255, 255, 255))
 else:
     max_txt = load_language(lang_code).get('messages', {}).get("max_level", "MAX LEVEL!")
     XP_text2 = render_text(max_txt, True, (225, 212, 31))
 
 while running:
     # This is in the main loop, unlike the other texts, because it needs to update if the player changes!
-    ID_text = font_def.render(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
+    ID_text = render_text(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
     ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
 
     messages = load_language(lang_code).get('messages', {})
@@ -9422,7 +9436,7 @@ while running:
             level, xp_needed, xp_total = xp()
             XP_text = font_text.render(f"{level}", True, (255, 255, 255))
             if level < 20:
-                XP_text2 = font_def.render(f"{xp_needed}/{xp_total}", True, (255, 255, 255))
+                XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, (255, 255, 255))
             else:
                 max_txt = load_language(lang_code).get('messages', {}).get("max_level", "MAX LEVEL!")
                 XP_text2 = render_text(max_txt, True, (225, 212, 31))
