@@ -49,7 +49,7 @@ background_img = pygame.image.load(resource_path("bgs/PlainBackground.png")).con
 background = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Load and set window icon
-icon = pygame.image.load(resource_path("robots.ico")).convert_alpha()
+icon = pygame.image.load(resource_path("oimgs/icons/icon.png")).convert_alpha()
 pygame.display.set_icon(icon)
 
 def change_ambience(new_file):
@@ -1635,26 +1635,41 @@ def level_complete():
         global base_score, medal_score, death_score, time_score
 
         # Show Breakdown
-        if time.time() - star_time > 3.4:
+        if score > 500: 
+         if time.time() - star_time > 3.4:
             break_text = messages.get("breakdown", "BREAKDOWN")
             break_render = render_text(break_text, True, (158, 158, 158))
             screen.blit(break_render, (SCREEN_WIDTH // 2 - break_render.get_width() // 2, 400))
-        if time.time() - star_time > 3.5:
+         if time.time() - star_time > 3.5:
             base_text = messages.get("base_score", "Base Score: {bs}").format(bs=base_score)
             base_render = render_text(base_text, True, (158, 158, 158))
             screen.blit(base_render, (SCREEN_WIDTH // 2 - base_render.get_width() // 2, 440))
-        if time.time() - star_time > 3.6:
+         if time.time() - star_time > 3.6:
             medal_text = messages.get("medal_score", "Medal score: {ms}").format(ms=-medal_score)
             medal_render = render_text(medal_text, True, (158, 158, 158))
             screen.blit(medal_render, (SCREEN_WIDTH // 2 - medal_render.get_width() // 2, 480))
-        if time.time() - star_time > 3.7:   
+         if time.time() - star_time > 3.7:   
             death_text = messages.get("death_score", "Death Penalty: {ds}").format(ds=-death_score)
             death_render = render_text(death_text, True, (158, 158, 158))
             screen.blit(death_render, (SCREEN_WIDTH // 2 - death_render.get_width() // 2, 520))
-        if time.time() - star_time > 3.8:
+         if time.time() - star_time > 3.8:
             time_text = messages.get("time_score", "Time Penalty: {ts}").format(ts=-time_score)
             time_render = render_text(time_text, True, (158, 158, 158))
             screen.blit(time_render, (SCREEN_WIDTH // 2 - time_render.get_width() // 2, 560))
+        else:
+            if time.time() - star_time > 3.7:
+             hit_sound.play()
+             low_text = messages.get("lowest", "Lowest possible score!")
+             low_render = render_text(low_text, True, (255, 0, 0))
+             screen.blit(low_render, (SCREEN_WIDTH // 2 - low_render.get_width() // 2, 500))
+             if time_score > death_score:
+                 reason_text = messages.get("time_reason", "You took too long to")
+                 reason_text_2 = messages.get("time_reason_2", "complete the level.")
+             else:
+                 reason_text = messages.get("death_reason", "You died too many times!")
+                 reason_text_2 = messages.get("death_reason_2", "")
+             reason_render = render_text(reason_text, True, (255, 0, 0))
+             screen.blit(reason_render, (SCREEN_WIDTH // 2 - reason_render.get_width() // 2, 540))
 
         if time.time() - star_time > 4:  # Show for 3 seconds
                 if new_hs:
@@ -9374,8 +9389,8 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.97", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
+ver_text = font_def.render("Version 1.2.97.1", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
 
 # First define current XP outside the loop
 level, xp_needed, xp_total = xp()

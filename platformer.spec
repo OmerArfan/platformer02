@@ -11,8 +11,7 @@ added_files = [
     ('data', 'data'),
     ('fonts', 'fonts'),
     ('lang', 'lang'),
-    ('oimgs', 'oimgs'),
-    ('robots.ico', '.')
+    ('oimgs', 'oimgs')
 ]
 
 a = Analysis(
@@ -54,7 +53,6 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     # Logic for OS-specific assets
-    icon='robots.ico' if sys.platform == 'win32' else None,
+    icon='oimgs/icons/robots.ico' if sys.platform == 'win32' else None,
     version='version_info.txt' if sys.platform == 'win32' else None,
-
 )
