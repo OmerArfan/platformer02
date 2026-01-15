@@ -1519,6 +1519,7 @@ def create_quit_confirm_buttons():
 def score_calc():
     global current_time, medal, deathcount, score
 
+    base_score = 100000 # From where the score is added to/subtracted from
     token_score = 0
     time_score = int(current_time * 160)
     if medal == "Diamond":
@@ -1532,7 +1533,7 @@ def score_calc():
     else:
         medal_score = 25000
     death_score = deathcount * 300
-    score = max(500, 100000 - medal_score - death_score - time_score + token_score)
+    score = max(500, base_score - medal_score - death_score - time_score + token_score)
 
 class StarParticles:
     def __init__(self, x, y):
@@ -5269,10 +5270,14 @@ def create_lvl7_screen():
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
     # Draw the saw
-            scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
-            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
-            rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
-            screen.blit(rotated_saw, rect)
+            VIEW_BUFFER = 150 
+            screen_x = x - camera_x
+            screen_y = y - camera_y
+            if (-VIEW_BUFFER < screen_x < SCREEN_WIDTH + VIEW_BUFFER and -VIEW_BUFFER < screen_y < SCREEN_HEIGHT + VIEW_BUFFER):
+              scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
+              rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+              rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+              screen.blit(rotated_saw, rect)
 
     # Collision detection
             closest_x = max(player_rect.left, min(x, player_rect.right))
@@ -5366,17 +5371,18 @@ def create_lvl7_screen():
                 if not is_mute:
                     warp_sound.play()
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
+        
         saw_angle += 5 
 
         for x, y, r, color in saws:
-            angle = (pygame.time.get_ticks() // 3) % 360
-            saw_ig_img = get_rotated_saw(saw_img, r, angle)
-            curr_w, curr_h = saw_ig_img.get_size()
-            center_x = x - camera_x
-            center_y = y - camera_y
-            draw_x = center_x - (curr_w / 2)
-            draw_y = center_y - (curr_h / 2)
-            screen.blit(saw_ig_img, (draw_x, draw_y))
+             angle = (pygame.time.get_ticks() // 3) % 360
+             saw_ig_img = get_rotated_saw(saw_img, r, angle)
+             curr_w, curr_h = saw_ig_img.get_size()
+             center_x = x - camera_x
+             center_y = y - camera_y
+             draw_x = center_x - (curr_w / 2)
+             draw_y = center_y - (curr_h / 2)
+             screen.blit(saw_ig_img, (draw_x, draw_y))
 
         for saw in saws:
             saw_x, saw_y, saw_radius, _ = saw
@@ -9340,7 +9346,7 @@ logo_text = font_def.render("Logo and Background made with canva.com", True, (25
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = font_def.render("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = font_def.render("Version 1.2.96.2", True, (255, 255, 255))
+ver_text = font_def.render("Version 1.2.96.3", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 
 # First define current XP outside the loop
