@@ -559,10 +559,14 @@ while ps < 100:
     star_img = pygame.image.load(resource_path("oimgs/ig/star.png")).convert_alpha()
     star_img = pygame.transform.scale(star_img, (150, 140))
     s_star_img = pygame.transform.scale(star_img, (20, 17)); ps +=1
-    exit_img = pygame.image.load(resource_path("oimgs/ig/exit.png")).convert_alpha()
+    exit_img = pygame.image.load(resource_path("oimgs/portal/exit.png")).convert_alpha()
     exit_img = pygame.transform.scale(exit_img, (140, 180)); ps += 1
-    mechexit_img = pygame.image.load(resource_path("oimgs/ig/mech_exit.png")).convert_alpha()
+    mechexit_img = pygame.image.load(resource_path("oimgs/portal/mech_exit.png")).convert_alpha()
     mechexit_img = pygame.transform.scale(mechexit_img, (140, 180)); ps += 1
+    teleport_img = pygame.image.load(resource_path("oimgs/portal/teleport.png")).convert_alpha()
+    teleport_img = pygame.transform.scale(teleport_img, (140, 180)); ps += 1
+    teleexit_img = pygame.image.load(resource_path("oimgs/portal/teleport_2.png")).convert_alpha()
+    teleexit_img = pygame.transform.scale(teleexit_img, (100, 100)); ps += 1
     badge = pygame.image.load(resource_path("oimgs/ig/badge.png")).convert_alpha()
     badge = pygame.transform.scale(badge, (70, 70)); ps += 1
     max_badge = pygame.image.load(resource_path("oimgs/ig/max-badge.png")).convert_alpha()
@@ -1684,6 +1688,8 @@ def level_complete():
                  reason_text_2 = messages.get("death_reason_2", "")
              reason_render = render_text(reason_text, True, (255, 0, 0))
              screen.blit(reason_render, (SCREEN_WIDTH // 2 - reason_render.get_width() // 2, 540))
+             reason_render_2 = render_text(reason_text_2, True, (255, 0, 0))
+             screen.blit(reason_render_2, (SCREEN_WIDTH // 2 - reason_render_2.get_width() // 2, 580))
 
         if time.time() - star_time > 4:  # Show for 3 seconds
                 if new_hs:
@@ -1899,6 +1905,10 @@ def player_image(keys, player_x, player_y, camera_x, camera_y):
         if current_time % 4 < 0.25:
             screen.blit(blink_img, (player_x - camera_x, player_y - camera_y))
 
+def draw_portal(img, portal, camera_x, camera_y):
+    bobbing_offset = math.sin(pygame.time.get_ticks() * 0.005) * 5
+    screen.blit(img, (portal.x - camera_x, portal.y + bobbing_offset - camera_y))
+
 def create_lvl1_screen():
     global player_img, font, screen, complete_levels, is_mute, is_transitioning, transition_time, current_time, medal, deathcount, score
     global new_hs, hs, stars, ctime
@@ -1969,8 +1979,8 @@ def create_lvl1_screen():
 
     pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
 
-    screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
-
+    draw_portal(exit_img, exit_portal, camera_x, camera_y)
+    
             # Inside the game loop:
     screen.blit(rendered_up_text, (700 - camera_x, 200 - camera_y))  # Draws the rendered up text
     screen.blit(rendered_warning_text, (1900 - camera_x, 150 - camera_y))  # Draws the rendered warning text
@@ -2086,8 +2096,8 @@ def create_lvl1_screen():
                     elif player_x + img_width > moving_block.x + moving_block.width:  # Colliding with the right side
                         player_x = moving_block.x + moving_block.width
 
-        screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
-        
+        draw_portal(exit_img, exit_portal, camera_x, camera_y)
+
         player_image(keys, player_x, player_y, camera_x, camera_y)
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
@@ -2253,7 +2263,7 @@ def create_lvl2_screen():
     for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (jump_block.x - camera_x, jump_block.y - camera_y, jump_block.width, jump_block.height))
 
-    screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
+    draw_portal(exit_img, exit_portal, camera_x, camera_y)
 
             # Inside the game loop:
     screen.blit(rendered_jump_text, (900 - camera_x, 500 - camera_y))  # Draws the rendered up text
@@ -2409,7 +2419,7 @@ def create_lvl2_screen():
         for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (jump_block.x - camera_x, jump_block.y - camera_y, jump_block.width, jump_block.height))
 
-        screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
+        draw_portal(exit_img, exit_portal, camera_x, camera_y)
         
         player_image(keys, player_x, player_y, camera_x, camera_y)
 
@@ -2593,7 +2603,7 @@ def create_lvl3_screen():
      if not pair["collected"]:
         pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
-    screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
+    draw_portal(exit_img, exit_portal, camera_x, camera_y)
 
         # Draw the texts
     screen.blit(rendered_saw_text, (int(550 - camera_x), int(600 - camera_y)))  # Draws the rendered up text
@@ -2910,7 +2920,7 @@ def create_lvl3_screen():
             if not pair["collected"]:
                 pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
-        screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
+        draw_portal(exit_img, exit_portal, camera_x, camera_y)
         
         player_image(keys, player_x, player_y, camera_x, camera_y)
 
@@ -3130,7 +3140,7 @@ def create_lvl4_screen():
         pygame.draw.rect(screen, (128, 0, 128), rect.move(-camera_x, -camera_y))
 
 
-    screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
+    draw_portal(exit_img, exit_portal, camera_x, camera_y)
 
     draw_notifications()
     draw_syncing_status()
@@ -3594,7 +3604,7 @@ def create_lvl4_screen():
             pygame.draw.rect(screen, (128, 0, 128), rect.move(-camera_x, -camera_y))
 
 
-        screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
+        draw_portal(exit_img, exit_portal, camera_x, camera_y)
         
         player_image(keys, player_x, player_y, camera_x, camera_y)
 
@@ -3817,7 +3827,7 @@ def create_lvl5_screen():
             pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
 
-    screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
+    draw_portal(exit_img, exit_portal, camera_x, camera_y)
 
     
     draw_notifications()
@@ -4287,7 +4297,7 @@ def create_lvl5_screen():
                         break
 
 
-        screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
+        draw_portal(exit_img, exit_portal, camera_x, camera_y)
        
         player_image(keys, player_x, player_y, camera_x, camera_y)
 
@@ -4499,7 +4509,7 @@ def create_lvl6_screen():
             pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
             pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
-    screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
+    draw_portal(exit_img, exit_portal, camera_x, camera_y)
 
     
     draw_notifications()
@@ -4964,7 +4974,7 @@ def create_lvl6_screen():
             if not pair["collected"]:
                 pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
-        screen.blit(exit_img, (exit_portal.x - camera_x, exit_portal.y - camera_y))
+        draw_portal(exit_img, exit_portal, camera_x, camera_y)
         
         player_image(keys, player_x, player_y, camera_x, camera_y)
 
@@ -5104,13 +5114,13 @@ def create_lvl7_screen():
     [(4100, 500), (4150, 450), (4200, 500)],
     ]
 
-    exit_portal = pygame.Rect(2030, -1245, 70, 120)
+    exit_portal = pygame.Rect(1960, -1320, 140, 180)
     clock = pygame.time.Clock()
 
     teleporters = [
         {
-            "entry": pygame.Rect(5200, 400, 50, 100),
-            "exit": pygame.Rect(100, -1400, 50, 100),
+            "entry": pygame.Rect(5150, 300, 140, 180),
+            "exit": pygame.Rect(100, -1400, 50, 50),
             "color": (0, 196, 255)
         }
     ]
@@ -5155,8 +5165,7 @@ def create_lvl7_screen():
     for spike in spikes:
         pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
 
-    pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
-
+    draw_portal(mechexit_img, exit_portal, camera_x, camera_y)
     
     draw_notifications()
     draw_syncing_status()
@@ -5414,11 +5423,10 @@ def create_lvl7_screen():
 
         for teleporter in teleporters:
             # Draw the entry rectangle
-            pygame.draw.rect(screen, teleporter["color"], teleporter["entry"].move(-camera_x, -camera_y))
-    
+            draw_portal(teleport_img, teleporter["entry"], camera_x, camera_y)
             # Draw the exit rectangle
-            pygame.draw.rect(screen, teleporter["color"], teleporter["exit"].move(-camera_x, -camera_y))
-    
+            draw_portal(teleexit_img, teleporter["exit"], camera_x, camera_y)
+
            # Check if the player collides with the entry rectangle
             if player_rect.colliderect(teleporter["entry"]):
                 # Teleport the player to the exit rectangle
@@ -5524,7 +5532,7 @@ def create_lvl7_screen():
                     collision_detected = True  # Set the flag to stop further checks
                     break
 
-        pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+        draw_portal(mechexit_img, exit_portal, camera_x, camera_y)
         player_image(keys, player_x, player_y, camera_x, camera_y)          
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
@@ -5608,26 +5616,28 @@ def create_lvl8_screen():
     saw_angle = 0
 
     # Draw flag
-    flag = pygame.Rect(8470, -320, 100, 125)  # x, y, width, height
+    flag = pygame.Rect(8700, -320, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(10200, -320, 100, 125)  # x, y, width, height
+    flag2 = pygame.Rect(10000, -320, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
-    flag_1_x, flag_1_y = 8470, -320
-    flag_2_x, flag_2_y = 10200, -320
+    flag_1_x, flag_1_y = 8700, -320
+    flag_2_x, flag_2_y = 10000, -320
 
     blocks = [
         pygame.Rect(0, 400, 100, 100),
         pygame.Rect(460, 650, 540, 50),
-        pygame.Rect(1200, 200, 1000, 50),
+        pygame.Rect(1200, 200, 1050, 50),
         pygame.Rect(8200, -200, 6000, 400),
         pygame.Rect(9000, -750, 50, 600),
         pygame.Rect(9600, -750, 50, 600),
-        pygame.Rect(10000, -1300, 2000, 500),
+        pygame.Rect(10000, -1650, 2000, 500),
+        pygame.Rect(10000, -1650, 100, 1220),
+        pygame.Rect(10750, -360, 600, 170),
     ]
     
     jump_blocks = [
         pygame.Rect(1100, 600, 100, 100),
-        pygame.Rect(11000, -300, 100, 100),
+        pygame.Rect(11000, -460, 100, 100),
     ]
 
     moving_saws = [
@@ -5635,7 +5645,7 @@ def create_lvl8_screen():
     ]
 
     moving_saws_x = [
-        {'r': 100, 'speed':14, 'cx': 11000, 'cy': -705, 'max': 11300, 'min': 10700}
+        {'r': 130, 'speed':19, 'cx': 11000, 'cy': -950, 'max': 11300, 'min': 10700}
     ]
 
     saws = [
@@ -5650,33 +5660,32 @@ def create_lvl8_screen():
     [(1400, 200), (1475, 120), (1550, 200)],
     [(9000, -750), (9025, -800), (9050, -750)],
     [(9600, -750), (9625, -800), (9650, -750)],
-    [(10000, -800), (10050, -750), (10100, -800)],
-    [(10100, -800), (10150, -750), (10200, -800)],
-    [(10200, -800), (10250, -750), (10300, -800)],
-    [(10300, -800), (10350, -750), (10400, -800)],
-    [(10400, -800), (10450, -750), (10500, -800)],
-    [(10500, -800), (10550, -750), (10600, -800)],
-    [(10600, -800), (10650, -750), (10700, -800)],
-    [(10700, -800), (10750, -750), (10800, -800)],
-    [(10800, -800), (10850, -750), (10900, -800)],
-    [(10900, -800), (10950, -750), (11000, -800)],
-    [(11000, -800), (11050, -750), (11100, -800)],
-    [(11100, -800), (11150, -750), (11200, -800)],
-    [(11200, -800), (11250, -750), (11300, -800)],
-    [(11300, -800), (11350, -750), (11400, -800)],
+    [(10100, -1150), (10150, -1100), (10200, -1150)],
+    [(10200, -1150), (10250, -1100), (10300, -1150)],
+    [(10300, -1150), (10350, -1100), (10400, -1150)],
+    [(10400, -1150), (10450, -1100), (10500, -1150)],
+    [(10500, -1150), (10550, -1100), (10600, -1150)],
+    [(10600, -1150), (10650, -1100), (10700, -1150)],
+    [(10700, -1150), (10750, -1100), (10800, -1150)],
+    [(10800, -1150), (10850, -1100), (10900, -1150)],
+    [(10900, -1150), (10950, -1100), (11000, -1150)],
+    [(11000, -1150), (11050, -1100), (11100, -1150)],
+    [(11100, -1150), (11150, -1100), (11200, -1150)],
+    [(11200, -1150), (11250, -1100), (11300, -1150)],
+    [(11300, -1150), (11350, -1100), (11400, -1150)],
     ]
 
-    exit_portal = pygame.Rect(11050, -770, 70, 120)
+    exit_portal = pygame.Rect(10980, -1050, 140, 180)
     clock = pygame.time.Clock()
 
     gravity_weakers = [
-        (8600, -300, 30, (0, 102, 204)),
+        (8700, -350, 30, (0, 102, 204)),
     ]
 
     teleporters = [
         {
-            "entry": pygame.Rect(2150, 100, 50, 100),
-            "exit": pygame.Rect(8300, -400, 50, 100),
+            "entry": pygame.Rect(2090, 0, 140, 180),
+            "exit": pygame.Rect(8300, -400, 100, 100),
             "color": (0, 196, 255)
         }
     ]
@@ -5700,8 +5709,7 @@ def create_lvl8_screen():
     for spike in spikes:
         pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
 
-    pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
-
+    draw_portal(mechexit_img, exit_portal, camera_x, camera_y)
     
     draw_notifications()
     draw_syncing_status()
@@ -5822,7 +5830,7 @@ def create_lvl8_screen():
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
             checkpoint_reached = True
             weak_grav = False # Reset weak gravity status
-            spawn_x, spawn_y = 8470, -500  # Store checkpoint position
+            spawn_x, spawn_y = 8680, -500  # Store checkpoint position
             if not is_mute:
                 checkpoint_sound.play()
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
@@ -5832,7 +5840,7 @@ def create_lvl8_screen():
             weak_grav = False # Reset weak gravity status
             pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
-            spawn_x, spawn_y = 10200, -350  # Checkpoint position
+            spawn_x, spawn_y = 10000, -350  # Checkpoint position
             if not is_mute:
                 checkpoint_sound.play()
 
@@ -5951,11 +5959,9 @@ def create_lvl8_screen():
 
         for teleporter in teleporters:
             # Draw the entry rectangle
-            pygame.draw.rect(screen, teleporter["color"], teleporter["entry"].move(-camera_x, -camera_y))
-    
+            draw_portal(teleport_img, teleporter["entry"], camera_x, camera_y)
             # Draw the exit rectangle
-            pygame.draw.rect(screen, teleporter["color"], teleporter["exit"].move(-camera_x, -camera_y))
-    
+            draw_portal(teleexit_img, teleporter["exit"], camera_x, camera_y)
            # Check if the player collides with the entry rectangle
             if player_rect.colliderect(teleporter["entry"]):
                 # Teleport the player to the exit rectangle
@@ -6092,7 +6098,7 @@ def create_lvl8_screen():
                 weak_grav = True
 
 
-        pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+        draw_portal(mechexit_img, exit_portal, camera_x, camera_y)
         
         player_image(keys, player_x, player_y, camera_x, camera_y)
 
@@ -6289,7 +6295,7 @@ def create_lvl9_screen():
     [(4350, 300), (4400, 350), (4450, 300)],
     ]
 
-    exit_portal = pygame.Rect(3370, 480, 70, 120)
+    exit_portal = pygame.Rect(3325, 420, 140, 180)
     clock = pygame.time.Clock()
 
     gravity_strongers = [
@@ -6319,7 +6325,7 @@ def create_lvl9_screen():
     for spike in spikes:
         pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
 
-    pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+    draw_portal(mechexit_img, exit_portal, camera_x, camera_y)
 
     
     draw_notifications()
@@ -6797,7 +6803,7 @@ def create_lvl9_screen():
         for x, y, r, color in deceiver_saws:
             pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
 
-        pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+        draw_portal(mechexit_img, exit_portal, camera_x, camera_y)
         player_image(keys, player_x, player_y, camera_x, camera_y)
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
@@ -6947,19 +6953,11 @@ def create_lvl10_screen():
         pygame.Rect(1300, 0, 200, 400),
     ]
 
-    exit_portal = pygame.Rect(6080, 360, 70, 120)
+    exit_portal = pygame.Rect(5960, 280, 140, 180)
     clock = pygame.time.Clock()
 
     gravity_strongers = [
         (5050, 420, 30, (204, 102, 204)),
-    ]
-
-    teleporters = [
-        {
-            "entry": pygame.Rect(1110, 1100, 50, 100),
-            "exit": pygame.Rect(8300, -400, 50, 100),
-            "color": (0, 196, 255)
-        },
     ]
 
     moving_block = pygame.Rect(2200, 300, 100, 20)
@@ -7330,20 +7328,6 @@ def create_lvl10_screen():
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 deathcount += 1
 
-        for teleporter in teleporters:
-            # Draw the entry rectangle
-            pygame.draw.rect(screen, teleporter["color"], teleporter["entry"].move(-camera_x, -camera_y))
-    
-            # Draw the exit rectangle
-            pygame.draw.rect(screen, teleporter["color"], teleporter["exit"].move(-camera_x, -camera_y))
-    
-           # Check if the player collides with the entry rectangle
-            if player_rect.colliderect(teleporter["entry"]):
-                # Teleport the player to the exit rectangle
-                if not is_mute:
-                    warp_sound.play()
-                player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
-        
         saw_angle += 5 
         for x, y, r, color in saws:
             angle = (pygame.time.get_ticks() // 3) % 360
@@ -7428,7 +7412,7 @@ def create_lvl10_screen():
         for x, y, r, color in deceiver_saws:
             pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
 
-        pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+        draw_portal(mechexit_img, exit_portal, camera_x, camera_y)
         
         player_image(keys, player_x, player_y, camera_x, camera_y)
 
@@ -7651,14 +7635,13 @@ def create_lvl11_screen():
         pygame.Rect(5300, 200, 300, 100),
     ]
 
-    exit_portal = pygame.Rect(6620, 330, 70, 120)
+    exit_portal = pygame.Rect(6600, 250, 140, 180)
     clock = pygame.time.Clock()
 
     speedsters = [
         (-100, 400, 30, (51, 255, 51)),
         (2450, -400, 30, (51, 255, 51)),
     ]
-
     
     for x, y, r, color in saws:
             angle = (pygame.time.get_ticks() // 3) % 360
@@ -8179,7 +8162,7 @@ def create_lvl11_screen():
                 stamina = True
                 weak_grav = False
 
-        pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+        draw_portal(mechexit_img, exit_portal, camera_x, camera_y)
         # Player Image
         screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
 
@@ -8428,7 +8411,7 @@ def create_lvl12_screen():
         pygame.Rect(3350, 0, 100, 750),
         pygame.Rect(2300, 200, 150, 100),
         pygame.Rect(2600, 20, 200, 100),
-        pygame.Rect(4500, 750, 60000, 200),
+        pygame.Rect(4500, 750, 600, 200),
     ]
 
     jump_blocks = [
@@ -8457,13 +8440,12 @@ def create_lvl12_screen():
     [(3900, 650), (3950, 600), (4000, 650)]
     ]
 
-    exit_portal = pygame.Rect(4113, -820 ,70, 120)
+    exit_portal = pygame.Rect(4080, -910, 140, 180)
     clock = pygame.time.Clock()
     draw_notifications()
     draw_syncing_status()
     if transition.x <= -transition.image.get_width():
       while running:
-
         clock.tick(60)
         keys = pygame.key.get_pressed()
 
@@ -8668,7 +8650,7 @@ def create_lvl12_screen():
         for spike in spikes:
             pygame.draw.polygon(screen, (255, 0, 0), [((x - camera_x),( y - camera_y)) for x, y in spike])
 
-        pygame.draw.rect(screen, (129, 94, 123), (int(exit_portal.x - camera_x), int(exit_portal.y - camera_y), exit_portal.width, exit_portal.height))
+        draw_portal(mechexit_img, exit_portal, camera_x, camera_y)
 
         timed_coin_text = in_game.get("timed_coin_message", "Orange coins are timed! They open blocks for a limited")
         rendered_timed_text = render_text(timed_coin_text, True, (255, 128, 0))
@@ -9403,7 +9385,7 @@ logo_text = render_text("Logo and Background made with canva.com", True, (255, 2
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = render_text("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = render_text("Version 1.2.97.2", True, (255, 255, 255))
+ver_text = render_text("Version 1.2.97.3", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 
 # First define current XP outside the loop
@@ -9574,7 +9556,9 @@ while running:
          mouse_pos = pygame.mouse.get_pos()
 
          messages = load_language(lang_code).get('messages', {})  # Fetch localized messages
-         char_text = render_text("Select your Robo!", True, (255, 255, 255))
+         header_txt = load_language(lang_code).get('main_menu', {})
+         char_sel = header_txt.get("character_select", "Character Select")
+         char_text = render_text(char_sel, True, (255, 255, 255))
          screen.blit(char_text, (SCREEN_WIDTH // 2 - 100, 50))
 
          # Check if characters are locked
