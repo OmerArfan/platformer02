@@ -71,12 +71,14 @@ HEX = "0123456789ABCDEF"
 def generate_player_id():
     roll = random.random() * 100  # 0.0 → 100.0
 
-    if roll < 0.1:        # 0.1%
+    if roll < 0.001:        # 0.1%
         length = 3
-    elif roll < 5.1:     # next 5%
+    elif roll < 2.1:     # next 5%
         length = 4
-    else:                 # rest
+    elif roll < 25:                 # rest
         length = 5
+    else:
+        length = 6
 
     return "".join(random.choices(HEX, k=length))
 
@@ -136,6 +138,7 @@ SAVE_FILE = os.path.join(APP_DATA_DIR, "progress.json")
 ACCOUNTS_FILE = os.path.join(APP_DATA_DIR, "local.json")
 
 def update_local_manifest(data):
+    global er, error_code, is_mute, notification_time
     # 1. Load existing manifest
     manifest = {"last_used": "", "users": {}, "pref": {"language": "en", "sfx": True, "ambience": True}}
     if os.path.exists(ACCOUNTS_FILE):
@@ -143,15 +146,22 @@ def update_local_manifest(data):
             with open(ACCOUNTS_FILE, "r") as f:
                 manifest = json.load(f)
         except:
-            pass
+            try:
+              # I fmain is corrupted check backup.
+              with open(ACCOUNTS_FILE + ".bak", "r") as f:
+                manifest = json.load(f)
+              # Fixing the main file if it is corrupted.
+              with open(ACCOUNTS_FILE, "w") as f_fix:
+                    json.dump(manifest, f_fix, indent=4)
+            except:
+                pass
 
     # 2. Get current player info
     p_id = data["player"]["ID"]
     p_name = data["player"].get("Username", "User")
     current_lvl = data["player"]["Level"]
 
-    # 3. Update Preferences (Now handled globally in the manifest)
-    # Use global variables 'lang_code' and 'is_mute' currently active in the session
+    # 3. Update Preferences
     manifest["pref"] = {
         "last_used": p_id,
         "language": lang_code,
@@ -166,9 +176,24 @@ def update_local_manifest(data):
         "last_login": date.today().strftime("%Y-%m-%d")
     }
 
-    # 4. Save
-    with open(ACCOUNTS_FILE, "w") as f:
-        json.dump(manifest, f, indent=4)
+    # 4. Save with Backup
+    try:
+        # Create the backup of the OLD version before we save the NEW one
+        if os.path.exists(ACCOUNTS_FILE):
+            shutil.copy2(ACCOUNTS_FILE, ACCOUNTS_FILE + ".bak")
+        
+        # Open with "w" to truncate (clear) the file
+        with open(ACCOUNTS_FILE, "w") as f:
+            json.dump(manifest, f, indent=4)
+            f.flush()            # Push data from Python to the OS
+            os.fsync(f.fileno()) # Push data from the OS to the actual Hard Drive
+
+    except Exception as e:
+        if not is_mute: hit_sound.play()
+        error_code = render_text(f"Local manifest error: {e}", True, (255, 0, 0))
+        er = True
+        notification_time = time.time()
+        print(f"Error during manifest save: {e}")
 
 notification_time = None
 
@@ -299,6 +324,26 @@ def recover_account_from_cloud(target_user, target_pass):
     
     return "NOT_FOUND"
 
+def fetch_cloud_data_by_id(target_id):
+    CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQNm-8l1C38UGFt-lJT3ft5DARYZcjMwsWfVYGrtAqDy0bR8MQFcLJSRFqYYX7mbra_P2cWl1-i0WYW/pub?gid=1459647032&single=true&output=csv"
+    try:
+        # Short timeout so the loading screen doesn't hang if internet is slow
+        response = requests.get(CSV_URL, timeout=5)
+        if response.status_code == 200:
+            f = StringIO(response.text)
+            reader = csv.DictReader(f)
+            for row in reader:
+                # Parse the progress string into a dictionary
+                cloud_json = json.loads(row.get('Progress'))
+                # Check if the ID inside that JSON matches our local ID
+                if cloud_json.get("player", {}).get("ID") == target_id:
+                    return cloud_json
+                
+    except Exception as e:
+        print(f"Silent Sync Error: {e}")
+        
+    return None
+
 def load_progress():
     global SAVE_FILE, notification_time 
     
@@ -324,19 +369,29 @@ def load_progress():
         try:
             with open(target_file, "r", encoding="utf-8") as f:
                 loaded_data = json.load(f)
-                if loaded_data:
-                    data.update(loaded_data)
-                    # Sync missing sub-keys (levels, player info)
-                    sync_missing_data(data) 
-                    SAVE_FILE = target_file
-                    print(f"DEBUG: Successfully loaded {target_file}")
         except Exception as e:
-            print(f"Load Error: {e}")
+            print(f"Main save corrupted, trying backup: {e}")
+            # TRY THE BACKUP
+            backup_file = target_file + ".bak"
+            if os.path.exists(backup_file):
+                try:
+                    with open(backup_file, "r", encoding="utf-8") as f:
+                        loaded_data = json.load(f)
+                        print("DEBUG: Successfully recovered from backup!")
+                except:
+                    loaded_data = None
+            else:
+                loaded_data = None
+
+        if loaded_data:
+            data.update(loaded_data)
+            sync_missing_data(data) 
+            SAVE_FILE = target_file
 
     # 4. Handle Migration/New ID
     # If we loaded progress.json but have an ID inside it, migrate the filename
     p_id = data["player"].get("ID", "")
-    if p_id == "":
+    if p_id == "" and not os.path.exists(os.path.join(APP_DATA_DIR, "progress.json")):
         p_id = generate_player_id()
         data["player"]["ID"] = p_id
 
@@ -348,64 +403,29 @@ def load_progress():
     if os.path.exists(legacy_path) and not os.path.exists(SAVE_FILE):
         try:
             shutil.copy(legacy_path, SAVE_FILE)
-            print(f"Migrated legacy save to {p_id}.json")
+            os.remove(legacy_path) # <--- DELETE the old one so it's gone for good!
+            print(f"Migrated and cleaned up legacy save.")
         except Exception as e:
             print(f"Migration error: {e}")
 
-    return data
+    local_xp = data.get("player", {}).get("XP", 0)
+    p_id = data["player"].get("ID")
 
-def sync_missing_data(data):
-    # Helper to ensure all default keys exist in loaded data.
-    for key, value in default_progress.items():
-        if key not in data:
-            data[key] = value
-
-    target_subkeys = ["times", "medals", "score"]
-
-    if "lvls" in data:
-        for subkey in target_subkeys:
-            # Check if the subkey (e.g., "score") exists in the loaded data
-            if subkey not in data["lvls"]:
-                 data["lvls"][subkey] = default_progress["lvls"][subkey]
-            else:
-                # If it exists, check if new levels (e.g., lvl13) were added to the game
-                for lvl_key, lvl_val in default_progress["lvls"][subkey].items():
-                    if lvl_key not in data["lvls"][subkey]:
-                       data["lvls"][subkey][lvl_key] = lvl_val
-
-    if "lvls" in data and "locked_levels" not in data["lvls"]:
-        data["lvls"]["locked_levels"] = default_progress["lvls"]["locked_levels"]
-
-    if "player" in data:
-        if "ID" not in data["player"]:
-            data["player"]["ID"] = default_progress["player"]["ID"]
-
-        if "Pass" not in data["player"]:
-            data["player"]["Pass"] = default_progress["player"]["Pass"]
+    if p_id:
+        print(f"Checking cloud for ID: {p_id}...")
+        cloud_data = fetch_cloud_data_by_id(p_id)
         
-        if "Username" not in data["player"]:
-            data["player"]["Username"] = default_progress["player"]["Username"]
-    
-    if "pref" in data:
-        # .pop(key, None) safely removes the key if it exists, otherwise does nothing
-        data["pref"].pop("is_mute", None)
-        data["pref"].pop("language", None)
+        if cloud_data:
+            cloud_xp = cloud_data.get("player", {}).get("XP", 0)
+            if cloud_xp > local_xp:
+                print(f"Cloud is ahead! ({cloud_xp} XP). Updating local save...")
+                data = cloud_data
+                # Update the physical file so we don't have to fetch again next time
+                save_progress(data) 
+            else:
+                print(f"Local save is the latest version ({local_xp} XP).")
 
-    if data["player"]["ID"] == "":
-        data["player"]["ID"] = generate_player_id()
-
-# Load the fonts (ensure the font file path is correct)
-font_path_ch = resource_path('fonts/NotoSansSC-SemiBold.ttf')
-font_path_jp = resource_path('fonts/NotoSansJP-SemiBold.ttf')
-font_path_kr = resource_path('fonts/NotoSansKR-SemiBold.ttf')
-font_path_ar = resource_path("fonts/NotoNaskhArabic-Bold.ttf")
-font_path = resource_path('fonts/NotoSansDisplay-SemiBold.ttf')
-font_ch = pygame.font.Font(font_path_ch, 25)
-font_jp = pygame.font.Font(font_path_jp, 25)
-font_kr = pygame.font.Font(font_path_kr, 25)
-font_def = pygame.font.Font(font_path, 25)
-font_ar = pygame.font.Font(font_path_ar, 25)
-font_text = pygame.font.Font(font_path, 55)
+    return data
 
 # Save progress to file
 def save_progress(data):
@@ -466,6 +486,59 @@ def save_progress(data):
         notification_time = time.time()
         print(f"Detailed save error: {e}")
 
+def sync_missing_data(data):
+    # Helper to ensure all default keys exist in loaded data.
+    for key, value in default_progress.items():
+        if key not in data:
+            data[key] = value
+
+    target_subkeys = ["times", "medals", "score"]
+
+    if "lvls" in data:
+        for subkey in target_subkeys:
+            # Check if the subkey (e.g., "score") exists in the loaded data
+            if subkey not in data["lvls"]:
+                 data["lvls"][subkey] = default_progress["lvls"][subkey]
+            else:
+                # If it exists, check if new levels (e.g., lvl13) were added to the game
+                for lvl_key, lvl_val in default_progress["lvls"][subkey].items():
+                    if lvl_key not in data["lvls"][subkey]:
+                       data["lvls"][subkey][lvl_key] = lvl_val
+
+    if "lvls" in data and "locked_levels" not in data["lvls"]:
+        data["lvls"]["locked_levels"] = default_progress["lvls"]["locked_levels"]
+
+    if "player" in data:
+        if "ID" not in data["player"]:
+            data["player"]["ID"] = default_progress["player"]["ID"]
+
+        if "Pass" not in data["player"]:
+            data["player"]["Pass"] = default_progress["player"]["Pass"]
+        
+        if "Username" not in data["player"]:
+            data["player"]["Username"] = default_progress["player"]["Username"]
+    
+    if "pref" in data:
+        # .pop(key, None) safely removes the key if it exists, otherwise does nothing
+        data["pref"].pop("is_mute", None)
+        data["pref"].pop("language", None)
+
+    if data["player"]["ID"] == "":
+        data["player"]["ID"] = generate_player_id()
+
+# Load the fonts (ensure the font file path is correct)
+font_path_ch = resource_path('fonts/NotoSansSC-SemiBold.ttf')
+font_path_jp = resource_path('fonts/NotoSansJP-SemiBold.ttf')
+font_path_kr = resource_path('fonts/NotoSansKR-SemiBold.ttf')
+font_path_ar = resource_path("fonts/NotoNaskhArabic-Bold.ttf")
+font_path = resource_path('fonts/NotoSansDisplay-SemiBold.ttf')
+font_ch = pygame.font.Font(font_path_ch, 25)
+font_jp = pygame.font.Font(font_path_jp, 25)
+font_kr = pygame.font.Font(font_path_kr, 25)
+font_def = pygame.font.Font(font_path, 25)
+font_ar = pygame.font.Font(font_path_ar, 25)
+font_text = pygame.font.Font(font_path, 55)
+
 # Load progress at start
 progress_loaded = False
 language_loaded = False
@@ -480,11 +553,18 @@ def draw_loading_bar(stage_name, percent):
     pygame.draw.rect(screen, (0, 0, 255), (0, SCREEN_HEIGHT - 10, (SCREEN_WIDTH / 100)*percent, 10))
     pygame.display.flip()
 
-stage = "Loading sounds..."
+stage = "Checking for latest save..."
 ps = 0
 while ps < 100:
  draw_loading_bar(stage, ps)
- if not sounds_loaded:
+ print(ps)
+ if not progress_loaded:
+    progress = load_progress(); ps = 5
+    complete_levels = progress.get("complete_levels", 0); ps = 8
+    progress_loaded = True
+
+ if progress_loaded and not sounds_loaded:
+  stage = "Loading sounds..."
   click_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "click.wav")); ps += 1
   hover_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hover.wav"))
   death_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "death.wav")); ps += 1
@@ -512,7 +592,7 @@ while ps < 100:
   pygame.mixer.music.load(resource_path("audio/amb/ambience.wav")); ps += 2
   sounds_loaded = True
 
- if not images_loaded:
+ if sounds_loaded and not images_loaded:
     stage = "Loading images..."
     cursor_img = pygame.image.load(resource_path("oimgs/cursor/cursor.png")).convert_alpha(); ps += 2
 
@@ -581,17 +661,11 @@ while ps < 100:
     icerobot_img = pygame.image.load(resource_path("char/icerobot/icerobot.png")).convert_alpha()
     quitbot = pygame.image.load(resource_path("char/greenrobot/movegreenrobot.png")).convert_alpha()
     locked_img = pygame.image.load(resource_path("char/lockedrobot.png")).convert_alpha(); ps += 6
-
- if not progress_loaded and sounds_loaded:
-    stage = "Loading progress..."
-    progress = load_progress(); ps = 65
-    complete_levels = progress.get("complete_levels", 0); ps = 75
-    progress_loaded = True
+    images_loaded = True
 
 # In the loading loop section:
- if not language_loaded and progress_loaded:
+ if not language_loaded and images_loaded:
     stage = "Loading configured settings..."
-    
     # NEW: Load from manifest instead of progress
     if os.path.exists(ACCOUNTS_FILE):
         with open(ACCOUNTS_FILE, "r") as f:
@@ -9282,7 +9356,16 @@ def show_login_screen():
                          if not is_mute: notify_sound.play()
                          set_page("Account") # Explicitly set the page back
                          return
-            
+
+                        elif result == "CONN_ERROR":
+                            if not is_mute: 
+                                hit_sound.play()
+                            notification_text = render_text("Connection Error: Cloud Vault is unreachable.", True, (255, 0, 0))
+                            notif = True
+                            notification_time = time.time()
+                            set_page("Account")
+                            return
+                        
                         elif result == "WRONG_AUTH":
             # [SCENARIO 2] WRONG PASS
                          status_msg = "Wrong Password!"
@@ -9403,8 +9486,8 @@ logo_text = render_text("Logo and Background made with canva.com", True, (255, 2
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = render_text("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = render_text("Version 1.2.98", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
+ver_text = render_text("Version 1.2.98.1", True, (255, 255, 255))
+ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
 
 # First define current XP outside the loop
 level, xp_needed, xp_total = xp()
