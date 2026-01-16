@@ -33,7 +33,7 @@
     "login_instr2": "If the account does not exist, a new account will be created for you.",
     "login_instr3": "Press TAB to switch between inputting Password and Username. To return, press ESC.",
     "case_warning": "Usernames and Passwords are case sensitive!"
-    ,"username_label": "Username:",
+    ,"username_label": "Username",
     "password_label": "Password",
     "submit_prompt": "Press ENTER to Continue"
   }
