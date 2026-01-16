@@ -2522,7 +2522,7 @@ def create_lvl3_screen():
 
     key_block_pairs = [
         {
-            "key": (310, 225, 30, (255, 255, 0)),
+            "key": (250, 175, 30, (255, 255, 0)),
             "block": pygame.Rect(2550, 250, 200, 200),
             "collected": False
         },
@@ -2545,7 +2545,7 @@ def create_lvl3_screen():
         pygame.Rect(100, 300, 2000, 50),
         pygame.Rect(100, -150, 2200, 50),
         pygame.Rect(-900, -360, 1000, 9000),
-        pygame.Rect(1250, -450, 300, 50),
+        pygame.Rect(1220, -425, 360, 50),
     ]
 
     jump_blocks = [
@@ -2554,16 +2554,13 @@ def create_lvl3_screen():
         pygame.Rect(2600, 285, 120, 100),
     ]
 
-
     spikes = [
-    [(700, 350), (750, 400), (800, 350)],
     [(900, 350), (950, 400), (1000, 350)],
     [(1000, 350), (1050, 400), (1100, 350)],
-    [(1100, 350), (1150, 400), (1200, 350)],
     [(2000, 750), (2050, 700), (2100, 750)],
     ]
 
-    exit_portal = pygame.Rect(430, -330, 140, 180)
+    exit_portal = pygame.Rect(430, -350, 140, 180)
     clock = pygame.time.Clock()
 
     saw_text = in_game.get("saws_message", "Saws are also dangerous!")
@@ -8198,12 +8195,8 @@ def create_lvl11_screen():
                 confused_text = render_text("WHERE DID HE GO????", True, (82, 0, 0))
                 screen.blit(confused_text, ((epos_x - camera_x), (epos_y - camera_y - 40)))
                 if not unlock:
-                    if not is_mute:
-                        notify_sound.play()
                     unlock = True
                     unlock_time = pygame.time.get_ticks()
-                    progress["char"]["evilrobo"] = unlock
-                    save_progress(progress)
             epos_x -= 12
 
         if epos_x < 2150:
@@ -9272,51 +9265,48 @@ def show_login_screen():
                     if len(username) > 2 and len(user_pass) > 3:
                         status_msg = "Checking Cloud Vault..."
                         status_color = (255, 255, 0)
-                        
-                        # Draw immediately so user sees "Checking..."
                         pygame.display.update()
-                        
-                        # --- CLOUD CHECK LOGIC ---
                         result = recover_account_from_cloud(username, user_pass)
-                        
+        # Access the notification globals
+                        global notif, notification_text, notification_time, er
                         if isinstance(result, dict):
-                            # [SCENARIO 1] FOUND: Sync existing
-                            progress = result
-                            status_msg = "Account Recovered!"
-                            status_color = (0, 255, 0)
-                            # This saves to [OLD_ID].json
-                            save_progress(progress)
-                            login_done = True
-                            if not is_mute:
-                               notify_sound.play()
-                            
+            # [SCENARIO 1] SUCCESS
+                         progress = result
+                         save_progress(progress)
+            
+            # TRIGGER NOTIFICATION
+                         notification_text = render_text("Login Successful!", True, (0, 255, 0))
+                         notification_time = time.time()
+                         notif = True
+                         login_done = True
+                         if not is_mute: notify_sound.play()
+                         set_page("Account") # Explicitly set the page back
+                         return
+            
                         elif result == "WRONG_AUTH":
-                            # [SCENARIO 2] FOUND BUT WRONG PASS
-                            status_msg = "Wrong Password for this user!"
-                            status_color = (255, 50, 50)
-                            if not is_mute:
-                               death_sound.play()
-                            
+            # [SCENARIO 2] WRONG PASS
+                         status_msg = "Wrong Password!"
+                         status_color = (255, 50, 50)
+                         if not is_mute: death_sound.play()
+            
                         else:
-                            # [SCENARIO 3] NOT FOUND: Create New
-                            # 1. Wipe progress to default so we don't clone the previous player's stats
-                            progress = copy.deepcopy(default_progress)
-                            
-                            # 2. Generate FRESH ID (This creates the new file!)
-                            new_id = generate_player_id()
-                            hashed_p = hashlib.sha256(user_pass.encode()).hexdigest()
-                            
-                            progress["player"]["ID"] = new_id
-                            progress["player"]["Username"] = username
-                            progress["player"]["Pass"] = hashed_p
-                            
-                            status_msg = f"New Account Created! (ID: {new_id})"
-                            status_color = (0, 255, 255)
-                            
-                            # 3. Save locally -> Creates [NEW_ID].json
-                            save_progress(progress)
-                            login_done = True
-                            
+                         # [SCENARIO 3] NEW ACCOUNT
+                         progress = copy.deepcopy(default_progress)
+                         new_id = generate_player_id()
+                         hashed_p = hashlib.sha256(user_pass.encode()).hexdigest()
+                         progress["player"]["ID"] = new_id
+                         progress["player"]["Username"] = username
+                         progress["player"]["Pass"] = hashed_p
+                         save_progress(progress)
+
+                         # TRIGGER NOTIFICATION
+                         notification_text = render_text(f"Account Created! ID: {new_id}", True, (0, 255, 255))
+                         notification_time = time.time()
+                         notif = True
+                         login_done = True
+                         if not is_mute: notify_sound.play()
+                         set_page("Account") # Explicitly set the page back
+                         return        
                     else:
                         if not is_mute:
                             death_sound.play()
@@ -9346,7 +9336,7 @@ def create_account_selector():
     buttons.clear()
     settings = load_language(lang_code).get('settings', {})
 
-    # 1. Load the local manifest
+    # 1. Load manifest
     manifest = {"users": {}}
     if os.path.exists(ACCOUNTS_FILE):
         try:
@@ -9354,24 +9344,52 @@ def create_account_selector():
                 manifest = json.load(f)
         except: pass
     
-    accounts = manifest.get("users", {})
+    accounts = list(manifest.get("users", {}).items())
     
-    # 2. Create Account Buttons
-    y_pos = 200
-    for p_id, info in accounts.items():
-        name_str = info.get("username", "Unknown")
-        
-        rendered_name = render_text(name_str, True, (255, 255, 255))
-        rect = rendered_name.get_rect(center=(SCREEN_WIDTH // 2, y_pos))
-        
-        # Append to buttons list
-        buttons.append((rendered_name, rect, f"load_user_{p_id}", False))
-        y_pos += 72
+    # --- LAYOUT CONSTANTS ---
+    COLUMN_WIDTH = 300
+    START_Y = 200
+    MAX_Y = SCREEN_HEIGHT - 150
+    SPACING_Y = 72
+    
+    # Calculate how many columns we actually have
+    num_accounts = len(accounts) + 1  # +1 for the "New Player" button
+    items_per_col = (MAX_Y - START_Y) // SPACING_Y
+    num_cols = (num_accounts // items_per_col) + 1
+    
+    # Calculate the starting X so the WHOLE group is centered
+    # Total width is (number of columns * width), then we find the center
+    total_group_width = num_cols * COLUMN_WIDTH
+    start_x = (SCREEN_WIDTH // 2) - (total_group_width // 2) + (COLUMN_WIDTH // 2)
 
-    # 3. "New Player" Button
+    current_x = start_x
+    current_y = START_Y
+
+    # 2. Render Account Buttons
+    for p_id, info in accounts:
+        name_str = info.get("username", "Unknown")
+        rendered_name = render_text(name_str, True, (255, 255, 255))
+        
+        # Check if we need to wrap to a new column
+        if current_y >= MAX_Y:
+            current_y = START_Y
+            current_x += COLUMN_WIDTH
+            
+        # Left-aligning looks better in columns:
+        # We use current_x as the anchor for the left side of the text
+        rect = rendered_name.get_rect(topleft=(current_x - 100, current_y))
+        
+        buttons.append((rendered_name, rect, f"load_user_{p_id}", False))
+        current_y += SPACING_Y
+
+    # 3. "New Player" Button (Follows the same grid logic)
+    if current_y > MAX_Y:
+        current_y = START_Y
+        current_x += COLUMN_WIDTH
+        
     new_txt = settings.get("new_acc", "+ NEW PLAYER")
-    new_txt_rendered = render_text(new_txt, True, (255, 255, 255))
-    new_rect = new_txt_rendered.get_rect(center=(SCREEN_WIDTH // 2, y_pos))
+    new_txt_rendered = render_text(new_txt, True, (0, 255, 200)) # Highlighted color
+    new_rect = new_txt_rendered.get_rect(topleft=(current_x - 100, current_y))
     buttons.append((new_txt_rendered, new_rect, "new_account", False))
 
 if not is_mute and SCREEN_WIDTH > MIN_WIDTH and SCREEN_HEIGHT > MIN_HEIGHT:
@@ -9385,7 +9403,7 @@ logo_text = render_text("Logo and Background made with canva.com", True, (255, 2
 logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
 credit_text = render_text("Made by Omer Arfan", True, (255, 255, 255))
 credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = render_text("Version 1.2.97.3", True, (255, 255, 255))
+ver_text = render_text("Version 1.2.98", True, (255, 255, 255))
 ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 10), SCREEN_HEIGHT - 128)
 
 # First define current XP outside the loop
