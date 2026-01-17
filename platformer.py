@@ -18,7 +18,7 @@ from datetime import datetime, date
 from bidi.algorithm import get_display
 
 # GAME VERSION
-version = "1.2.98.2"
+version = "1.2.99"
 
 # for compilation
 def resource_path(relative_path): 
@@ -1467,6 +1467,11 @@ def about_menu():
     screen.blit(bugs_text, bugs_pos)
     screen.blit(sorry_text, sorry_pos)
 
+    support_text = settings_lang.get("support", "Support / Report Bugs")
+    support_rendered = render_text(support_text, True, (255, 255, 255))
+    support_rect = support_rendered.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 122))
+    buttons.append((support_rendered, support_rect, "Support", False))
+
     back_text = settings_lang.get("Back", "Back")
     rendered = render_text(back_text, True, (255, 255, 255))
     rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 50))
@@ -1479,37 +1484,44 @@ def audio_settings_menu():
     settings_lang = load_language(lang_code).get('settings', {})
 
     # 1. Draw Title
-
-    title = settings_lang.get("Audio", "Audio")
-    title_txt = render_text(title, True, (255, 255, 255))
-    screen.blit(title_txt, (SCREEN_WIDTH // 2 - title.get_width() // 2, 200))
+    title_str = settings_lang.get("Audio", "Audio")
+    title_txt = render_text(title_str, True, (255, 255, 255))
+    screen.blit(title_txt, (SCREEN_WIDTH // 2 - title_txt.get_width() // 2, 200))
     
+    # 2. Sound Buttons (SFX)
+    sound_label = settings_lang.get("Sound", "Sound")
     if is_mute:
-        sfx_txt = "Unmute Sound"
+        # Fetches "Unmute {setting}" and replaces {setting} with "Sound"
+        sfx_text_str = settings_lang.get("Unmute", "Unmute {setting}").format(setting=sound_label)
     else:
-        sfx_txt = "Mute Sound"
+        # Fetches "Mute {setting}" and replaces {setting} with "Sound"
+        sfx_text_str = settings_lang.get("Mute", "Mute {setting}").format(setting=sound_label)
     
-    if is_mute_amb:
-        amb_txt = "Unmute Ambience"
-    else:
-        amb_txt = "Mute Ambience"
-    renderedsfx = render_text(sfx_txt, True, (255, 255, 255))
+    renderedsfx = render_text(sfx_text_str, True, (255, 255, 255))
     rectsfx = renderedsfx.get_rect(center=(SCREEN_WIDTH // 2, 350))
-    buttons.append((renderedsfx, rectsfx, "SFX", False))
+    buttons.append((renderedsfx, rectsfx, "SFX", False)) # Keeping "SFX" as the internal ID for your click handler
 
-    renderedamb = render_text(amb_txt, True, (255, 255, 255))
+    # 3. Ambience Buttons
+    amb_label = settings_lang.get("Ambience", "Ambience")
+    if is_mute_amb:
+        amb_text_str = settings_lang.get("Unmute", "Unmute {setting}").format(setting=amb_label)
+    else:
+        amb_text_str = settings_lang.get("Mute", "Mute {setting}").format(setting=amb_label)
+    
+    renderedamb = render_text(amb_text_str, True, (255, 255, 255))
     rectamb = renderedamb.get_rect(center=(SCREEN_WIDTH // 2, 450))
     buttons.append((renderedamb, rectamb, "Ambience", False))
 
-    # 3. Back Button
+    # 4. Back Button
     back_txt = settings_lang.get("Back", "Back")
-    rendered = render_text("Back", True, (255, 255, 255))
-    rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, 550))
-    buttons.append((rendered, rect, "Back", False))
+    renderedback = render_text(back_txt, True, (255, 255, 255))
+    rectback = renderedback.get_rect(center=(SCREEN_WIDTH // 2, 550))
+    buttons.append((renderedback, rectback, "Back", False))
     
-    screen.blit(rendered, rect)
+    # Blit everything to the screen
     screen.blit(renderedsfx, rectsfx)
     screen.blit(renderedamb, rectamb)
+    screen.blit(renderedback, rectback)
 
 def muting_sfx():
     global is_mute
@@ -2245,19 +2257,20 @@ def create_lvl1_screen():
         screen.blit(rendered_moving_text, (1350 - camera_x, 170 - camera_y))  # Draws the rendered moving text
         screen.blit(rendered_exit_text, (2400 - camera_x, 300 - camera_y))  # Draws the rendered exit text
 
-        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
 
         medal = get_medal(1, current_time)
         if medal == "Gold":
             if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
             else:
-                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
 
         if keys[pygame.K_r]:
             resetting()
@@ -2562,19 +2575,20 @@ def create_lvl2_screen():
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
 
-        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
 
         medal = get_medal(2, current_time)
         if medal == "Gold":
             if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
             else:
-                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
 
             # Inside the game loop:
         screen.blit(rendered_jump_text, (900 - camera_x, 500 - camera_y))  # Draws the rendered up text
@@ -3073,19 +3087,20 @@ def create_lvl3_screen():
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
 
         medal = get_medal(3, current_time)
         if medal == "Gold":
             if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
             else:
-                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
 
         levels = load_language(lang_code).get('levels', {})
         lvl3_text = levels.get("lvl3", "Level 3")  # Render the level text
@@ -3755,19 +3770,21 @@ def create_lvl4_screen():
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
 
         medal = get_medal(4, current_time)
         if medal == "Gold":
             if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
             else:
-                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
 
         levels = load_language(lang_code).get('levels', {})
         lvl4_text = levels.get("lvl4", "Level 4")  # Render the level text
@@ -4448,19 +4465,20 @@ def create_lvl5_screen():
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
 
         medal = get_medal(5, current_time)
         if medal == "Gold":
             if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
             else:
-                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
 
         levels = load_language(lang_code).get('levels', {})
         lvl5_text = levels.get("lvl5", "Level 5")  # Render the level text
@@ -5129,19 +5147,20 @@ def create_lvl6_screen():
         lvl6_text = levels.get("lvl6", "Level 6")  # Render the level text
         screen.blit(render_text(lvl6_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
-        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
 
         medal = get_medal(6, current_time)
         if medal == "Gold":
             if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
             else:
-                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
 
         invisible_text = in_game.get("invisible_message", "These saws won't hurt you... promise!")
         screen.blit(render_text(invisible_text, True, (255, 51, 153)), (900 - camera_x, 250 - camera_y)) # Render the invisible block text
@@ -5682,19 +5701,20 @@ def create_lvl7_screen():
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
 
         medal = get_medal(7, current_time)
         if medal == "Gold":
             if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
             else:
-                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
 
         levels = load_language(lang_code).get('levels', {})
         lvl7_text = levels.get("lvl7", "Level 7")  # Render the level text
@@ -6262,21 +6282,20 @@ def create_lvl8_screen():
         mock_text = in_game.get("mock_message", "Wrong way my guy nothing to see here...")
         screen.blit(render_text(mock_text, True, (255, 0, 0)), (13200 - camera_x, -300 - camera_y))
 
-        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
 
         medal = get_medal(8, current_time)
         if medal == "Gold":
             if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
             else:
-                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
-
-        
+            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
@@ -6963,22 +6982,21 @@ def create_lvl9_screen():
         clarify2_text = in_game.get("clarify_message2", "They also affect your jumps on jump blocks!")
         screen.blit(render_text(clarify2_text, True, (204, 102, 204)), (1000 - camera_x, 450 - camera_y))
 
-        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
 
         medal = get_medal(9, current_time)
         if medal == "Gold":
             if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
             else:
-                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
-
+            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         
-
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
                 screen.blit(render_text(death_text, True, (255, 0 ,0)), (20, 50))
@@ -7608,21 +7626,20 @@ def create_lvl10_screen():
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
 
         medal = get_medal(10, current_time)
         if medal == "Gold":
             if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
             else:
-                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
-
-        
+            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
@@ -8430,19 +8447,20 @@ def create_lvl11_screen():
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
-        
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
+
         medal = get_medal(11, current_time)
         if medal == "Gold":
             if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
             else:
-                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
@@ -8911,19 +8929,20 @@ def create_lvl12_screen():
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
+
         medal = get_medal(12, current_time)
         if medal == "Gold":
             if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
             else:
-                screen.blit(gold_m, (SCREEN_WIDTH - 300, 20))
+                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - 300, 20))
+            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - 300, 20))
-
-        timer_text = render_text(f"Time: {formatted_time}s", True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - 200, 20))  # draw it at the top-left corner
+            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
 
         # DEATH LOGICS
        
@@ -9209,6 +9228,8 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "settings"
+        if key == "Support":
+            webbrowser.open("https://github.com/OmerArfan/platformer02/blob/main/gameinfo/Support.md")
     elif current_page == "Audio":
         if key == "Back":
             if not is_transitioning:
@@ -9343,7 +9364,7 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def show_login_screen():
-    global username, user_pass, input_mode, login_done, progress, buttons
+    global username, user_pass, input_mode, login_done, progress, buttons, er, notification_text, notification_time, notif, error_code
     settings = load_language(lang_code).get('settings', {})
     login_done = False
     status_msg = ""
@@ -9412,7 +9433,7 @@ def show_login_screen():
 
                 elif event.key == pygame.K_RETURN:
                     if len(username) > 2 and len(user_pass) > 3:
-                        status_msg = "Checking Cloud Vault..."
+                        status_msg = settings.get("checking_vault", "Checking Cloud Vault...")
                         status_color = (255, 255, 0)
                         pygame.display.update()
                         result = recover_account_from_cloud(username, user_pass)
@@ -9424,7 +9445,8 @@ def show_login_screen():
                          save_progress(progress)
             
             # TRIGGER NOTIFICATION
-                         notification_text = render_text("Login Successful!", True, (0, 255, 0))
+                         login_success_text = settings.get("login_success", "Login Successful!")
+                         notification_text = render_text(login_success_text, True, (0, 255, 0))
                          notification_time = time.time()
                          notif = True
                          login_done = True
@@ -9435,40 +9457,74 @@ def show_login_screen():
                         elif result == "CONN_ERROR":
                             if not is_mute: 
                                 hit_sound.play()
-                            notification_text = render_text("Connection Error: Cloud Vault is unreachable.", True, (255, 0, 0))
+                            conn_error_text = settings.get("conn_error", "Connection Error: Cloud Vault is unreachable.")
+                            notification_text = render_text(conn_error_text, True, (255, 0, 0))
                             notif = True
                             notification_time = time.time()
-                            set_page("Account")
+                            set_page("main_menu")
                             return
                         
                         elif result == "WRONG_AUTH":
             # [SCENARIO 2] WRONG PASS
-                         status_msg = "Wrong Password!"
+                         status_msg = settings.get("wrong_pass", "Incorrect Password.")
                          status_color = (255, 50, 50)
                          if not is_mute: death_sound.play()
             
                         else:
-                         # [SCENARIO 3] NEW ACCOUNT
-                         progress = copy.deepcopy(default_progress)
-                         new_id = generate_player_id()
-                         hashed_p = hashlib.sha256(user_pass.encode()).hexdigest()
-                         progress["player"]["ID"] = new_id
-                         progress["player"]["Username"] = username
-                         progress["player"]["Pass"] = hashed_p
-                         save_progress(progress)
+                         # CASE: Username doesn't exist in cloud. This is a signup.
+                            guest_id_to_promote = None
+                            
+                            # Check the local manifest for a Guest (Username: "")
+                            if os.path.exists(ACCOUNTS_FILE):
+                                try:
+                                    with open(ACCOUNTS_FILE, "r") as f:
+                                        manifest = json.load(f)
+                                        users_list = manifest.get("users", {})
+                                        
+                                        # We look specifically for the empty string ""
+                                        for p_id, user_info in users_list.items():
+                                            if user_info.get("username") == "":
+                                                guest_id_to_promote = p_id
+                                                break
+                                except Exception as e:
+                                    er = True
+                                    error_code = f"Manifest Read Error: {e}"
+                                    if not is_mute:
+                                        hit_sound.play()
+                                    notification_time = time.time()
 
-                         # TRIGGER NOTIFICATION
-                         notification_text = render_text(f"Account Created! ID: {new_id}", True, (0, 255, 255))
-                         notification_time = time.time()
-                         notif = True
-                         login_done = True
-                         if not is_mute: notify_sound.play()
-                         set_page("Account") # Explicitly set the page back
-                         return        
+                            # 2. Assign the ID
+                            if guest_id_to_promote:
+                                # PROMOTE the guest ID to this new username
+                                progress["player"]["ID"] = guest_id_to_promote
+                                print(f"Migrating Guest ID {guest_id_to_promote} to {username}")
+                            else:
+                                # No guest found, create a brand new ID
+                                # Initialize with DEFAULT STATS for a new user
+                                progress = copy.deepcopy(default_progress)
+                                progress["player"]["ID"] = generate_player_id()
+                                print(f"No guest found. Generated new ID: {progress['player']['ID']}")
+
+                            # 3. Update the credentials
+                            progress["player"]["Username"] = username
+                            progress["player"]["Pass"] = hash_password(user_pass)
+
+                            # 4. Save and Sync
+                            # This will create/update the row in your Google Sheet using the selected ID
+                            save_progress(progress)
+                            threading.Thread(target=sync_vault_to_cloud, args=(progress,), daemon=True).start()
+                            login_done = True
+                            if not is_mute: notify_sound.play()
+                            notification_txt = settings.get("account_created", "Account Created and Logged In!")
+                            notification_text = render_text(notification_txt, True, (0, 255, 0))
+                            notif = True
+                            notification_time = time.time()
+                            set_page("main_menu")
+                            return        
                     else:
                         if not is_mute:
                             death_sound.play()
-                        status_msg = "Username/Password too short!"
+                        status_msg = settings.get("too_short", "Username or Password too short.")
                         status_color = (255, 50, 50)
                 
                 elif event.key == pygame.K_BACKSPACE:
