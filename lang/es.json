@@ -19,7 +19,12 @@
     "thanks": "¡Gracias por jugar! ¡Eres increíble!",
     "bugs": "Si encuentras errores, infórmalo en el repositorio de GitHub.",
     "sorry": "Perdón por las molestias causadas por los errores.",
+    "support": "Soporte / Reportar errores",
     "Audio": "Audio",
+    "Sound": "Sonido",
+    "Ambience": "Ambience",
+    "Mute": "Silenciar {setting}",
+    "Unmute": "Activar sonido {setting}",
     "Account": "Cuenta",
     "Back": "Volver",
     "new_acc": "+ NUEVO JUGADOR",
@@ -35,6 +40,12 @@
     ,"username_label": "Usuario",
     "password_label": "Contraseña",
     "submit_prompt": "Pulsa ENTER para continuar"
+    ,"checking_vault": "Comprobando bóveda en la nube...",
+    "login_success": "¡Inicio de sesión exitoso!",
+    "conn_error": "Error de conexión: no se puede acceder a la bóveda en la nube.",
+    "wrong_pass": "¡Contraseña incorrecta!",
+    "account_created": "¡Cuenta creada!",
+    "too_short": "¡Nombre de usuario o contraseña demasiado cortos!"
   },
 "char_select": {
     "select": "¡Selecciona tu Robo!",
@@ -111,7 +122,9 @@
   ,"in_game": {
   "dead_message": "¡Has muerto!", 
   "fall_message": "¡Caíste demasiado lejos!",
-  "deaths_no": "Muertes: {deathcount}"
+  "deaths_no": "Muertes: {deathcount}",
+  "time": "Tiempo: {time}s",
+  "hit_message": "¡Golpe en la cabeza!"
   ,"warning_message": "¡Cuidado con las espinas!",
   "up_message": "¡Presiona ARRIBA para saltar!", 
   "stamina_message": "Resistencia: ",

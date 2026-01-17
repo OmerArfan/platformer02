@@ -19,7 +19,12 @@
     "thanks": "플레이해주셔서 감사합니다! 당신은 최고예요!",
     "bugs": "버그를 발견하면 GitHub 저장소에 보고해 주세요.",
     "sorry": "버그로 인해 불편을 드려 죄송합니다.",
+    "support": "지원 / 버그 보고",
     "Audio": "오디오",
+    "Sound": "사운드",
+    "Ambience": "앰비언스",
+    "Mute": "{setting} 음소거",
+    "Unmute": "{setting} 음소거 해제",
     "Account": "계정",
     "Back": "뒤로",
     "new_acc": "+ 새 플레이어",
@@ -35,6 +40,12 @@
     ,"username_label": "사용자 이름",
     "password_label": "비밀번호",
     "submit_prompt": "계속하려면 ENTER를 누르세요"
+    ,"checking_vault": "클라우드 금고 확인 중...",
+    "login_success": "로그인 성공!",
+    "conn_error": "연결 오류: 클라우드 금고에 연결할 수 없습니다.",
+    "wrong_pass": "잘못된 비밀번호입니다!",
+    "account_created": "계정이 생성되었습니다!",
+    "too_short": "사용자 이름/비밀번호가 너무 짧습니다!"
   }
   ,"achieve": {
     "unlock": "업적 달성:",
@@ -116,6 +127,8 @@
     "dead_message": "사망했습니다!",
     "fall_message": "너무 멀리 떨어졌습니다!",
     "deaths_no": "사망 수: {deathcount}",
+    "time": "시간: {time}초",
+    "hit_message": "머리 타격!",
     "warning_message": "가시에 주의하세요!",
     "up_message": "점프하려면 위쪽 키를 누르세요!",
     "stamina_message": "스태미나: ",

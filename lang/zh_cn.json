@@ -19,7 +19,12 @@
     "thanks": "感谢游玩！你太棒了！",
     "bugs": "如果发现任何 Bug，请在 GitHub 仓库中报告。",
     "sorry": "对于 Bug 带来的不便我们深表歉意。",
+    "support": "支持 / 报告错误",
     "Audio": "音频",
+    "Sound": "声音",
+    "Ambience": "环境音",
+    "Mute": "静音 {setting}",
+    "Unmute": "取消静音 {setting}",
     "Account": "账户",
     "Back": "返回",
     "new_acc": "+ 新玩家",
@@ -35,6 +40,12 @@
     ,"username_label": "用户名",
     "password_label": "密码",
     "submit_prompt": "按回车键 (ENTER) 继续"
+    ,"checking_vault": "正在检查云端保险库...",
+    "login_success": "登录成功！",
+    "conn_error": "连接错误：无法访问云端保险库。",
+    "wrong_pass": "密码错误！",
+    "account_created": "账号已创建！",
+    "too_short": "用户名/密码过短！"
   },
   "char_select": {
     "select": "选择你的机器人！",
@@ -112,6 +123,8 @@
     "dead_message": "你死了！",
     "fall_message": "掉得太远了！",
     "deaths_no": "死亡：{deathcount}"
+    ,"time": "时间: {time}秒",
+    "hit_message": "击中头部！"
     ,"warning_message": "小心尖刺！",
     "up_message": "按上键跳跃！",
     "stamina_message": "耐力：",

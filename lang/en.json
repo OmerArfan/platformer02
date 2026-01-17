@@ -28,7 +28,12 @@
     "thanks": "Thank you for playing! You are amazing!",
     "bugs": "If you find any bugs, please report them on the GitHub repository.",
     "sorry": "Sorry for any inconvenience caused by bugs.",
+    "support": "Support / Report Bugs",
     "Audio": "Audio",
+    "Sound": "Sound",
+    "Ambience": "Ambience",
+    "Mute": "Mute {setting}",
+    "Unmute": "Unmute {setting}",
     "Account": "Account",
     "Back": "Back",
     "new_acc": "+ NEW PLAYER",
@@ -44,6 +49,12 @@
     ,"username_label": "Username",
     "password_label": "Password",
     "submit_prompt": "Press ENTER to Continue"
+    ,"checking_vault": "Checking Cloud Vault...",
+    "login_success": "Login Successful!",
+    "conn_error": "Connection Error: Cloud Vault is unreachable.",
+    "wrong_pass": "Wrong Password!",
+    "account_created": "Account Created!",
+    "too_short": "Username/Password too short!"
   }
   ,"achieve": {
     "unlock": "Achievement unlocked:",
@@ -112,6 +123,7 @@
   "dead_message": "You died!",
   "fall_message": "Fell too far!",
   "deaths_no": "Deaths: {deathcount}",
+  "time": "Time: {time}s",
   "warning_message": "Watch out for spikes!",
   "up_message": "Press UP to Jump!", 
   "stamina_message": "Stamina: ", 

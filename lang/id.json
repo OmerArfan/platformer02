@@ -19,7 +19,12 @@
     "thanks": "Terima kasih telah bermain! Kamu luar biasa!",
     "bugs": "Jika menemukan bug, silakan lapor ke repositori GitHub.",
     "sorry": "Mohon maaf atas ketidaknyamanan akibat bug.",
+    "support": "Dukungan / Laporkan Bug",
     "Audio": "Audio",
+    "Sound": "Suara",
+    "Ambience": "Suasana",
+    "Mute": "Bisukan {setting}",
+    "Unmute": "Bunyikan {setting}",
     "Account": "Akun",
     "Back": "Kembali",
     "new_acc": "+ PEMAIN BARU",
@@ -35,6 +40,12 @@
     ,"username_label": "Nama Pengguna",
     "password_label": "Kata Sandi",
     "submit_prompt": "Tekan ENTER untuk Melanjutkan"
+    ,"checking_vault": "Memeriksa Vault Cloud...",
+    "login_success": "Login Berhasil!",
+    "conn_error": "Kesalahan Koneksi: Vault Cloud tidak dapat dijangkau.",
+    "wrong_pass": "Kata Sandi Salah!",
+    "account_created": "Akun Berhasil Dibuat!",
+    "too_short": "Nama pengguna/Kata sandi terlalu pendek!"
   },
   "char_select": {
     "select": "Pilih Robo-mu!",
@@ -108,14 +119,16 @@
     "time_reason": "Anda butuh waktu terlalu lama",
     "time_reason_2": "untuk menyelesaikan level.",
     "death_reason": "Anda mati terlalu banyak!",
-  "death_reason_2": "",
-  "press_space": "Tekan spasi untuk",
-  "continue_wait": "lanjut atau tunggu {next_left}"
+    "death_reason_2": "",
+    "press_space": "Tekan spasi untuk",
+    "continue_wait": "lanjut atau tunggu {next_left}"
   },
   "in_game": {
     "dead_message": "Kamu mati!",
     "fall_message": "Jatuh terlalu jauh!",
     "deaths_no": "Kematian: {deathcount}",
+    "time": "Waktu: {time}dtk",
+    "hit_message": "Pukulan di kepala!",
     "warning_message": "Awas paku!",
     "up_message": "Tekan ATAS untuk Melompat!",
     "stamina_message": "Stamina: ",

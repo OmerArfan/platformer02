@@ -19,7 +19,12 @@
     "thanks": "プレイしてくれてありがとう！最高です！",
     "bugs": "バグを見つけた場合はGitHubリポジトリで報告してください。",
     "sorry": "バグによる不便をおかけして申し訳ありません。",
+    "support": "サポート / バグ報告",
     "Audio": "オーディオ",
+    "Sound": "サウンド",
+    "Ambience": "アンビエンス",
+    "Mute": "{setting}をミュート",
+    "Unmute": "{setting}のミュートを解除",
     "Account": "アカウント",
     "Back": "戻る",
     "new_acc": "+ 新規プレイヤー",
@@ -35,6 +40,12 @@
     ,"username_label": "ユーザー名",
     "password_label": "パスワード",
     "submit_prompt": "ENTERを押して続行"
+    ,"checking_vault": "クラウド保管庫を確認中...",
+    "login_success": "ログイン成功！",
+    "conn_error": "接続エラー：クラウド保管庫にアクセスできません。",
+    "wrong_pass": "パスワードが違います！",
+    "account_created": "アカウントが作成されました！",
+    "too_short": "ユーザー名またはパスワードが短すぎます！"
   }
   ,"achieve": {
     "unlock": "実績を解除しました：",
@@ -116,6 +127,8 @@
     "dead_message": "やられた！",
     "fall_message": "落ちすぎた！",
     "deaths_no": "死亡回数: {deathcount}",
+    "time": "時間: {time}秒",
+    "hit_message": "頭にヒット！",
     "warning_message": "トゲに注意！",
     "up_message": "ジャンプするには上キーを押そう！",
     "stamina_message": "スタミナ: ",
