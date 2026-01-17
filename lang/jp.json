@@ -11,6 +11,14 @@
     "back": "戻る"
   },
   "settings": {
+    "About": "アバウト",
+    "site_credit": "pixabay.comの音声をAudacityで編集して使用",
+    "logo_credit": "canva.comでロゴと背景を作成",
+    "credit_credit": "制作者：Omer Arfan",
+    "version_credit": "ゲームバージョン: {version}",
+    "thanks": "プレイしてくれてありがとう！最高です！",
+    "bugs": "バグを見つけた場合はGitHubリポジトリで報告してください。",
+    "sorry": "バグによる不便をおかけして申し訳ありません。",
     "Audio": "オーディオ",
     "Account": "アカウント",
     "Back": "戻る",
@@ -89,7 +97,20 @@
     "lvl_comp": "レベルクリア！",
     "hs_m": "ハイスコア: {hs}"
     ,"new_hs": "新記録達成！"
+    ,"xp_gained": "獲得した経験値: +{gain}"
     ,"max_level": "レベル最大"
+    ,"breakdown": "内訳",
+    "base_score": "ベーススコア: {bs}",
+    "medal_score": "メダルスコア: {ms}",
+    "death_score": "デス・ペナルティ: {ds}",
+    "time_score": "タイム・ペナルティ: {ts}",
+    "lowest": "最低スコアです！",
+    "time_reason": "レベルクリアに",
+    "time_reason_2": "時間がかかりすぎました。",
+    "death_reason": "ミスが多すぎます！",
+    "death_reason_2": "",
+    "press_space": "スペースキーで",
+    "continue_wait": "続行、またはあと {next_left} 待つ"
   },
   "in_game": {
     "dead_message": "やられた！",

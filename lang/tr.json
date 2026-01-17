@@ -11,6 +11,14 @@
     "back": "Geri"
   },
   "settings": {
+    "About": "Hakkında",
+    "site_credit": "Ses efektleri pixabay.com'dan, Audacity ile düzenlendi",
+    "logo_credit": "Logo ve Arka Plan canva.com ile yapıldı",
+    "credit_credit": "Omer Arfan tarafından yapıldı",
+    "version_credit": "Oyun Sürümü: {version}",
+    "thanks": "Oynadığınız için teşekkürler! Harikasınız!",
+    "bugs": "Hata bulursanız lütfen GitHub deposu üzerinden bildirin.",
+    "sorry": "Hatalardan kaynaklanan rahatsızlık için özür dileriz.",
     "Audio": "Ses",
     "Account": "Hesap",
     "Back": "Geri",
@@ -84,8 +92,21 @@
     "countdown_message": "{countdown} saniye içinde kaybedeceksiniz..."
     ,"lvl_comp": "Bölüm Tamamlandı!"
     ,"hs_m": "Yüksek Puan: {hs}"
+    ,"xp_gained": "Kazanılan XP: +{gain}"
     ,"new_hs": "Yeni Yüksek Skor!"
     ,"max_level": "MAKS. SEVİYE"
+    ,"breakdown": "PUAN DETAYI",
+    "base_score": "Temel Puan: {bs}",
+    "medal_score": "Madalya puanı: {ms}",
+    "death_score": "Ölüm Cezası: {ds}",
+    "time_score": "Zaman Cezası: {ts}",
+    "lowest": "Mümkün olan en düşük puan!",
+    "time_reason": "Seviyeyi tamamlamak için",
+    "time_reason_2": "çok uzun süre harcadınız.",
+    "death_reason": "Çok fazla öldünüz!",
+    "death_reason_2": "",
+    "press_space": "Devam etmek için boşluk",
+    "continue_wait": "tuşuna basın veya {next_left} bekleyin"
   },
   "in_game": {
     "dead_message": "Öldün!",

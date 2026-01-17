@@ -11,6 +11,14 @@
       "back": "Zurück"
   },
   "settings": {
+    "About": "Über",
+    "site_credit": "Soundeffekte von pixabay.com, bearbeitet mit Audacity",
+    "logo_credit": "Logo und Hintergrund erstellt mit canva.com",
+    "credit_credit": "Erstellt von Omer Arfan",
+    "version_credit": "Spielversion: {version}",
+    "thanks": "Danke fürs Spielen! Du bist fantastisch!",
+    "bugs": "Wenn Sie Fehler finden, melden Sie diese bitte im GitHub-Repository.",
+    "sorry": "Entschuldigung für Unannehmlichkeiten durch Fehler.",
     "Audio": "Audio",
     "Account": "Konto",
     "Back": "Zurück",
@@ -86,6 +94,19 @@
   ,"hs_m": "Der Highscore: {hs}"
   ,"new_hs": "Neuer Highscore!"
   ,"max_level": "MAX. LEVEL!"
+  ,"xp_gained": "EP erhalten: +{gain}"
+  ,"breakdown": "AUFSCHLÜSSELUNG",
+  "base_score": "Basispunktzahl: {bs}",
+  "medal_score": "Medaillen-Punktzahl: {ms}",
+  "death_score": "Todesstrafe: {ds}",
+  "time_score": "Zeitstrafe: {ts}",
+  "lowest": "Niedrigstmögliche Punktzahl!",
+  "time_reason": "Du hast zu lange gebraucht,",
+  "time_reason_2": "um das Level zu beenden.",
+  "death_reason": "Du bist zu oft gestorben!",
+  "death_reason_2": "",
+  "press_space": "Drücke die Leertaste zum",
+  "continue_wait": "Fortfahren oder warte {next_left}"
 }
   ,"in_game": {
   "dead_message": "Du bist tot!",

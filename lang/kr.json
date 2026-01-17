@@ -11,6 +11,14 @@
     "back": "뒤로"
   },
   "settings": {
+    "About": "정보",
+    "site_credit": "pixabay.com의 음향 효과를 Audacity로 편집함",
+    "logo_credit": "canva.com으로 로고 및 배경 제작",
+    "credit_credit": "제작: Omer Arfan",
+    "version_credit": "게임 버전: {version}",
+    "thanks": "플레이해주셔서 감사합니다! 당신은 최고예요!",
+    "bugs": "버그를 발견하면 GitHub 저장소에 보고해 주세요.",
+    "sorry": "버그로 인해 불편을 드려 죄송합니다.",
     "Audio": "오디오",
     "Account": "계정",
     "Back": "뒤로",
@@ -82,6 +90,7 @@
     "confirm_quit": "정말로 종료하시겠습니까?",
     "yes": "예",
     "no": "아니요",
+    "xp_gained": "획득한 경험치: +{gain}",
     "deny_message": "액세스가 거부되었습니다!",
     "error_message": "화면 해상도가 너무 낮습니다! 시스템 설정에서",
     "error_message2": "해상도를 높여주세요.",
@@ -90,6 +99,18 @@
     "hs_m": "최고 점수: {hs}"
     ,"new_hs": "새로운 최고 기록!"
     ,"max_level": "레벨 최대"
+    ,"breakdown": "점수 내역",
+    "base_score": "기본 점수: {bs}",
+    "medal_score": "메달 점수: {ms}",
+    "death_score": "데스 페널티: {ds}",
+    "time_score": "시간 페널티: {ts}",
+    "lowest": "최저 점수 기록!",
+    "time_reason": "레벨을 완료하는 데",
+    "time_reason_2": "시간이 너무 오래 걸렸습니다.",
+    "death_reason": "너무 많이 죽었습니다!",
+    "death_reason_2": "",
+    "press_space": "계속하려면 스페이스바를 누르거나",
+    "continue_wait": "{next_left}초 동안 기다리세요"
   },
   "in_game": {
     "dead_message": "사망했습니다!",

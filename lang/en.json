@@ -20,6 +20,14 @@
     "back": "Back"
   }
   ,"settings": {
+    "About": "About",
+    "site_credit": "Sound effects used from pixabay.com and edited using Audacity",
+    "logo_credit": "Logo and Background made with canva.com",
+    "credit_credit": "Made by Omer Arfan",
+    "version_credit": "Game Version: {version}",
+    "thanks": "Thank you for playing! You are amazing!",
+    "bugs": "If you find any bugs, please report them on the GitHub repository.",
+    "sorry": "Sorry for any inconvenience caused by bugs.",
     "Audio": "Audio",
     "Account": "Account",
     "Back": "Back",
@@ -85,7 +93,20 @@
   ,"lvl_comp": "Level Complete!"
   ,"hs_m":"Highscore: {hs}" 
   ,"new_hs": "New High Score!"
-  ,"max_level": "MAX LEVEL!"
+  ,"max_level": "MAX LEVEL!",
+  "xp_gained": "XP Gained: +{gain}",
+  "breakdown": "BREAKDOWN",
+  "base_score": "Base Score: {bs}",
+  "medal_score": "Medal score: {ms}",
+  "death_score": "Death Penalty: {ds}",
+  "time_score": "Time Penalty: {ts}",
+  "lowest": "Lowest possible score!",
+  "time_reason": "You took too long to",
+  "time_reason_2": "complete the level.",
+  "death_reason": "You died too many times!",
+  "death_reason_2": "",
+  "press_space": "Press the spacebar to",
+  "continue_wait": "continue or wait for {next_left}"
 }
   ,"in_game": {
   "dead_message": "You died!",

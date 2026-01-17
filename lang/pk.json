@@ -11,6 +11,14 @@
     "back": "پیچھے"
   },
   "settings": {
+    "About": "اس کے بارے میں",
+    "site_credit": "آوازیں pixabay.com سے لی گئیں اور Audacity سے ایڈٹ کی گئیں",
+    "logo_credit": "لوگو اور بیک گراؤنڈ canva.com سے بنایا گیا",
+    "credit_credit": "عمر عرفان نے بنایا ہے",
+    "version_credit": "گیم ورژن: {version}",
+    "thanks": "کھیلنے کا شکریہ! آپ بہت اچھے ہیں!",
+    "bugs": "اگر آپ کو کوئی بگ ملے تو براہ کرم GitHub ریپوزٹری پر رپورٹ کریں",
+    "sorry": "بگ کی وجہ سے ہونے والی کسی بھی تکلیف کے لیے معذرت",
     "Audio": "آڈیو",
     "Account": "اکاؤنٹ",
     "Back": "پیچھے",
@@ -88,8 +96,21 @@
     "countdown_message": "{countdown} سیکنڈ میں بند ہو رہا ہے...",
     "lvl_comp": "سطح مکمل ہوا!",
     "hs_m": "اعلی اسکور: {hs}"
+    ,"xp_gained": "حاصل کردہ تجربہ: +{gain}"
     ,"new_hs": "نیا اعلی اسکور!"
     ,"max_level": "زیادہ سے زیادہ لیول"
+    ,"breakdown": "اسکور کی تفصیل",
+    "base_score": "بنیادی اسکور: {bs}",
+    "medal_score": "میڈل اسکور: {ms}",
+    "death_score": "اموات کی کٹوتی: {ds}",
+    "time_score": "وقت کی کٹوتی: {ts}",
+    "lowest": "کم ترین ممکنہ اسکور!",
+    "time_reason": "آپ نے لیول مکمل کرنے میں",
+    "time_reason_2": "بہت زیادہ وقت لیا۔",
+    "death_reason": "آپ بہت زیادہ بار مر گئے!",
+    "death_reason_2": "",
+    "press_space": "جاری رکھنے کے لیے سپیس دبائیں",
+    "continue_wait": "یا {next_left} تک انتظار کریں"
   },
   "in_game": {
     "dead_message": "آپ مر گئے!",

@@ -11,6 +11,14 @@
     "back": "Kembali"
   },
   "settings": {
+    "About": "Tentang",
+    "site_credit": "Efek suara dari pixabay.com, diedit dengan Audacity",
+    "logo_credit": "Logo dan Latar Belakang dibuat dengan canva.com",
+    "credit_credit": "Dibuat oleh Omer Arfan",
+    "version_credit": "Versi Game: {version}",
+    "thanks": "Terima kasih telah bermain! Kamu luar biasa!",
+    "bugs": "Jika menemukan bug, silakan lapor ke repositori GitHub.",
+    "sorry": "Mohon maaf atas ketidaknyamanan akibat bug.",
     "Audio": "Audio",
     "Account": "Akun",
     "Back": "Kembali",
@@ -90,6 +98,19 @@
     "hs_m": "Skor Tertinggi: {hs}"
     ,"new_hs": "Skor Tinggi Baru!"
     ,"max_level": "LEVEL MAKS!"
+    ,"breakdown": "RINCIAN SKOR",
+    "xp_gained": "XP Didapat: +{gain}",
+    "base_score": "Skor Dasar: {bs}",
+    "medal_score": "Skor Medali: {ms}",
+    "death_score": "Penalti Kematian: {ds}",
+    "time_score": "Penalti Waktu: {ts}",
+    "lowest": "Skor terendah yang mungkin!",
+    "time_reason": "Anda butuh waktu terlalu lama",
+    "time_reason_2": "untuk menyelesaikan level.",
+    "death_reason": "Anda mati terlalu banyak!",
+  "death_reason_2": "",
+  "press_space": "Tekan spasi untuk",
+  "continue_wait": "lanjut atau tunggu {next_left}"
   },
   "in_game": {
     "dead_message": "Kamu mati!",

@@ -11,6 +11,14 @@
     "back": "رجوع"
   },
   "settings": {
+    "About": "حول",
+    "site_credit": "تم استخدام مؤثرات صوتية من pixabay.com وتعديلها بواسطة Audacity",
+    "logo_credit": "تم تصميم الشعار والخلفية بواسطة canva.com",
+    "credit_credit": "صنع بواسطة عمر عرفان",
+    "version_credit": "إصدار اللعبة: {version}",
+    "thanks": "شكراً للعب! أنت رائع!",
+    "bugs": "إذا وجدت أي أعطال، يرجى الإبلاغ عنها عبر مستودع GitHub.",
+    "sorry": "نعتذر عن أي إزعاج ناتج عن الأعطال.",
     "Audio": "الصوت",
     "Account": "الحساب",
     "Back": "رجوع",
@@ -69,7 +77,8 @@
     "error_message2": "الدقة في إعدادات النظام الخاص بك.",
     "countdown_message": "سيتم الإغلاق خلال {countdown} ثانية...",
     "lvl_comp": "تم إنهاء المرحلة!",
-    "hs_m": "أعلى نتيجة: {hs}"
+    "hs_m": "أعلى نتيجة: {hs}",
+    "xp_gained": "النقاط المكتسبة: +{gain}"
     ,"new_hs": "رقم قياسي جديد!"
     ,"max_level": "المستوى الأقصى"
   }
@@ -90,6 +99,18 @@
     "rew": "المكافأة:",
     "char_rew": "روبوت جديد",
     "xp_rew": "{XP} خبرة"
+    ,"breakdown": "تفاصيل النقاط",
+    "base_score": "النقاط الأساسية: {bs}",
+    "medal_score": "نقاط الميداليات: {ms}",
+    "death_score": "خصم الوفيات: {ds}",
+    "time_score": "خصم الوقت: {ts}",
+    "lowest": "أقل درجة ممكنة!",
+    "time_reason": "لقد استغرقت وقتًا طويلاً",
+    "time_reason_2": "لإكمال المستوى.",
+    "death_reason": "لقد متّ مرات عديدة!",
+    "death_reason_2": "",
+    "press_space": "اضغط على زر المسافة",
+    "continue_wait": "للمتابعة أو انتظر {next_left}"
   }
   ,"in_game": {
     "dead_message": "لقد خسرت!",

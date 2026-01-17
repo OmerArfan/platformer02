@@ -11,6 +11,14 @@
       "back": "Retour"
   },
   "settings": {
+    "About": "À propos",
+    "site_credit": "Effets sonores de pixabay.com, édités avec Audacity",
+    "logo_credit": "Logo et arrière-plan créés avec canva.com",
+    "credit_credit": "Créé par Omer Arfan",
+    "version_credit": "Version du jeu : {version}",
+    "thanks": "Merci d'avoir joué ! Vous êtes génial !",
+    "bugs": "Si vous trouvez des bugs, signalez-les sur le dépôt GitHub.",
+    "sorry": "Désolé pour les désagréments causés par les bugs.",
     "Audio": "Audio",
     "Account": "Compte",
     "Back": "Retour",
@@ -88,8 +96,21 @@
   ,"lvl_comp": "Niveau terminé !"
   ,"hs_m":"Meilleur score : {hs}"
   ,"new_hs": "Nouveau record !"
-  ,"max_level": "NIVEAU MAX !"
-  }
+  ,"max_level": "NIVEAU MAX !",
+  "xp_gained": "EXP gagnée : +{gain}"
+  ,"breakdown": "DÉTAILS DU SCORE",
+  "base_score": "Score de base : {bs}",
+  "medal_score": "Score médailles : {ms}",
+  "death_score": "Pénalité de mort : {ds}",
+  "time_score": "Pénalité de temps : {ts}",
+  "lowest": "Score le plus bas possible !",
+  "time_reason": "Vous avez mis trop de temps à",
+  "time_reason_2": "terminer le niveau.",
+  "death_reason": "Vous êtes mort trop souvent !",
+  "death_reason_2": "",
+  "press_space": "Appuyez sur espace pour",
+  "continue_wait": "continuer ou attendez {next_left}"  
+}
   ,"in_game": {
   "dead_message": "Vous êtes mort !",
   "fall_message": "Est tombé trop loin !",

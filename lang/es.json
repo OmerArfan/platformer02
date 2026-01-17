@@ -11,6 +11,14 @@
     "back": "Volver"
 },
 "settings": {
+    "About": "Acerca de",
+    "site_credit": "Efectos de sonido de pixabay.com editados con Audacity",
+    "logo_credit": "Logo y fondo creados con canva.com",
+    "credit_credit": "Creado por Omer Arfan",
+    "version_credit": "Versión del juego: {version}",
+    "thanks": "¡Gracias por jugar! ¡Eres increíble!",
+    "bugs": "Si encuentras errores, infórmalo en el repositorio de GitHub.",
+    "sorry": "Perdón por las molestias causadas por los errores.",
     "Audio": "Audio",
     "Account": "Cuenta",
     "Back": "Volver",
@@ -86,7 +94,20 @@
   ,"hs_m": "Puntuación más alta: {hs}"
   ,"new_hs": "¡Nueva puntuación máxima!"
   ,"max_level": "NIVEL MÁX."
-  }
+  ,"breakdown": "DESGLOSE",
+  "xp_gained": "EXP ganada: +{gain}",
+  "base_score": "Puntuación base: {bs}",
+  "medal_score": "Puntuación medallas: {ms}",
+  "death_score": "Penalización por muerte: {ds}",
+  "time_score": "Penalización por tiempo: {ts}",
+  "lowest": "¡La puntuación más baja posible!",
+  "time_reason": "Tardaste demasiado en",
+  "time_reason_2": "completar el nivel.",
+  "death_reason": "¡Has muerto demasiadas veces!",
+  "death_reason_2": "",
+  "press_space": "Presiona espacio para",
+  "continue_wait": "continuar o espera {next_left}"
+}
   ,"in_game": {
   "dead_message": "¡Has muerto!", 
   "fall_message": "¡Caíste demasiado lejos!",

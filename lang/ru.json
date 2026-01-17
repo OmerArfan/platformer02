@@ -11,6 +11,14 @@
         "back": "назад"
     }
     ,"settings": {
+    "About": "О программе",
+    "site_credit": "Звуковые эффекты с pixabay.com, правка в Audacity",
+    "logo_credit": "Логотип и фон созданы в canva.com",
+    "credit_credit": "Автор: Omer Arfan",
+    "version_credit": "Версия игры: {version}",
+    "thanks": "Спасибо за игру! Вы супер!",
+    "bugs": "Если вы нашли баги, сообщите о них в репозитории GitHub.",
+    "sorry": "Извините за неудобства, вызванные багами.",
     "Audio": "Аудио",
     "Account": "Аккаунт",
     "Back": "Назад",
@@ -85,7 +93,20 @@
             ,"lvl_comp": "Уровень завершён!"
             ,"hs_m": "Рекорд: {hs}"
             ,"new_hs": "Новый рекорд!"
+            ,"xp_gained": "Получено опыта: +{gain}"
             ,"max_level": "МАКС. УРОВЕНЬ"
+            ,"breakdown": "ДЕТАЛИЗАЦИЯ",
+            "base_score": "Базовые очки: {bs}",
+            "medal_score": "Очки за медали: {ms}",
+            "death_score": "Штраф за смерти: {ds}",
+            "time_score": "Штраф за время: {ts}",
+            "lowest": "Минимально возможный счет!",
+            "time_reason": "Вы потратили слишком много",
+            "time_reason_2": "времени на уровень.",
+            "death_reason": "Вы слишком часто умирали!",
+            "death_reason_2": "",
+            "press_space": "Нажмите пробел, чтобы",
+            "continue_wait": "продолжить или подождите {next_left}"
         }
     ,"in_game": {
             "dead_message": "Вы мертвы!",

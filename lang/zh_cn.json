@@ -11,6 +11,14 @@
           "back": "返回"
       },
   "settings": {
+    "About": "关于",
+    "site_credit": "音效来自 pixabay.com 并使用 Audacity 编辑",
+    "logo_credit": "Logo 和背景由 canva.com 制作",
+    "credit_credit": "作者：Omer Arfan",
+    "version_credit": "游戏版本: {version}",
+    "thanks": "感谢游玩！你太棒了！",
+    "bugs": "如果发现任何 Bug，请在 GitHub 仓库中报告。",
+    "sorry": "对于 Bug 带来的不便我们深表歉意。",
     "Audio": "音频",
     "Account": "账户",
     "Back": "返回",
@@ -73,7 +81,7 @@
     ,"next": "下一个"
      }
   ,"messages": {    
-    "you_are_in": "你在{level}"
+  "you_are_in": "你在{level}"
   ,"loading": "加载中..."
   ,"confirm_quit": "你确定要退出吗？",
   "yes": "是",
@@ -84,8 +92,21 @@
   "countdown_message": "即将于 {countdown} 秒后关闭……"
   ,"lvl_comp": "关卡完成"
   ,"hs_m": "最高分: {hs}"
+  ,"xp_gained": "获得经验值: +{gain}"
   ,"new_hs": "最高分新纪录"
   ,"max_level": "最高等级"
+  ,"breakdown": "分数详情",
+  "base_score": "基础分数: {bs}",
+  "medal_score": "奖牌分数: {ms}",
+  "death_score": "死亡惩罚: {ds}",
+  "time_score": "时间惩罚: {ts}",
+  "lowest": "最低分！",
+  "time_reason": "你花了太长时间才",
+  "time_reason_2": "完成这个关卡。",
+  "death_reason": "你死得次数太多了！",
+  "death_reason_2": "",
+  "press_space": "按空格键",
+  "continue_wait": "继续或等待 {next_left}"
   }
   ,"in_game": {
     "dead_message": "你死了！",
