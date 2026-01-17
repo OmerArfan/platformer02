@@ -17,6 +17,9 @@ from io import StringIO
 from datetime import datetime, date
 from bidi.algorithm import get_display
 
+# GAME VERSION
+version = "1.2.98.2"
+
 # for compilation
 def resource_path(relative_path): 
     try:
@@ -215,6 +218,25 @@ def draw_notifications():
     else:
         er = False
 
+def draw_loading_orb(text_x, text_y, show_time):
+        # Calculate the orbit position using current time
+        angle_rad = time.time() * 8 
+        orbit_radius = 15
+        
+        # Define the center point for the circle to orbit around
+        orbit_center_x = text_x - 30
+        orbit_center_y = text_y + 15 # Adjusted to center it vertically with text
+
+        if show_time is None:
+          for i in range(3):
+            # offset each dot by 0.5 radians so they follow each other
+            dot_angle = angle_rad - (i * 0.5) 
+            x = orbit_center_x + orbit_radius * math.cos(dot_angle)
+            y = orbit_center_y + orbit_radius * math.sin(dot_angle)
+            # Make trailing dots smaller or dimmer
+            alpha = 255 - (i * 80) 
+            pygame.draw.circle(screen, (alpha, alpha, alpha), (int(x), int(y)), 5 - i)
+
 def draw_syncing_status():
     global sync_status, sync_finish_time, is_syncing
     if is_syncing:
@@ -229,25 +251,7 @@ def draw_syncing_status():
         text_x = SCREEN_WIDTH - syncing_text.get_width() - 10
         text_y = SCREEN_HEIGHT - 60
         screen.blit(syncing_text, (text_x, text_y))
-
-        # 2. Calculate the orbit position using current time
-        # Multiply time by a number to control speed (e.g., * 8)
-        angle_rad = time.time() * 8 
-        orbit_radius = 15
-        
-        # Define the center point for the circle to orbit around
-        orbit_center_x = text_x - 30
-        orbit_center_y = text_y + 15 # Adjusted to center it vertically with text
-
-        if sync_finish_time is None:
-          for i in range(3):
-            # offset each dot by 0.5 radians so they follow each other
-            dot_angle = angle_rad - (i * 0.5) 
-            x = orbit_center_x + orbit_radius * math.cos(dot_angle)
-            y = orbit_center_y + orbit_radius * math.sin(dot_angle)
-            # Make trailing dots smaller or dimmer
-            alpha = 255 - (i * 80) 
-            pygame.draw.circle(screen, (alpha, alpha, alpha), (int(x), int(y)), 5 - i)
+        draw_loading_orb(text_x, text_y, sync_finish_time)
 
 # To handle sync status message output.        
 sync_status = ""
@@ -545,26 +549,49 @@ language_loaded = False
 sounds_loaded = False
 images_loaded = False
 running = False
+
 def draw_loading_bar(stage_name, percent):
     screen.blit(background, (0, 0))
+    complete = None
     text = font_def.render(f"{stage_name}", True, (255, 255, 255))
     text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 60))
     screen.blit(text, text_rect)
+    draw_loading_orb(text_rect.x, text_rect.y, complete)
     pygame.draw.rect(screen, (0, 0, 255), (0, SCREEN_HEIGHT - 10, (SCREEN_WIDTH / 100)*percent, 10))
     pygame.display.flip()
 
-stage = "Checking for latest save..."
 ps = 0
 while ps < 100:
+ # In the loading loop section:
+ if not language_loaded:
+    stage = "Loading configured settings..."
+    draw_loading_bar(stage, ps)
+    # NEW: Load from manifest instead of progress
+    if os.path.exists(ACCOUNTS_FILE):
+        with open(ACCOUNTS_FILE, "r") as f:
+            manifest = json.load(f)
+            global_pref = manifest.get("pref", {})
+            lang_code = global_pref.get("language", "en")
+            # Invert 'sfx' back to 'is_mute'
+            is_mute = not global_pref.get("sfx", True) 
+            is_mute_amb = not global_pref.get("ambience", True)
+    else:
+        lang_code = "en"
+        is_mute = False
+        is_mute_amb = False
+    ps = 5
+    language_loaded = True
+
+ stage = "Checking for latest save..."
  draw_loading_bar(stage, ps)
- print(ps)
- if not progress_loaded:
-    progress = load_progress(); ps = 5
-    complete_levels = progress.get("complete_levels", 0); ps = 8
+ if not progress_loaded and language_loaded:
+    progress = load_progress(); ps = 8
+    complete_levels = progress.get("complete_levels", 0); ps += 1
     progress_loaded = True
 
  if progress_loaded and not sounds_loaded:
   stage = "Loading sounds..."
+  draw_loading_bar(stage, ps)
   click_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "click.wav")); ps += 1
   hover_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hover.wav"))
   death_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "death.wav")); ps += 1
@@ -591,12 +618,16 @@ while ps < 100:
   # Ambient themes
   pygame.mixer.music.load(resource_path("audio/amb/ambience.wav")); ps += 2
   sounds_loaded = True
+  draw_loading_bar(stage, ps)
 
  if sounds_loaded and not images_loaded:
-    stage = "Loading images..."
+    stage = "Loading cursor..."
+    draw_loading_bar(stage, ps)
     cursor_img = pygame.image.load(resource_path("oimgs/cursor/cursor.png")).convert_alpha(); ps += 2
 
     # Load logo images
+    stage = "Loading logos..."
+    draw_loading_bar(stage, ps)
     logo = pygame.image.load(resource_path("oimgs/logos/logo.png")).convert_alpha(); ps += 1
     logo = pygame.transform.rotate(logo, 5)
     studio_logo = pygame.image.load(resource_path("oimgs/logos/studiologodef.png")).convert_alpha()
@@ -607,6 +638,8 @@ while ps < 100:
     studio_glow_rect = studio_glow.get_rect(topleft=(20, SCREEN_HEIGHT - 300)); ps += 2
 
     # Load and scale backgrounds
+    stage = "Loading backgrounds..."
+    draw_loading_bar(stage, ps)
     lilrobopeek = pygame.image.load(resource_path("bgs/lilrobopeek.png")).convert_alpha(); ps += 1
     lilrobopeek = pygame.transform.scale(lilrobopeek, (390, 360))
     green_background_img = pygame.image.load(resource_path("bgs/GreenBackground.png")).convert()
@@ -619,6 +652,8 @@ while ps < 100:
     end = pygame.transform.scale(end, ((SCREEN_WIDTH), (SCREEN_HEIGHT))); ps += 1
 
     # Load and initalize Images!
+    stage = "Loading in-game assets..."
+    draw_loading_bar(stage, ps)
     nact_cp = pygame.image.load(resource_path("oimgs/checkpoints/yellow_flag.png")).convert_alpha()
     act_cp = pygame.image.load(resource_path("oimgs/checkpoints/green_flag.png")).convert_alpha(); ps += 1
     diam_m = pygame.image.load(resource_path("oimgs/medal/perfect.png")).convert_alpha()
@@ -630,6 +665,7 @@ while ps < 100:
     bron_m = pygame.image.load(resource_path("oimgs/medal/bronze.png")).convert_alpha()
     bron_m = pygame.transform.scale(bron_m, ((bron_m.get_width() // 2), (bron_m.get_height() // 2))); ps += 1
 
+    draw_loading_bar(stage, ps)
     greendisk_img = pygame.image.load(resource_path("oimgs/disks/greendisk.png")).convert_alpha()
     greendisk_img = pygame.transform.scale(greendisk_img, (100, 100)); ps +=1  # Resize as needed
     mechdisk_img = pygame.image.load(resource_path("oimgs/disks/mechdisk.png")).convert_alpha()
@@ -654,6 +690,8 @@ while ps < 100:
     saw_img = pygame.image.load(resource_path("oimgs/ig/saw.png")).convert_alpha()
 
     # Load character images
+    stage = "Loading robos..."
+    draw_loading_bar(stage, ps)
     robot_img = pygame.image.load(resource_path("char/robot/robot.png")).convert_alpha()
     evilrobot_img = pygame.image.load(resource_path("char/evilrobot/evilrobot.png")).convert_alpha()
     greenrobot_img = pygame.image.load(resource_path("char/greenrobot/greenrobot.png")).convert_alpha()
@@ -663,24 +701,6 @@ while ps < 100:
     locked_img = pygame.image.load(resource_path("char/lockedrobot.png")).convert_alpha(); ps += 6
     images_loaded = True
 
-# In the loading loop section:
- if not language_loaded and images_loaded:
-    stage = "Loading configured settings..."
-    # NEW: Load from manifest instead of progress
-    if os.path.exists(ACCOUNTS_FILE):
-        with open(ACCOUNTS_FILE, "r") as f:
-            manifest = json.load(f)
-            global_pref = manifest.get("pref", {})
-            lang_code = global_pref.get("language", "en")
-            # Invert 'sfx' back to 'is_mute'
-            is_mute = not global_pref.get("sfx", True) 
-            is_mute_amb = not global_pref.get("ambience", True)
-    else:
-        lang_code = "en"
-        is_mute = False
-        is_mute_amb = False
-
-    language_loaded = True
     if is_mute_amb:
         pygame.mixer.music.stop()
     else:
@@ -688,6 +708,7 @@ while ps < 100:
         pygame.mixer.music.play(-1)  # Loop forever
  else:
      ps = 100
+     draw_loading_bar(stage, ps)
  
  pygame.display.flip()
 
@@ -1371,6 +1392,7 @@ def settings_menu():
     # 2. Match these keys EXACTLY to handle_action
     # format: (Display Text, Internal Key)
     button_data = [
+        (current_lang["About"], "About"),
         (current_lang["Audio"], "Audio"),
         (current_lang["Account"], "Account"),
         (setting_lang["language"], "Language"),
@@ -1399,42 +1421,68 @@ def settings_menu():
             pygame.draw.rect(screen, (0, 213, 0), rect.inflate(20, 10), 2)
         screen.blit(rendered, rect)
 
-class Slider:
-    def __init__(self, x, y, width, initial_val):
-        self.rect = pygame.Rect(x, y, width, 10)
-        self.handle_rect = pygame.Rect(x + (width * initial_val) - 10, y - 10, 20, 30)
-        self.dragging = False
-        self.value = initial_val
+def about_menu():
+    global buttons, version
+    buttons.clear()
+    screen.blit(background, (0, 0))
+    settings_lang = load_language(lang_code).get('settings', {})
 
-    def draw(self, screen):
-        # Draw the bar
-        pygame.draw.rect(screen, (100, 100, 100), self.rect)
-        # Draw the handle
-        color = (200, 200, 200) if not self.dragging else (255, 255, 255)
-        pygame.draw.rect(screen, color, self.handle_rect)
+    title = settings_lang.get("About", "About")
+    title_rendered = render_text(title, True, (255, 255, 255))
+    screen.blit(title_rendered, (SCREEN_WIDTH // 2 - title_rendered.get_width() // 2, 100))
 
-    def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.handle_rect.collidepoint(event.pos):
-                self.dragging = True
-        elif event.type == pygame.MOUSEBUTTONUP:
-            self.dragging = False
-        elif event.type == pygame.MOUSEMOTION and self.dragging:
-            # Keep handle within the bar limits
-            self.handle_rect.centerx = max(self.rect.left, min(event.pos[0], self.rect.right))
-            self.value = (self.handle_rect.centerx - self.rect.left) / self.rect.width
-            return True # Value changed
-        return False
+    site = settings_lang.get("site_credit", "Sound effects used from pixabay.com and edited using Audacity")
+    site_text = render_text(site, True, (255, 255, 255))
+    site_pos = ((SCREEN_WIDTH // 2 - site_text.get_width() // 2), 200)
 
+    logo = settings_lang.get("logo_credit", "Logo and Background made with canva.com")
+    logo_text = render_text(logo, True, (255, 255, 255))
+    logo_pos = ((SCREEN_WIDTH // 2- logo_text.get_width() // 2), 240)
+
+    credit = settings_lang.get("credit_credit", "Made by Omer Arfan")
+    credit_text = render_text(credit, True, (255, 255, 255))
+    credit_pos = ((SCREEN_WIDTH // 2 - credit_text.get_width() // 2), 280)
+
+    ver = settings_lang.get("version_credit", "Game Version: {version}").format(version=version)
+    ver_text = render_text(ver, True, (255, 255, 255))
+    ver_pos = ((SCREEN_WIDTH // 2 - ver_text.get_width() // 2), 320)
+
+    thx = settings_lang.get("thanks", "Thank you for playing! You are amazing!")
+    thx_text = render_text(thx, True, (0, 255, 0))
+    thx_pos = ((SCREEN_WIDTH // 2 - thx_text.get_width() // 2), 400)
+
+    bugs = settings_lang.get("bugs", "If you find any bugs, please report them on the GitHub repository.")
+    bugs_text = render_text(bugs, True, (242, 123, 32))
+    bugs_pos = ((SCREEN_WIDTH // 2 - bugs_text.get_width() // 2), 440)
+
+    sorry = settings_lang.get("sorry", "Sorry for any inconvenience caused by bugs.")
+    sorry_text = render_text(sorry, True, (242, 123, 32))
+    sorry_pos = ((SCREEN_WIDTH // 2 - sorry_text.get_width() // 2), 480)
+
+    screen.blit(logo_text, logo_pos)
+    screen.blit(site_text, site_pos)
+    screen.blit(credit_text, credit_pos)
+    screen.blit(ver_text, ver_pos)
+    screen.blit(thx_text, thx_pos)
+    screen.blit(bugs_text, bugs_pos)
+    screen.blit(sorry_text, sorry_pos)
+
+    back_text = settings_lang.get("Back", "Back")
+    rendered = render_text(back_text, True, (255, 255, 255))
+    rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 50))
+    buttons.append((rendered, rect, "Back", False))
 
 def audio_settings_menu():
     global buttons
     buttons.clear()
     screen.blit(background, (0, 0))
+    settings_lang = load_language(lang_code).get('settings', {})
 
     # 1. Draw Title
-    title = render_text("Audio Settings", True, (255, 255, 255))
-    screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 200))
+
+    title = settings_lang.get("Audio", "Audio")
+    title_txt = render_text(title, True, (255, 255, 255))
+    screen.blit(title_txt, (SCREEN_WIDTH // 2 - title.get_width() // 2, 200))
     
     if is_mute:
         sfx_txt = "Unmute Sound"
@@ -1454,6 +1502,7 @@ def audio_settings_menu():
     buttons.append((renderedamb, rectamb, "Ambience", False))
 
     # 3. Back Button
+    back_txt = settings_lang.get("Back", "Back")
     rendered = render_text("Back", True, (255, 255, 255))
     rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, 550))
     buttons.append((rendered, rect, "Back", False))
@@ -1505,6 +1554,8 @@ def set_page(page):
         worlds()
     elif page == "settings":
         settings_menu()
+    elif page == "About":
+        about_menu()
     elif page == "Audio":
         audio_settings_menu()
     elif page == "Account":
@@ -1662,6 +1713,7 @@ def level_complete():
     clock = pygame.time.Clock()
     star_channel = pygame.mixer.Channel(2)
     lvl_comp = messages.get("lvl_comp", "Level Complete!")
+    old_xp = progress["player"].get("XP", 0)
     rendered_lvl_comp = render_text(lvl_comp, True, (255, 255, 255))
     while running:
         screen.blit(end, (0, 0))
@@ -1720,37 +1772,45 @@ def level_complete():
         
         if display_score > score:
                 display_score = score
-
+        
         score_text = font_text.render(str(display_score), True, (255, 255, 255))
         screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, 300 - score_text.get_height() // 2))
+
+        # Check for XP gained
+        xp()
+        new_xp = progress["player"].get("XP", 0)
+        gain = new_xp - old_xp
+        if time.time() - star_time > 3.2:
+            xp_text = messages.get("xp_gained", "XP Gained: +{gain}").format(gain=gain)
+            xp_render = render_text(xp_text, True, (0, 188, 255))
+            screen.blit(xp_render, (SCREEN_WIDTH // 2 - xp_render.get_width() // 2, 350))
 
         global base_score, medal_score, death_score, time_score
 
         # Show Breakdown
         if score > 500: 
-         if time.time() - star_time > 3.4:
+         if time.time() - star_time > 4:
             break_text = messages.get("breakdown", "BREAKDOWN")
             break_render = render_text(break_text, True, (158, 158, 158))
             screen.blit(break_render, (SCREEN_WIDTH // 2 - break_render.get_width() // 2, 400))
-         if time.time() - star_time > 3.5:
+         if time.time() - star_time > 4.2:
             base_text = messages.get("base_score", "Base Score: {bs}").format(bs=base_score)
             base_render = render_text(base_text, True, (158, 158, 158))
             screen.blit(base_render, (SCREEN_WIDTH // 2 - base_render.get_width() // 2, 440))
-         if time.time() - star_time > 3.6:
+         if time.time() - star_time > 4.4:
             medal_text = messages.get("medal_score", "Medal score: {ms}").format(ms=-medal_score)
             medal_render = render_text(medal_text, True, (158, 158, 158))
             screen.blit(medal_render, (SCREEN_WIDTH // 2 - medal_render.get_width() // 2, 480))
-         if time.time() - star_time > 3.7:   
+         if time.time() - star_time > 4.6:   
             death_text = messages.get("death_score", "Death Penalty: {ds}").format(ds=-death_score)
             death_render = render_text(death_text, True, (158, 158, 158))
             screen.blit(death_render, (SCREEN_WIDTH // 2 - death_render.get_width() // 2, 520))
-         if time.time() - star_time > 3.8:
+         if time.time() - star_time > 4.8:
             time_text = messages.get("time_score", "Time Penalty: {ts}").format(ts=-time_score)
             time_render = render_text(time_text, True, (158, 158, 158))
             screen.blit(time_render, (SCREEN_WIDTH // 2 - time_render.get_width() // 2, 560))
         else:
-            if time.time() - star_time > 3.7:
-             hit_sound.play()
+            if time.time() - star_time > 4:
              low_text = messages.get("lowest", "Lowest possible score!")
              low_render = render_text(low_text, True, (255, 0, 0))
              screen.blit(low_render, (SCREEN_WIDTH // 2 - low_render.get_width() // 2, 500))
@@ -1765,7 +1825,7 @@ def level_complete():
              reason_render_2 = render_text(reason_text_2, True, (255, 0, 0))
              screen.blit(reason_render_2, (SCREEN_WIDTH // 2 - reason_render_2.get_width() // 2, 580))
 
-        if time.time() - star_time > 4:  # Show for 3 seconds
+        if time.time() - star_time > 5.5:  # Show for 3.5 seconds
                 if new_hs:
                     hs_text = messages.get("new_hs", "New High Score!")
                     new_hs_text = render_text(hs_text, True, (255, 215, 0))
@@ -1778,16 +1838,18 @@ def level_complete():
                     hs_text = render_text(high_text, True, (158, 158, 158))
                     screen.blit(hs_text, (SCREEN_WIDTH // 2 - hs_text.get_width() // 2, 610))
         
-        if time.time() - star_time > 6 or keys[pygame.K_SPACE]:
+        next_left = int(8 - (time.time() - star_time))
+        if time.time() - star_time > 9 or keys[pygame.K_SPACE]:
                 running = False
         else: 
-            next_left = -(int(time.time() - star_time) - 6)
-            time_text = render_text("Press the spacebar to", True, (158, 158, 158))
-            screen.blit(time_text, (SCREEN_WIDTH // 2 - time_text.get_width() // 2, SCREEN_HEIGHT - 60))
-            time_text_2 = render_text(f"continue or wait for {next_left}", True, (158, 158, 158))
-            screen.blit(time_text_2, (SCREEN_WIDTH // 2 - time_text_2.get_width() // 2, SCREEN_HEIGHT - 35))
+            # Instead of hardcoded text:
+            press_text = messages.get("press_space", "Press the spacebar to")
+            p_render = render_text(press_text, True, (158, 158, 158))
+            screen.blit(p_render, (SCREEN_WIDTH // 2 - p_render.get_width() // 2, SCREEN_HEIGHT - 60))
+            wait_text = messages.get("continue_wait", "continue or wait for {next_left}").format(next_left=next_left)
+            w_render = render_text(wait_text, True, (158, 158, 158))
+            screen.blit(w_render, (SCREEN_WIDTH // 2 - w_render.get_width() // 2, SCREEN_HEIGHT - 35))
 
-        xp()
         draw_notifications()
         draw_syncing_status()
         pygame.display.update()
@@ -9116,6 +9178,12 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "main_menu"
+        if key == "About": # Note: Ensure capitalization matches your button_texts
+            if not is_transitioning:
+                transition.start("About")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "About"
         if key == "Audio": # Note: Ensure capitalization matches your button_texts
             if not is_transitioning:
                 transition.start("Audio")
@@ -9134,6 +9202,13 @@ def handle_action(key):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "language_select"
+    elif current_page == "About":
+        if key == "Back":
+            if not is_transitioning:
+                transition.start("settings")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "settings"
     elif current_page == "Audio":
         if key == "Back":
             if not is_transitioning:
@@ -9480,23 +9555,19 @@ if not is_mute and SCREEN_WIDTH > MIN_WIDTH and SCREEN_HEIGHT > MIN_HEIGHT:
 
 # Info
 
-site_text = render_text("Sound effects used from pixabay.com and edited using Audacity", True, (255, 255, 255))
-site_pos = (SCREEN_WIDTH - (site_text.get_width() + 10), SCREEN_HEIGHT - 38)
-logo_text = render_text("Logo and Background made with canva.com", True, (255, 255, 255))
-logo_pos = (SCREEN_WIDTH - (logo_text.get_width() + 10), SCREEN_HEIGHT - 68)
-credit_text = render_text("Made by Omer Arfan", True, (255, 255, 255))
-credit_pos = (SCREEN_WIDTH - (credit_text.get_width() + 10), SCREEN_HEIGHT - 98)
-ver_text = render_text("Version 1.2.98.1", True, (255, 255, 255))
-ver_pos = (SCREEN_WIDTH - (ver_text.get_width() + 8), SCREEN_HEIGHT - 128)
-
 # First define current XP outside the loop
 level, xp_needed, xp_total = xp()
-XP_text = font_text.render(f"{level}", True, (255, 255, 255))
 if level < 20:
-    XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, (255, 255, 255))
+    color = (255, 255, 255)
+else:
+    color = (225, 212, 31)
+
+XP_text = font_text.render(f"{level}", True, color)
+if level < 20:
+    XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, color)
 else:
     max_txt = load_language(lang_code).get('messages', {}).get("max_level", "MAX LEVEL!")
-    XP_text2 = render_text(max_txt, True, (225, 212, 31))
+    XP_text2 = render_text(max_txt, True, color)
 
 while running:
     # This is in the main loop, unlike the other texts, because it needs to update if the player changes!
@@ -9517,13 +9588,18 @@ while running:
         if transition.x >= 0:
             # Then recheck if XP has been added or not.
             level, xp_needed, xp_total = xp()
-            XP_text = font_text.render(f"{level}", True, (255, 255, 255))
             if level < 20:
-                XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, (255, 255, 255))
+                color = (255, 255, 255)
+            else:
+                color = (225, 212, 31)
+
+            XP_text = font_text.render(f"{level}", True, color)
+            if level < 20:
+                XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, color)
             else:
                 max_txt = load_language(lang_code).get('messages', {}).get("max_level", "MAX LEVEL!")
-                XP_text2 = render_text(max_txt, True, (225, 212, 31))
-            # Then let transition loop play as normal
+                XP_text2 = render_text(max_txt, True, color)
+                # Then let transition loop play as normal
             is_transitioning = False
             current_pending = pending_page
             transition_time = None
@@ -9607,10 +9683,6 @@ while running:
         if current_page == "main_menu":
             screen.blit(logo, ((SCREEN_WIDTH // 2 - logo.get_width() // 2), -20))
             screen.blit(lilrobopeek, ((SCREEN_WIDTH - lilrobopeek.get_width()), (SCREEN_HEIGHT - lilrobopeek.get_height())))
-            screen.blit(logo_text, logo_pos)
-            screen.blit(site_text, site_pos)
-            screen.blit(credit_text, credit_pos)
-            screen.blit(ver_text, ver_pos)
             screen.blit(ID_text, ID_pos)
             if level < 20:
                 screen.blit(badge, badge_pos)
@@ -9887,6 +9959,29 @@ while running:
                     pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
                 screen.blit(rendered, rect)
 
+        elif current_page == "About":   
+            about_menu()
+
+            for rendered, rect, key, is_locked in buttons:
+                if rect.collidepoint(mouse_pos):
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((8, 81, 179, 255))
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
+                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
+                    hovered = rect.collidepoint(pygame.mouse.get_pos())
+                    if hovered and not button_hovered_last_frame and not is_mute:
+                        hover_sound.play()
+                    button_hovered_last_frame = hovered
+                else:
+                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+                    button_surface.fill((8, 81, 179, 255))
+                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
+                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
+                screen.blit(rendered, rect)
+            
         elif current_page == "Audio":
             screen.blit(background, (0, 0))
             audio_settings_menu()
