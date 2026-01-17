@@ -18,7 +18,7 @@ from datetime import datetime, date
 from bidi.algorithm import get_display
 
 # GAME VERSION
-version = "1.2.99.1"
+version = "1.3.0"
 
 # for compilation
 def resource_path(relative_path): 

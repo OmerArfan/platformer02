@@ -1,12 +1,13 @@
 # roboquix
-## This file contains information as of Version 1.2.88, so it can be outdated at one point!
+## This file contains information as of Version 1.3.0, so it can be outdated at one point!
 ### Check the current version from the [platformer.py](https://github.com/OmerArfan/platformer02/blob/main/platformer.py) file!
 
 ## About the game!
-Roboquix is a simple game where you move Lil Robo towards the purple end portal. You have to dodge obstacles, jump through gaps, collect coins to open locked blocks, and run away from chasing saws. If you complete the level quickly, you will be rewarded a medal accordingly, and these will help you get a higher score, as long as you also try not to die while dodging obstacles.
+Roboquix is a simple game where you move Lil Robo by using the arrowkeys or WASD keys, towards the end portal. But in the process, you have to dodge obstacles, collect coins to open locked blocks, adjust to challenging mechanics, amd more!
+If you complete the level quickly, you will be rewarded a medal accordingly, and these will help you get a higher score, as long as you also try not to die while dodging obstacles.
 
 ## Where can I play this game?
-You can download this game by checking in the latest [release](https://github.com/OmerArfan/platformer02/releases) in the repository. (As of Version 1.2.88, it is ALPHA-RELEASE-DOWNLOAD)
+You can download this game by checking in the latest [release](https://github.com/OmerArfan/platformer02/releases) in the repository. (As of Version 1.3.0, it is 1.3-BETA-DOWNLOAD)
 
 ## Found any bugs?
 Please don't hesitate to report them in the [Issues](https://github.com/OmerArfan/platformer02/issues) section of this repository and refer to [Support](https://github.com/OmerArfan/platformer02/blob/main/gameinfo/Support.md) for guidance.
