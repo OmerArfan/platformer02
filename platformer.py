@@ -18,7 +18,7 @@ from datetime import datetime, date
 from bidi.algorithm import get_display
 
 # GAME VERSION
-version = "1.2.99"
+version = "1.2.99.1"
 
 # for compilation
 def resource_path(relative_path): 
@@ -1544,7 +1544,24 @@ def muting_amb():
         
     # Save directly to manifest
     update_local_manifest(progress)
-    
+
+
+def update_xp_ui():
+    global level, xp_needed, xp_total, XP_text, XP_text2
+
+    level, xp_needed, xp_total = xp()
+
+    if level < 20:
+        color = (255, 255, 255)
+        XP_text = font_text.render(str(level), True, color)
+        XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, color)
+    else:
+        color = (225, 212, 31)
+        XP_text = font_text.render(str(level), True, color)
+        max_txt = load_language(lang_code).get('messages', {}).get(
+            "max_level", "MAX LEVEL!"
+        )
+        XP_text2 = render_text(max_txt, True, color)    
 
 # Central page switcher
 def set_page(page):
@@ -1553,6 +1570,7 @@ def set_page(page):
 
     # Reload the current language data for the new page
     if page == 'main_menu':
+        update_xp_ui() # Update XP display when returning to main menu, especially in case of different users.
         current_lang = load_language(lang_code).get('main_menu', {})
         create_main_menu_buttons()
     elif page == "achievements":
@@ -9583,7 +9601,7 @@ def create_account_selector():
     for p_id, info in accounts:
         name_str = info.get("username", "Unknown")
         rendered_name = render_text(name_str, True, (255, 255, 255))
-        
+
         # Check if we need to wrap to a new column
         if current_y >= MAX_Y:
             current_y = START_Y
@@ -9592,7 +9610,7 @@ def create_account_selector():
         # Left-aligning looks better in columns:
         # We use current_x as the anchor for the left side of the text
         rect = rendered_name.get_rect(topleft=(current_x - 100, current_y))
-        
+
         buttons.append((rendered_name, rect, f"load_user_{p_id}", False))
         current_y += SPACING_Y
 
@@ -9600,7 +9618,7 @@ def create_account_selector():
     if current_y > MAX_Y:
         current_y = START_Y
         current_x += COLUMN_WIDTH
-        
+
     new_txt = settings.get("new_acc", "+ NEW PLAYER")
     new_txt_rendered = render_text(new_txt, True, (0, 255, 200)) # Highlighted color
     new_rect = new_txt_rendered.get_rect(topleft=(current_x - 100, current_y))
