@@ -18,7 +18,7 @@ from datetime import datetime, date
 from bidi.algorithm import get_display
 
 # GAME VERSION
-version = "1.3.0.1"
+version = "1.3.0.2"
 
 # for compilation
 def resource_path(relative_path): 
@@ -7800,7 +7800,7 @@ def create_lvl11_screen():
     light_off_button = pygame.Rect(2350, -425, 50, 50)
     
     light_blocks = [
-        pygame.Rect(5300, 200, 300, 100),
+        pygame.Rect(3050, -200, 120, 400),
     ]
 
     exit_portal = pygame.Rect(6600, 250, 140, 180)
