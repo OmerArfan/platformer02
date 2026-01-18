@@ -1,5 +1,8 @@
 name: Build Roboquix (Win & Linux)
-on: [push]
+on:
+  push:
+    paths:
+      - 'version_info.txt'
 
 jobs:
   build:
