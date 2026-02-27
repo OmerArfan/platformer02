@@ -1,13 +1,13 @@
 ## Platform Support
 
-**Current Version:** 1.3.0
+**Current Version:** 1.3.0.3
 
 ### Windows
 - **Windows 11:** Fully Supported.
-- **Windows 10:** Untested (should work similarly to Win 11).
+- **Windows 10:** Supported. (I am not sure but it actally might depend on the version of Windows 10)
 
 ### Linux
-- **Ubuntu/Debian-based:** Supported (tested on Linux Mint Xfce & Ubuntu).
+- **Ubuntu/Debian-based:** Supported (tested on Linux Mint, Ubuntu and Debian).
 - **Other Distros:** Untested. Since this is a pre-compiled binary, it may run into library version conflicts on non-Debian systems.
 
 ---
