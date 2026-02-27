@@ -4,10 +4,13 @@
 
 ### Windows
 - **Windows 11:** Fully Supported.
-- **Windows 10:** Supported. (I am not sure but it actally might depend on the version of Windows 10)
+- **Windows 10:** Supported. (64-bit versions)
+- **Older Windows versions(8.1, 7, etc.)**: Sorry, but since Python 3.11+ are officially unsupported, the game will probably run into errors.
+#### Note for Windows Users: Since this app is from an "Unverified Publisher," Windows SmartScreen may block the initial launch. Click "More Info" and then "Run Anyway" to start the game.
 
 ### Linux
 - **Ubuntu/Debian-based:** Supported (tested on Linux Mint, Ubuntu and Debian).
+- **Arch Linux:** Confirmed Working. (Tested on KDE Plasma). The standalone binary runs smoothly without needing manual library installation.
 - **Other Distros:** Untested. Since this is a pre-compiled binary, it may run into library version conflicts on non-Debian systems.
 
 ---
