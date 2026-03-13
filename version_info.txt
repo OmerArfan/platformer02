@@ -15,7 +15,7 @@ VSVersionInfo(
         StringTable(
           '040904B0',
           [
-            StringStruct('CompanyName', 'Lil Robo Studios'),
+            StringStruct('CompanyName', 'Lil Robo Studios!'),
             StringStruct('FileDescription', 'Roboquix'),
             StringStruct('FileVersion', '1.3.0.3'),
             StringStruct('InternalName', 'Roboquix'),
@@ -28,4 +28,5 @@ VSVersionInfo(
     ),
     VarFileInfo([VarStruct('Translation', [1033, 1200])])
   ]
+
 )
