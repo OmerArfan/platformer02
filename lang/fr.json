@@ -76,21 +76,6 @@
   },
   "levels": {
   "level_display": "CHOISIR UN NIVEAU",
-  "lvl1": "Niveau 1", 
-  "lvl2": "Niveau 2",
-  "lvl3": "Niveau 3",
-  "lvl4": "Niveau 4",
-  "lvl5": "Niveau 5",
-  "lvl6": "Niveau 6",
-  "lvl7": "Niveau 7",
-  "lvl8": "Niveau 8",
-  "lvl9": "Niveau 9",
-  "lvl10": "Niveau 10",
-  "lvl11": "Niveau 11",
-  "lvl12": "Niveau 12",
-  "lvl13": "Niveau 13",
-  "lvl14": "Niveau 14",
-  "lvl15": "Niveau 15",
   "back": "retour"
   ,"next": "prochain"
 },

@@ -76,18 +76,6 @@
   }
   ,"levels": {
   "level_display": "SELECCIONA UN NIVEL",
-  "lvl1": "Nivel 1", 
-  "lvl2": "Nivel 2",
-  "lvl3": "Nivel 3",
-  "lvl4": "Nivel 4",
-  "lvl5": "Nivel 5",  
-  "lvl6": "Nivel 6",
-  "lvl7": "Nivel 7",
-  "lvl8": "Nivel 8",
-  "lvl9": "Nivel 9",
-  "lvl10": "Nivel 10",
-  "lvl11": "Nivel 11",
-  "lvl12": "Nivel 12",
   "back": "volver"
   ,"next": "casi"
    }

@@ -76,22 +76,6 @@
   }
   ,"levels": {
   "level_display": "SELECT A LEVEL",
-  "lvl1": "Level 1",
-  "lvl2": "Level 2",
-  "lvl3": "Level 3",
-  "lvl4": "Level 4",
-  "lvl5": "Level 5",
-  "lvl6": "Level 6",
-  "lvl7": "Level 7",
-  "lvl8": "Level 8",
-  "lvl9": "Level 9",
-  "lvl10": "Level 10",
-  "lvl11": "Level 11",
-  "lvl12": "Level 12",
-  "lvl13": "Level 13",
-  "lvl14": "Level 14",
-  "lvl15": "Level 15",
-  "lvl16": "Level 16",
   "back": "Back"
   ,"next": "Next"
    }
