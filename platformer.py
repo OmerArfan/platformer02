@@ -19,7 +19,7 @@ from datetime import datetime, date
 from bidi.algorithm import get_display
 
 # GAME VERSION
-version = "1.3.1"
+version = "1.3.1.1"
 
 # for compilation
 def resource_path(relative_path): 
@@ -2957,7 +2957,7 @@ def create_lvl3_screen():
                 laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = in_game.get("hit_message", "Hit on the head!")
+                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 key_block_pairs[0]["collected"] = False  # Reset key block status
                 if not is_mute:    
@@ -3470,7 +3470,7 @@ def create_lvl4_screen():
                 laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = in_game.get("hit_message", "Hit on the head!")
+                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 key_block_pairs[0]["collected"] = False  # Reset key block status
                 if not is_mute:    
@@ -3504,7 +3504,7 @@ def create_lvl4_screen():
                 laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = in_game.get("hit_message", "Hit on the head!")
+                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 key_block_pairs[0]["collected"] = False  # Reset key block status
                 if not is_mute:    
@@ -4032,7 +4032,7 @@ def create_lvl5_screen():
                 laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = in_game.get("hit_message", "Hit on the head!")
+                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 key_block_pairs[0]["collected"] = False  # Reset key block status
                 if not is_mute:    
@@ -4051,7 +4051,7 @@ def create_lvl5_screen():
                 laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = in_game.get("hit_message", "Hit on the head!")
+                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 key_block_pairs[0]["collected"] = False  # Reset key block status
                 if not is_mute:    
@@ -4186,12 +4186,6 @@ def create_lvl6_screen():
         },
     ]
 
-    invisible_blocks = [
-        pygame.Rect(1400, 400, 100, 100),
-        pygame.Rect(1700, 400, 100, 100),
-        pygame.Rect(2000, 400, 100, 100),
-    ]
-
     lasers = [
         pygame.Rect(5870, 180, 15, 350),
     ]
@@ -4199,6 +4193,9 @@ def create_lvl6_screen():
     blocks = [
         pygame.Rect(-200, 700, 1200, 100),
         pygame.Rect(800, 400, 100, 100),
+        pygame.Rect(1400, 400, 100, 100),
+        pygame.Rect(1700, 400, 100, 100),
+        pygame.Rect(2000, 400, 100, 100),
         pygame.Rect(2300, 500, 450, 50),
         pygame.Rect(2900, 10, 50, 570),
         pygame.Rect(3150, 10, 50, 170),
@@ -4216,9 +4213,6 @@ def create_lvl6_screen():
     ]
 
     saws = [
-        (1450, 450, 28, (255, 0, 127)),
-        (1750, 450, 28, (255, 0, 127)),
-        (2050, 450, 28, (255, 0, 127)),  # (x, y, radius, color)
         (5000, 550, 100, (255, 0, 0)),
         (5400, 550, 100, (255, 0, 0)),
 
@@ -4480,30 +4474,6 @@ def create_lvl6_screen():
         else:
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
-        for block in invisible_blocks:
-            if player_rect.colliderect(block):
-                # Falling onto a block
-                if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
-                    player_y = block.y - img_height
-                    velocity_y = 0
-                    on_ground = True
-
-                # Hitting the bottom of a block
-                elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
-                    player_y = block.y + block.height
-                    velocity_y = 0
-
-                # Horizontal collision (left or right side of the block)
-                elif player_x + img_width > block.x and player_x < block.x + block.width:
-                    if player_x < block.x:  # Colliding with the left side of the block
-                        player_x = block.x - img_width
-                    elif player_x + img_width > block.x + block.width:  # Colliding with the right side
-                        player_x = block.x + block.width
-            
-        for block in invisible_blocks:
-            # Draw the invisible block as a gray rectangle 
-            pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))        
-
         # Draw flag
         if checkpoint_reached:
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
@@ -4530,108 +4500,34 @@ def create_lvl6_screen():
         # Draw key only if not collected
  
 # Saw collision detection and drawing
-        collision_detected = False  
-        for rotating_saw in rotating_saws:
-            if collision_detected:
-                break  # Exit the loop if a collision has already been detected
+        if level_logic.handle_rotating_saws(screen, rotating_saws, blocks, player_rect, saw_img, camera_x, camera_y, saw_cache):
+            # Death logic
+            player_x, player_y = spawn_x, spawn_y
+            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            wait_time = pygame.time.get_ticks()
+            deathcount += 1
+            if not is_mute: death_sound.play()
+            velocity_y = 0
 
-    # Update angle
-            rotating_saw['angle'] = (rotating_saw['angle'] + rotating_saw['speed']) % 360
-            rad = math.radians(rotating_saw['angle'])
-
-    # Orbit around block center
-            orbit_center_x = blocks[1].centerx
-            orbit_center_y = blocks[1].centery
-            x = orbit_center_x + rotating_saw['orbit_radius'] * math.cos(rad)
-            y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
-
-    # Draw the saw
-            scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
-            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
-            rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
-            screen.blit(rotated_saw, rect)
-
-    # Collision detection
-            closest_x = max(player_rect.left, min(x, player_rect.right))
-            closest_y = max(player_rect.top, min(y, player_rect.bottom))
-            dx = closest_x - x
-            dy = closest_y - y
-            distance = (dx**2 + dy**2)**0.5
-
-            if distance < rotating_saw['r'] and not collision_detected:
-            # Trigger death logic                
-                collision_detected = True  # Set the flag to stop further checks
-                death_text = in_game.get("sawed_message", "Sawed to bits!")    
-                wait_time = pygame.time.get_ticks()               
-                player_x, player_y = spawn_x, spawn_y  # Reset player position    
-                deathcount += 1        
-                if not is_mute and val > 0.35: # type: ignore
-                    death_sound.play()
-                velocity_y = 0
-                key_block_pairs[0]["collected"] = False
-                break
-                
-        for saw in moving_saws:
-    # Update the circle's position (move vertically)
-            saw['cy'] += saw['speed']  # Move down or up depending on speed
-
-    # Check if the saw has reached the limits
-            if saw['cy'] > saw['max'] or saw['cy'] < saw['min']:
-                saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
-
-    # Draw the moving circle (saw)
-            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
-            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
-            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
-            screen.blit(rotated_saw, rect)
-
-    # Collision detection (if needed)
-            closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
-            closest_y = max(player_rect.top, min(saw['cy'], player_rect.bottom))
-            dx = closest_x - saw['cx']
-            dy = closest_y - saw['cy']
-            distance = (dx**2 + dy**2)**0.5
-            if distance < saw['r']:
-        # Trigger death logic
-                death_text = in_game.get("sawed_message", "Sawed to bits!")
-                wait_time = pygame.time.get_ticks()
-                if not is_mute and val > 0.35: # type: ignore
-                    death_sound.play()
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
-                deathcount += 1
-                velocity_y = 0
-                key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
-
-        for saw in moving_saws_x:
-    # Update the circle's position (move vertically)
-            saw['cx'] += saw['speed']
-    # Check if the saw has reached the limits
-            if saw['cx'] > saw['max'] or saw['cx'] < saw['min']:
-                saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
-
-    # Draw the moving circle (saw)
-            pygame.draw.circle(screen, (255, 0, 0), (int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)), saw['r'])
-            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
-            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
-            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
-            screen.blit(rotated_saw, rect)
-
-    # Collision detection (if needed)
-            closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
-            closest_y = max(player_rect.top, min(saw['cy'], player_rect.bottom))
-            dx = closest_x - saw['cx']
-            dy = closest_y - saw['cy']
-            distance = (dx**2 + dy**2)**0.5
-            if distance < saw['r']:
-        # Trigger death logic
-                death_text = in_game.get("sawed_message", "Sawed to bits!")
-                wait_time = pygame.time.get_ticks()
-                if not is_mute and val > 0.35: # type: ignore
-                    death_sound.play()
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
-                deathcount += 1
-                velocity_y = 0
-                key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
+        # Handle Moving Saws
+        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, saw_img, camera_x, camera_y, saw_cache):
+            # Death logic (same as above)
+            player_x, player_y = spawn_x, spawn_y
+            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            wait_time = pygame.time.get_ticks()
+            deathcount += 1
+            if not is_mute: death_sound.play()
+            velocity_y = 0
+        
+        # Handle Moving Saws
+        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, saw_img, camera_x, camera_y, saw_cache):
+            # Death logic (same as above)
+            player_x, player_y = spawn_x, spawn_y
+            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            wait_time = pygame.time.get_ticks()
+            deathcount += 1
+            if not is_mute: death_sound.play()
+            velocity_y = 0
 
         level_logic.draw_saws(screen, saws, saw_img, camera_x, camera_y, saw_cache)
 
@@ -4653,7 +4549,7 @@ def create_lvl6_screen():
                 laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = in_game.get("hit_message", "Hit on the head!")
+                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 key_block_pairs[0]["collected"] = False  # Reset key block status
                 if not is_mute:    
@@ -4682,7 +4578,7 @@ def create_lvl6_screen():
             laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = in_game.get("hit_message", "Hit on the head!")
+                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 key_block_pairs[0]["collected"] = False  # Reset key block status
                 if not is_mute and val > 0.35:    
@@ -4739,10 +4635,6 @@ def create_lvl6_screen():
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        levels = load_language(lang_code).get('levels', {})
-        lvl6_text = levels.get("lvl6", "Level 6")  # Render the level text
-        screen.blit(render_text(lvl6_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
-
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
         timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
         screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
@@ -4757,9 +4649,6 @@ def create_lvl6_screen():
             screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
         elif medal == "Bronze":
             screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-
-        invisible_text = in_game.get("invisible_message", "These saws won't hurt you... promise!")
-        screen.blit(render_text(invisible_text, True, (255, 51, 153)), (900 - camera_x, 250 - camera_y)) # Render the invisible block text
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
@@ -4846,15 +4735,15 @@ def create_lvl7_screen():
     ]
 
     rotating_saws = [
-        {'r': 40, 'orbit_radius': 230, 'angle': 0, 'speed': 3},
-        {'r': 40, 'orbit_radius': 230, 'angle': 120, 'speed': 3},
-        {'r': 40, 'orbit_radius': 230, 'angle': 240, 'speed': 3},
-        {'r': 60, 'orbit_radius': 500, 'angle': 60, 'speed': 2},
-        {'r': 60, 'orbit_radius': 500, 'angle': 180, 'speed': 2},
-        {'r': 60, 'orbit_radius': 500, 'angle': 300, 'speed': 2},
-        {'r': 80, 'orbit_radius': 900, 'angle': 0, 'speed': 1},
-        {'r': 80, 'orbit_radius': 900, 'angle': 120, 'speed': 1},
-        {'r': 80, 'orbit_radius': 900, 'angle': 240, 'speed': 1},
+        {'r': 40, 'orbit_radius': 230, 'angle': 0, 'speed': 3, 'block': 0},
+        {'r': 40, 'orbit_radius': 230, 'angle': 120, 'speed': 3, 'block': 0},
+        {'r': 40, 'orbit_radius': 230, 'angle': 240, 'speed': 3, 'block': 0},
+        {'r': 60, 'orbit_radius': 500, 'angle': 60, 'speed': 2, 'block': 0},
+        {'r': 60, 'orbit_radius': 500, 'angle': 180, 'speed': 2, 'block': 0},
+        {'r': 60, 'orbit_radius': 500, 'angle': 300, 'speed': 2, 'block': 0},
+        {'r': 80, 'orbit_radius': 900, 'angle': 0, 'speed': 1, 'block': 0},
+        {'r': 80, 'orbit_radius': 900, 'angle': 120, 'speed': 1, 'block': 0},
+        {'r': 80, 'orbit_radius': 900, 'angle': 240, 'speed': 1, 'block': 0},
     ]
 
     spikes = [
@@ -4915,6 +4804,8 @@ def create_lvl7_screen():
 
     draw_portal(mechexit_img, exit_portal, camera_x, camera_y)
     
+    portal_text = render_text(in_game.get("portal_message", "These blue portals teleport you! But to good places... mostly!"), True, (0, 102, 204))
+
     draw_notifications()
     draw_syncing_status()
     if transition.x <= -transition.image.get_width():
@@ -4993,7 +4884,7 @@ def create_lvl7_screen():
 
 
         if player_y > 1100:
-            death_text = in_game.get("fall_message", "Fell too far!")
+            death_text = render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
                 fall_sound.play()
@@ -5065,109 +4956,34 @@ def create_lvl7_screen():
         # Draw key only if not collected
  
 # Saw collision detection and drawing
-        collision_detected = False  
-        for rotating_saw in rotating_saws:
-            if collision_detected:
-                break  # Exit the loop if a collision has already been detected
+        if level_logic.handle_rotating_saws(screen, rotating_saws, blocks, player_rect, saw_img, camera_x, camera_y, saw_cache):
+            # Death logic
+            player_x, player_y = spawn_x, spawn_y
+            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            wait_time = pygame.time.get_ticks()
+            deathcount += 1
+            if not is_mute: death_sound.play()
+            velocity_y = 0
 
-    # Update angle
-            rotating_saw['angle'] = (rotating_saw['angle'] + rotating_saw['speed']) % 360
-            rad = math.radians(rotating_saw['angle'])
-
-    # Orbit around block center
-            orbit_center_x = blocks[0].centerx
-            orbit_center_y = blocks[0].centery
-            x = orbit_center_x + rotating_saw['orbit_radius'] * math.cos(rad)
-            y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
-
-    # Draw the saw
-            VIEW_BUFFER = 150 
-            screen_x = x - camera_x
-            screen_y = y - camera_y
-            if (-VIEW_BUFFER < screen_x < SCREEN_WIDTH + VIEW_BUFFER and -VIEW_BUFFER < screen_y < SCREEN_HEIGHT + VIEW_BUFFER):
-              scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
-              rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
-              rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
-              screen.blit(rotated_saw, rect)
-
-    # Collision detection
-            closest_x = max(player_rect.left, min(x, player_rect.right))
-            closest_y = max(player_rect.top, min(y, player_rect.bottom))
-            dx = closest_x - x
-            dy = closest_y - y
-            distance = (dx**2 + dy**2)**0.5
-
-            if distance < rotating_saw['r'] and not collision_detected:
-            # Trigger death logic                
-                collision_detected = True  # Set the flag to stop further checks
-                death_text = in_game.get("sawed_message", "Sawed to bits!")    
-                wait_time = pygame.time.get_ticks()             
-                velocity_y = 0
-                player_x, player_y = spawn_x, spawn_y  # Reset player position    
-                deathcount += 1  
-                if not is_mute:          
-                    death_sound.play()
-                break
-                
-
-        for saw in moving_saws:
-    # Update the circle's position (move vertically)
-            saw['cy'] += saw['speed']  # Move down or up depending on speed
-
-    # Check if the saw has reached the limits
-            if saw['cy'] > saw['max'] or saw['cy'] < saw['min']:
-                saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
-
-    # Draw the moving circle (saw)
-            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
-            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
-            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
-            screen.blit(rotated_saw, rect)
-
-    # Collision detection (if needed)
-            closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
-            closest_y = max(player_rect.top, min(saw['cy'], player_rect.bottom))
-            dx = closest_x - saw['cx']
-            dy = closest_y - saw['cy']
-            distance = (dx**2 + dy**2)**0.5
-            if distance < saw['r']:
-        # Trigger death logic
-                death_text = in_game.get("sawed_message", "Sawed to bits!")
-                wait_time = pygame.time.get_ticks()
-                velocity_y = 0
-                if not is_mute:
-                    death_sound.play()
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
-                deathcount += 1
-
-        for saw in moving_saws_x:
-    # Update the circle's position (move vertically)
-            saw['cx'] += saw['speed']
-    # Check if the saw has reached the limits
-            if saw['cx'] > saw['max'] or saw['cx'] < saw['min']:
-                saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
-
-    # Draw the moving circle (saw)
-            scale_factor = (saw['r'] * 2.5) / saw_img.get_width()
-            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
-            rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
-            screen.blit(rotated_saw, rect)
-
-    # Collision detection (if needed)
-            closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
-            closest_y = max(player_rect.top, min(saw['cy'], player_rect.bottom))
-            dx = closest_x - saw['cx']
-            dy = closest_y - saw['cy']
-            distance = (dx**2 + dy**2)**0.5
-            if distance < saw['r']:
-        # Trigger death logic
-                death_text = in_game.get("sawed_message", "Sawed to bits!")
-                wait_time = pygame.time.get_ticks()
-                velocity_y = 0
-                if not is_mute:
-                    death_sound.play()
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
-                deathcount += 1
+        # Handle Moving Saws
+        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, saw_img, camera_x, camera_y, saw_cache):
+            # Death logic (same as above)
+            player_x, player_y = spawn_x, spawn_y
+            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            wait_time = pygame.time.get_ticks()
+            deathcount += 1
+            if not is_mute: death_sound.play()
+            velocity_y = 0
+        
+        # Handle Moving Saws
+        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, saw_img, camera_x, camera_y, saw_cache):
+            # Death logic (same as above)
+            player_x, player_y = spawn_x, spawn_y
+            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            wait_time = pygame.time.get_ticks()
+            deathcount += 1
+            if not is_mute: death_sound.play()
+            velocity_y = 0
 
         for teleporter in teleporters:
             # Draw the entry rectangle
@@ -5252,12 +5068,7 @@ def create_lvl7_screen():
         elif medal == "Bronze":
             screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
 
-        levels = load_language(lang_code).get('levels', {})
-        lvl7_text = levels.get("lvl7", "Level 7")  # Render the level text
-        screen.blit(render_text(lvl7_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
-
-        portal_text = in_game.get("portal_message", "These blue portals teleport you! But to good places... mostly!")
-        screen.blit(render_text(portal_text, True, (0, 196, 255)), (4400 - camera_x, 300 - camera_y))
+        screen.blit(portal_text, (4400 - camera_x, 300 - camera_y))
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
@@ -5397,7 +5208,16 @@ def create_lvl8_screen():
         pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
 
     draw_portal(mechexit_img, exit_portal, camera_x, camera_y)
-    
+
+    button1_text = in_game.get("button1_message", "Blue buttons, upon activation, will make you jump higher!")
+    button1_text = render_text(button1_text, True, (0, 102, 204))
+
+    clarify_text = in_game.get("clarify_message", "Until you reach a checkpoint, of course!")
+    clarify_text = render_text(clarify_text, True, (0, 102, 204))
+
+    mock_text = in_game.get("mock_message", "Wrong way my guy nothing to see here...")
+    mock_text = render_text(mock_text, True, (255, 0, 0))
+
     draw_notifications()
     draw_syncing_status()
     if transition.x <= -transition.image.get_width():
@@ -5502,7 +5322,7 @@ def create_lvl8_screen():
 
 
         if player_y > 1100:
-            death_text = in_game.get("fall_message", "Fell too far!")
+            death_text = render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             weak_grav = False # Reset weak gravity status
             if not is_mute:
@@ -5573,82 +5393,14 @@ def create_lvl8_screen():
             screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         else:
             screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
- 
-# Saw collision detection and drawing
-        collision_detected = False 
-        for saw in moving_saws_x:
-    # Update the circle's position (move vertically)
-            saw['cx'] += saw['speed']
-    # Check if the saw has reached the limits
-            if saw['cx'] > saw['max'] or saw['cx'] < saw['min']:
-                saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
 
-    # Draw the moving circle (saw)
-            angle = (pygame.time.get_ticks() // 3) % 360
-            saw_ig_img = get_rotated_saw(saw_img, saw['r'], angle)
-            curr_w, curr_h = saw_ig_img.get_size()
-            center_x = saw['cx'] - camera_x
-            center_y = saw['cy'] - camera_y
-            draw_x = center_x - (curr_w / 2)
-            draw_y = center_y - (curr_h / 2)
-            screen.blit(saw_ig_img, (draw_x, draw_y))
-
-    # Collision detection (if needed)
-            closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
-            closest_y = max(player_rect.top, min(saw['cy'], player_rect.bottom))
-            dx = closest_x - saw['cx']
-            dy = closest_y - saw['cy']
-            distance = (dx**2 + dy**2)**0.5
-            if distance < saw['r']:
-        # Trigger death logic
-                weak_grav = False # Reset weak gravity status
-                death_text = in_game.get("sawed_message", "Sawed to bits!")
-                wait_time = pygame.time.get_ticks()
-                velocity_y = 0
-                if not is_mute:
-                    death_sound.play()
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
-                deathcount += 1
-
-        for saw in moving_saws:
-    # Update the circle's position (move vertically)
-            saw['cy'] += saw['speed']
-    # Check if the saw has reached the limits
-            if saw['cy'] > saw['max'] or saw['cy'] < saw['min']:
-                saw['speed'] = -saw['speed']  # Reverse direction if we hit a limit
-
-    # Draw the moving circle (saw)
-            angle = (pygame.time.get_ticks() // 3) % 360
-            saw_ig_img = get_rotated_saw(saw_img, saw['r'], angle)
-            curr_w, curr_h = saw_ig_img.get_size()
-            center_x = saw['cx'] - camera_x
-            center_y = saw['cy'] - camera_y
-            draw_x = center_x - (curr_w / 2)
-            draw_y = center_y - (curr_h / 2)
-            screen.blit(saw_ig_img, (draw_x, draw_y))
-
-    # Collision detection (if needed)
-            closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
-            closest_y = max(player_rect.top, min(saw['cy'], player_rect.bottom))
-            dx = closest_x - saw['cx']
-            dy = closest_y - saw['cy']
-            distance = (dx**2 + dy**2)**0.5
-            if distance < saw['r']:
-        # Trigger death logic
-                weak_grav = False # Reset weak gravity status
-                death_text = in_game.get("sawed_message", "Sawed to bits!")
-                wait_time = pygame.time.get_ticks()
-                velocity_y = 0
-                if not is_mute:
-                    death_sound.play()
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
-                deathcount += 1
-
+        # Handle Moving Saws
         for teleporter in teleporters:
             # Draw the entry rectangle
             draw_portal(teleport_img, teleporter["entry"], camera_x, camera_y)
             # Draw the exit rectangle
             draw_portal(teleexit_img, teleporter["exit"], camera_x, camera_y)
+
            # Check if the player collides with the entry rectangle
             if player_rect.colliderect(teleporter["entry"]):
                 # Teleport the player to the exit rectangle
@@ -5656,41 +5408,47 @@ def create_lvl8_screen():
                     warp_sound.play()
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
 
-        saw_angle += 5 
-        for x, y, r, color in saws:
-            # Draw the saw as a circle
-            angle = (pygame.time.get_ticks() // 3) % 360
-            saw_ig_img = get_rotated_saw(saw_img, r, angle)
-            curr_w, curr_h = saw_ig_img.get_size()
-            center_x = x - camera_x
-            center_y = y - camera_y
-            draw_x = center_x - (curr_w / 2)
-            draw_y = center_y - (curr_h / 2)
-            screen.blit(saw_ig_img, (draw_x, draw_y))
+        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, saw_img, camera_x, camera_y, saw_cache):
+            # Death logic (same as above)
+            player_x, player_y = spawn_x, spawn_y
+            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            wait_time = pygame.time.get_ticks()
+            deathcount += 1
+            if not is_mute: death_sound.play()
+            velocity_y = 0
+        
+        # Handle Moving Saws
+        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, saw_img, camera_x, camera_y, saw_cache):
+            # Death logic (same as above)
+            player_x, player_y = spawn_x, spawn_y
+            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            wait_time = pygame.time.get_ticks()
+            deathcount += 1
+            if not is_mute: death_sound.play()
+            velocity_y = 0
 
-        for saw in saws:
-            saw_x, saw_y, saw_radius, _ = saw
+        level_logic.draw_saws(screen, saws, saw_img, camera_x, camera_y, saw_cache)
 
-        # Find the closest point on the player's rectangle to the saw's center
-            closest_x = max(player_rect.left, min(saw_x, player_rect.right))
-            closest_y = max(player_rect.top, min(saw_y, player_rect.bottom))
+        # 2. Check for saw deaths
+        if level_logic.check_saw_collisions(player_rect, saws):
+            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            wait_time = pygame.time.get_ticks()
+            if not is_mute:
+                death_sound.play()
+            player_x, player_y = spawn_x, spawn_y
+            velocity_y = 0
+            deathcount += 1
 
-            # Calculate the distance between the closest point and the saw's center
-            dx = closest_x - saw_x
-            dy = closest_y - saw_y
-            distance = (dx**2 + dy**2)**0.5
+        level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
 
-            # Check if the distance is less than the saw's radius
-            if distance < saw_radius:
-                weak_grav = False # Reset weak gravity status
-                    # Trigger death logic
-                death_text = in_game.get("sawed_message", "Sawed to bits!")
-                wait_time = pygame.time.get_ticks()
-                velocity_y = 0
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
-                deathcount += 1
-                if not is_mute:
-                    death_sound.play()
+        if level_logic.check_spike_collisions(spikes, player_x, player_y, img_width, img_height):
+            player_x, player_y = spawn_x, spawn_y
+            death_text = render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
+            wait_time = pygame.time.get_ticks()
+            if not is_mute:
+                death_sound.play()
+            velocity_y = 0
+            deathcount += 1
 
         for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
@@ -5700,7 +5458,7 @@ def create_lvl8_screen():
                 laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = in_game.get("hit_message", "Hit on the head!")
+                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 weak_grav = False
                 if not is_mute:    
@@ -5710,56 +5468,6 @@ def create_lvl8_screen():
 
         for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (int(jump_block.x - camera_x), int(jump_block.y - camera_y), jump_block.width, jump_block.height))        
-
-        for spike in spikes:
-            pygame.draw.polygon(screen, (255, 0, 0), [((x - camera_x),( y - camera_y)) for x, y in spike])
-
-        # Spike death
-        bottom_points = [
-            (player_x + img_width // 2, player_y + img_height),
-            (player_x + 5, player_y + img_height),
-            (player_x + img_width - 5, player_y + img_height)
-        ]
-        collision_detected = False  # Flag to stop further checks after a collision
-        for spike in spikes:
-            if collision_detected:
-                break  # Exit the outer loop if a collision has already been detected
-            for point in bottom_points:
-                if point_in_triangle(point[0], point[1], *spike):
-                    weak_grav = False # Reset weak gravity status
-                    player_x, player_y = spawn_x, spawn_y  # Reset player position
-                    death_text = in_game.get("dead_message", "You Died")
-                    wait_time = pygame.time.get_ticks()
-                    if not is_mute:
-                        death_sound.play()
-                    velocity_y = 0
-                    deathcount += 1
-                    collision_detected = True  # Set the flag to stop further checks
-                    break
-
-        # Spike death (including top collision detection)
-        top_points = [
-            (player_x + img_width // 2, player_y),  # Center top point
-            (player_x + 5, player_y),               # Left top point
-            (player_x + img_width - 5, player_y)    # Right top point
-        ]
-        collision_detected = False  # Flag to stop further checks after a collision
-        for spike in spikes:
-             if collision_detected:
-               break  # Exit the outer loop if a collision has already been detected
-             for point in top_points:
-                if point_in_triangle(point[0], point[1], *spike):
-                    weak_grav = False # Reset weak gravity status
-            # Trigger death logic
-                    player_x, player_y = spawn_x, spawn_y  # Reset player position
-                    death_text = in_game.get("dead_message", "You Died")
-                    wait_time = pygame.time.get_ticks()
-                    if not is_mute:
-                        death_sound.play()
-                    velocity_y = 0
-                    deathcount += 1
-                    collision_detected = True  # Set the flag to stop further checks
-                    break
 
         for x, y, r, color in gravity_weakers:
             # Draw the button as a circle
@@ -5802,19 +5510,12 @@ def create_lvl8_screen():
         quit_text = in_game.get("quit_message", "Press Q to quit")
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
         screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text 
-               
-        levels = load_language(lang_code).get('levels', {})
-        lvl8_text = levels.get("lvl8", "Level 8")  # Render the level text
-        screen.blit(render_text(lvl8_text, True, (255, 255, 255)), (SCREEN_WIDTH//2 - 50, 20)) # Draws the level text
 
-        button1_text = in_game.get("button1_message", "Blue buttons, upon activation, will make you jump higher!")
-        screen.blit(render_text(button1_text, True, (0, 102, 204)), (8400 - camera_x, -150 - camera_y))
+        screen.blit(button1_text, (8400 - camera_x, -150 - camera_y))
 
-        clarify_text = in_game.get("clarify_message", "Until you reach a checkpoint, of course!")
-        screen.blit(render_text(clarify_text, True, (0, 102, 204)), (9800 - camera_x, -150 - camera_y))
+        screen.blit(clarify_text, (9800 - camera_x, -150 - camera_y))
 
-        mock_text = in_game.get("mock_message", "Wrong way my guy nothing to see here...")
-        screen.blit(render_text(mock_text, True, (255, 0, 0)), (13200 - camera_x, -300 - camera_y))
+        screen.blit(mock_text, (13200 - camera_x, -300 - camera_y))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
         timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
@@ -5896,6 +5597,8 @@ def create_lvl9_screen():
         pygame.Rect(0, 100, 1000, 50),
         pygame.Rect(500, 60, 500, 80),
         pygame.Rect(0, -300, 1000, 100),
+        pygame.Rect(1600, 600, 300, 100),
+        pygame.Rect(2050, 500, 100, 100),
         pygame.Rect(2300, 400, 600, 100),
         pygame.Rect(2800, -300, 100, 500),
         pygame.Rect(3200, 200, 100, 530),
@@ -5921,17 +5624,6 @@ def create_lvl9_screen():
 
     moving_saws_x = [
         {'r': 100, 'speed':14, 'cx': 3800, 'cy': 700, 'min': 3700, 'max': 5400}
-    ]
-
-    deceiver_saws = [
-        (1700, 650, 28, (255, 0 , 127)),
-        (1900, 650, 28, (255, 0 , 127)),
-        (2100, 550, 28, (255, 0 , 127)),
-    ]        
-
-    invisible_blocks = [
-        pygame.Rect(1600, 600, 500, 100),
-        pygame.Rect(2050, 500, 100, 100),
     ]
 
     spikes = [
@@ -6216,30 +5908,6 @@ def create_lvl9_screen():
         else:
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
-        for block in invisible_blocks:
-            if player_rect.colliderect(block):
-                # Falling onto a block
-                if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
-                    player_y = block.y - img_height
-                    velocity_y = 0
-                    on_ground = True
-
-                # Hitting the bottom of a block
-                elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
-                    player_y = block.y + block.height
-                    velocity_y = 0
-
-                # Horizontal collision (left or right side of the block)
-                elif player_x + img_width > block.x and player_x < block.x + block.width:
-                    if player_x < block.x:  # Colliding with the left side of the block
-                        player_x = block.x - img_width
-                    elif player_x + img_width > block.x + block.width:  # Colliding with the right side
-                        player_x = block.x + block.width
-            
-        for block in invisible_blocks:
-            # Draw the invisible block as a gray rectangle 
-            pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))        
-
         # Draw flag
         if checkpoint_reached:
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
@@ -6486,9 +6154,6 @@ def create_lvl9_screen():
                 weak_grav = True
                 strong_grav = False
 
-        for x, y, r, color in deceiver_saws:
-            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
-
         draw_portal(mechexit_img, exit_portal, camera_x, camera_y)
         player_image(keys, player_x, player_y, camera_x, camera_y)
 
@@ -6588,6 +6253,7 @@ def create_lvl10_screen():
         pygame.Rect(-100, 500, 1200, 50),
         pygame.Rect(1300, 400, 200, 50),
         pygame.Rect(1625, 500, 200, 50),
+        pygame.Rect(1920, 400, 100, 100),
         pygame.Rect(3000, 480, 300, 50),
         pygame.Rect(3500, 480, 100, 300),
         pygame.Rect(3800, 260, 100, 520),
@@ -6620,13 +6286,6 @@ def create_lvl10_screen():
         (2500, 310, 50, (255, 0, 0)),
     ]
 
-    deceiver_saws = [
-        (1970, 450, 28, (255, 0 , 127)),
-    ]        
-
-    invisible_blocks = [
-        pygame.Rect(1920, 400, 100, 100),
-    ]
 
     rotating_saws = [
         {'r': 40, 'orbit_radius': 300, 'angle': 0, 'speed': 3},
@@ -6851,30 +6510,6 @@ def create_lvl10_screen():
         else:
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
-        for block in invisible_blocks:
-            if player_rect.colliderect(block):
-                # Falling onto a block
-                if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
-                    player_y = block.y - img_height
-                    velocity_y = 0
-                    on_ground = True
-
-                # Hitting the bottom of a block
-                elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
-                    player_y = block.y + block.height
-                    velocity_y = 0
-
-                # Horizontal collision (left or right side of the block)
-                elif player_x + img_width > block.x and player_x < block.x + block.width:
-                    if player_x < block.x:  # Colliding with the left side of the block
-                        player_x = block.x - img_width
-                    elif player_x + img_width > block.x + block.width:  # Colliding with the right side
-                        player_x = block.x + block.width
-            
-        for block in invisible_blocks:
-            # Draw the invisible block as a gray rectangle 
-            pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))        
-
         # Draw flag
         if checkpoint_reached:
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
@@ -7093,9 +6728,6 @@ def create_lvl10_screen():
                     button_sound.play()
                 strong_grav = True
                 weak_grav = False
-
-        for x, y, r, color in deceiver_saws:
-            pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
 
         draw_portal(mechexit_img, exit_portal, camera_x, camera_y)
         
