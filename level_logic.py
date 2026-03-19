@@ -1,6 +1,153 @@
 import pygame
 import math
 
+def player_image(current_time, moving_img, moving_img_l, player_img, blink_img, screen, keys, player_x, player_y, camera_x, camera_y):
+    if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+    elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
+    else:
+        screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
+        if current_time % 4 < 0.25:
+            screen.blit(blink_img, (player_x - camera_x, player_y - camera_y))
+
+def draw_portal(screen, img, portal, camera_x, camera_y):
+    bobbing_offset = math.sin(pygame.time.get_ticks() * 0.005) * 5
+    screen.blit(img, (portal.x - camera_x, portal.y + bobbing_offset - camera_y))
+
+def death_message(screen, death_text, wait_time, duration=2500):
+    if wait_time is not None:
+        if pygame.time.get_ticks() - wait_time < duration:
+            screen.blit(death_text, (20, 50))
+            return wait_time # Keep the timer running
+        else:
+            return None # Reset the timer
+    return None
+
+def block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground):
+
+    for block in blocks:
+            pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
+            if player_rect.colliderect(block):
+                # Falling onto a block
+                if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
+                    player_y = block.y - img_height
+                    velocity_y = 0
+                    on_ground = True
+                
+                # Horizontal collision (left or right side of the block)
+                elif player_x + img_width > block.x and player_x < block.x + block.width:
+                    if player_x < block.x:  # Colliding with the left side of the block
+                        player_x = block.x - img_width
+                    elif player_x + img_width > block.x + block.width:  # Colliding with the right side
+                        player_x = block.x + block.width
+    
+    return player_x, player_y, velocity_y, on_ground, player_rect
+
+def handle_bottom_collisions(blocks, player_rect, velocity_y):
+    for block in blocks:
+            if block.width <= 100:
+                laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
+            else:
+                laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
+            
+            if player_rect.colliderect(laser_rect) and velocity_y < 0:  # Only if jumping upward
+                return True
+    return False
+
+
+def jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, bounce_sound, strong_grav, weak_grav):
+        for jump_block in jump_blocks:
+            pygame.draw.rect(screen, (255, 128, 0), (jump_block.x - camera_x, jump_block.y - camera_y, jump_block.width, jump_block.height))
+
+            adj_x = jump_block.x + 5 - camera_x
+            adj_y = jump_block.y + 5 - camera_y # Changed to +5 to keep it inside the top of the block
+            adj_w = jump_block.width - 10
+            adj_h = jump_block.height - 10
+
+            # 3. Define the three points of the triangle
+            points = [
+                (adj_x + adj_w / 2, adj_y),          # Top Tip (Middle)
+                (adj_x, adj_y + adj_h),              # Bottom Left
+                (adj_x + adj_w, adj_y + adj_h)       # Bottom Right
+            ]
+
+            # 4. Draw the triangle
+            pygame.draw.polygon(screen, (255, 190, 81), points)
+            
+        for jump_block in jump_blocks:
+            if player_rect.colliderect(jump_block):
+                # Falling onto a jump block
+                if velocity_y > 0 and player_y + img_height - velocity_y <= jump_block.y:
+                    player_y = jump_block.y - img_height
+                    if strong_grav:
+                        velocity_y = -21
+                    elif weak_grav:
+                        velocity_y = -54
+                    else:
+                        velocity_y = -33  # Apply upward velocity for the jump
+                    if not is_mute:
+                        bounce_sound.play()
+
+                # Hitting the bottom of a jump block
+                elif velocity_y < 0 and player_y >= jump_block.y + jump_block.height - velocity_y:
+                    player_y = jump_block.y + jump_block.height
+                    velocity_y = 0
+
+                # Horizontal collision (left or right side of the jump block)
+                elif player_x + img_width > jump_block.x and player_x < jump_block.x + jump_block.width:
+                    if player_x < jump_block.x:  # Colliding with the left side of the jump block
+                        player_x = jump_block.x - img_width
+                    elif player_x + img_width > jump_block.x + jump_block.width:  # Colliding with the right side
+                        player_x = jump_block.x + jump_block.width
+        
+        return player_x, player_y, velocity_y
+
+def handle_key_blocks(screen, open_sound, key_block_pairs, is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y):
+    # player_pos would be [x, y, on_ground]
+    for pair in key_block_pairs:
+        if not pair["collected"]:
+            block = pair["block"]
+            if player_rect.colliderect(block):
+        # Falling onto a block
+                if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
+                    player_y = int(block.y - img_height)
+                    velocity_y = 0
+                    on_ground = True
+                    player_rect.y = player_y
+
+        # Hitting the bottom of a block
+                elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
+                    player_y = block.y + block.height
+                    velocity_y = 0
+
+        # Horizontal collisions
+                elif player_x + img_width > block.x and player_x < block.x + block.width:
+                    if player_x < block.x:
+                        player_x = block.x - img_width
+                    elif player_x + img_width > block.x + block.width:
+                        player_x = block.x + block.width
+
+            key_x, key_y, key_r, key_color = pair["key"]
+            block = pair["block"]
+
+            # Check collision if not yet collected
+            if not pair["collected"]:
+                key_rect = pygame.Rect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
+            if player_rect.colliderect(key_rect):
+                if not pair["collected"] and not is_mute:
+                    open_sound.play()
+                pair["collected"] = True
+            
+            if not pair["collected"]:
+                pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
+
+            # Draw block only if key is not collected
+            if not pair["collected"]:
+                pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
+
+    return player_x, player_y, velocity_y, on_ground, player_rect
+
 def point_in_triangle(px, py, a, b, c):
     def sign(p1, p2, p3):
         return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
