@@ -1,6 +1,20 @@
 import pygame
 import math
 
+def draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_text, reset_text, quit_text, timer_text):
+    screen.blit(deaths_text, (20, 20))
+    screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))
+    screen.blit(reset_text, (10, SCREEN_HEIGHT - 54))
+    screen.blit(quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))
+
+def draw_medals(screen, medal_type, deathcount, images, timer_width, SCREEN_WIDTH):
+    # The logic tweak you just thought of:
+    if medal_type == "Gold" and deathcount == 0:
+        medal_type = "Diamond"
+    img = images.get(medal_type)
+    if img:
+        screen.blit(img, (SCREEN_WIDTH - timer_width - 110, 20))
+
 def player_image(current_time, moving_img, moving_img_l, player_img, blink_img, screen, keys, player_x, player_y, camera_x, camera_y):
     if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
             screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
@@ -334,3 +348,41 @@ def handle_rushing_saws(screen, rushing_saws, player_rect, saw_img, camera_x, ca
             collision = True
             
     return collision
+
+def handle_light_blocks(screen, lights, on_ground, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, lights_off, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, button_sound):
+  
+  for lights in lights:    
+
+    if not lights_off:
+        light_mask = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        light_mask.fill((0, 0, 0, 255)) 
+        spotlight_center = (player_x + img_width // 2 - camera_x, player_y + img_width // 2 - camera_y)
+        radius = 320 
+        pygame.draw.circle(light_mask, (0, 0, 0, 0), spotlight_center, radius)
+        screen.blit(light_mask, (0, 0))
+
+    else:
+
+        pygame.draw.rect(screen, (104, 102, 204), (lights['button'].x - camera_x, lights['button'].y - camera_y, lights['button'].width, lights['button'].height))
+        pygame.draw.rect(screen, (104, 102, 204), (lights['block'].x - camera_x, lights['block'].y - camera_y, lights['block'].width, lights['block'].height))
+
+        if player_rect.colliderect(lights['block']):
+                # Falling onto a block
+                if velocity_y > 0 and player_y + img_height - velocity_y <= lights['block'].y:
+                    player_y = lights['block'].y - img_height
+                    velocity_y = 0
+                    on_ground = True
+
+                # Horizontal collision (left or right side of the block)
+                elif player_x + img_width > lights['block'].x and player_x < lights['block'].x + lights['block'].width:
+                    if player_x < lights['block'].x:  # Colliding with the left side of the block
+                        player_x = lights['block'].x - img_width
+                    elif player_x + img_width > lights['block'].x + lights['block'].width:  # Colliding with the right side
+                        player_x = lights['block'].x + lights['block'].width
+    
+    if player_rect.colliderect(lights['button']):
+            if not is_mute and lights_off:
+                button_sound.play()
+            lights_off = False
+    
+    return player_x, player_y, velocity_y, on_ground, player_rect, lights_off

@@ -14,12 +14,13 @@ import arabic_reshaper
 import hashlib
 import csv
 import level_logic
+import menu_ui
 from io import StringIO
 from datetime import datetime, date
 from bidi.algorithm import get_display
 
 # GAME VERSION
-version = "1.3.3"
+version = "1.3.4"
 
 # for compilation
 def resource_path(relative_path): 
@@ -2163,22 +2164,22 @@ def create_lvl1_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
+        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
         timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
 
+        # Initialize and draw the reset and quit text
+        reset_text = in_game.get("reset_message", "Press R to reset")
+        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+
+        quit_text = in_game.get("quit_message", "Press Q to quit")
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+
+        level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
+        
         medal = get_medal(1, current_time)
-        if medal == "Gold":
-            if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-            else:
-                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
+        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
 
         if keys[pygame.K_r]:
             resetting()
@@ -2196,11 +2197,6 @@ def create_lvl1_screen():
                 screen.blit(reset_text, (SCREEN_WIDTH // 2 - 200 , 300))             
         else:
             ctime = None
-
-        # Initialize and draw the quit text
-        quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
-        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
 
@@ -2472,31 +2468,22 @@ def create_lvl2_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
+        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
         timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
-
-        medal = get_medal(2, current_time)
-        if medal == "Gold":
-            if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-            else:
-                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
         rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
-        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
-        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
+
+        level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
+        
+        medal = get_medal(2, current_time)
+        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
 
         if keys[pygame.K_r]:
             resetting()
@@ -2818,31 +2805,22 @@ def create_lvl3_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
+        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
+
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
         rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
-        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
-        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
-
+        level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
+        
         medal = get_medal(3, current_time)
-        if medal == "Gold":
-            if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-            else:
-                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
+        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
 
@@ -3291,34 +3269,22 @@ def create_lvl4_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
+        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
 
-        # Draw the texts
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
         rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
-        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
-        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-
-        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
-
+        level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
+        
         medal = get_medal(4, current_time)
-        if medal == "Gold":
-            if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-            else:
-                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
+        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
         draw_notifications()
@@ -3716,35 +3682,25 @@ def create_lvl5_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
+        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
 
-        # Draw the texts
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
         rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
-        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
-        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
-
+        level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
+        
         medal = get_medal(5, current_time)
-        if medal == "Gold":
-            if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-            else:
-                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-
+        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
+        
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
+        
         draw_notifications()
         draw_syncing_status()
         pygame.display.update()   
@@ -4134,33 +4090,22 @@ def create_lvl6_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
-
-        # Draw the texts
-        
-        # Initialize and draw the reset and quit text
-        reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
-        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
-
-        quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
-        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
+        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
         timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
 
+        # Initialize and draw the reset and quit text
+        reset_text = in_game.get("reset_message", "Press R to reset")
+        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+
+        quit_text = in_game.get("quit_message", "Press Q to quit")
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+
+        level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
+        
         medal = get_medal(6, current_time)
-        if medal == "Gold":
-            if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-            else:
-                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
+        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
@@ -4526,33 +4471,22 @@ def create_lvl7_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
-
-        # Draw the texts
-        
-        # Initialize and draw the reset and quit text
-        reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
-        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
-
-        quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
-        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
+        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
         timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
 
+        # Initialize and draw the reset and quit text
+        reset_text = in_game.get("reset_message", "Press R to reset")
+        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+
+        quit_text = in_game.get("quit_message", "Press Q to quit")
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+
+        level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
+        
         medal = get_medal(7, current_time)
-        if medal == "Gold":
-            if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-            else:
-                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
+        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
         draw_notifications()
@@ -4931,33 +4865,22 @@ def create_lvl8_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
+        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
 
-        # Draw the texts
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
         rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
-        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
-        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text 
 
-        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
-
+        level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
+        
         medal = get_medal(8, current_time)
-        if medal == "Gold":
-            if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-            else:
-                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
+        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
         draw_notifications()
@@ -5412,33 +5335,22 @@ def create_lvl9_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
-
-        # Draw the texts
-        
-        # Initialize and draw the reset and quit text
-        reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
-        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
-
-        quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
-        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
+        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
         timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
 
+        # Initialize and draw the reset and quit text
+        reset_text = in_game.get("reset_message", "Press R to reset")
+        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+
+        quit_text = in_game.get("quit_message", "Press Q to quit")
+        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+
+        level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
+        
         medal = get_medal(9, current_time)
-        if medal == "Gold":
-            if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-            else:
-                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
+        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
         
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
         draw_notifications()
@@ -5532,10 +5444,11 @@ def create_lvl10_screen():
         {'r': 40, 'orbit_radius': 300, 'angle': 0, 'speed': 3, 'block': 0},
     ]
 
-    light_off_button = pygame.Rect(400, 380, 50, 50)
-    
-    light_blocks = [
-        pygame.Rect(1300, 0, 200, 400),
+    lights = [
+        {
+            "button": pygame.Rect(400, 380, 50, 50),
+            "block": pygame.Rect(1300, 0, 200, 400),
+        }
     ]
 
     exit_portal = pygame.Rect(5960, 280, 140, 180)
@@ -5834,71 +5747,25 @@ def create_lvl10_screen():
         else:
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
-        # Draw the texts
-        if player_rect.colliderect(light_off_button):
-            if not is_mute and lights_off:
-                button_sound.play()
-            lights_off = False
-
-        if not lights_off:
-            # Create a full dark surface
-            pygame.draw.rect(screen, (0, 0, 0), (0, 0, SCREEN_WIDTH // 2 -  320 , SCREEN_HEIGHT ))
-            pygame.draw.rect(screen, (0, 0, 0), (SCREEN_WIDTH // 2 + 320, 0, SCREEN_WIDTH // 2 + 320, SCREEN_HEIGHT))
-            pygame.draw.rect(screen, (0, 0, 0), (0, 0, SCREEN_WIDTH, SCREEN_HEIGHT // 2 - 320))
-            pygame.draw.rect(screen, (0, 0, 0), (0, SCREEN_HEIGHT // 2 + 320, SCREEN_WIDTH, SCREEN_HEIGHT // 2 + 320))
-        
-        if lights_off:
-            pygame.draw.rect(screen, (104, 102, 204), (light_off_button.x - camera_x, light_off_button.y - camera_y, light_off_button.width, light_off_button.height))
-            for light_block in light_blocks:
-                pygame.draw.rect(screen, (104, 102, 204), (light_block.x - camera_x, light_block.y - camera_y, light_block.width, light_block.height))
-
-        if lights_off:
-            for block in light_blocks:
-                if player_rect.colliderect(block):
-                    # Falling onto a block
-                    if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
-                        player_y = block.y - img_height
-                        velocity_y = 0
-                        on_ground = True
-
-                    # Hitting the bottom of a block
-                    elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
-                        player_y = block.y + block.height
-                        velocity_y = 0
-
-                    # Horizontal collision (left or right side of the block)
-                    elif player_x + img_width > block.x and player_x < block.x + block.width:
-                        if player_x < block.x:  # Colliding with the left side of the block
-                            player_x = block.x - img_width
-                        elif player_x + img_width > block.x + block.width:  # Colliding with the right side
-                            player_x = block.x + block.width
+        player_x, player_y, velocity_y, on_ground, player_rect, lights_off = level_logic.handle_light_blocks(screen, lights, on_ground, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, lights_off, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, button_sound)
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
+        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
+
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
         rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
-        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
-        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
-
+        level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
+        
         medal = get_medal(10, current_time)
-        if medal == "Gold":
-            if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-            else:
-                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
+        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
         draw_notifications()
@@ -5973,7 +5840,7 @@ def create_lvl11_screen():
         pygame.Rect(1065, 200, 70, 375),
         pygame.Rect(1625, -200, 100, 590),
         pygame.Rect(1625, 50, 150, 50),
-        pygame.Rect(2200, 400, 100, 50),
+        pygame.Rect(2200, 400, 150, 50),
         pygame.Rect(2250, -300, 600, 2200),
         pygame.Rect(2300, 200, 3000, 100),
         pygame.Rect(3100, -300, 2600, 100),
@@ -6024,10 +5891,11 @@ def create_lvl11_screen():
     [(1625, 280), (1575, 330), (1625, 380)],
     ]
 
-    light_off_button = pygame.Rect(2350, -425, 50, 50)
-    
-    light_blocks = [
-        pygame.Rect(3050, -200, 120, 400),
+    lights = [
+        {
+        "button": pygame.Rect(2350, -425, 50, 50),
+        "block": pygame.Rect(3050, -200, 120, 400)
+        }
     ]
 
     exit_portal = pygame.Rect(6600, 250, 140, 180)
@@ -6406,44 +6274,8 @@ def create_lvl11_screen():
         screen.blit(rendered_button4_text, (-320 - camera_x, 300 - camera_y))
 
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
-
-        if player_rect.colliderect(light_off_button) and evilrobo_phase != 1:
-            if not is_mute and lights_off:
-                button_sound.play()
-            lights_off = False
-
-        if not lights_off:
-            # Create a full dark surface
-            pygame.draw.rect(screen, (0, 0, 0), (0, 0, SCREEN_WIDTH // 2 -  320 , SCREEN_HEIGHT ))
-            pygame.draw.rect(screen, (0, 0, 0), (SCREEN_WIDTH // 2 + 320, 0, SCREEN_WIDTH // 2 + 320, SCREEN_HEIGHT))
-            pygame.draw.rect(screen, (0, 0, 0), (0, 0, SCREEN_WIDTH, SCREEN_HEIGHT // 2 - 320))
-            pygame.draw.rect(screen, (0, 0, 0), (0, SCREEN_HEIGHT // 2 + 320, SCREEN_WIDTH, SCREEN_HEIGHT // 2 + 320))
         
-        if lights_off and evilrobo_phase != 1:
-            pygame.draw.rect(screen, (104, 102, 204), (light_off_button.x - camera_x, light_off_button.y - camera_y, light_off_button.width, light_off_button.height))
-            for light_block in light_blocks:
-                pygame.draw.rect(screen, (104, 102, 204), (light_block.x - camera_x, light_block.y - camera_y, light_block.width, light_block.height))
-
-        if lights_off:
-            for block in light_blocks:
-                if player_rect.colliderect(block):
-                    # Falling onto a block
-                    if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
-                        player_y = block.y - img_height
-                        velocity_y = 0
-                        on_ground = True
-
-                    # Hitting the bottom of a block
-                    elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
-                        player_y = block.y + block.height
-                        velocity_y = 0
-
-                    # Horizontal collision (left or right side of the block)
-                    elif player_x + img_width > block.x and player_x < block.x + block.width:
-                        if player_x < block.x:  # Colliding with the left side of the block
-                            player_x = block.x - img_width
-                        elif player_x + img_width > block.x + block.width:  # Colliding with the right side
-                            player_x = block.x + block.width
+        player_x, player_y, velocity_y, on_ground, player_rect, lights_off = level_logic.handle_light_blocks(screen, lights, on_ground, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, lights_off, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, button_sound)
 
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
@@ -6455,31 +6287,22 @@ def create_lvl11_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
+        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
+
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
         rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
-        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
-        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
-
+        level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
+        
         medal = get_medal(11, current_time)
-        if medal == "Gold":
-            if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-            else:
-                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
+        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
         draw_notifications()
@@ -6887,31 +6710,22 @@ def create_lvl12_screen():
                 strong_grav = False
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        screen.blit(render_text(deaths_val, True, (255, 255, 255)), (20, 20))
+        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
+
+        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
+        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
         rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
-        screen.blit(rendered_reset_text, (10, SCREEN_HEIGHT - 54))  # Draws the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
         rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
-        screen.blit(rendered_quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))  # Draws the quit text
 
-        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
-        screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))  # draw it at the top-left corner
-
+        level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
+        
         medal = get_medal(12, current_time)
-        if medal == "Gold":
-            if deathcount == 0:
-                screen.blit(diam_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-            else:
-                screen.blit(gold_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Silver":
-            screen.blit(silv_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
-        elif medal == "Bronze":
-            screen.blit(bron_m, (SCREEN_WIDTH - timer_text.get_width() - 110, 20))
+        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
 
@@ -7669,27 +7483,7 @@ while running:
             # Render the quit confirmation text
             screen.blit(quit_text, quit_text_rect)
             screen.blit(quitbot, (SCREEN_WIDTH // 2 - robot_img.get_width() // 2, SCREEN_HEIGHT // 2 - 200))
-
-            # Render the "Yes" and "No" buttons
-            for rendered, rect, key, is_locked in buttons:
-                if rect.collidepoint(mouse_pos):
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((8, 81, 179, 255))
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)      
-                    hovered = rect.collidepoint(pygame.mouse.get_pos())
-                    if hovered and not button_hovered_last_frame and not is_mute:
-                        hover_sound.play()
-                    button_hovered_last_frame = hovered
-                else:
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((8, 81, 179, 255))
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
-                screen.blit(rendered, rect)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovered_last_frame)
 
             # Allow returning to the main menu with ESC
             keys = pygame.key.get_pressed()
@@ -7756,13 +7550,7 @@ while running:
                         screen.blit(greendisk_img, rect)
                     else:
                         screen.blit(lockeddisk_img, rect)
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    hovered = rect.collidepoint(pygame.mouse.get_pos())
-                    if hovered and not button_hovered_last_frame and not is_mute:
-                        hover_sound.play()
-                    button_hovered_last_frame = hovered
+                    button_hovered_last_frame = menu_ui.hover_effect(screen, rect, hover_sound, is_mute, button_hovered_last_frame)
             # Show Level stats - check current mouse position every frame
             for text_surface, disk_rect, key, is_locked in buttons:
                 if disk_rect.collidepoint(mouse_pos):
@@ -7797,73 +7585,16 @@ while running:
         elif current_page == "settings":
             screen.blit(background, (0, 0))
             settings_menu()
-            
-            for rendered, rect, key, is_locked in buttons:
-                if rect.collidepoint(mouse_pos):
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((8, 81, 179, 255))
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
-                    hovered = rect.collidepoint(pygame.mouse.get_pos())
-                    if hovered and not button_hovered_last_frame and not is_mute:
-                        hover_sound.play()
-                    button_hovered_last_frame = hovered
-                else:
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((8, 81, 179, 255))
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
-                screen.blit(rendered, rect)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovered_last_frame)
 
         elif current_page == "About":   
             about_menu()
-
-            for rendered, rect, key, is_locked in buttons:
-                if rect.collidepoint(mouse_pos):
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((8, 81, 179, 255))
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
-                    hovered = rect.collidepoint(pygame.mouse.get_pos())
-                    if hovered and not button_hovered_last_frame and not is_mute:
-                        hover_sound.play()
-                    button_hovered_last_frame = hovered
-                else:
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((8, 81, 179, 255))
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
-                screen.blit(rendered, rect)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovered_last_frame)
             
         elif current_page == "Audio":
             screen.blit(background, (0, 0))
             audio_settings_menu()
-            
-            for rendered, rect, key, is_locked in buttons:
-                if rect.collidepoint(mouse_pos):
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((8, 81, 179, 255))
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
-                    hovered = rect.collidepoint(pygame.mouse.get_pos())
-                    if hovered and not button_hovered_last_frame and not is_mute:
-                        hover_sound.play()
-                    button_hovered_last_frame = hovered
-                else:
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((8, 81, 179, 255))
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
-                screen.blit(rendered, rect)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovered_last_frame)
 
         elif current_page == "Account":
             screen.blit(background, (0, 0))
@@ -7875,51 +7606,13 @@ while running:
             screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 80))
 
             # 2. Draw the Buttons (Using the standard button loop)
-            for rendered, rect, key, is_locked in buttons:
-                if rect.collidepoint(mouse_pos):
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((8, 81, 179, 255))
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
-                    hovered = rect.collidepoint(pygame.mouse.get_pos())
-                    if hovered and not button_hovered_last_frame and not is_mute:
-                        hover_sound.play()
-                    button_hovered_last_frame = hovered
-                else:
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((8, 81, 179, 255))
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
-
-                screen.blit(rendered, rect)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovered_last_frame)
 
         elif current_page == "login_screen":
             show_login_screen()
         
         else:
-            # Render buttons for other pages
-            for rendered, rect, key, is_locked in buttons:
-                if rect.collidepoint(mouse_pos):
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((8, 81, 179, 255))
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
-                    hovered = rect.collidepoint(pygame.mouse.get_pos())
-                    if hovered and not button_hovered_last_frame and not is_mute:
-                        hover_sound.play()
-                    button_hovered_last_frame = hovered
-                else:
-                    button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-                    button_surface.fill((8, 81, 179, 255))
-                    screen.blit(button_surface, rect.inflate(20, 10).topleft)
-                    pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
-                screen.blit(rendered, rect)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovered_last_frame)
         
         draw_notifications()
 
