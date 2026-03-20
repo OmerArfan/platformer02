@@ -76,18 +76,6 @@
   }
   ,"levels": {
   "level_display": "WÄHLE EINEN LEVEL",
-  "lvl1": "Stufe 1",    
-  "lvl2": "Stufe 2",
-  "lvl3": "Stufe 3",
-  "lvl4": "Stufe 4",
-  "lvl5": "Stufe 5",  
-  "lvl6": "Stufe 6",
-  "lvl7": "Stufe 7",
-  "lvl8": "Stufe 8",
-  "lvl9": "Stufe 9",
-  "lvl10": "Stufe 10",
-  "lvl11": "Stufe 11",
-  "lvl12": "Stufe 12",
   "back": "Zurück"
   ,"next": "Nächste"
    }

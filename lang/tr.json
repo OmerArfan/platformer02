@@ -76,18 +76,6 @@
   }
   ,"levels": {
     "level_display": "BİR SEVİYE SEÇ",
-    "lvl1": "Seviye 1",
-    "lvl2": "Seviye 2",
-    "lvl3": "Seviye 3",
-    "lvl4": "Seviye 4",
-    "lvl5": "Seviye 5",
-    "lvl6": "Seviye 6",
-    "lvl7": "Seviye 7",
-    "lvl8": "Seviye 8",
-    "lvl9": "Seviye 9",
-    "lvl10": "Seviye 10",
-    "lvl11": "Seviye 11",
-    "lvl12": "Seviye 12",
     "back": "Geri",
     "next": "İleri"
   },
