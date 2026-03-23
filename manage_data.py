@@ -6,13 +6,14 @@ import time
 import threading
 import sys
 import menu_ui
-from datetime import date
+from datetime import datetime, date
 import csv
 import hashlib
 import threading
 import requests
 from io import StringIO
 import pygame
+import acc_sys
 
 pygame.font.init()
 
@@ -147,7 +148,7 @@ def change_language(lang, manifest, progress):
         font = fonts['ar']
     else:
         font = fonts['def']
-    return font
+    return current_lang
 
 def load_progress():
     global SAVE_FILE, notification_time 
@@ -197,7 +198,7 @@ def load_progress():
     # If we loaded progress.json but have an ID inside it, migrate the filename
     p_id = data["player"].get("ID", "")
     if p_id == "" and not os.path.exists(os.path.join(APP_DATA_DIR, "progress.json")):
-        p_id = generate_player_id()
+        p_id = acc_sys.generate_player_id()
         data["player"]["ID"] = p_id
 
     # Update SAVE_FILE to the correct ID-specific path
@@ -240,8 +241,8 @@ def save_progress(data):
 
     # 1. Basic Validation: Ensure we aren't saving an empty/broken object
     if not data or "lvls" not in data or "player" not in data:
-        if not is_mute:
-            hit_sound.play()
+        #if not is_mute:
+         #   hit_sound.play()
         notification_text = menu_ui.render_text("Refusing to save: Invalid data structure!", True, (255, 0, 0))
         notif = True
         notification_time = time.time()
@@ -277,8 +278,8 @@ def save_progress(data):
             threading.Thread(target=sync_vault_to_cloud, args=(data,), daemon=True).start()
 
     except PermissionError:
-        if not is_mute:
-            hit_sound.play()
+       # if not is_mute:
+        #    hit_sound.play()
         notification_text = menu_ui.render_text("Error: Save file is locked by another program.", True, (255, 0, 0))
         notif = True
         notification_time = time.time()
@@ -286,8 +287,8 @@ def save_progress(data):
     except Exception as e:
         er = True
         error_code = menu_ui.render_text(f"Save Error: {str(e)}", True, (255, 0, 0))
-        #if not is_mute:
-         #   hit_sound.play()
+       # if not is_mute:
+        #   hit_sound.play()
         notification_time = time.time()
         print(f"Detailed save error: {e}")
 
@@ -343,7 +344,7 @@ def update_local_manifest(data):
             os.fsync(f.fileno()) # Push data from the OS to the actual Hard Drive
 
     except Exception as e:
-        if not is_mute: hit_sound.play()
+        #if not is_mute: hit_sound.play()
         error_code = menu_ui.render_text(f"Local manifest error: {e}", True, (255, 0, 0))
         er = True
         notification_time = time.time()
@@ -387,7 +388,7 @@ def sync_missing_data(data):
         data["pref"].pop("language", None)
 
     if data["player"]["ID"] == "":
-        data["player"]["ID"] = generate_player_id()
+        data["player"]["ID"] = acc_sys.generate_player_id()
 
 
 def sync_vault_to_cloud(data):
@@ -443,8 +444,8 @@ def recover_account_from_cloud(target_user, target_pass):
                 if cloud_user == target_user:
                     if cloud_pass == hashed_input:
                         print("Cloud Vault: Credentials verified. Downloading progress...")
-                        if not is_mute:
-                            notify_sound.play()
+                        #if not is_mute:
+                         #   notify_sound.play()
                         # Grab the JSON from the 'Progress' column
                         return json.loads(row.get('Progress'))
                     else:

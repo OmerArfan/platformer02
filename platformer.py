@@ -14,9 +14,10 @@ import level_logic
 import menu_ui
 import manage_data
 import startup
+import acc_sys
 
 # GAME VERSION
-version = "1.3.4.2"
+version = "1.3.5"
 
 # Initialize audio
 pygame.mixer.init()
@@ -43,34 +44,17 @@ icon = pygame.image.load(manage_data.resource_path("oimgs/icons/icon.png")).conv
 pygame.display.set_icon(icon)
 
 def change_ambience(new_file):
-    global is_mute_amb
-    if not is_mute_amb:
-     pygame.mixer.music.load(manage_data.resource_path(new_file))
-     pygame.mixer.music.set_volume(2)  # Adjust as needed
-     pygame.mixer.music.play(-1)
+  global is_mute_amb
+  if not is_mute_amb:
+    pygame.mixer.music.load(manage_data.resource_path(new_file))
+    pygame.mixer.music.set_volume(2)  # Adjust as needed
+    pygame.mixer.music.play(-1)
 
 # Variables for handling display notifications
 notif = False
 er = False
 
 pygame.mouse.set_visible(False)  # Hide the system cursor
-
-# Initalizing Player ID
-HEX = "0123456789ABCDEF"
-
-def generate_player_id():
-    roll = random.random() * 100  # 0.0 → 100.0
-
-    if roll < 0.001:        # 0.1%
-        length = 3
-    elif roll < 2.1:     # next 5%
-        length = 4
-    elif roll < 25:                 # rest
-        length = 5
-    else:
-        length = 6
-
-    return "".join(random.choices(HEX, k=length))
 
 notification_time = None
 
@@ -761,7 +745,7 @@ def character_select():
     
     # Clear screen
     buttons.clear()
-    current_lang = manage_data.loadlanguage(lang_code, manifest)['char_select']
+    current_lang = manage_data.load_language(lang_code, manifest)['char_select']
     button_texts = ["back"]
 
     for i, key in enumerate(button_texts):
@@ -1018,9 +1002,9 @@ def set_page(page):
     elif page == "Audio":
         audio_settings_menu()
     elif page == "Account":
-        create_account_selector()
+        acc_sys.create_account_selector(manage_data.ACCOUNTS_FILE, lang_code, manifest, transition, screen, bgs, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, sounds, draw_notifications, draw_syncing_status, buttons)
     elif page == "login_screen":
-        show_login_screen()
+        acc_sys.show_login_screen(lang_code, manifest, transition, screen, bgs, SCREEN_WIDTH, is_mute, sounds, draw_notifications, draw_syncing_status, buttons)
     elif page == 'levels':
         current_lang = manage_data.load_language(lang_code, manifest).get('levels', {})
         green_world_buttons()
@@ -6299,14 +6283,14 @@ def handle_action(key):
             # Extract ID from the key string
             selected_id = key.replace("load_user_", "")
             # Update manifest to set 'last_used' so load_progress knows which one to grab
-            if os.path.exists(ACCOUNTS_FILE):
-                with open(ACCOUNTS_FILE, "r") as f:
+            if os.path.exists(manage_data.ACCOUNTS_FILE):
+                with open(manage_data.ACCOUNTS_FILE, "r") as f:
                     manifest = json.load(f)
                 manifest["last_used"] = selected_id
-                with open(ACCOUNTS_FILE, "w") as f:
+                with open(manage_data.ACCOUNTS_FILE, "w") as f:
                     json.dump(manifest, f, indent=4)
             # Load the data and move to main menu
-            progress = manage_data.load_progress(ACCOUNTS_FILE, APP_DATA_DIR, manage_data.manage_data.default_progress, generate_player_id, manage_data.fetch_cloud_data_by_id)
+            progress = manage_data.load_progress(manage_data.ACCOUNTS_FILE, manage_data.APP_DATA_DIR, manage_data.default_progress, acc_sys.generate_player_id, manage_data.fetch_cloud_data_by_id)
             if not is_transitioning:
                 transition.start("main_menu")
                 transition_time = pygame.time.get_ticks()
@@ -6407,255 +6391,6 @@ input_mode = "ID"  # Toggle between typing ID or Password
 session_timeout = 3600 * 24 * 60
 last_login = 0
 
-def hash_password(password):
-    # Convert the string to bytes, then create a SHA-256 hash
-    return hashlib.sha256(password.encode()).hexdigest()
-
-def show_login_screen():
-    global username, user_pass, input_mode, login_done, progress, buttons, er, notification_text, notification_time, notif, error_code
-    settings = manage_data.load_language(lang_code, manifest).get('settings', {})
-    login_done = False
-    status_msg = ""
-    status_color = (180, 180, 180)
-    if transition.x <= -transition.image.get_width():
-       while not login_done:
-        screen.blit(bgs['plain'], (0, 0))
-        # 1. Header
-        id_title_text = settings.get("login_header", "LOGIN / REGISTER")
-        id_title = menu_ui.render_text(id_title_text, True, (255, 255, 255))
-        screen.blit(id_title, (SCREEN_WIDTH // 2 - id_title.get_width() // 2, 80))
-
-        # 2. Instructions
-        instr_txt = settings.get("login_instr1", "Enter your username and password to access your account, or create a new one.")
-        instr = menu_ui.render_text(instr_txt, True, (255, 255, 255))
-        screen.blit(instr, (SCREEN_WIDTH // 2 - instr.get_width() // 2 , 200))
-        
-        instr_txt2 = settings.get("login_instr2", "If the account does not exist, a new account will be created for you.")
-        instr2 = menu_ui.render_text(instr_txt2, True, (255, 255, 255))
-        screen.blit(instr2, (SCREEN_WIDTH // 2 - instr2.get_width() // 2 , 230))
-
-        instr_txt3 = settings.get("login_instr3", "Press TAB to switch between inputting Password and Username. To return, press ESC.")
-        instr3 = menu_ui.render_text(instr_txt3, True, (255, 255, 255))
-        screen.blit(instr3, (SCREEN_WIDTH // 2 - instr3.get_width() // 2 , 260))
-        
-        instr_txt4 = settings.get("case_warning", "Usernames and Passwords are case sensitive!")
-        instr4 = menu_ui.render_text(instr_txt4, True, (255, 255, 255))
-        screen.blit(instr4, (SCREEN_WIDTH // 2 - instr4.get_width() // 2 , 290))
-
-        # 3. Status Message (Errors, Success, etc.)
-        if status_msg:
-            s_surf = menu_ui.render_text(status_msg, True, status_color)
-            screen.blit(s_surf, (SCREEN_WIDTH // 2 - s_surf.get_width() // 2, 350))
-
-        # 4. Inputs
-        # USERNAME
-        u_color = (255, 255, 255) if input_mode == "USER" else (80, 80, 80)
-        u_text = settings.get("username_label", "Username") # Just gets the word
-        u_surf = menu_ui.render_text(f"{u_text}: {username}", True, u_color) # Stick them together here
-        screen.blit(u_surf, (SCREEN_WIDTH // 2 - u_surf.get_width() // 2, 400))
-
-        # PASSWORD
-        p_color = (255, 255, 255) if input_mode == "PASS" else (80, 80, 80) 
-        p_text = settings.get("password_label", "Password") # Just gets the word
-        stars = "*" * len(user_pass)
-        p_surf = menu_ui.render_text(f"{p_text}: {stars}", True, p_color) # Stick them together here
-        screen.blit(p_surf, (SCREEN_WIDTH // 2 - p_surf.get_width() // 2, 450))
-        
-        # Submit button
-        submit_txt = settings.get("submit_prompt", "Press ENTER to Continue")
-        submit_surf = menu_ui.render_text(submit_txt, True, (0, 255, 0))
-        screen.blit(submit_surf, (SCREEN_WIDTH // 2 - submit_surf.get_width() // 2, 550))
-        
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                login_done = True
-                set_page("quit_confirm")
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_TAB:
-                    input_mode = "PASS" if input_mode == "USER" else "USER"
-                
-                if event.key == pygame.K_ESCAPE:
-                    login_done = True
-                    set_page("Account")
-
-                elif event.key == pygame.K_RETURN:
-                    if len(username) > 2 and len(user_pass) > 3:
-                        status_msg = settings.get("checking_vault", "Checking Cloud Vault...")
-                        status_color = (255, 255, 0)
-                        pygame.display.update()
-                        result = manage_data.recover_account_from_cloud(username, user_pass)
-        # Access the notification globals
-                        global notif, notification_text, notification_time, er
-                        if isinstance(result, dict):
-            # [SCENARIO 1] SUCCESS
-                         progress = result
-                         manage_data.save_progress(progress)
-            
-            # TRIGGER NOTIFICATION
-                         login_success_text = settings.get("login_success", "Login Successful!")
-                         notification_text = menu_ui.render_text(login_success_text, True, (0, 255, 0))
-                         notification_time = time.time()
-                         notif = True
-                         login_done = True
-                         if not is_mute: sounds['notify'].play()
-                         set_page("Account") # Explicitly set the page back
-                         return
-
-                        elif result == "CONN_ERROR":
-                            if not is_mute: 
-                                sounds['hit'].play()
-                            conn_error_text = settings.get("conn_error", "Connection Error: Cloud Vault is unreachable.")
-                            notification_text = menu_ui.render_text(conn_error_text, True, (255, 0, 0))
-                            notif = True
-                            notification_time = time.time()
-                            set_page("main_menu")
-                            return
-                        
-                        elif result == "WRONG_AUTH":
-            # [SCENARIO 2] WRONG PASS
-                         status_msg = settings.get("wrong_pass", "Incorrect Password.")
-                         status_color = (255, 50, 50)
-                         if not is_mute: sounds['death'].play()
-            
-                        else:
-                         # CASE: Username doesn't exist in cloud. This is a signup.
-                            guest_id_to_promote = None
-                            
-                            # Check the local manifest for a Guest (Username: "")
-                            if os.path.exists(ACCOUNTS_FILE):
-                                try:
-                                    with open(ACCOUNTS_FILE, "r") as f:
-                                        manifest = json.load(f)
-                                        users_list = manifest.get("users", {})
-                                        
-                                        # We look specifically for the empty string ""
-                                        for p_id, user_info in users_list.items():
-                                            if user_info.get("username") == "":
-                                                guest_id_to_promote = p_id
-                                                break
-                                except Exception as e:
-                                    er = True
-                                    error_code = f"Manifest Read Error: {e}"
-                                    if not is_mute:
-                                        sounds['hit'].play()
-                                    notification_time = time.time()
-
-                            # 2. Assign the ID
-                            if guest_id_to_promote:
-                                # PROMOTE the guest ID to this new username
-                                progress["player"]["ID"] = guest_id_to_promote
-                                print(f"Migrating Guest ID {guest_id_to_promote} to {username}")
-                            else:
-                                # No guest found, create a brand new ID
-                                # Initialize with DEFAULT STATS for a new user
-                                progress = copy.deepcopy(manage_data.default_progress)
-                                progress["player"]["ID"] = generate_player_id()
-                                print(f"No guest found. Generated new ID: {progress['player']['ID']}")
-
-                            # 3. Update the credentials
-                            progress["player"]["Username"] = username
-                            progress["player"]["Pass"] = hash_password(user_pass)
-
-                            # 4. Save and Sync
-                            # This will create/update the row in your Google Sheet using the selected ID
-                            manage_data.save_progress(progress)
-                            threading.Thread(target=manage_data.sync_vaukt, args=(progress,), daemon=True).start()
-                            login_done = True
-                            if not is_mute: sounds['notify'].play()
-                            notification_txt = settings.get("account_created", "Account Created and Logged In!")
-                            notification_text = menu_ui.render_text(notification_txt, True, (0, 255, 0))
-                            notif = True
-                            notification_time = time.time()
-                            set_page("main_menu")
-                            return        
-                    else:
-                        if not is_mute:
-                            sounds['death'].play()
-                        status_msg = settings.get("too_short", "Username or Password too short.")
-                        status_color = (255, 50, 50)
-                
-                elif event.key == pygame.K_BACKSPACE:
-                    if input_mode == "USER": username = username[:-1]
-                    else: user_pass = user_pass[:-1]
-                
-                else:
-                    if event.unicode.isalnum() or event.unicode in " _-":
-                        if input_mode == "USER" and len(username) < 15:
-                            username += event.unicode
-                        elif input_mode == "PASS" and len(user_pass) < 20:
-                            user_pass += event.unicode
-        
-        draw_notifications()
-        draw_syncing_status()
-
-        pygame.display.flip()
-    pygame.display.update()
-
-def create_account_selector():
-    global buttons
-    buttons.clear()
-    settings = manage_data.load_language(lang_code, manifest).get('settings', {})
-
-    # 1. Load manifest
-    manifest = {"users": {}}
-    if os.path.exists(ACCOUNTS_FILE):
-        try:
-            with open(ACCOUNTS_FILE, "r") as f:
-                manifest = json.load(f)
-        except: pass
-    
-    accounts = list(manifest.get("users", {}).items())
-    
-    # --- LAYOUT CONSTANTS ---
-    COLUMN_WIDTH = 300
-    START_Y = 200
-    MAX_Y = SCREEN_HEIGHT - 150
-    SPACING_Y = 72
-    
-    # Calculate how many columns we actually have
-    num_accounts = len(accounts) + 1  # +1 for the "New Player" button
-    items_per_col = (MAX_Y - START_Y) // SPACING_Y
-    num_cols = (num_accounts // items_per_col) + 1
-    
-    # Calculate the starting X so the WHOLE group is centered
-    # Total width is (number of columns * width), then we find the center
-    total_group_width = num_cols * COLUMN_WIDTH
-    start_x = (SCREEN_WIDTH // 2) - (total_group_width // 2) + (COLUMN_WIDTH // 2)
-
-    current_x = start_x
-    current_y = START_Y
-
-    # 2. Render Account Buttons
-    for p_id, info in accounts:
-        name_str = info.get("username", "Unknown")
-        rendered_name = menu_ui.render_text(name_str, True, (255, 255, 255))
-
-        # Check if we need to wrap to a new column
-        if current_y >= MAX_Y:
-            current_y = START_Y
-            current_x += COLUMN_WIDTH
-            
-        # Left-aligning looks better in columns:
-        # We use current_x as the anchor for the left side of the text
-        rect = rendered_name.get_rect(topleft=(current_x - 100, current_y))
-
-        buttons.append((rendered_name, rect, f"load_user_{p_id}", False))
-        current_y += SPACING_Y
-
-    # 3. "New Player" Button (Follows the same grid logic)
-    if current_y > MAX_Y:
-        current_y = START_Y
-        current_x += COLUMN_WIDTH
-
-    new_txt = settings.get("new_acc", "+ NEW PLAYER")
-    new_txt_rendered = menu_ui.render_text(new_txt, True, (0, 255, 200)) # Highlighted color
-    new_rect = new_txt_rendered.get_rect(topleft=(current_x - 100, current_y))
-    buttons.append((new_txt_rendered, new_rect, "new_account", False))
-
-if not is_mute and SCREEN_WIDTH > MIN_WIDTH and SCREEN_HEIGHT > MIN_HEIGHT:
-    sounds['click'].play()
-
 # Info
 
 # First define current XP outside the loop
@@ -6671,6 +6406,9 @@ if level < 20:
 else:
     max_txt = manage_data.load_language(lang_code, manifest).get('messages', {}).get("max_level", "MAX LEVEL!")
     XP_text2 = menu_ui.render_text(max_txt, True, color)
+
+if not is_mute and SCREEN_WIDTH > MIN_WIDTH and SCREEN_HEIGHT > MIN_HEIGHT:
+    sounds['click'].play()
 
 while running:
     # This is in the main loop, unlike the other texts, because it needs to update if the player changes!
@@ -6985,16 +6723,16 @@ while running:
                         screen.blit(lvl_score_text, (SCREEN_WIDTH // 2 - lvl_score_text.get_width() // 2, SCREEN_HEIGHT - 50))
                         s = key
                         num = int(s[3:])  # Skip the first 3 characters
-                        medals = progress["lvls"]['medals'][key]
-                        if medals != "None":
-                            screen.blit(medals[medals], (SCREEN_WIDTH // 2 - medals[medals].get_width() // 2 - 210, SCREEN_HEIGHT - 80))
+                        medal_name = progress["lvls"]['medals'][key]
+                        if medal_name != "None":
+                            screen.blit(medals[medal_name], (SCREEN_WIDTH // 2 - medals[medal_name].get_width() // 2 - 210, SCREEN_HEIGHT - 80))
                         stars = get_stars(num, progress["lvls"]['score'][key])
                         if stars >= 1:
-                            screen.blit(assets['star'], (SCREEN_WIDTH // 2 - 25, SCREEN_HEIGHT - 80))
+                            screen.blit(assets['star_small'], (SCREEN_WIDTH // 2 - 25, SCREEN_HEIGHT - 80))
                         if stars >= 2:
-                            screen.blit(assets['star'], (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 80))
+                            screen.blit(assets['star_small'], (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 80))
                         if stars == 3:
-                            screen.blit(assets['star'], (SCREEN_WIDTH // 2 + 25, SCREEN_HEIGHT - 80))
+                            screen.blit(assets['star_small'], (SCREEN_WIDTH // 2 + 25, SCREEN_HEIGHT - 80))
             
             for text_surface, disk_rect, key, is_locked in buttons: 
                 if key is not None:
@@ -7020,10 +6758,10 @@ while running:
 
         elif current_page == "Account":
             screen.blit(bgs['plain'], (0, 0))
-            settings = manage_data.change_language(lang_code, manifest, progress).get('settings', {})  # Fetch localized messages
+            account_lang = manage_data.load_language(lang_code, manifest).get('settings', {})  # Fetch localized messages
             # 1. Draw the Title Manually Here
 
-            title_text = settings.get("select", "SELECT PROFILE")
+            title_text = account_lang.get("select", "SELECT PROFILE")
             title = menu_ui.render_text(title_text, True, (255, 255, 255))
             screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 80))
 
@@ -7031,7 +6769,8 @@ while running:
             button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, sounds['hover'], is_mute, mouse_pos, button_hovered_last_frame)
 
         elif current_page == "login_screen":
-            show_login_screen()
+            # login_screen is handled by blocking call in set_page(), shouldn't reach here
+            pass
         
         else:
             button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, sounds['hover'], is_mute, mouse_pos, button_hovered_last_frame)
