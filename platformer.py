@@ -6,9 +6,6 @@ import sys
 import time
 import random
 import webbrowser
-import copy
-
-from datetime import datetime, date
 
 import level_logic
 import menu_ui
@@ -17,7 +14,7 @@ import startup
 import acc_sys
 
 # GAME VERSION
-version = "1.3.5"
+version = "1.3.5.1"
 
 # Initialize audio
 pygame.mixer.init()
@@ -6290,7 +6287,7 @@ def handle_action(key):
                 with open(manage_data.ACCOUNTS_FILE, "w") as f:
                     json.dump(manifest, f, indent=4)
             # Load the data and move to main menu
-            progress = manage_data.load_progress(manage_data.ACCOUNTS_FILE, manage_data.APP_DATA_DIR, manage_data.default_progress, acc_sys.generate_player_id, manage_data.fetch_cloud_data_by_id)
+            progress = manage_data.load_progress()
             if not is_transitioning:
                 transition.start("main_menu")
                 transition_time = pygame.time.get_ticks()
