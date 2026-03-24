@@ -14,7 +14,7 @@ import startup
 import acc_sys
 
 # GAME VERSION
-version = "1.3.5.1"
+version = "1.3.5.2"
 
 # Initialize audio
 pygame.mixer.init()
@@ -769,7 +769,7 @@ def character_select():
 
 def quit_game(progress):
     draw_syncing_status()
-    manage_data.sync_vault_to_cloud(progress)
+    manage_data.sync_vault_to_cloud(progress, manifest)
     pygame.quit()
     sys.exit()
 
@@ -1001,7 +1001,9 @@ def set_page(page):
     elif page == "Account":
         acc_sys.create_account_selector(manage_data.ACCOUNTS_FILE, lang_code, manifest, transition, screen, bgs, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, sounds, draw_notifications, draw_syncing_status, buttons)
     elif page == "login_screen":
-        acc_sys.show_login_screen(lang_code, manifest, transition, screen, bgs, SCREEN_WIDTH, is_mute, sounds, draw_notifications, draw_syncing_status, buttons)
+        acc_sys.reset_login_state()
+    elif page == "registration_screen":
+        acc_sys.reset_login_state()
     elif page == 'levels':
         current_lang = manage_data.load_language(lang_code, manifest).get('levels', {})
         green_world_buttons()
@@ -6269,13 +6271,20 @@ def handle_action(key):
         elif key == "Ambience":
             muting_amb()
     elif current_page == "Account":
-        if key == "new_account":
-            # Go to your existing login/ID generation screen
+        if key == "login":
+            # Go to login screen for existing users
             if not is_transitioning:
                 transition.start("login_screen") 
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "login_screen"
+        elif key == "new_account":
+            # Go to registration screen for new accounts
+            if not is_transitioning:
+                transition.start("registration_screen") 
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "registration_screen"
         elif key and key.startswith("load_user_"):
             # Extract ID from the key string
             selected_id = key.replace("load_user_", "")
@@ -6502,9 +6511,19 @@ while running:
             if event.type == pygame.QUIT:
                 set_page("quit_confirm")
 
+            # Handle login screen events
+            elif current_page == "login_screen" and event.type == pygame.KEYDOWN:
+                acc_sys.handle_login_events(events, manifest, lang_code, is_mute, sounds, progress, set_page)
+                break  # Stop processing other events for this frame
+
+            # Handle registration screen events
+            elif current_page == "registration_screen" and event.type == pygame.KEYDOWN:
+                acc_sys.handle_registration_events(events, manifest, lang_code, is_mute, sounds, progress, set_page, manage_data.ACCOUNTS_FILE)
+                break  # Stop processing other events for this frame
+
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # Only process clicks if enough time has passed since last page change
-                if current_page not in ["levels", "mech_levels", "worlds"]:
+                if current_page not in ["levels", "mech_levels", "worlds", "login_screen", "registration_screen"]:
                     for _, rect, key, is_locked in buttons:
                         if rect.collidepoint(event.pos):
                             if key is not None and not is_mute:
@@ -6766,8 +6785,10 @@ while running:
             button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, sounds['hover'], is_mute, mouse_pos, button_hovered_last_frame)
 
         elif current_page == "login_screen":
-            # login_screen is handled by blocking call in set_page(), shouldn't reach here
-            pass
+            acc_sys.draw_login_screen(screen, SCREEN_WIDTH, SCREEN_HEIGHT, lang_code, manifest, bgs)
+
+        elif current_page == "registration_screen":
+            acc_sys.draw_registration_screen(screen, SCREEN_WIDTH, SCREEN_HEIGHT, lang_code, manifest, bgs)
         
         else:
             button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, sounds['hover'], is_mute, mouse_pos, button_hovered_last_frame)

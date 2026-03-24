@@ -391,10 +391,10 @@ def sync_missing_data(data):
         data["player"]["ID"] = acc_sys.generate_player_id()
 
 
-def sync_vault_to_cloud(data):
+def sync_vault_to_cloud(data, manifest):
     global is_syncing, sync_status, sync_finish_time
     is_syncing = True
-    settings = load_language(lang_code)['settings']
+    settings = load_language(lang_code, manifest)['settings']
     sync_status = settings.get("sync_stat1", "Syncing Vault to Cloud...")
 
     # Using the IDs from your pre-filled link
