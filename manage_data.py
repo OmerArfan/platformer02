@@ -234,10 +234,18 @@ def load_progress():
     return data
 
 # Save progress to file
-def save_progress(data):
+def save_progress(data, manifest=None):
     global notification_text, notification_time, error_code, notif, er
     global save_count
     global SAVE_FILE 
+
+    # If manifest not provided, load it locally
+    if manifest is None:
+        try:
+            with open(LOCAL_MANIFEST_FILE, "r", encoding="utf-8") as f:
+                manifest = json.load(f)
+        except:
+            manifest = {"last_used": "", "users": {}, "pref": {"language": "en", "sfx": True, "ambience": True}}
 
     # 1. Basic Validation: Ensure we aren't saving an empty/broken object
     if not data or "lvls" not in data or "player" not in data:
@@ -275,7 +283,7 @@ def save_progress(data):
 
         # 6. Periodic Cloud Sync (Every 4 saves)
         if save_count % 4 == 0:
-            threading.Thread(target=sync_vault_to_cloud, args=(data,), daemon=True).start()
+            threading.Thread(target=sync_vault_to_cloud, args=(data, manifest), daemon=True).start()
 
     except PermissionError:
        # if not is_mute:

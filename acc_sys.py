@@ -257,7 +257,7 @@ def handle_registration_events(events, manifest, lang_code, is_mute, sounds, pro
                     progress["player"]["Pass"] = hash_password(login_state["password"])
 
                     manage_data.save_progress(progress)
-                    threading.Thread(target=manage_data.sync_vault_to_cloud, args=(progress,), daemon=True).start()
+                    threading.Thread(target=manage_data.sync_vault_to_cloud, args=(progress, manifest), daemon=True).start()
                     
                     if not is_mute: sounds['notify'].play()
                     login_state["status_msg"] = settings.get("account_created", "Account Created!")

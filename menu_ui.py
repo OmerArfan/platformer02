@@ -139,7 +139,7 @@ def create_main_menu_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGH
     button_texts = ["start", "achievements", "character_select", "settings", "quit"]
 
     # Center buttons vertically and horizontally
-    button_spacing = 72
+    button_spacing = 72 
     start_y = (SCREEN_HEIGHT // 2) - (len(button_texts) * button_spacing // 2) + 150
 
     for i, key in enumerate(button_texts):
@@ -148,13 +148,9 @@ def create_main_menu_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGH
         rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, start_y + i * button_spacing)) 
         buttons.append((rendered, rect, key, False))
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            set_page("quit_confirm")
-
 
 def create_language_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH):
-    global current_lang, buttons, heading_text
+    global current_lang, buttons
     current_lang = manage_data.load_language(lang_code, manifest).get('language_select', {})
     buttons.clear()
     start = manage_data.load_language(lang_code, manifest).get('main_menu', {})
@@ -184,6 +180,7 @@ def create_language_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT
 
     heading = start.get("language", "Change Language")
     heading_text = render_text(heading, True, (255 , 255, 255))
+    screen.blit(heading_text, (SCREEN_WIDTH // 2 - heading_text.get_width() // 2, 50))
 
     for i, (display_name, code) in enumerate(language_options):
         text = display_name
@@ -197,10 +194,6 @@ def create_language_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT
 
         rect = rendered.get_rect(center=(x, y))
         buttons.append((rendered, rect, code, False))
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            set_page("quit_confirm")
 
     # Add a "Back" button at the bottom center
     back_text = current_lang.get("back", "Back")
@@ -349,6 +342,20 @@ def mech_world_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCR
     text_rect = rendered_next.get_rect(center=next_rect.center)
     screen.blit(rendered_next, text_rect)
 
+def character_select(lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH):
+    
+    # Clear screen
+    buttons.clear()
+    current_lang = manage_data.load_language(lang_code, manifest)['char_select']
+    button_texts = ["back"]
+
+    for i, key in enumerate(button_texts):
+        text = current_lang[key]
+        rendered = render_text(text, True, (255, 255, 255))
+        rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100)) 
+        buttons.append((rendered, rect, key, False))
+   
+    pygame.display.flip()
 
 def settings_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs):
     global current_lang, buttons
@@ -390,8 +397,8 @@ def settings_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs)
             pygame.draw.rect(screen, (0, 213, 0), rect.inflate(20, 10), 2)
         screen.blit(rendered, rect)
 
-def about_menu(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs):
-    global buttons, version
+def about_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, version):
+    global buttons
     buttons.clear()
     screen.blit(bgs['plain'], (0, 0))
     settings_lang = manage_data.load_language(lang_code, manifest).get('settings', {})

@@ -14,7 +14,7 @@ import startup
 import acc_sys
 
 # GAME VERSION
-version = "1.3.6"
+version = "1.3.6.1"
 
 # Initialize audio
 pygame.mixer.init()
@@ -359,6 +359,8 @@ class TransitionManager:
         self.target_page = target_page
 
     def update(self):
+        global pending_lang_code, lang_code, manifest, progress
+        
         if not self.active:
             return
 
@@ -368,6 +370,11 @@ class TransitionManager:
             self.x = 0
             # Switch page when screen is fully covered
             pygame.event.wait(10)
+            # Change language if pending
+            if pending_lang_code:
+                manage_data.change_language(pending_lang_code, manifest, progress)
+                lang_code = pending_lang_code
+                pending_lang_code = None
             set_page(self.target_page)
             self.direction = -2  # Start sliding out
 
@@ -456,22 +463,6 @@ evilrobot_rect = robos['evilrobot'].get_rect(topleft=(SCREEN_WIDTH // 2 - 150, S
 greenrobot_rect = robos['greenrobot'].get_rect(topleft=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50))
 ironrobot_rect = robos['ironrobot'].get_rect(topleft=(SCREEN_WIDTH // 2 + 150, SCREEN_HEIGHT // 2 - 50))
 
-def character_select():
-    global selected_character, set_page, current_page
-    
-    # Clear screen
-    buttons.clear()
-    current_lang = manage_data.load_language(lang_code, manifest)['char_select']
-    button_texts = ["back"]
-
-    for i, key in enumerate(button_texts):
-        text = current_lang[key]
-        rendered = menu_ui.render_text(text, True, (255, 255, 255))
-        rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100)) 
-        buttons.append((rendered, rect, key, False))
-    pygame.display.flip()
-
-
 def quit_game(progress):
     draw_syncing_status()
     manage_data.sync_vault_to_cloud(progress, manifest)
@@ -549,7 +540,7 @@ def set_page(page):
     elif page == "achievements":
         menu_ui.create_achieve_screen(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH)
     elif page == 'character_select':
-        character_select()
+        menu_ui.character_select(lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH)
     elif page == 'language_select':
         current_lang = manage_data.load_language(lang_code, manifest).get('language_select', {})
         menu_ui.create_language_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH)
@@ -558,7 +549,7 @@ def set_page(page):
     elif page == "settings":
         menu_ui.settings_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs)
     elif page == "About":
-        menu_ui.about_menu(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs)
+        menu_ui.about_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, version)
     elif page == "Audio":
         menu_ui.audio_settings_menu(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, is_mute, is_mute_amb)
     elif page == "Account":
@@ -5712,10 +5703,11 @@ def create_lvl12_screen():
 
 transition_time = None
 is_transitioning = False
+pending_lang_code = None
 
 # Handle actions based on current page
 def handle_action(key):
-    global progress, current_page, pending_level, level_load_time, transition, is_transitioning, transition_time,locked_char_sound_played, locked_char_sound_time, manifest
+    global progress, current_page, pending_level, level_load_time, transition, is_transitioning, transition_time,locked_char_sound_played, locked_char_sound_time, manifest, lang_code, pending_lang_code
     
     global pending_page
     if current_page == 'main_menu':
@@ -5867,9 +5859,7 @@ def handle_action(key):
                 pending_page = "settings"
         elif key in ["en", "fr", "es", "de", "zh_cn", "tr", "ru", "jp", "id", "kr", "ar", "pk"]:
             if not is_transitioning:
-                manage_data.change_language(key, manifest, progress)
-                global lang_code
-                lang_code = key
+                pending_lang_code = key
                 transition.start("main_menu")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
@@ -6188,9 +6178,8 @@ while running:
              wait_time = None
 
         if current_page == "language_select":
-            screen.blit(bgs['plain'], (0, 0))
-            screen.blit(heading_text, (SCREEN_WIDTH // 2 - heading_text.get_width() // 2, 50))
-
+            menu_ui.create_language_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH)
+            
         if current_page == "quit_confirm":
             screen.blit(bgs['plain'], (0, 0))
             # Render the quit confirmation text
@@ -6296,15 +6285,15 @@ while running:
                 screen.blit(text_surface, text_rect)
 
         elif current_page == "settings":
-            menu_ui.settings_menu(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH)
+            menu_ui.settings_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs)
             button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, sounds['hover'], is_mute, mouse_pos, button_hovered_last_frame)
 
         elif current_page == "About":   
-            menu_ui.about_menu()
+            menu_ui.about_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, version)
             button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, sounds['hover'], is_mute, mouse_pos, button_hovered_last_frame)
             
         elif current_page == "Audio":
-            menu_ui.audio_settings_menu()
+            menu_ui.audio_settings_menu(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, is_mute, is_mute_amb)
             button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, sounds['hover'], is_mute, mouse_pos, button_hovered_last_frame)
 
         elif current_page == "Account":
