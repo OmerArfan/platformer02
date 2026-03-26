@@ -74,9 +74,13 @@ def init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT):
             pygame.image.load(manage_data.resource_path("bgs/MechBackground.png")).convert(),
             (SCREEN_WIDTH, SCREEN_HEIGHT)
         ),
-        'trans': pygame.transform.scale(
-            pygame.image.load(manage_data.resource_path("bgs/trans.png")).convert(),
-            ((SCREEN_WIDTH * 1.1), (SCREEN_HEIGHT))
+        'trans_left': pygame.transform.scale(
+            pygame.image.load(manage_data.resource_path("bgs/trans_left.png")).convert(),
+            ((SCREEN_WIDTH // 2 + 20), (SCREEN_HEIGHT))
+        ),
+        'trans_right': pygame.transform.scale(
+            pygame.image.load(manage_data.resource_path("bgs/trans_right.png")).convert(),
+            ((SCREEN_WIDTH // 2 + 20), (SCREEN_HEIGHT))
         ),
         'end': pygame.transform.scale(
             pygame.image.load(manage_data.resource_path("bgs/EndScreen.png")).convert_alpha(),

@@ -501,7 +501,7 @@ def audio_settings_menu(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SC
 
 
 def create_quit_confirm_buttons(lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH):
-    global current_lang, buttons, quit_text, quit_text_rect
+    global current_lang, buttons
     buttons.clear()
 
     # Get the quit confirmation text from the current language
@@ -523,5 +523,7 @@ def create_quit_confirm_buttons(lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH
     rendered_no = render_text(no_text, True, (255, 255, 255))
     no_rect = rendered_no.get_rect(center=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 + 50))
     buttons.append((rendered_no, no_rect, "no", False))
+
+    return quit_text, quit_text_rect
 
     pygame.display.flip()  # Update the display to show the quit confirmation screen

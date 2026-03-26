@@ -14,7 +14,7 @@ import startup
 import acc_sys
 
 # GAME VERSION
-version = "1.3.6.1"
+version = "1.3.6.2"
 
 # Initialize audio
 pygame.mixer.init()
@@ -343,48 +343,80 @@ class Achievements:
                 notification_time = time.time()
         
 class TransitionManager:
-    def __init__(self, screen, image, speed=40):
+    def __init__(self, screen, left_image, right_image, speed=40):
         self.screen = screen
-        self.image = image
+        self.left_image = left_image
+        self.right_image = right_image
         self.speed = speed
         self.active = False
-        self.direction = 1  # 1 for slide-in, -2 for slide-out
-        self.x = -screen.get_width()
+        self.phase = 0  # 0: slide-in, 1: hold, 2: slide-out
+        self.left_x = -left_image.get_width()  # Start off-screen left
+        self.right_x = screen.get_width()  # Start off-screen right
         self.target_page = None
+        self.hold_time = 0
+        self.hold_duration = 250  # milliseconds
 
     def start(self, target_page):
         self.active = True
-        self.direction = 1
-        self.x = -self.screen.get_width()
+        self.phase = 0
+        self.left_x = -self.left_image.get_width()
+        self.right_x = self.screen.get_width()
         self.target_page = target_page
+        self.hold_time = 0
 
     def update(self):
-        global pending_lang_code, lang_code, manifest, progress
+        global pending_lang_code, selected_id, lang_code, manifest, progress
         
         if not self.active:
             return
 
-        self.x += self.speed * self.direction
+        if self.phase == 0:  # Slide-in phase
+            # Move left image from left toward center
+            self.left_x += self.speed
+            # Move right image from right toward center
+            self.right_x -= self.speed
+            
+            # Check if they've met in the middle
+            mid_point = self.screen.get_width() // 2
+            if self.left_x + self.left_image.get_width() >= mid_point and self.right_x <= mid_point:
+                self.left_x = mid_point - self.left_image.get_width()
+                self.right_x = mid_point
+                self.phase = 1
+                self.hold_time = pygame.time.get_ticks()
 
-        if self.direction == 1 and self.x >= -50:
-            self.x = 0
-            # Switch page when screen is fully covered
-            pygame.event.wait(10)
-            # Change language if pending
-            if pending_lang_code:
-                manage_data.change_language(pending_lang_code, manifest, progress)
-                lang_code = pending_lang_code
-                pending_lang_code = None
-            set_page(self.target_page)
-            self.direction = -2  # Start sliding out
+        elif self.phase == 1:  # Hold phase
+            if pygame.time.get_ticks() - self.hold_time >= self.hold_duration:
+                # Change language if pending
+                if pending_lang_code:
+                    manage_data.change_language(pending_lang_code, manifest, progress)
+                    lang_code = pending_lang_code
+                    pending_lang_code = None
+                # Update manifest to set 'last_used' so load_progress knows which one to grab
+                if selected_id:
+                    if os.path.exists(manage_data.ACCOUNTS_FILE):
+                        with open(manage_data.ACCOUNTS_FILE, "r") as f:
+                            manifest = json.load(f)
+                        manifest["last_used"] = selected_id
+                        with open(manage_data.ACCOUNTS_FILE, "w") as f:
+                            json.dump(manifest, f, indent=4)
+                    # Load the data and move to main menu
+                    progress = manage_data.load_progress()
+                    selected_id = None
+                set_page(self.target_page)
+                self.phase = 2
 
-        elif self.direction == -2 and self.x >= self.screen.get_width():
-            self.active = False  # Done with transition
+        elif self.phase == 2:  # Slide-out phase
+            self.left_x -= self.speed
+            self.right_x += self.speed
+            
+            if self.left_x <= -self.left_image.get_width() and self.right_x >= self.screen.get_width():
+                self.active = False
 
-        # Draw the image
-        self.screen.blit(self.image, (self.x, 0))
+        # Draw both images
+        self.screen.blit(self.left_image, (self.left_x, 0))
+        self.screen.blit(self.right_image, (self.right_x, 0))
 
-transition = TransitionManager(screen, bgs['trans'])
+transition = TransitionManager(screen, bgs['trans_left'], bgs['trans_right'])
 
 current_lang = manage_data.change_language(lang_code, manifest, progress)
 # Page states
@@ -973,7 +1005,7 @@ def create_lvl1_screen():
     draw_notifications()
     draw_syncing_status()
 
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
        while running:
         clock.tick_busy_loop(60)
         keys = pygame.key.get_pressed()
@@ -1252,7 +1284,7 @@ def create_lvl2_screen():
     draw_notifications()
     draw_syncing_status()
 
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -1565,7 +1597,7 @@ def create_lvl3_screen():
     draw_notifications()
     draw_syncing_status()
 
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -1940,7 +1972,7 @@ def create_lvl4_screen():
     draw_notifications()
     draw_syncing_status()
     
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
        while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -2399,7 +2431,7 @@ def create_lvl5_screen():
     
     draw_notifications()
     draw_syncing_status()
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -2803,7 +2835,7 @@ def create_lvl6_screen():
 
     draw_notifications()
     draw_syncing_status()
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -3194,7 +3226,7 @@ def create_lvl7_screen():
 
     draw_notifications()
     draw_syncing_status()
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
        while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -3567,7 +3599,7 @@ def create_lvl8_screen():
 
     draw_notifications()
     draw_syncing_status()
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
        while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -3987,7 +4019,7 @@ def create_lvl9_screen():
     draw_notifications()
     draw_syncing_status()
 
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
        while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -4432,7 +4464,7 @@ def create_lvl10_screen():
     draw_notifications()
     draw_syncing_status()
 
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
        while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -4860,7 +4892,7 @@ def create_lvl11_screen():
     button4_text = in_game.get("button4_message", "Green buttons, upon activation, will give you a massive speed boost!")
     rendered_button4_text = menu_ui.render_text(button4_text, True, (51, 255, 51))
 
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
        while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -5369,7 +5401,7 @@ def create_lvl12_screen():
     timed_coin_text = in_game.get("timed_coin_message", "Orange coins are timed! They open blocks for a limited")
     rendered_timed_text = menu_ui.render_text(timed_coin_text, True, (255, 128, 0))
 
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -5704,10 +5736,11 @@ def create_lvl12_screen():
 transition_time = None
 is_transitioning = False
 pending_lang_code = None
+selected_id = None
 
 # Handle actions based on current page
 def handle_action(key):
-    global progress, current_page, pending_level, level_load_time, transition, is_transitioning, transition_time,locked_char_sound_played, locked_char_sound_time, manifest, lang_code, pending_lang_code
+    global progress, current_page, pending_level, level_load_time, transition, is_transitioning, transition_time,locked_char_sound_played, locked_char_sound_time, manifest, lang_code, pending_lang_code, selected_id
     
     global pending_page
     if current_page == 'main_menu':
@@ -5800,6 +5833,12 @@ def handle_action(key):
         elif key == "Ambience":
             muting_amb()
     elif current_page == "Account":
+        if key == "back":
+            if not is_transitioning:
+                transition.start("settings")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "settings"
         if key == "login":
             # Go to login screen for existing users
             if not is_transitioning:
@@ -5817,15 +5856,6 @@ def handle_action(key):
         elif key and key.startswith("load_user_"):
             # Extract ID from the key string
             selected_id = key.replace("load_user_", "")
-            # Update manifest to set 'last_used' so load_progress knows which one to grab
-            if os.path.exists(manage_data.ACCOUNTS_FILE):
-                with open(manage_data.ACCOUNTS_FILE, "r") as f:
-                    manifest = json.load(f)
-                manifest["last_used"] = selected_id
-                with open(manage_data.ACCOUNTS_FILE, "w") as f:
-                    json.dump(manifest, f, indent=4)
-            # Load the data and move to main menu
-            progress = manage_data.load_progress()
             if not is_transitioning:
                 transition.start("main_menu")
                 transition_time = pygame.time.get_ticks()
@@ -5959,7 +5989,7 @@ while running:
 
     # Handle transition timer and page change
     if is_transitioning and transition_time is not None and pending_page is not None:
-        if transition.x >= 0:
+        if transition.phase == 1:
             # Then recheck if XP has been added or not.
             level, xp_needed, xp_total = xp()
             if level < 20:
@@ -6050,7 +6080,15 @@ while running:
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # Only process clicks if enough time has passed since last page change
-                if current_page not in ["levels", "mech_levels", "worlds", "login_screen", "registration_screen"]:
+                if current_page == "Account":
+                    for _, rect, key, is_locked in buttons:
+                        if rect.collidepoint(event.pos):
+                            if key is not None and not is_mute:
+                                sounds['click'].play()
+                            # Only execute action when transition is fully covering screen
+                            handle_action(key)
+                            last_page_change_time = time.time()
+                elif current_page not in ["levels", "mech_levels", "worlds", "login_screen", "registration_screen"]:
                     for _, rect, key, is_locked in menu_ui.buttons:
                         if rect.collidepoint(event.pos):
                             if key is not None and not is_mute:
@@ -6183,6 +6221,7 @@ while running:
         if current_page == "quit_confirm":
             screen.blit(bgs['plain'], (0, 0))
             # Render the quit confirmation text
+            quit_text, quit_text_rect = menu_ui.create_quit_confirm_buttons(lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH)
             screen.blit(quit_text, quit_text_rect)
             screen.blit(robos['greenrobot_moving'], (SCREEN_WIDTH // 2 - robos['robot'].get_width() // 2, SCREEN_HEIGHT // 2 - 200))
             button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, sounds['hover'], is_mute, mouse_pos, button_hovered_last_frame)
@@ -6306,7 +6345,8 @@ while running:
             screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 80))
 
             # 2. Draw the Buttons (Using the standard button loop)
-            button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, sounds['hover'], is_mute, mouse_pos, button_hovered_last_frame)
+            acc_sys.create_account_selector(manage_data.ACCOUNTS_FILE, lang_code, manifest, transition, screen, bgs, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, sounds, draw_notifications, draw_syncing_status, buttons)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, sounds['hover'], is_mute, mouse_pos, button_hovered_last_frame)
 
         elif current_page == "login_screen":
             acc_sys.draw_login_screen(screen, SCREEN_WIDTH, SCREEN_HEIGHT, lang_code, manifest, bgs)
