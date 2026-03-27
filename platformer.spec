@@ -15,7 +15,7 @@ added_files = [
 ]
 
 a = Analysis(
-    ['platformer.py', 'level_logic.py', 'menu_ui.py', 'manage_data.py', 'startup.py'],
+    ['platformer.py', 'level_logic.py', 'menu_ui.py', 'manage_data.py', 'startup.py', "acc_sys.py", "levels.py", "state.py"],
     pathex=[],
     binaries=[],
     datas=added_files,

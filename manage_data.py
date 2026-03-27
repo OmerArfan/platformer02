@@ -18,6 +18,19 @@ from level_logic import get_stars
 
 pygame.font.init()
 
+# The Global Asset Vault
+manifest, lang_code = None, None
+is_mute, is_mute_amb = False, False
+progress = {}
+sounds = {}
+ui = {}
+bgs = {}
+assets = {}
+medals = {}
+disks = {}
+robos = {}
+fonts = {}
+
 default_progress = {
     "player": {
         "ID": "",
@@ -113,38 +126,11 @@ def char_assets(selected_character):
     img_width, img_height = player_img.get_size()
     return player_img, blink_img, moving_img, moving_img_l, img_width, img_height
 
-def init_accs():
-    global lang_code, is_mute, is_mute_amb
-    if os.path.exists(ACCOUNTS_FILE):
-        with open(ACCOUNTS_FILE, "r") as f:
-            manifest = json.load(f)
-            global_pref = manifest.get("pref", {})
-            lang_code = global_pref.get("language", "en")
-            # Invert 'sfx' back to 'is_mute'
-            is_mute = not global_pref.get("sfx", True) 
-            is_mute_amb = not global_pref.get("ambience", True)
-    else:
-        lang_code = "en"
-        is_mute = False
-        is_mute_amb = False
-    return manifest, lang_code, is_mute, is_mute_amb
-
-def init_fonts():
-    global fonts
-    font_path_ch = resource_path('fonts/NotoSansSC-SemiBold.ttf')
-    font_path_jp = resource_path('fonts/NotoSansJP-SemiBold.ttf')
-    font_path_kr = resource_path('fonts/NotoSansKR-SemiBold.ttf')
-    font_path_ar = resource_path("fonts/NotoNaskhArabic-Bold.ttf")
-    font_path = resource_path('fonts/NotoSansDisplay-SemiBold.ttf')
-    fonts = {
-        'ch': pygame.font.Font(font_path_ch, 25),
-        'jp': pygame.font.Font(font_path_jp, 25),
-        'kr': pygame.font.Font(font_path_kr, 25),
-        'def': pygame.font.Font(font_path, 25),
-        'ar': pygame.font.Font(font_path_ar, 25),
-        'mega': pygame.font.Font(font_path, 55)
-    }
-    return fonts
+def change_ambience(new_file, is_mute_amb):
+  if not is_mute_amb:
+    pygame.mixer.music.load(resource_path(new_file))
+    pygame.mixer.music.set_volume(2)  # Adjust as needed
+    pygame.mixer.music.play(-1)
 
 def update_locked_levels(progress, manifest):
     all_levels = ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]

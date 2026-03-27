@@ -5,23 +5,21 @@ import time
 from bidi.algorithm import get_display
 import manage_data
 
-fonts = manage_data.init_fonts()
-
 def render_text(text, Boolean, color):
     # 1. PICK THE FONT (Your existing Unicode Logic)
-    font_to_use = fonts['def'] # Default
+    font_to_use = manage_data.fonts['def'] # Default
     display_text = text
 
     if any('\u0590' <= c <= '\u06FF' for c in text):  # Urdu/Arabic range
         reshaped = arabic_reshaper.reshape(text)
         display_text = get_display(reshaped)
-        font_to_use = fonts['ar']
+        font_to_use = manage_data.fonts['ar']
     elif any('\u4e00' <= c <= '\u9fff' for c in text):  # Chinese
-        font_to_use = fonts['ch']
+        font_to_use = manage_data.fonts['ch']
     elif any('\u3040' <= c <= '\u30FF' for c in text): # Japanese
-        font_to_use = fonts['jp']   
+        font_to_use = manage_data.fonts['jp']   
     elif any('\uAC00' <= c <= '\uD7A3' for c in text):  # Korean
-        font_to_use = fonts['kr']
+        font_to_use = manage_data.fonts['kr']
 
     # 2. RENDER THE SHADOW (For Readability on Green/Mech BGs)
     shadow_color = (0, 0, 0)
@@ -262,7 +260,7 @@ def green_world_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SC
         y = start_y + row * spacing_y
 
         is_locked = level in progress["lvls"]["locked_levels"]
-        text_surface = fonts['mega'].render(level_no[i], True, (255, 255, 255))
+        text_surface = manage_data.fonts['mega'].render(level_no[i], True, (255, 255, 255))
         disk_rect = disks['green'].get_rect(center=(x, y))
         buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
 
@@ -314,7 +312,7 @@ def mech_world_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCR
         y = start_y + row * spacing_y
 
         is_locked = level in progress["lvls"]["locked_levels"]
-        text_surface = fonts['mega'].render(level_no[i], True, (255, 255, 255))
+        text_surface = manage_data.fonts['mega'].render(level_no[i], True, (255, 255, 255))
         disk_rect = disks['mech'].get_rect(center=(x, y))
         buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
 
