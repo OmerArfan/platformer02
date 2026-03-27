@@ -30,8 +30,8 @@ class TransitionManager:
         self.target_page = target_page
         self.hold_time = 0
 
-    def update(self):
-        global pending_lang_code, selected_id, lang_code, manifest, progress
+    def update(self, lang_code, screen, SCREEN_HEIGHT, SCREEN_WIDTH, version, transition, manifest, progress):
+        global pending_lang_code, selected_id
         
         if not self.active:
             return
@@ -43,7 +43,7 @@ class TransitionManager:
             self.right_x -= self.speed
             
             # Check if they've met in the middle
-            mid_point = self.screen.get_width() // 2
+            mid_point = SCREEN_WIDTH // 2
             if self.left_x + self.left_image.get_width() >= mid_point and self.right_x <= mid_point:
                 self.left_x = mid_point - self.left_image.get_width()
                 self.right_x = mid_point
@@ -68,7 +68,7 @@ class TransitionManager:
                     # Load the data and move to main menu
                     progress = manage_data.load_progress()
                     selected_id = None
-                set_page(self.target_page)
+                set_page(screen, self.target_page, SCREEN_HEIGHT, SCREEN_WIDTH, lang_code, manifest, progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, version, manage_data.is_mute, manage_data.is_mute_amb, transition)
                 self.phase = 2
 
         elif self.phase == 2:  # Slide-out phase
@@ -87,8 +87,8 @@ is_transitioning = False
 pending_lang_code = None
 selected_id = None
 
-def handle_action(key):
-    global progress, current_page, pending_level, level_load_time, transition, is_transitioning, transition_time,locked_char_sound_played, locked_char_sound_time, manifest, lang_code, pending_lang_code, selected_id
+def handle_action(key, transition):
+    global progress, current_page, is_transitioning, transition_time, locked_char_sound_played, locked_char_sound_time, manifest, lang_code, pending_lang_code, selected_id
     
     global pending_page
     if current_page == 'main_menu':

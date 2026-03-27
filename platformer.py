@@ -1,6 +1,5 @@
 import pygame
 import os
-import math
 import sys
 import time
 import webbrowser
@@ -14,7 +13,7 @@ import state
 import levels
 
 # GAME VERSION
-version = "1.3.7"
+version = "1.3.7.1"
 
 # Initialize audio
 pygame.mixer.init()
@@ -52,55 +51,6 @@ save_count = 0
 
 is_syncing = False
 
-def draw_notifications():
-    global notif, er, notification_time
-    if notif:
-            if time.time() - notification_time < 4:  # Show for 4 seconds
-                screen.blit(notification_text, (SCREEN_WIDTH // 2 - notification_text.get_width() // 2, 100))
-    else:
-        notif = False
-
-    if er:
-        if notification_time is not None and time.time() - notification_time < 4:  # Show for 4 seconds
-            screen.blit(error_code, (SCREEN_WIDTH // 2 - error_code.get_width() // 2, 130))
-    else:
-        er = False
-
-def draw_loading_orb(text_x, text_y, show_time):
-        # Calculate the orbit position using current time
-        angle_rad = time.time() * 8 
-        orbit_radius = 15
-        
-        # Define the center point for the circle to orbit around
-        orbit_center_x = text_x - 30
-        orbit_center_y = text_y + 15 # Adjusted to center it vertically with text
-
-        if show_time is None:
-          for i in range(3):
-            # offset each dot by 0.5 radians so they follow each other
-            dot_angle = angle_rad - (i * 0.5) 
-            x = orbit_center_x + orbit_radius * math.cos(dot_angle)
-            y = orbit_center_y + orbit_radius * math.sin(dot_angle)
-            # Make trailing dots smaller or dimmer
-            alpha = 255 - (i * 80) 
-            pygame.draw.circle(screen, (alpha, alpha, alpha), (int(x), int(y)), 5 - i)
-
-def draw_syncing_status():
-    global sync_status, sync_finish_time, is_syncing
-    if is_syncing:
-        if sync_finish_time is not None:
-            if time.time() - sync_finish_time > 1:
-                is_syncing = False
-                sync_finish_time = None
-                return
-
-        # 1. Render and draw the text
-        syncing_text = menu_ui.render_text(sync_status, True, (255, 255, 255))
-        text_x = SCREEN_WIDTH - syncing_text.get_width() - 10
-        text_y = SCREEN_HEIGHT - 60
-        screen.blit(syncing_text, (text_x, text_y))
-        draw_loading_orb(text_x, text_y, sync_finish_time)
-
 # To handle sync status message output.        
 sync_status = ""
 sync_finish_time = None
@@ -113,7 +63,7 @@ def draw_loading_bar(stage_name, percent):
     text = manage_data.fonts['def'].render(f"{stage_name}", True, (255, 255, 255))
     text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 60))
     screen.blit(text, text_rect)
-    draw_loading_orb(text_rect.x, text_rect.y, complete)
+    menu_ui.draw_loading_orb(screen, text_rect.x, text_rect.y, complete)
     pygame.draw.rect(screen, (0, 0, 255), (0, SCREEN_HEIGHT - 10, (SCREEN_WIDTH / 100)*percent, 10))
     pygame.display.flip()
 
@@ -139,108 +89,6 @@ while loading:
         loading = False
 
 running = True
-
-class Achievements:
-    @staticmethod
-    def get_notif_text(ach_key, default_name):
-        # Helper to build the 'Achievement Unlocked: Name' string
-        lang = manage_data.change_language(manage_data.manage_data.lang_code, manage_data.manage_data.manifest, manage_data.manage_data.progress)
-        ach_data = lang.get("achieve", {})
-        
-        # Get "Achievement Unlocked:" prefix
-        prefix = ach_data.get("unlock", "Achievement unlocked:")
-        # Get the specific name (e.g., "Speedy Starter!")
-        name = ach_data.get(ach_key, default_name)
-        
-        # Combine them and render
-        full_string = f"{prefix} {name}"
-        return menu_ui.render_text(full_string, True, (255, 255, 0))
-
-    def lvl1speed(ctime):
-        global notification_text, notification_time, notif
-        unlock = manage_data.progress["achieved"].get("speedy_starter", False)
-        if ctime <= 4.5 and not unlock:
-            manage_data.progress["achieved"]["speedy_starter"] = True  
-            # LOCALIZED HERE
-            notification_text = Achievements.get_notif_text("speedy_starter", "Speedy Starter")
-            if not manage_data.is_mute:
-                manage_data.sounds['notify'].play()
-            if notification_time is None:
-                notif = True
-                notification_time = time.time()
-    
-    def perfect6(ctime, deaths):
-        global notification_text, notification_time, notif
-        unlock = manage_data.progress["achieved"].get("zen_os", False)
-        if ctime <= 30 and deaths <= 0 and not unlock:
-            manage_data.progress["achieved"]["zen_os"] = True
-            manage_data.progress["char"]["ironrobo"] = True
-            manage_data.save_progress(manage_data.progress, manage_data.manifest)
-            # LOCALIZED HERE
-            notification_text = Achievements.get_notif_text("zen_os", "Zenith of Six")
-            if not manage_data.is_mute:
-                manage_data.sounds['notify'].play()
-            if notification_time is None:
-                notif = True
-                notification_time = time.time()
-
-    def lvl90000(score):
-        global notification_text, notification_time, notif
-        unlock = manage_data.progress["achieved"].get("over_9k", False)
-        if score >= 105000 and not unlock:
-            manage_data.progress["achieved"]["over_9k"] = True          
-            # LOCALIZED HERE
-            notification_text = Achievements.get_notif_text("over_9k", "It's over 9000!!")
-            if not manage_data.is_mute:
-                manage_data.sounds['notify'].play()
-            if notification_time is None:
-                notif = True
-                notification_time = time.time()
-    
-    def evilchase():
-        global notification_text, notification_time, notif
-        unlock = manage_data.progress["achieved"].get("chase_escape", False)
-        if not unlock:
-            manage_data.progress["achieved"]["chase_escape"] = True
-            manage_data.progress["char"]["evilrobo"] = True
-            manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)
-            # LOCALIZED HERE
-            notification_text = Achievements.get_notif_text("chase_escape", "Chased and Escaped")
-            if not manage_data.is_mute:
-                manage_data.sounds['notify'].play()
-            if notification_time is None:
-                notif = True
-                notification_time = time.time()
-    
-    def check_green_gold():
-        global notification_text, notification_time, notif
-        all_gold = all(manage_data.progress["lvls"]["medals"][f"lvl{i}"] in ["Gold", "Diamond"] for i in range(1, 7))
-        unlock = manage_data.progress["achieved"].get("golden", False)
-        if all_gold and not unlock:        
-            manage_data.progress["achieved"]["golden"] = True
-            manage_data.progress["char"]["greenrobo"] = True
-            manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)
-            # LOCALIZED HERE
-            notification_text = Achievements.get_notif_text("golden", "Golden!")
-            if not manage_data.is_mute:
-                manage_data.sounds['notify'].play()
-            if notification_time is None:
-                notif = True
-                notification_time = time.time()
-    
-    def check_xplvl20(Level):
-        global notification_text, notification_time, notif
-        unlock = manage_data.progress["achieved"].get("lv20", False)
-        if Level >= 20 and not unlock:
-            manage_data.progress["achieved"]["lv20"] = True
-            manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)
-            # LOCALIZED HERE
-            notification_text = Achievements.get_notif_text("lv20", "XP Collector!")
-            if not manage_data.is_mute:
-                manage_data.sounds['notify'].play()
-            if notification_time is None:
-                notif = True
-                notification_time = time.time()
 
 transition = state.TransitionManager(screen, manage_data.bgs['trans_left'], manage_data.bgs['trans_right'])
 
@@ -282,7 +130,6 @@ greenrobot_rect = manage_data.robos['greenrobot'].get_rect(topleft=(SCREEN_WIDTH
 ironrobot_rect = manage_data.robos['ironrobot'].get_rect(topleft=(SCREEN_WIDTH // 2 + 150, SCREEN_HEIGHT // 2 - 50))
 
 def quit_game():
-    draw_syncing_status()
     manage_data.sync_vault_to_cloud(manage_data.progress, manage_data.manifest)
     pygame.quit()
     sys.exit()
@@ -296,7 +143,7 @@ def muting_sfx():
     global is_mute
     manage_data.is_mute = not manage_data.is_mute
     # Save directly to manage_data.manifest (pass 'manage_data.progress' so it can see player ID/Level)
-    manage_data.update_local_manage_data.manifest(manage_data.progress)
+    manage_data.update_local_manifest(manage_data.progress)
 
 def muting_amb():
     global is_mute_amb
@@ -326,7 +173,7 @@ def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg):
             if not manage_data.is_mute:
                 manage_data.sounds['click'].play()
         else:
-            state.handle_action("locked")
+            state.handle_action("locked", transition)
             if not locked_char_sound_played or time.time() - locked_char_sound_time > 1.5: # type: ignore
                 if not manage_data.is_mute:
                     manage_data.sounds['death'].play()
@@ -348,7 +195,7 @@ def resetting():
         ctime = pygame.time.get_ticks()
 
 # Start with main menu
-state.set_page(screen, 'main_menu', SCREEN_HEIGHT, SCREEN_WIDTH, manage_data.lang_code, manage_data.manifest, manage_data.progress, Achievements, manage_data.bgs, manage_data.disks, version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+state.set_page(screen, 'main_menu', SCREEN_HEIGHT, SCREEN_WIDTH, manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 manage_data.update_locked_levels(manage_data.progress, manage_data.manifest) # Update locked levels every frame!
 
 # Global variables(only needed before main loop)!
@@ -372,7 +219,7 @@ session_timeout = 3600 * 24 * 60
 last_login = 0
 
 # First define current XP outside the loop
-level, xp_needed, xp_total = manage_data.xp(manage_data.progress, Achievements)
+level, xp_needed, xp_total = manage_data.xp(manage_data.progress, manage_data.Achievements)
 if level < 20:
     color = (255, 255, 255)
 else:
@@ -406,7 +253,7 @@ while running:
     if is_transitioning and transition_time is not None and pending_page is not None:
         if transition.phase == 1:
             # Then recheck if XP has been added or not.
-            level, xp_needed, xp_total = manage_data.xp(manage_data.progress, Achievements)
+            level, xp_needed, xp_total = manage_data.xp(manage_data.progress, manage_data.Achievements)
             if level < 20:
                 color = (255, 255, 255)
             else:
@@ -501,21 +348,21 @@ while running:
                             if key is not None and not manage_data.is_mute:
                                 manage_data.sounds['click'].play()
                             # Only execute action when transition is fully covering screen
-                            state.handle_action(key)
+                            state.handle_action(key, transition)
                             last_page_change_time = time.time()
                 elif current_page not in ["levels", "mech_levels", "worlds", "login_screen", "registration_screen"]:
                     for _, rect, key, is_locked in menu_ui.buttons:
                         if rect.collidepoint(event.pos):
                             if key is not None and not manage_data.is_mute:
                                 manage_data.sounds['click'].play()
-                            state.handle_action(key)
+                            state.handle_action(key, transition)
                             last_page_change_time = time.time()
                 elif current_page in ["levels", "mech_levels", "worlds"]:
                     for rendered, rect, key, is_locked in menu_ui.buttons:
                         if rect.collidepoint(event.pos):
                             if key is not None and not manage_data.is_mute:
                                 manage_data.sounds['click'].play()
-                            state.handle_action(key)  # Only load level on click!
+                            state.handle_action(key, transition)  # Only load level on click!
                     
         if current_page == "main_menu":
             screen.blit(manage_data.ui['logo'], ((SCREEN_WIDTH // 2 - manage_data.ui['logo'].get_width() // 2), -20))
@@ -555,7 +402,7 @@ while running:
                 screen.blit(rendered, rect)
             last_hovered_key = hovered_key
 
-        if current_page == "achievements":
+        if current_page == "manage_data.Achievements":
             menu_ui.create_achieve_screen(screen, manage_data.lang_code, manage_data.manifest, manage_data.progress, SCREEN_HEIGHT, SCREEN_WIDTH)
 
         if current_page == "character_select":
@@ -616,7 +463,7 @@ while running:
             elif ironrobot_rect.collidepoint(mouse_pos):
                 try_select_robo(ironrobo_unlock, "ironrobot", ironrobot_rect, "ironlocked_message", "Unlock the Zenith Of Six achievement to get this character!")
             elif rect.collidepoint(mouse_pos):
-                state.handle_action(key)
+                state.handle_action(key, transition)
 
          keys = pygame.key.get_pressed()
          if keys[pygame.K_ESCAPE]:
@@ -760,8 +607,8 @@ while running:
             screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 80))
 
             # 2. Draw the Buttons (Using the standard button loop)
-            acc_sys.create_account_selector(manage_data.ACCOUNTS_FILE, manage_data.lang_code, manage_data.manifest, transition, screen, manage_data.bgs, SCREEN_WIDTH, SCREEN_HEIGHT, manage_data.is_mute, manage_data.sounds, draw_notifications, draw_syncing_status, buttons)
-            button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)
+            acc_sys.create_account_selector(manage_data.ACCOUNTS_FILE, manage_data.lang_code, manage_data.manifest, transition, screen, manage_data.bgs, SCREEN_WIDTH, SCREEN_HEIGHT, manage_data.is_mute, manage_data.sounds, menu_ui.draw_notifs, menu_ui.draw_syncing_status, buttons)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)
 
         elif current_page == "login_screen":
             acc_sys.draw_login_screen(screen, SCREEN_WIDTH, SCREEN_HEIGHT, manage_data.lang_code, manage_data.manifest, manage_data.bgs)
@@ -772,15 +619,15 @@ while running:
         else:
             button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)
         
-        draw_notifications()
+        menu_ui.draw_notifs(notif, er, notification_time, None, None, screen, SCREEN_WIDTH)
 
-        draw_syncing_status()
-        
+        menu_ui.draw_syncing_status(sync_status, sync_finish_time, is_syncing, SCREEN_WIDTH, SCREEN_HEIGHT, screen)
+
         mouse_pos = pygame.mouse.get_pos()
         screen.blit(manage_data.ui['cursor'], mouse_pos)
 
         if transition.active:
-            transition.update()
+            transition.update(manage_data.lang_code, screen, SCREEN_HEIGHT, SCREEN_WIDTH, version, transition, manage_data.manifest, manage_data.progress)
         
         pygame.display.flip()
 
