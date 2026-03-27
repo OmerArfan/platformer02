@@ -1,5 +1,33 @@
 import pygame
 import math
+import manage_data
+
+# Function to get medal based on time
+def get_medal(level, time_taken):
+    thresholds = next((t for t in manage_data.level_thresholds if t['level'] == level), None)
+    if not thresholds:
+        return "None"
+    if time_taken <= thresholds['gold']:
+        return "Gold"
+    elif time_taken <= thresholds['silver']:
+        return "Silver"
+    elif time_taken <= thresholds['bronze']:
+        return "Bronze"
+    else:
+        return "None"
+
+def get_stars(level, score):
+    thresholds = next((t for t in manage_data.score_thresholds if t['level'] == level), None)
+    if not thresholds:
+        return 0
+    if score >= thresholds['3']:
+        return 3
+    elif score >= thresholds['2']:
+        return 2
+    elif score >= thresholds['1']:
+        return 1
+    else:
+        return 0
 
 def draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_text, reset_text, quit_text, timer_text):
     screen.blit(deaths_text, (20, 20))

@@ -1,6 +1,4 @@
 import pygame
-import threading
-import requests
 import json
 import os
 import math
@@ -8,30 +6,15 @@ import sys
 import time
 import random
 import webbrowser
-import shutil
-import copy
-import arabic_reshaper
-import hashlib
-import csv
-import level_logic
+
 import menu_ui
-from io import StringIO
-from datetime import datetime, date
-from bidi.algorithm import get_display
+import manage_data
+import startup
+import level_logic
+import acc_sys
 
 # GAME VERSION
-version = "1.3.4"
-
-# for compilation
-def resource_path(relative_path): 
-    try:
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
-    return os.path.join(base_path, relative_path)
-
-# Path to sound folder
-SOUND_FOLDER = resource_path("audio")
+version = "1.3.6.3"
 
 # Initialize audio
 pygame.mixer.init()
@@ -50,155 +33,25 @@ pygame.display.set_caption("Roboquix")
 MIN_WIDTH, MIN_HEIGHT = 1250, 700
 
 # First of all, LOAD THE DAMN BGGG
-background_img = pygame.image.load(resource_path("bgs/PlainBackground.png")).convert()
-background = pygame.transform.scale(background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+bg = pygame.image.load(manage_data.resource_path("bgs/PlainBackground.png")).convert()
+bg = pygame.transform.scale(bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Load and set window icon
-icon = pygame.image.load(resource_path("oimgs/icons/icon.png")).convert_alpha()
+icon = pygame.image.load(manage_data.resource_path("oimgs/icons/icon.png")).convert_alpha()
 pygame.display.set_icon(icon)
 
 def change_ambience(new_file):
-    global is_mute_amb
-    if not is_mute_amb:
-     pygame.mixer.music.load(resource_path(new_file))
-     pygame.mixer.music.set_volume(2)  # Adjust as needed
-     pygame.mixer.music.play(-1)
+  global is_mute_amb
+  if not is_mute_amb:
+    pygame.mixer.music.load(manage_data.resource_path(new_file))
+    pygame.mixer.music.set_volume(2)  # Adjust as needed
+    pygame.mixer.music.play(-1)
 
 # Variables for handling display notifications
 notif = False
 er = False
 
 pygame.mouse.set_visible(False)  # Hide the system cursor
-
-# Initalizing Player ID
-HEX = "0123456789ABCDEF"
-
-def generate_player_id():
-    roll = random.random() * 100  # 0.0 → 100.0
-
-    if roll < 0.001:        # 0.1%
-        length = 3
-    elif roll < 2.1:     # next 5%
-        length = 4
-    elif roll < 25:                 # rest
-        length = 5
-    else:
-        length = 6
-
-    return "".join(random.choices(HEX, k=length))
-
-default_progress = {
-    "player": {
-        "ID": "",
-        "Username": "",
-        "Pass": "",
-        "XP": 0,
-        "Level": 1
-    },
-    "lvls": { 
-        "complete_levels": 0,
-        "locked_levels": [f"lvl{i}" for i in range(2, 13)],
-        "times": {f"lvl{i}": 0 for i in range(1, 13)},
-        "medals": {f"lvl{i}": "None" for i in range(1, 13)},
-        "score": {f"lvl{i}": 0 for i in range(1, 13)}
-    },
-    "pref" : { 
-        "character": "robot"
-    },
-    "char": { 
-        "evilrobo": False, 
-        "greenrobo": False,
-        "ironrobo": False
-    },
-    "achieved": { 
-        "speedy_starter": False,
-        "zen_os": False,
-        "over_9k": False,
-        "chase_escape": False,
-        "golden": False,
-        "lv20": False
-    }
-}
-
-
-# 1. Determine the correct "AppData" folder for each OS
-if sys.platform == "win32":
-    # Using LOCAL instead of ROAMING often bypasses the VirtualStore redirect
-    APP_DATA_BASE = os.getenv('LOCALAPPDATA') 
-else:
-    APP_DATA_BASE = os.path.join(os.path.expanduser("~"), ".config")
-
-print(f"DEBUG: Saving/Loading from: {APP_DATA_BASE}")
-
-# 2. Path for the player's save file
-APP_DATA_DIR = os.path.join(APP_DATA_BASE, "Roboquix")
-
-# Create the folder if it doesn't exist yet
-if not os.path.exists(APP_DATA_DIR):
-    os.makedirs(APP_DATA_DIR)
-
-SAVE_FILE = os.path.join(APP_DATA_DIR, "progress.json")
-
-# To keep track of multiple accounts in future updates, and only store login of current account.
-ACCOUNTS_FILE = os.path.join(APP_DATA_DIR, "local.json")
-
-def update_local_manifest(data):
-    global er, error_code, is_mute, notification_time
-    # 1. Load existing manifest
-    manifest = {"last_used": "", "users": {}, "pref": {"language": "en", "sfx": True, "ambience": True}}
-    if os.path.exists(ACCOUNTS_FILE):
-        try:
-            with open(ACCOUNTS_FILE, "r") as f:
-                manifest = json.load(f)
-        except:
-            try:
-              # I fmain is corrupted check backup.
-              with open(ACCOUNTS_FILE + ".bak", "r") as f:
-                manifest = json.load(f)
-              # Fixing the main file if it is corrupted.
-              with open(ACCOUNTS_FILE, "w") as f_fix:
-                    json.dump(manifest, f_fix, indent=4)
-            except:
-                pass
-
-    # 2. Get current player info
-    p_id = data["player"]["ID"]
-    p_name = data["player"].get("Username", "User")
-    current_lvl = data["player"]["Level"]
-
-    # 3. Update Preferences
-    manifest["pref"] = {
-        "last_used": p_id,
-        "language": lang_code,
-        "sfx": not is_mute,
-        "ambience": not is_mute_amb
-    }
-    
-    manifest["users"][p_id] = {
-        "username": p_name,
-        "id": p_id,
-        "level": current_lvl,
-        "last_login": date.today().strftime("%Y-%m-%d")
-    }
-
-    # 4. Save with Backup
-    try:
-        # Create the backup of the OLD version before we save the NEW one
-        if os.path.exists(ACCOUNTS_FILE):
-            shutil.copy2(ACCOUNTS_FILE, ACCOUNTS_FILE + ".bak")
-        
-        # Open with "w" to truncate (clear) the file
-        with open(ACCOUNTS_FILE, "w") as f:
-            json.dump(manifest, f, indent=4)
-            f.flush()            # Push data from Python to the OS
-            os.fsync(f.fileno()) # Push data from the OS to the actual Hard Drive
-
-    except Exception as e:
-        if not is_mute: hit_sound.play()
-        error_code = render_text(f"Local manifest error: {e}", True, (255, 0, 0))
-        er = True
-        notification_time = time.time()
-        print(f"Error during manifest save: {e}")
 
 notification_time = None
 
@@ -249,7 +102,7 @@ def draw_syncing_status():
                 return
 
         # 1. Render and draw the text
-        syncing_text = render_text(sync_status, True, (255, 255, 255))
+        syncing_text = menu_ui.render_text(sync_status, True, (255, 255, 255))
         text_x = SCREEN_WIDTH - syncing_text.get_width() - 10
         text_y = SCREEN_HEIGHT - 60
         screen.blit(syncing_text, (text_x, text_y))
@@ -259,291 +112,7 @@ def draw_syncing_status():
 sync_status = ""
 sync_finish_time = None
 
-def sync_vault_to_cloud(data):
-    global is_syncing, sync_status, sync_finish_time
-    is_syncing = True
-    settings = load_language(lang_code)['settings']
-    sync_status = settings.get("sync_stat1", "Syncing Vault to Cloud...")
-
-    # Using the IDs from your pre-filled link
-    payload = {
-        "entry.377726286": data["player"].get("Username", "Unknown"), # Username
-        "entry.286332773": data["player"].get("Pass", ""),             # Password Hash
-        "entry.829022223": data["player"].get("ID", ""),               # ID
-        "entry.92201882": json.dumps(data, ensure_ascii=False),       # Full Progress JSON
-        "entry.2000835960": date.today().strftime("%Y-%m-%d"),         # Current Date
-        "entry.1017947451": datetime.now().strftime("%H:%M:%S")        # Current Time
-    }
-
-    url = "https://docs.google.com/forms/d/e/1FAIpQLSfB2alAMj3qNMm5DFw-p_4HkGyzA_U2zw9lul3HSmi15Msxjg/formResponse"
-
-    try:
-        response = requests.post(url, data=payload, timeout=7)
-        if response.status_code == 200:
-            sync_status = settings.get("sync_stat3", "Success!")
-
-    except Exception as e:
-        sync_status = settings.get("sync_stat2", "Failed!")
-
-    finally:
-        sync_finish_time = time.time()
-
-def recover_account_from_cloud(target_user, target_pass):
-    # This is your 'Latest Progress' CSV link
-    CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQNm-8l1C38UGFt-lJT3ft5DARYZcjMwsWfVYGrtAqDy0bR8MQFcLJSRFqYYX7mbra_P2cWl1-i0WYW/pub?gid=1459647032&single=true&output=csv"
-    
-    try:
-        print(f"Cloud Vault: Searching for user {target_user}...")
-        response = requests.get(CSV_URL, timeout=10)
-        
-        if response.status_code == 200:
-            f = StringIO(response.text)
-            # DictReader uses the first row of your sheet as keys
-            reader = csv.DictReader(f)
-            
-            # Hash the input password to compare with the cloud
-            hashed_input = hashlib.sha256(target_pass.encode()).hexdigest()
-
-            for row in reader:
-                # We check the columns by their EXACT names in the sheet
-                cloud_user = row.get('Username')
-                cloud_pass = row.get('Password(Hashed)')
-                
-                if cloud_user == target_user:
-                    if cloud_pass == hashed_input:
-                        print("Cloud Vault: Credentials verified. Downloading progress...")
-                        if not is_mute:
-                            notify_sound.play()
-                        # Grab the JSON from the 'Progress' column
-                        return json.loads(row.get('Progress'))
-                    else:
-                        print(f"Comparing: {cloud_pass} vs {hashed_input}")
-                        print("Cloud Vault: User found, but password was incorrect.")
-                        return "WRONG_AUTH"
-            
-            print("Cloud Vault: No matching account found.")
-            return "NOT_FOUND"
-            
-    except Exception as e:
-        print(f"Cloud Vault: Connection error: {e}")
-        return "CONN_ERROR"
-    
-    return "NOT_FOUND"
-
-def fetch_cloud_data_by_id(target_id):
-    CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQNm-8l1C38UGFt-lJT3ft5DARYZcjMwsWfVYGrtAqDy0bR8MQFcLJSRFqYYX7mbra_P2cWl1-i0WYW/pub?gid=1459647032&single=true&output=csv"
-    try:
-        # Short timeout so the loading screen doesn't hang if internet is slow
-        response = requests.get(CSV_URL, timeout=5)
-        if response.status_code == 200:
-            f = StringIO(response.text)
-            reader = csv.DictReader(f)
-            for row in reader:
-                # Parse the progress string into a dictionary
-                cloud_json = json.loads(row.get('Progress'))
-                # Check if the ID inside that JSON matches our local ID
-                if cloud_json.get("player", {}).get("ID") == target_id:
-                    return cloud_json
-                
-    except Exception as e:
-        print(f"Silent Sync Error: {e}")
-        
-    return None
-
-def load_progress():
-    global SAVE_FILE, notification_time 
-    
-    data = copy.deepcopy(default_progress) 
-
-    # 1. Check manifest for the last used ID
-    current_id = ""
-    if os.path.exists(ACCOUNTS_FILE):
-        try:
-            with open(ACCOUNTS_FILE, "r") as f:
-                manifest = json.load(f)
-                current_id = manifest.get("last_used", "")
-        except: pass
-
-    # 2. Determine the path (ID-specific or generic)
-    if current_id:
-        target_file = os.path.join(APP_DATA_DIR, f"{current_id}.json")
-    else:
-        target_file = os.path.join(APP_DATA_DIR, "progress.json")
-
-    # 3. Load the data
-    if os.path.exists(target_file):
-        try:
-            with open(target_file, "r", encoding="utf-8") as f:
-                loaded_data = json.load(f)
-        except Exception as e:
-            print(f"Main save corrupted, trying backup: {e}")
-            # TRY THE BACKUP
-            backup_file = target_file + ".bak"
-            if os.path.exists(backup_file):
-                try:
-                    with open(backup_file, "r", encoding="utf-8") as f:
-                        loaded_data = json.load(f)
-                        print("DEBUG: Successfully recovered from backup!")
-                except:
-                    loaded_data = None
-            else:
-                loaded_data = None
-
-        if loaded_data:
-            data.update(loaded_data)
-            sync_missing_data(data) 
-            SAVE_FILE = target_file
-
-    # 4. Handle Migration/New ID
-    # If we loaded progress.json but have an ID inside it, migrate the filename
-    p_id = data["player"].get("ID", "")
-    if p_id == "" and not os.path.exists(os.path.join(APP_DATA_DIR, "progress.json")):
-        p_id = generate_player_id()
-        data["player"]["ID"] = p_id
-
-    # Update SAVE_FILE to the correct ID-specific path
-    SAVE_FILE = os.path.join(APP_DATA_DIR, f"{p_id}.json")
-
-    # 5. Migration: If we just loaded from progress.json, copy it to ID.json
-    legacy_path = os.path.join(APP_DATA_DIR, "progress.json")
-    if os.path.exists(legacy_path) and not os.path.exists(SAVE_FILE):
-        try:
-            shutil.copy(legacy_path, SAVE_FILE)
-            os.remove(legacy_path) # <--- DELETE the old one so it's gone for good!
-            print(f"Migrated and cleaned up legacy save.")
-        except Exception as e:
-            print(f"Migration error: {e}")
-
-    local_xp = data.get("player", {}).get("XP", 0)
-    p_id = data["player"].get("ID")
-
-    if p_id:
-        print(f"Checking cloud for ID: {p_id}...")
-        cloud_data = fetch_cloud_data_by_id(p_id)
-        
-        if cloud_data:
-            cloud_xp = cloud_data.get("player", {}).get("XP", 0)
-            if cloud_xp > local_xp:
-                print(f"Cloud is ahead! ({cloud_xp} XP). Updating local save...")
-                data = cloud_data
-                # Update the physical file so we don't have to fetch again next time
-                save_progress(data) 
-            else:
-                print(f"Local save is the latest version ({local_xp} XP).")
-
-    return data
-
-# Save progress to file
-def save_progress(data):
-    global notification_text, notification_time, error_code, notif, er
-    global save_count
-    global SAVE_FILE 
-
-    # 1. Basic Validation: Ensure we aren't saving an empty/broken object
-    if not data or "lvls" not in data or "player" not in data:
-        if not is_mute:
-            hit_sound.play()
-        notification_text = render_text("Refusing to save: Invalid data structure!", True, (255, 0, 0))
-        notif = True
-        notification_time = time.time()
-        return
-
-    # 2. Folder & Path Logic
-    if not os.path.exists(APP_DATA_DIR):
-        os.makedirs(APP_DATA_DIR)
-        
-    p_id = data["player"].get("ID", "")
-    if p_id:
-        SAVE_FILE = os.path.join(APP_DATA_DIR, f"{p_id}.json")
-    else:
-        # Emergency fallback: if no ID, don't overwrite other files!
-        print("Save Error: Player has no ID.")
-        return
-
-    try:
-        # 3. Create backup of the PREVIOUS version
-        if os.path.exists(SAVE_FILE):
-            shutil.copy(SAVE_FILE, SAVE_FILE + ".bak")
-
-        # 4. Write the new version
-        with open(SAVE_FILE, "w", encoding="utf-8") as f:
-            save_count += 1 
-            json.dump(data, f, indent=4, ensure_ascii=False)
-        
-        # 5. Update the "Map" (local.json)
-        update_local_manifest(data)
-
-        # 6. Periodic Cloud Sync (Every 4 saves)
-        if save_count % 4 == 0:
-            threading.Thread(target=sync_vault_to_cloud, args=(data,), daemon=True).start()
-
-    except PermissionError:
-        if not is_mute:
-            hit_sound.play()
-        notification_text = render_text("Error: Save file is locked by another program.", True, (255, 0, 0))
-        notif = True
-        notification_time = time.time()
-            
-    except Exception as e:
-        er = True
-        error_code = render_text(f"Save Error: {str(e)}", True, (255, 0, 0))
-        if not is_mute:
-            hit_sound.play()
-        notification_time = time.time()
-        print(f"Detailed save error: {e}")
-
-def sync_missing_data(data):
-    # Helper to ensure all default keys exist in loaded data.
-    for key, value in default_progress.items():
-        if key not in data:
-            data[key] = value
-
-    target_subkeys = ["times", "medals", "score"]
-
-    if "lvls" in data:
-        for subkey in target_subkeys:
-            # Check if the subkey (e.g., "score") exists in the loaded data
-            if subkey not in data["lvls"]:
-                 data["lvls"][subkey] = default_progress["lvls"][subkey]
-            else:
-                # If it exists, check if new levels (e.g., lvl13) were added to the game
-                for lvl_key, lvl_val in default_progress["lvls"][subkey].items():
-                    if lvl_key not in data["lvls"][subkey]:
-                       data["lvls"][subkey][lvl_key] = lvl_val
-
-    if "lvls" in data and "locked_levels" not in data["lvls"]:
-        data["lvls"]["locked_levels"] = default_progress["lvls"]["locked_levels"]
-
-    if "player" in data:
-        if "ID" not in data["player"]:
-            data["player"]["ID"] = default_progress["player"]["ID"]
-
-        if "Pass" not in data["player"]:
-            data["player"]["Pass"] = default_progress["player"]["Pass"]
-        
-        if "Username" not in data["player"]:
-            data["player"]["Username"] = default_progress["player"]["Username"]
-    
-    if "pref" in data:
-        # .pop(key, None) safely removes the key if it exists, otherwise does nothing
-        data["pref"].pop("is_mute", None)
-        data["pref"].pop("language", None)
-
-    if data["player"]["ID"] == "":
-        data["player"]["ID"] = generate_player_id()
-
-# Load the fonts (ensure the font file path is correct)
-font_path_ch = resource_path('fonts/NotoSansSC-SemiBold.ttf')
-font_path_jp = resource_path('fonts/NotoSansJP-SemiBold.ttf')
-font_path_kr = resource_path('fonts/NotoSansKR-SemiBold.ttf')
-font_path_ar = resource_path("fonts/NotoNaskhArabic-Bold.ttf")
-font_path = resource_path('fonts/NotoSansDisplay-SemiBold.ttf')
-font_ch = pygame.font.Font(font_path_ch, 25)
-font_jp = pygame.font.Font(font_path_jp, 25)
-font_kr = pygame.font.Font(font_path_kr, 25)
-font_def = pygame.font.Font(font_path, 25)
-font_ar = pygame.font.Font(font_path_ar, 25)
-font_text = pygame.font.Font(font_path, 55)
+fonts = manage_data.init_fonts()
 
 # Load progress at start
 progress_loaded = False
@@ -553,9 +122,9 @@ images_loaded = False
 running = False
 
 def draw_loading_bar(stage_name, percent):
-    screen.blit(background, (0, 0))
+    screen.blit(bg, (0, 0))
     complete = None
-    text = font_def.render(f"{stage_name}", True, (255, 255, 255))
+    text = fonts['def'].render(f"{stage_name}", True, (255, 255, 255))
     text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 60))
     screen.blit(text, text_rect)
     draw_loading_orb(text_rect.x, text_rect.y, complete)
@@ -569,144 +138,60 @@ while ps < 100:
     stage = "Loading configured settings..."
     draw_loading_bar(stage, ps)
     # NEW: Load from manifest instead of progress
-    if os.path.exists(ACCOUNTS_FILE):
-        with open(ACCOUNTS_FILE, "r") as f:
-            manifest = json.load(f)
-            global_pref = manifest.get("pref", {})
-            lang_code = global_pref.get("language", "en")
-            # Invert 'sfx' back to 'is_mute'
-            is_mute = not global_pref.get("sfx", True) 
-            is_mute_amb = not global_pref.get("ambience", True)
-    else:
-        lang_code = "en"
-        is_mute = False
-        is_mute_amb = False
+    manifest, lang_code, is_mute, is_mute_amb = manage_data.init_accs()
     ps = 5
     language_loaded = True
 
  stage = "Checking for latest save..."
  draw_loading_bar(stage, ps)
  if not progress_loaded and language_loaded:
-    progress = load_progress(); ps = 8
+    progress = manage_data.load_progress(); ps = 8
     complete_levels = progress.get("complete_levels", 0); ps += 1
     progress_loaded = True
 
  if progress_loaded and not sounds_loaded:
   stage = "Loading sounds..."
   draw_loading_bar(stage, ps)
-  click_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "click.wav")); ps += 1
-  hover_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hover.wav"))
-  death_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "death.wav")); ps += 1
-  laser_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "laser.wav"))
-  fall_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "fall.wav")); ps += 1
-  open_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "unlock.wav"))
-  checkpoint_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "checkpoint.wav")); ps += 1
-  warp_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "warp.wav"))
-  button_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "button.wav")); ps += 1
-  bounce_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "bounce.wav"))
-  move_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "travel.wav")); ps += 1
-  jump_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "jump.wav"))
-  hit_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "hit.wav")); ps += 1
-  notify_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "notify.wav"))
-  overheat_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "overheat.wav")); ps += 1
-  freeze_sound = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "freeze.wav"))
-  star1 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/1star.wav"))
-  star2 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/2star.wav")); ps += 2
-  star3 = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/3star.wav"))
-  hscore = pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "stars/hs.wav")); ps += 1
-  star1.set_volume(4.0)
-  star2.set_volume(4.0)
-  star3.set_volume(4.0)
-  # Ambient themes
-  pygame.mixer.music.load(resource_path("audio/amb/ambience.wav")); ps += 2
+  sounds = startup.init_sounds()
+  ps += 25
   sounds_loaded = True
   draw_loading_bar(stage, ps)
 
  if sounds_loaded and not images_loaded:
-    stage = "Loading cursor..."
+    # UI (Logos & Cursors)
+    stage = "Loading UI assets..."
     draw_loading_bar(stage, ps)
-    cursor_img = pygame.image.load(resource_path("oimgs/cursor/cursor.png")).convert_alpha(); ps += 2
+    ui = startup.init_ui_images(SCREEN_WIDTH, SCREEN_HEIGHT)
+    ps += 4
 
-    # Load logo images
-    stage = "Loading logos..."
-    draw_loading_bar(stage, ps)
-    logo = pygame.image.load(resource_path("oimgs/logos/logo.png")).convert_alpha(); ps += 1
-    logo = pygame.transform.rotate(logo, 5)
-    studio_logo = pygame.image.load(resource_path("oimgs/logos/studiologodef.png")).convert_alpha()
-    studio_logo = pygame.transform.scale(studio_logo, (220, 220))
-    studio_logo_rect = studio_logo.get_rect(topleft=(20, SCREEN_HEIGHT - 240)); ps += 2
-    studio_glow = pygame.image.load(resource_path("oimgs/logos/studiologoglow.png")).convert_alpha()
-    studio_glow = pygame.transform.scale(studio_glow, (280, 280))
-    studio_glow_rect = studio_glow.get_rect(topleft=(20, SCREEN_HEIGHT - 300)); ps += 2
-
-    # Load and scale backgrounds
     stage = "Loading backgrounds..."
     draw_loading_bar(stage, ps)
-    lilrobopeek = pygame.image.load(resource_path("bgs/lilrobopeek.png")).convert_alpha(); ps += 1
-    lilrobopeek = pygame.transform.scale(lilrobopeek, (390, 360))
-    green_background_img = pygame.image.load(resource_path("bgs/GreenBackground.png")).convert()
-    green_background = pygame.transform.scale(green_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT)); ps += 1
-    mech_background_img = pygame.image.load(resource_path("bgs/MechBackground.png")).convert()
-    mech_background = pygame.transform.scale(mech_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT)); ps += 1
-    trans = pygame.image.load(resource_path("bgs/trans.png")).convert()
-    trans = pygame.transform.scale(trans, ((SCREEN_WIDTH * 1.1), (SCREEN_HEIGHT))); ps += 1
-    end = pygame.image.load(resource_path("bgs/EndScreen.png")).convert_alpha()
-    end = pygame.transform.scale(end, ((SCREEN_WIDTH), (SCREEN_HEIGHT))); ps += 1
+    bgs = startup.init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT)
+    ps += 5
 
-    # Load and initalize Images!
+    # Medals
+    stage = "Loading medals..."
+    draw_loading_bar(stage, ps)
+    medals = startup.init_medals()
+    ps += 4
+
+    # Disks
+    stage = "Loading disks..."
+    draw_loading_bar(stage, ps)
+    disks = startup.init_disks()
+    ps += 3
+
+    # In-game assets (saws, teleporters, badges, checkpoints)
     stage = "Loading in-game assets..."
     draw_loading_bar(stage, ps)
-    nact_cp = pygame.image.load(resource_path("oimgs/checkpoints/yellow_flag.png")).convert_alpha()
-    act_cp = pygame.image.load(resource_path("oimgs/checkpoints/green_flag.png")).convert_alpha(); ps += 1
-    diam_m = pygame.image.load(resource_path("oimgs/medal/perfect.png")).convert_alpha()
-    diam_m = pygame.transform.scale(diam_m, ((diam_m.get_width() // 2), (diam_m.get_height() // 2))); ps +=1
-    gold_m = pygame.image.load(resource_path("oimgs/medal/gold.png")).convert_alpha()
-    gold_m = pygame.transform.scale(gold_m, ((gold_m.get_width() // 2), (gold_m.get_height() // 2))); ps +=1
-    silv_m = pygame.image.load(resource_path("oimgs/medal/silver.png")).convert_alpha()
-    silv_m = pygame.transform.scale(silv_m, ((silv_m.get_width() // 2), (silv_m.get_height() // 2))); ps+=1
-    bron_m = pygame.image.load(resource_path("oimgs/medal/bronze.png")).convert_alpha()
-    bron_m = pygame.transform.scale(bron_m, ((bron_m.get_width() // 2), (bron_m.get_height() // 2))); ps += 1
-    medals_img = {
-        "Diamond": diam_m,
-        "Gold": gold_m,
-        "Silver": silv_m,
-        "Bronze": bron_m,
-    }
+    assets = startup.init_assets()
+    ps += 8
 
-    draw_loading_bar(stage, ps)
-    greendisk_img = pygame.image.load(resource_path("oimgs/disks/greendisk.png")).convert_alpha()
-    greendisk_img = pygame.transform.scale(greendisk_img, (100, 100)); ps +=1  # Resize as needed
-    mechdisk_img = pygame.image.load(resource_path("oimgs/disks/mechdisk.png")).convert_alpha()
-    mechdisk_img = pygame.transform.scale(mechdisk_img, (100, 100)); ps +=1
-    lockeddisk_img = pygame.image.load(resource_path("oimgs/disks/lockeddisk.png")).convert_alpha()
-    lockeddisk_img = pygame.transform.scale(lockeddisk_img, (100, 100)); ps +=1  # Resize as needed
-    star_img = pygame.image.load(resource_path("oimgs/ig/star.png")).convert_alpha()
-    star_img = pygame.transform.scale(star_img, (150, 140))
-    s_star_img = pygame.transform.scale(star_img, (20, 17)); ps +=1
-    exit_img = pygame.image.load(resource_path("oimgs/portal/exit.png")).convert_alpha()
-    exit_img = pygame.transform.scale(exit_img, (140, 180)); ps += 1
-    mechexit_img = pygame.image.load(resource_path("oimgs/portal/mech_exit.png")).convert_alpha()
-    mechexit_img = pygame.transform.scale(mechexit_img, (140, 180)); ps += 1
-    teleport_img = pygame.image.load(resource_path("oimgs/portal/teleport.png")).convert_alpha()
-    teleport_img = pygame.transform.scale(teleport_img, (140, 180)); ps += 1
-    teleexit_img = pygame.image.load(resource_path("oimgs/portal/teleport_2.png")).convert_alpha()
-    teleexit_img = pygame.transform.scale(teleexit_img, (100, 100)); ps += 1
-    badge = pygame.image.load(resource_path("oimgs/ig/badge.png")).convert_alpha()
-    badge = pygame.transform.scale(badge, (70, 70)); ps += 1
-    max_badge = pygame.image.load(resource_path("oimgs/ig/max-badge.png")).convert_alpha()
-    max_badge = pygame.transform.scale(max_badge, (70, 70)); ps += 1
-    saw_img = pygame.image.load(resource_path("oimgs/ig/saw.png")).convert_alpha()
-
-    # Load character images
+    # Characters
     stage = "Loading robos..."
     draw_loading_bar(stage, ps)
-    robot_img = pygame.image.load(resource_path("char/robot/robot.png")).convert_alpha()
-    evilrobot_img = pygame.image.load(resource_path("char/evilrobot/evilrobot.png")).convert_alpha()
-    greenrobot_img = pygame.image.load(resource_path("char/greenrobot/greenrobot.png")).convert_alpha()
-    ironrobot_img = pygame.image.load(resource_path("char/ironrobot/ironrobo.png")).convert_alpha()
-    icerobot_img = pygame.image.load(resource_path("char/icerobot/icerobot.png")).convert_alpha()
-    quitbot = pygame.image.load(resource_path("char/greenrobot/movegreenrobot.png")).convert_alpha()
-    locked_img = pygame.image.load(resource_path("char/lockedrobot.png")).convert_alpha(); ps += 6
+    robos = startup.init_robos()
+    ps += 6
     images_loaded = True
 
     if is_mute_amb:
@@ -723,152 +208,11 @@ while ps < 100:
 if ps == 100:
  running = True
 
-
-
-with open(resource_path("data/thresholds.json"), "r", encoding="utf-8") as f:
-    thresholds_data = json.load(f)
-    level_thresholds = thresholds_data["level_thresholds"]
-    score_thresholds = thresholds_data["score_thresholds"]
-    
-# Function to get medal based on time
-def get_medal(level, time_taken):
-    thresholds = next((t for t in level_thresholds if t['level'] == level), None)
-    if not thresholds:
-        return "None"
-    if time_taken <= thresholds['gold']:
-        return "Gold"
-    elif time_taken <= thresholds['silver']:
-        return "Silver"
-    elif time_taken <= thresholds['bronze']:
-        return "Bronze"
-    else:
-        return "None"
-
-def get_stars(level, score):
-    thresholds = next((t for t in score_thresholds if t['level'] == level), None)
-    if not thresholds:
-        return 0
-    if score >= thresholds['3']:
-        return 3
-    elif score >= thresholds['2']:
-        return 2
-    elif score >= thresholds['1']:
-        return 1
-    else:
-        return 0
-    
-if lang_code == "zh_cn":
-    font = pygame.font.Font(font_path_ch, 25)
-if lang_code == "jp":
-    font = pygame.font.Font(font_path_jp, 25)
-if lang_code == "kr":
-    font = pygame.font.Font(font_path_kr, 25)
-if lang_code == "pk" or lang_code == "ir" or lang_code == "ar":
-    font = pygame.font.Font(font_path_ar, 25)
-else:
-    font = pygame.font.Font(font_path, 25)
-
-def render_text(text, Boolean, color):
-    # 1. PICK THE FONT (Your existing Unicode Logic)
-    font_to_use = font_def # Default
-    display_text = text
-
-    if any('\u0590' <= c <= '\u06FF' for c in text):  # Urdu/Arabic range
-        reshaped = arabic_reshaper.reshape(text)
-        display_text = get_display(reshaped)
-        font_to_use = font_ar
-    elif any('\u4e00' <= c <= '\u9fff' for c in text):  # Chinese
-        font_to_use = font_ch
-    elif any('\u3040' <= c <= '\u30FF' for c in text): # Japanese
-        font_to_use = font_jp
-    elif any('\uAC00' <= c <= '\uD7A3' for c in text):  # Korean
-        font_to_use = font_kr
-
-    # 2. RENDER THE SHADOW (For Readability on Green/Mech BGs)
-    shadow_color = (0, 0, 0)
-    shadow_surf = font_to_use.render(display_text, True, shadow_color)
-    
-    # 3. RENDER MAIN TEXT
-    main_surf = font_to_use.render(display_text, True, color)
-    
-    # 4. COMBINE INTO ONE SURFACE
-    w = max(1, main_surf.get_width() + 2)
-    h = max(1, main_surf.get_height() + 1)
-    combined_surf = pygame.Surface((w, h), pygame.SRCALPHA)
-    combined_surf.blit(shadow_surf, (1, 1)) # The offset shadow
-    combined_surf.blit(main_surf, (0, 0))   # The original text
-    
-    return combined_surf
-
-def create_achieve_screen():
-    global current_lang
-    buttons.clear()
-    current_lang = load_language(lang_code)
-    # 1. Load the sections with fallback to the root dictionary
-    # This covers both nested: current_lang["achieve"]["zen_os"] 
-    # and flat: current_lang["zen_os"]
-    ach_data = current_lang.get("achieve", {}) 
-    header_data = current_lang.get("main_menu", {})
-    back_data = current_lang.get("language_select", {})
-
-    # 1. Render Main Header
-    ach_txt = header_data.get("achievements", "Achievements")
-    ach_header = render_text(ach_txt, True, (255, 255, 255))
-    screen.blit(ach_header, (SCREEN_WIDTH // 2 - ach_header.get_width() // 2, 50))
-
-    ach_list = [
-        "zen_os",
-        "zen_os_desc",
-        "speedy_starter", 
-        "speedy_starter_desc",
-        "over_9k",
-        "over_9k_desc",
-        "chase_escape",
-        "chase_escape_desc",
-        "golden", 
-        "golden_desc",
-        "lv20", 
-        "lv20_desc"
-    ]
-
-    y_offset = 120 
-    
-    count = 0
-
-    for title_key in ach_list:
-        # We try to get from ach_data first, then fallback to current_lang directly
-        title_str = ach_data.get(title_key, "?")
-
-        # Render Title
-        if title_key[-5:] != "_desc":
-         if progress["achieved"][title_key]:
-           color = (0, 204, 0)
-         else:
-           color = (255, 255, 0)
-
-        title_surf = render_text(title_str, True, color)
-        if lang_code == "ar" or lang_code == "pk":
-            x_pos = SCREEN_WIDTH - 100 - title_surf.get_width()
-        else:
-            x_pos = 100
-        screen.blit(title_surf, (x_pos, y_offset))
-
-        count += 1
-        if count % 2 == 0:
-           y_offset += 52
-        else:
-           y_offset += 25
-
-    back_text = back_data.get("back", "Back")
-    rendered_back = render_text(back_text, True, (255, 255, 255))
-    back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100))
-    buttons.append((rendered_back, back_rect, "back", False))
-
 class Achievements:
     @staticmethod
     def get_notif_text(ach_key, default_name):
         # Helper to build the 'Achievement Unlocked: Name' string
-        lang = load_language(lang_code)
+        lang = manage_data.change_language(lang_code, manifest, progress)
         ach_data = lang.get("achieve", {})
         
         # Get "Achievement Unlocked:" prefix
@@ -878,7 +222,7 @@ class Achievements:
         
         # Combine them and render
         full_string = f"{prefix} {name}"
-        return render_text(full_string, True, (255, 255, 0))
+        return menu_ui.render_text(full_string, True, (255, 255, 0))
 
     def lvl1speed(ctime):
         global notification_text, notification_time, notif
@@ -888,7 +232,7 @@ class Achievements:
             # LOCALIZED HERE
             notification_text = Achievements.get_notif_text("speedy_starter", "Speedy Starter")
             if not is_mute:
-                notify_sound.play()
+                sounds['notify'].play()
             if notification_time is None:
                 notif = True
                 notification_time = time.time()
@@ -899,11 +243,11 @@ class Achievements:
         if ctime <= 30 and deaths <= 0 and not unlock:
             progress["achieved"]["zen_os"] = True
             progress["char"]["ironrobo"] = True
-            save_progress(progress)
+            manage_data.save_progress(progress, manifest)
             # LOCALIZED HERE
             notification_text = Achievements.get_notif_text("zen_os", "Zenith of Six")
             if not is_mute:
-                notify_sound.play()
+                sounds['notify'].play()
             if notification_time is None:
                 notif = True
                 notification_time = time.time()
@@ -916,7 +260,7 @@ class Achievements:
             # LOCALIZED HERE
             notification_text = Achievements.get_notif_text("over_9k", "It's over 9000!!")
             if not is_mute:
-                notify_sound.play()
+                sounds['notify'].play()
             if notification_time is None:
                 notif = True
                 notification_time = time.time()
@@ -927,11 +271,11 @@ class Achievements:
         if not unlock:
             progress["achieved"]["chase_escape"] = True
             progress["char"]["evilrobo"] = True
-            save_progress(progress)
+            manage_data.save_progress(progress, manifest)
             # LOCALIZED HERE
             notification_text = Achievements.get_notif_text("chase_escape", "Chased and Escaped")
             if not is_mute:
-                notify_sound.play()
+                sounds['notify'].play()
             if notification_time is None:
                 notif = True
                 notification_time = time.time()
@@ -943,11 +287,11 @@ class Achievements:
         if all_gold and not unlock:        
             progress["achieved"]["golden"] = True
             progress["char"]["greenrobo"] = True
-            save_progress(progress)
+            manage_data.save_progress(progress, manifest)
             # LOCALIZED HERE
             notification_text = Achievements.get_notif_text("golden", "Golden!")
             if not is_mute:
-                notify_sound.play()
+                sounds['notify'].play()
             if notification_time is None:
                 notif = True
                 notification_time = time.time()
@@ -957,301 +301,104 @@ class Achievements:
         unlock = progress["achieved"].get("lv20", False)
         if Level >= 20 and not unlock:
             progress["achieved"]["lv20"] = True
-            save_progress(progress)
+            manage_data.save_progress(progress, manifest)
             # LOCALIZED HERE
             notification_text = Achievements.get_notif_text("lv20", "XP Collector!")
             if not is_mute:
-                notify_sound.play()
+                sounds['notify'].play()
             if notification_time is None:
                 notif = True
                 notification_time = time.time()
         
 class TransitionManager:
-    def __init__(self, screen, image, speed=40):
+    def __init__(self, screen, left_image, right_image, speed=40):
         self.screen = screen
-        self.image = image
+        self.left_image = left_image
+        self.right_image = right_image
         self.speed = speed
         self.active = False
-        self.direction = 1  # 1 for slide-in, -2 for slide-out
-        self.x = -screen.get_width()
+        self.phase = 0  # 0: slide-in, 1: hold, 2: slide-out
+        self.left_x = -left_image.get_width()  # Start off-screen left
+        self.right_x = screen.get_width()  # Start off-screen right
         self.target_page = None
+        self.hold_time = 0
+        self.hold_duration = 250  # milliseconds
 
     def start(self, target_page):
         self.active = True
-        self.direction = 1
-        self.x = -self.screen.get_width()
+        self.phase = 0
+        self.left_x = -self.left_image.get_width()
+        self.right_x = self.screen.get_width()
         self.target_page = target_page
+        self.hold_time = 0
 
     def update(self):
+        global pending_lang_code, selected_id, lang_code, manifest, progress
+        
         if not self.active:
             return
 
-        self.x += self.speed * self.direction
+        if self.phase == 0:  # Slide-in phase
+            # Move left image from left toward center
+            self.left_x += self.speed
+            # Move right image from right toward center
+            self.right_x -= self.speed
+            
+            # Check if they've met in the middle
+            mid_point = self.screen.get_width() // 2
+            if self.left_x + self.left_image.get_width() >= mid_point and self.right_x <= mid_point:
+                self.left_x = mid_point - self.left_image.get_width()
+                self.right_x = mid_point
+                self.phase = 1
+                self.hold_time = pygame.time.get_ticks()
 
-        if self.direction == 1 and self.x >= -50:
-            self.x = 0
-            # Switch page when screen is fully covered
-            pygame.event.wait(10)
-            set_page(self.target_page)
-            self.direction = -2  # Start sliding out
+        elif self.phase == 1:  # Hold phase
+            if pygame.time.get_ticks() - self.hold_time >= self.hold_duration:
+                # Change language if pending
+                if pending_lang_code:
+                    manage_data.change_language(pending_lang_code, manifest, progress)
+                    lang_code = pending_lang_code
+                    pending_lang_code = None
+                # Update manifest to set 'last_used' so load_progress knows which one to grab
+                if selected_id:
+                    if os.path.exists(manage_data.ACCOUNTS_FILE):
+                        with open(manage_data.ACCOUNTS_FILE, "r") as f:
+                            manifest = json.load(f)
+                        manifest["last_used"] = selected_id
+                        with open(manage_data.ACCOUNTS_FILE, "w") as f:
+                            json.dump(manifest, f, indent=4)
+                    # Load the data and move to main menu
+                    progress = manage_data.load_progress()
+                    selected_id = None
+                set_page(self.target_page)
+                self.phase = 2
 
-        elif self.direction == -2 and self.x >= self.screen.get_width():
-            self.active = False  # Done with transition
+        elif self.phase == 2:  # Slide-out phase
+            self.left_x -= self.speed
+            self.right_x += self.speed
+            
+            if self.left_x <= -self.left_image.get_width() and self.right_x >= self.screen.get_width():
+                self.active = False
 
-        # Draw the image
-        self.screen.blit(self.image, (self.x, 0))
+        # Draw both images
+        self.screen.blit(self.left_image, (self.left_x, 0))
+        self.screen.blit(self.right_image, (self.right_x, 0))
 
-transition = TransitionManager(screen, trans)
+transition = TransitionManager(screen, bgs['trans_left'], bgs['trans_right'])
 
-
-# Load language function and rendering part remain the same
-def load_language(lang_code):
-    try:
-        # Wrap the path in resource_path()
-        path = resource_path(f"lang/{lang_code}.json")
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        print(f"[WARN] Language '{lang_code}' not found. Falling back to English.")
-        manifest["pref"]["language"] = "en"
-        update_local_manifest(manifest)
-        
-        # Wrap the fallback path too!
-        fallback_path = resource_path("lang/en.json")
-        with open(fallback_path, "r", encoding="utf-8") as f:
-            return json.load(f)
-
-current_lang = load_language(lang_code)
+current_lang = manage_data.change_language(lang_code, manifest, progress)
 # Page states
 current_page = 'main_menu'
 buttons = []
-
-def create_main_menu_buttons():
-
-    global current_lang, buttons
-    current_lang = load_language(lang_code)['main_menu']
-    buttons.clear()
-    button_texts = ["start", "achievements", "character_select", "settings", "quit"]
-
-    # Center buttons vertically and horizontally
-    button_spacing = 72
-    start_y = (SCREEN_HEIGHT // 2) - (len(button_texts) * button_spacing // 2) + 150
-
-    for i, key in enumerate(button_texts):
-        text = current_lang[key]
-        rendered = render_text(text, True, (255, 255, 255))
-        rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, start_y + i * button_spacing)) 
-        buttons.append((rendered, rect, key, False))
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            set_page("quit_confirm")
-
-
-def create_language_buttons():
-    global current_lang, buttons, heading_text
-    current_lang = load_language(lang_code).get('language_select', {})
-    buttons.clear()
-    start = load_language(lang_code).get('main_menu', {})
-
-    language_options = [
-        ("English", "en"),
-        ("Français", "fr"),
-        ("Español", "es"),
-        ("Deutsch", "de"),
-        ("Türkçe", "tr"),
-        ("Bahasa Indonesia", "id"),
-        ("Русский", "ru"),
-        ("简体中文", "zh_cn"),
-        ("日本語", "jp"),
-        ("한국인", "kr"),
-        ("اردو", "pk"),
-        ("العربية", "ar"),
-    ]
-    buttons_per_row = 4
-    spacing_x = 200
-    spacing_y = 70
-
-    # Calculate starting positions to center the grid
-    grid_width = (buttons_per_row - 1) * spacing_x
-    start_x = (SCREEN_WIDTH - grid_width) // 2
-    start_y = (SCREEN_HEIGHT // 2) - (len(language_options) // buttons_per_row * spacing_y // 2)
-
-    heading = start.get("language", "Change Language")
-    heading_text = render_text(heading, True, (255 , 255, 255))
-
-    for i, (display_name, code) in enumerate(language_options):
-        text = display_name
-        rendered = render_text(text, True, (255, 255, 255))
-
-        col = i % buttons_per_row
-        row = i // buttons_per_row
-
-        x = start_x + col * spacing_x
-        y = start_y + row * spacing_y
-
-        rect = rendered.get_rect(center=(x, y))
-        buttons.append((rendered, rect, code, False))
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            set_page("quit_confirm")
-
-    # Add a "Back" button at the bottom center
-    back_text = current_lang.get("back", "Back")
-    rendered_back = render_text(back_text, True, (255, 255, 255))
-    back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, y + spacing_y + 40))
-    buttons.append((rendered_back, back_rect, "back", False))
-
-def worlds():
-    global current_lang, buttons
-    buttons.clear()
-    current_lang = load_language(lang_code).get('language_select', {})
-    screen.blit(background, (0, 0))
-
-    # 1. Define Positions
-    # We define the center points so the image and the button hitbox align perfectly
-    green_center = (SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2)
-    mech_center = (SCREEN_WIDTH // 2 + 250, SCREEN_HEIGHT // 2)
-
-    # 2. Draw the Disks
-    # Use the rect to blit so the image is centered on our coordinates
-    green_rect = greendisk_img.get_rect(center=green_center)
-    mech_rect = mechdisk_img.get_rect(center=mech_center)
-    
-    screen.blit(greendisk_img, green_rect)
-    screen.blit(mechdisk_img, mech_rect)
-
-    # 3. Add Disks to the Button List
-    # Format: (surface/image, rect, action_key, is_locked)
-    buttons.append((greendisk_img, green_rect, "levels", False))
-    buttons.append((mechdisk_img, mech_rect, "mech_levels", False))
-
-    # --- Back Button Logic ---
-    back_text = current_lang.get("back", "Back")        
-    rendered_back = render_text(back_text, True, (255, 255, 255))
-
-    back_rect = pygame.Rect(0, 0, rendered_back.get_width(), rendered_back.get_height())
-    back_rect.center = (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 200)
-
-    text_rect = rendered_back.get_rect(center=back_rect.center)
-    screen.blit(rendered_back, text_rect)
-
-    # Add the back button
-    buttons.append((rendered_back, back_rect, "back", False))
-
-def green_world_buttons():
-    global current_lang, buttons
-    buttons.clear()
-
-    # Store the rendered text and its position for later drawing
-    global text_rect, level_key
-
-    level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6"]
-    level_no = ["1", "2", "3", "4", "5", "6"]
-    buttons_per_row = 3
-    spacing_x = 160
-    spacing_y = 160
-
-    grid_width = (buttons_per_row - 1) * spacing_x
-    start_x = (SCREEN_WIDTH - grid_width) // 2
-    start_y = ((SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2)) + 50
-
-    for i, level in enumerate(level_options):
-        col = i % buttons_per_row
-        row = i // buttons_per_row
-        x = start_x + col * spacing_x
-        y = start_y + row * spacing_y
-
-        is_locked = level in progress["lvls"]["locked_levels"]
-        text_surface = font_text.render(level_no[i], True, (255, 255, 255))
-        disk_rect = greendisk_img.get_rect(center=(x, y))
-        buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
-
-    # Get the text
-    back_text = current_lang.get("back", "Back")        
-    rendered_back = render_text(back_text, True, (255, 255, 255))
-
-    # Create a fixed 100x100 hitbox centered at the right location
-    back_rect = pygame.Rect(SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, SCREEN_HEIGHT - 175, 100, 100)
-    back_rect.center = (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 200)
-
-    # Then during draw phase: center the text inside that fixed rect
-    text_rect = rendered_back.get_rect(center=back_rect.center)
-    screen.blit(rendered_back, text_rect)
-
-    # Add the button
-    buttons.append((rendered_back, back_rect, "back", False))
-
-    next_text = current_lang.get("next", "next")
-    rendered_next = render_text(next_text, True, (255, 255, 255))
-
-    next_rect = pygame.Rect(0, 0, 100, 100)
-    next_rect.center = (SCREEN_WIDTH - 90, SCREEN_HEIGHT // 2)
-
-    text_rect = rendered_next.get_rect(center=next_rect.center)
-    screen.blit(rendered_next, text_rect)
-
-def mech_world_buttons():
-    global current_lang, buttons
-    buttons.clear()
-
-    # Store the rendered text and its position for later drawing
-    global text_rect, level_key
-
-    level_options = ["lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
-    level_no = ["7", "8", "9", "10", "11", "12"]
-    buttons_per_row = 3
-    spacing_x = 160
-    spacing_y = 160
-
-    grid_width = (buttons_per_row - 1) * spacing_x
-    start_x = (SCREEN_WIDTH - grid_width) // 2
-    start_y = ((SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2)) + 50
-
-    for i, level in enumerate(level_options):
-        col = i % buttons_per_row
-        row = i // buttons_per_row
-        x = start_x + col * spacing_x
-        y = start_y + row * spacing_y
-
-        is_locked = level in progress["lvls"]["locked_levels"]
-        text_surface = font_text.render(level_no[i], True, (255, 255, 255))
-        disk_rect = greendisk_img.get_rect(center=(x, y))
-        buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
-
-    # Get the text
-    back_text = current_lang.get("back", "Back")        
-    rendered_back = render_text(back_text, True, (255, 255, 255))
-
-    # Create a fixed 100x100 hitbox centered at the right location
-    back_rect = pygame.Rect(SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, SCREEN_HEIGHT - 175, 100, 100)
-    back_rect.center = (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 200)
-
-    # Then during draw phase: center the text inside that fixed rect
-    text_rect = rendered_back.get_rect(center=back_rect.center)
-    screen.blit(rendered_back, text_rect)
-
-    # Add the button
-    buttons.append((rendered_back, back_rect, "back", False))
-
-    next_text = current_lang.get("next", "next")
-    rendered_next = render_text(next_text, True, (255, 255, 255))
-
-    next_rect = pygame.Rect(0, 0, 100, 100)
-    next_rect.center = (SCREEN_WIDTH - 90, SCREEN_HEIGHT // 2)
-
-    text_rect = rendered_next.get_rect(center=next_rect.center)
-    screen.blit(rendered_next, text_rect)
 
 #def load_level(level_id):
 #    global current_page, buttons
 #
    # Show "Loading..." text
 #    screen.fill((30, 30, 30))
-#    messages = load_language(lang_code).get('messages', {})  # Reload messages with the current language
+#    messages = manage_data.change_language(lang_code, manifest, progress).get('messages', {})  # Reload messages with the current language
 #    loading_text = messages.get("loading", "Loading...")
-#    rendered_loading = render_text(loading_text, True, (255, 255, 255))
+#    rendered_loading = menu_ui.render_text(loading_text, True, (255, 255, 255))
 #    loading_rect = rendered_loading.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))  # Center dynamically
 #    screen.blit(rendered_loading, loading_rect)
 #    pygame.display.flip()
@@ -1262,280 +409,31 @@ def mech_world_buttons():
     # Now switch the page
    # buttons.clear()
 
-def xp():
-    # XP from scores
-    scores = progress["lvls"]["score"]
-    score_xp = sum(scores.values()) // 1000
-
-    # XP from stars
-    stars = 0
-    for level in range(1, 13):
-        score = scores.get(f"lvl{level}", 0)
-        stars += get_stars(level, score)
-    star_xp = stars * 20  # 50 XP per star
-
-    # XP from achievements
-    achievements = progress["achieved"]  # your achievements dict
-    achievement_xp = {
-     "speedy_starter": 30,
-     "zen_os": 150,
-     "over_9k": 150,
-     "chase_escape": 25,
-     "golden": 200,
-     "lvl20": 0,
-    }
-
-    # Sum XP for unlocked achievements
-    ach_xp = sum(xp for ach, unlocked in achievements.items() if unlocked for name, xp in achievement_xp.items() if ach == name)
-
-    # Total XP
-    total_xp = score_xp + ach_xp + star_xp
-    progress["player"]["XP"] = total_xp
-    def xp_needed(level):
-        return int(50 * (1.1 ** (level - 1)))  # or tweak multiplier
-
-    def calculate_level(total_xp):
-        level = 1
-        xp_left = total_xp
-        while xp_left >= xp_needed(level):
-            xp_left -= xp_needed(level)
-            level += 1
-        return level, xp_left
-
-    level, xp_in_level = calculate_level(total_xp)
-    progress["player"]["Level"] = level
-    Achievements.check_xplvl20(level)
-    return level, xp_in_level, xp_needed(level)
-
 #Initialize default character
-selected_character = progress["pref"].get("character", default_progress["pref"]["character"])
+selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
 
 # Get rects and position them
-robot_rect = robot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT // 2 - 50))
-evilrobot_rect = evilrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 50))
-greenrobot_rect = greenrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50))
-ironrobot_rect = ironrobot_img.get_rect(topleft=(SCREEN_WIDTH // 2 + 150, SCREEN_HEIGHT // 2 - 50))
-def character_select():
-    global selected_character, set_page, current_page
-    
-    # Clear screen
-    buttons.clear()
-    current_lang = load_language(lang_code)['char_select']
-    button_texts = ["back"]
-
-    for i, key in enumerate(button_texts):
-        text = current_lang[key]
-        rendered = render_text(text, True, (255, 255, 255))
-        rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100)) 
-        buttons.append((rendered, rect, key, False))
-    
-    for event in pygame.event.get():#
-        
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # left click
-            mouse_pos = event.pos
-            if robot_rect.collidepoint(mouse_pos):
-                selected_character = "robot"
-                set_page("main_menu")
-            elif evilrobot_rect.collidepoint(mouse_pos):
-                selected_character = "evilrobot"
-                set_page("main_menu")  
-            elif greenrobot_rect.collidepoint(mouse_pos):
-                selected_character = "greenrobot"
-                set_page("main_menu")
-    pygame.display.flip()
-
+robot_rect = robos['robot'].get_rect(topleft=(SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT // 2 - 50))
+evilrobot_rect = robos['evilrobot'].get_rect(topleft=(SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 50))
+greenrobot_rect = robos['greenrobot'].get_rect(topleft=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50))
+ironrobot_rect = robos['ironrobot'].get_rect(topleft=(SCREEN_WIDTH // 2 + 150, SCREEN_HEIGHT // 2 - 50))
 
 def quit_game(progress):
     draw_syncing_status()
-    sync_vault_to_cloud(progress)
+    manage_data.sync_vault_to_cloud(progress, manifest)
     pygame.quit()
     sys.exit()
-
-def change_language(lang):
-    global lang_code, last_page_change_time, current_lang, font, font_path_ch, font_path
-    lang_code = lang
-    last_page_change_time = time.time()  # Track the time when the language changes
-    current_lang = load_language(lang_code)  # Reload the language data
-    manifest["pref"]["language"] = lang_code
-    update_local_manifest(progress)
-    if lang_code == "zh_cn":
-        font = font_ch
-    elif lang_code == "jp":
-        font = font_jp
-    elif lang_code == "kr":
-        font = font_kr
-    elif lang_code == "pk" or lang_code == "ir" or lang_code == "ar":
-        font = font_ar
-    else:
-        font = font_def
 
 #def go_back():
 #    global last_page_change_time
 #    last_page_change_time = time.time()  # Track the time when going back
 #    set_page('main_menu')
 
-def update_locked_levels():
-    all_levels = ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
-    # Always start with all levels locked except lvl2 (which unlocks after lvl1 is completed)
-    locked = set(all_levels)
-    score = progress["lvls"].get("score", {})
-
-    # Unlock levels if the previous level's time is not 0
-    for i, lvl in enumerate(all_levels):
-        prev_lvl = f"lvl{i+1}"
-        if score.get(prev_lvl, 0) != 0:
-            locked.discard(lvl)  # Unlock this level
-
-    progress["lvls"]["locked_levels"] = list(locked)
-    save_progress(progress)
-
-def settings_menu():
-    global current_lang, buttons
-    # 1. Load language (only once per page change is better, but this works)
-    current_lang = load_language(lang_code).get('settings', {})
-    setting_lang = load_language(lang_code).get('main_menu', {})
-    buttons.clear()
-    screen.blit(background, (0, 0))
-
-    # 2. Match these keys EXACTLY to handle_action
-    # format: (Display Text, Internal Key)
-    button_data = [
-        (current_lang["About"], "About"),
-        (current_lang["Audio"], "Audio"),
-        (current_lang["Account"], "Account"),
-        (setting_lang["language"], "Language"),
-        (current_lang["Back"], "Back")
-    ]
-
-    heading = setting_lang.get("settings", "Settings")
-    heading_text = render_text(heading, True, (255 , 255, 255))
-    screen.blit(heading_text, (SCREEN_WIDTH // 2 - heading_text.get_width() // 2, 200))
-
-    button_spacing = 72
-    start_y = (SCREEN_HEIGHT // 2) - (len(button_data) * button_spacing // 2) + 150
-
-    for i, (display_text, internal_key) in enumerate(button_data):
-        rendered = render_text(display_text, True, (255, 255, 255))
-        rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, start_y + i * button_spacing)) 
-        # Store the internal_key so handle_action knows what was clicked
-        buttons.append((rendered, rect, internal_key, False))
-
-    # Mouse pos for hover effects
-    mouse_pos = pygame.mouse.get_pos()
-    
-    for rendered, rect, key, _ in buttons:
-        if rect.collidepoint(mouse_pos):
-            # Add a small glow or background for hover feedback
-            pygame.draw.rect(screen, (0, 213, 0), rect.inflate(20, 10), 2)
-        screen.blit(rendered, rect)
-
-def about_menu():
-    global buttons, version
-    buttons.clear()
-    screen.blit(background, (0, 0))
-    settings_lang = load_language(lang_code).get('settings', {})
-
-    title = settings_lang.get("About", "About")
-    title_rendered = render_text(title, True, (255, 255, 255))
-    screen.blit(title_rendered, (SCREEN_WIDTH // 2 - title_rendered.get_width() // 2, 100))
-
-    site = settings_lang.get("site_credit", "Sound effects used from pixabay.com and edited using Audacity")
-    site_text = render_text(site, True, (255, 255, 255))
-    site_pos = ((SCREEN_WIDTH // 2 - site_text.get_width() // 2), 200)
-
-    logo = settings_lang.get("logo_credit", "Logo and Background made with canva.com")
-    logo_text = render_text(logo, True, (255, 255, 255))
-    logo_pos = ((SCREEN_WIDTH // 2- logo_text.get_width() // 2), 240)
-
-    credit = settings_lang.get("credit_credit", "Made by Omer Arfan")
-    credit_text = render_text(credit, True, (255, 255, 255))
-    credit_pos = ((SCREEN_WIDTH // 2 - credit_text.get_width() // 2), 280)
-
-    ver = settings_lang.get("version_credit", "Game Version: {version}").format(version=version)
-    ver_text = render_text(ver, True, (255, 255, 255))
-    ver_pos = ((SCREEN_WIDTH // 2 - ver_text.get_width() // 2), 320)
-
-    thx = settings_lang.get("thanks", "Thank you for playing! You are amazing!")
-    thx_text = render_text(thx, True, (0, 255, 0))
-    thx_pos = ((SCREEN_WIDTH // 2 - thx_text.get_width() // 2), 400)
-
-    bugs = settings_lang.get("bugs", "If you find any bugs, please report them on the GitHub repository.")
-    bugs_text = render_text(bugs, True, (242, 123, 32))
-    bugs_pos = ((SCREEN_WIDTH // 2 - bugs_text.get_width() // 2), 440)
-
-    sorry = settings_lang.get("sorry", "Sorry for any inconvenience caused by bugs.")
-    sorry_text = render_text(sorry, True, (242, 123, 32))
-    sorry_pos = ((SCREEN_WIDTH // 2 - sorry_text.get_width() // 2), 480)
-
-    screen.blit(logo_text, logo_pos)
-    screen.blit(site_text, site_pos)
-    screen.blit(credit_text, credit_pos)
-    screen.blit(ver_text, ver_pos)
-    screen.blit(thx_text, thx_pos)
-    screen.blit(bugs_text, bugs_pos)
-    screen.blit(sorry_text, sorry_pos)
-
-    support_text = settings_lang.get("support", "Support / Report Bugs")
-    support_rendered = render_text(support_text, True, (255, 255, 255))
-    support_rect = support_rendered.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 122))
-    buttons.append((support_rendered, support_rect, "Support", False))
-
-    back_text = settings_lang.get("Back", "Back")
-    rendered = render_text(back_text, True, (255, 255, 255))
-    rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 50))
-    buttons.append((rendered, rect, "Back", False))
-
-def audio_settings_menu():
-    global buttons
-    buttons.clear()
-    screen.blit(background, (0, 0))
-    settings_lang = load_language(lang_code).get('settings', {})
-
-    # 1. Draw Title
-    title_str = settings_lang.get("Audio", "Audio")
-    title_txt = render_text(title_str, True, (255, 255, 255))
-    screen.blit(title_txt, (SCREEN_WIDTH // 2 - title_txt.get_width() // 2, 200))
-    
-    # 2. Sound Buttons (SFX)
-    sound_label = settings_lang.get("Sound", "Sound")
-    if is_mute:
-        # Fetches "Unmute {setting}" and replaces {setting} with "Sound"
-        sfx_text_str = settings_lang.get("Unmute", "Unmute {setting}").format(setting=sound_label)
-    else:
-        # Fetches "Mute {setting}" and replaces {setting} with "Sound"
-        sfx_text_str = settings_lang.get("Mute", "Mute {setting}").format(setting=sound_label)
-    
-    renderedsfx = render_text(sfx_text_str, True, (255, 255, 255))
-    rectsfx = renderedsfx.get_rect(center=(SCREEN_WIDTH // 2, 350))
-    buttons.append((renderedsfx, rectsfx, "SFX", False)) # Keeping "SFX" as the internal ID for your click handler
-
-    # 3. Ambience Buttons
-    amb_label = settings_lang.get("Ambience", "Ambience")
-    if is_mute_amb:
-        amb_text_str = settings_lang.get("Unmute", "Unmute {setting}").format(setting=amb_label)
-    else:
-        amb_text_str = settings_lang.get("Mute", "Mute {setting}").format(setting=amb_label)
-    
-    renderedamb = render_text(amb_text_str, True, (255, 255, 255))
-    rectamb = renderedamb.get_rect(center=(SCREEN_WIDTH // 2, 450))
-    buttons.append((renderedamb, rectamb, "Ambience", False))
-
-    # 4. Back Button
-    back_txt = settings_lang.get("Back", "Back")
-    renderedback = render_text(back_txt, True, (255, 255, 255))
-    rectback = renderedback.get_rect(center=(SCREEN_WIDTH // 2, 550))
-    buttons.append((renderedback, rectback, "Back", False))
-    
-    # Blit everything to the screen
-    screen.blit(renderedsfx, rectsfx)
-    screen.blit(renderedamb, rectamb)
-    screen.blit(renderedback, rectback)
-
 def muting_sfx():
     global is_mute
     is_mute = not is_mute
     # Save directly to manifest (pass 'progress' so it can see player ID/Level)
-    update_local_manifest(progress)
+    manage_data.update_local_manifest(progress)
 
 def muting_amb():
     global is_mute_amb
@@ -1551,25 +449,7 @@ def muting_amb():
         pass
         
     # Save directly to manifest
-    update_local_manifest(progress)
-
-
-def update_xp_ui():
-    global level, xp_needed, xp_total, XP_text, XP_text2
-
-    level, xp_needed, xp_total = xp()
-
-    if level < 20:
-        color = (255, 255, 255)
-        XP_text = font_text.render(str(level), True, color)
-        XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, color)
-    else:
-        color = (225, 212, 31)
-        XP_text = font_text.render(str(level), True, color)
-        max_txt = load_language(lang_code).get('messages', {}).get(
-            "max_level", "MAX LEVEL!"
-        )
-        XP_text2 = render_text(max_txt, True, color)    
+    manage_data.update_local_manifest(progress)
 
 # Central page switcher
 def set_page(page):
@@ -1578,124 +458,100 @@ def set_page(page):
 
     # Reload the current language data for the new page
     if page == 'main_menu':
-        update_xp_ui() # Update XP display when returning to main menu, especially in case of different users.
-        current_lang = load_language(lang_code).get('main_menu', {})
-        create_main_menu_buttons()
+        manage_data.update_xp_ui(progress, Achievements, manifest) # Update XP display when returning to main menu, especially in case of different users.
+        current_lang = manage_data.load_language(lang_code, manifest).get('main_menu', {})
+        menu_ui.create_main_menu_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH)
     elif page == "achievements":
-        create_achieve_screen()
+        menu_ui.create_achieve_screen(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH)
     elif page == 'character_select':
-        character_select()
+        menu_ui.character_select(lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH)
     elif page == 'language_select':
-        current_lang = load_language(lang_code).get('language_select', {})
-        create_language_buttons()
+        current_lang = manage_data.load_language(lang_code, manifest).get('language_select', {})
+        menu_ui.create_language_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH)
     elif page == "worlds":
-        worlds()
+        menu_ui.worlds(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, disks)
     elif page == "settings":
-        settings_menu()
+        menu_ui.settings_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs)
     elif page == "About":
-        about_menu()
+        menu_ui.about_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, version)
     elif page == "Audio":
-        audio_settings_menu()
+        menu_ui.audio_settings_menu(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, is_mute, is_mute_amb)
     elif page == "Account":
-        create_account_selector()
+        acc_sys.create_account_selector(manage_data.ACCOUNTS_FILE, lang_code, manifest, transition, screen, bgs, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, sounds, draw_notifications, draw_syncing_status, buttons)
     elif page == "login_screen":
-        show_login_screen()
+        acc_sys.reset_login_state()
+    elif page == "registration_screen":
+        acc_sys.reset_login_state()
     elif page == 'levels':
-        current_lang = load_language(lang_code).get('levels', {})
-        green_world_buttons()
+        current_lang = manage_data.load_language(lang_code, manifest).get('levels', {})
+        menu_ui.green_world_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, disks)
         change_ambience("audio/amb/greenambience.wav")
     elif page == 'mech_levels':
-        current_lang = load_language(lang_code).get('levels', {})
-        mech_world_buttons()
+        current_lang = manage_data.load_language(lang_code, manifest).get('levels', {})
+        menu_ui.mech_world_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, disks)
         change_ambience("audio/amb/mechambience.wav")
     elif page == 'quit_confirm':
-        current_lang = load_language(lang_code).get('messages', {})
-        create_quit_confirm_buttons()
+        current_lang = manage_data.load_language(lang_code, manifest).get('messages', {})
+        menu_ui.create_quit_confirm_buttons(lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH)
     elif page == 'lvl1_screen':  # New page for Level 1
-        current_lang = load_language(lang_code).get('in_game', {})
+        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
         create_lvl1_screen()
     elif page == 'lvl2_screen':  # New page for Level 2
-        current_lang = load_language(lang_code).get('in_game', {})
+        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
         create_lvl2_screen()
     elif page == 'lvl3_screen':  # New page for Level 3
-        current_lang = load_language(lang_code).get('in_game', {})
+        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
         create_lvl3_screen()
     elif page == 'lvl4_screen':  # New page for Level 4
-        current_lang = load_language(lang_code).get('in_game', {})
+        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
         create_lvl4_screen()
     elif page == 'lvl5_screen':  # New page for Level 5
-        current_lang = load_language(lang_code).get('in_game', {})
+        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
         create_lvl5_screen()
     elif page == 'lvl6_screen':
-        current_lang = load_language(lang_code).get('in_game', {})
+        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
         create_lvl6_screen()
     elif page == 'lvl7_screen':
-        current_lang = load_language(lang_code).get('in_game', {})
+        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
         create_lvl7_screen()
     elif page == 'lvl8_screen':
-        current_lang = load_language(lang_code).get('in_game', {})
+        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
         create_lvl8_screen()
     elif page == 'lvl9_screen':
-        current_lang = load_language(lang_code).get('in_game', {})
+        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
         create_lvl9_screen()
     elif page == 'lvl10_screen':
-        current_lang = load_language(lang_code).get('in_game', {})
+        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
         create_lvl10_screen()
     elif page == 'lvl11_screen':
-        current_lang = load_language(lang_code).get('in_game', {})
+        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
         create_lvl11_screen()
     elif page == 'lvl12_screen':
-        current_lang = load_language(lang_code).get('in_game', {})
+        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
         create_lvl12_screen()
 
 def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg):
     if rect.collidepoint(pygame.mouse.get_pos()):
         global wait_time, selected_character, locked_char_sound_time, locked_char_sound_played
-        charsel = load_language(lang_code).get('char_select', {})
+        charsel = manage_data.load_language(lang_code, manifest).get('char_select', {})
 
         if unlock_flag:
             selected_character = char_key
             progress["pref"]["character"] = selected_character
-            save_progress(progress)
+            manage_data.save_progress(progress, manifest)
             if not is_mute:
-                click_sound.play()
+                sounds['click'].play()
         else:
             handle_action("locked")
             if not locked_char_sound_played or time.time() - locked_char_sound_time > 1.5: # type: ignore
                 if not is_mute:
-                    death_sound.play()
+                    sounds['death'].play()
                 locked_char_sound_time = time.time()
                 locked_char_sound_played = True
             if wait_time is None:
                 wait_time = pygame.time.get_ticks()
             global locked_text
             locked_text = charsel.get(locked_msg_key, fallback_msg)
-
-def create_quit_confirm_buttons():
-    global current_lang, buttons, quit_text, quit_text_rect
-    buttons.clear()
-
-    # Get the quit confirmation text from the current language
-    messages = load_language(lang_code).get('messages', {})
-    confirm_quit = messages.get("confirm_quit", "Are you sure you want to quit?")
-
-    # Store the quit confirmation text for rendering in the main loop
-    quit_text = render_text(confirm_quit, True, (255, 255, 255))
-    quit_text_rect = quit_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 25))
-
-    # Create "Yes" button
-    yes_text = messages.get("yes", "Yes")
-    rendered_yes = render_text(yes_text, True, (255, 255, 255))
-    yes_rect = rendered_yes.get_rect(center=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 50))
-    buttons.append((rendered_yes, yes_rect, "yes", False))
-
-    # Create "No" button
-    no_text = messages.get("no", "No")
-    rendered_no = render_text(no_text, True, (255, 255, 255))
-    no_rect = rendered_no.get_rect(center=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 + 50))
-    buttons.append((rendered_no, no_rect, "no", False))
-
-    pygame.display.flip()  # Update the display to show the quit confirmation screen
 
 def score_calc():
     global current_time, medal, deathcount, score
@@ -1742,7 +598,7 @@ stareffects = []
 def level_complete():
     global score, display_score, new_hs, hs, stareffects, stars, medal
     global base_score, medal_score, death_score, time_score
-    messages = load_language(lang_code).get('messages', {})
+    messages = manage_data.load_language(lang_code, manifest).get('messages', {})
     display_score = 0
     star1_p, star2_p, star3_p = False, False, False
     star_time = time.time()
@@ -1752,9 +608,9 @@ def level_complete():
     star_channel = pygame.mixer.Channel(2)
     lvl_comp = messages.get("lvl_comp", "Level Complete!")
     old_xp = progress["player"].get("XP", 0)
-    rendered_lvl_comp = render_text(lvl_comp, True, (255, 255, 255))
+    rendered_lvl_comp = menu_ui.render_text(lvl_comp, True, (255, 255, 255))
     while running:
-        screen.blit(end, (0, 0))
+        screen.blit(bgs['end'], (0, 0))
         keys = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -1767,34 +623,34 @@ def level_complete():
         
         if display_score < score:
           if not is_mute:
-            hover_sound.play()
+            sounds['hover'].play()
           display_score += max(5, (score // 71))
         if stars >= 1 and (time.time() - star_time > 0.5):
-                screen.blit(star_img, (SCREEN_WIDTH // 2 - 231, 110))
+                screen.blit(assets['star'], (SCREEN_WIDTH // 2 - 231, 110))
                 if not star1_p:
                  for _ in range(40):  # Add some particles at star position
-                    stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 230 + star_img.get_width() // 2, 110 + star_img.get_height() // 2)) 
+                    stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 230 + assets['star'].get_width() // 2, 110 + assets['star'].get_height() // 2)) 
                  if not is_mute:
-                  star_channel.play(star1)
+                  star_channel.play(sounds['star1'])
                 star1_p = True
         if stars >= 2 and (time.time() - star_time > 1.5):
-                screen.blit(star_img, (SCREEN_WIDTH // 2 - 76, 110))
+                screen.blit(assets['star'], (SCREEN_WIDTH // 2 - 76, 110))
                 if not star2_p and star1_p: 
                     for _ in range(40):  # Add some particles at star position
-                     stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 75 + star_img.get_width() // 2, 110 + star_img.get_height() // 2))  
+                     stareffects.append(StarParticles(SCREEN_WIDTH // 2 - 75 + assets['star'].get_width() // 2, 110 + assets['star'].get_height() // 2))  
                     if not is_mute:
-                     star_channel.play(star2)
+                     star_channel.play(sounds['star2'])
                     star2_p = True
         if stars >= 3 and (time.time() - star_time  >  2.5):
-                screen.blit(star_img, (SCREEN_WIDTH // 2 + 79, 110)) 
+                screen.blit(assets['star'], (SCREEN_WIDTH // 2 + 79, 110)) 
                 if  not star3_p and star2_p: 
                     for _ in range(40):  # Add some particles at star position
-                      stareffects.append(StarParticles(SCREEN_WIDTH // 2 + 80 + star_img.get_width() // 2, 110 + star_img.get_height() // 2)) 
+                      stareffects.append(StarParticles(SCREEN_WIDTH // 2 + 80 + assets['star'].get_width() // 2, 110 + assets['star'].get_height() // 2)) 
                     if not is_mute:
-                     star_channel.play(star3)
+                     star_channel.play(sounds['star3'])
                     star3_p = True
         if medal != "None":
-            screen.blit(medals_img[medal], (SCREEN_WIDTH // 2 - 200, 300 - medals_img[medal].get_height() // 2))
+            screen.blit(medals[medal], (SCREEN_WIDTH // 2 - 200, 300 - medals[medal].get_height() // 2))
 
         for particle in stareffects[:]:
          particle.update()
@@ -1805,16 +661,16 @@ def level_complete():
         if display_score > score:
             display_score = score
         
-        score_text = font_text.render(str(display_score), True, (255, 255, 255))
+        score_text = fonts['mega'].render(str(display_score), True, (255, 255, 255))
         screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, 300 - score_text.get_height() // 2))
 
         # Check for XP gained
-        xp()
+        manage_data.xp(progress, Achievements)
         new_xp = progress["player"].get("XP", 0)
         gain = new_xp - old_xp
         if time.time() - star_time > 3.2:
             xp_text = messages.get("xp_gained", "XP Gained: +{gain}").format(gain=gain)
-            xp_render = render_text(xp_text, True, (0, 188, 255))
+            xp_render = menu_ui.render_text(xp_text, True, (0, 188, 255))
             screen.blit(xp_render, (SCREEN_WIDTH // 2 - xp_render.get_width() // 2, 350))
 
         global base_score, medal_score, death_score, time_score
@@ -1823,28 +679,28 @@ def level_complete():
         if score > 500: 
          if time.time() - star_time > 4:
             break_text = messages.get("breakdown", "BREAKDOWN")
-            break_render = render_text(break_text, True, (158, 158, 158))
+            break_render = menu_ui.render_text(break_text, True, (158, 158, 158))
             screen.blit(break_render, (SCREEN_WIDTH // 2 - break_render.get_width() // 2, 400))
          if time.time() - star_time > 4.2:
             base_text = messages.get("base_score", "Base Score: {bs}").format(bs=base_score)
-            base_render = render_text(base_text, True, (158, 158, 158))
+            base_render = menu_ui.render_text(base_text, True, (158, 158, 158))
             screen.blit(base_render, (SCREEN_WIDTH // 2 - base_render.get_width() // 2, 440))
          if time.time() - star_time > 4.4:
             medal_text = messages.get("medal_score", "Medal score: {ms}").format(ms=-medal_score)
-            medal_render = render_text(medal_text, True, (158, 158, 158))
+            medal_render = menu_ui.render_text(medal_text, True, (158, 158, 158))
             screen.blit(medal_render, (SCREEN_WIDTH // 2 - medal_render.get_width() // 2, 480))
          if time.time() - star_time > 4.6:   
             death_text = messages.get("death_score", "Death Penalty: {ds}").format(ds=-death_score)
-            death_render = render_text(death_text, True, (158, 158, 158))
+            death_render = menu_ui.render_text(death_text, True, (158, 158, 158))
             screen.blit(death_render, (SCREEN_WIDTH // 2 - death_render.get_width() // 2, 520))
          if time.time() - star_time > 4.8:
             time_text = messages.get("time_score", "Time Penalty: {ts}").format(ts=-time_score)
-            time_render = render_text(time_text, True, (158, 158, 158))
+            time_render = menu_ui.render_text(time_text, True, (158, 158, 158))
             screen.blit(time_render, (SCREEN_WIDTH // 2 - time_render.get_width() // 2, 560))
         else:
             if time.time() - star_time > 4:
              low_text = messages.get("lowest", "Lowest possible score!")
-             low_render = render_text(low_text, True, (255, 0, 0))
+             low_render = menu_ui.render_text(low_text, True, (255, 0, 0))
              screen.blit(low_render, (SCREEN_WIDTH // 2 - low_render.get_width() // 2, 500))
              if time_score > death_score:
                  reason_text = messages.get("time_reason", "You took too long to")
@@ -1852,22 +708,22 @@ def level_complete():
              else:
                  reason_text = messages.get("death_reason", "You died too many times!")
                  reason_text_2 = messages.get("death_reason_2", "")
-             reason_render = render_text(reason_text, True, (255, 0, 0))
+             reason_render = menu_ui.render_text(reason_text, True, (255, 0, 0))
              screen.blit(reason_render, (SCREEN_WIDTH // 2 - reason_render.get_width() // 2, 540))
-             reason_render_2 = render_text(reason_text_2, True, (255, 0, 0))
+             reason_render_2 = menu_ui.render_text(reason_text_2, True, (255, 0, 0))
              screen.blit(reason_render_2, (SCREEN_WIDTH // 2 - reason_render_2.get_width() // 2, 580))
 
         if time.time() - star_time > 5.5:  # Show for 3.5 seconds
                 if new_hs:
                     hs_text = messages.get("new_hs", "New High Score!")
-                    new_hs_text = render_text(hs_text, True, (255, 215, 0))
+                    new_hs_text = menu_ui.render_text(hs_text, True, (255, 215, 0))
                     screen.blit(new_hs_text, (SCREEN_WIDTH // 2 - new_hs_text.get_width() // 2, 610))
                     if not is_mute and not notified:
-                        hscore.play()
+                        sounds['hscore'].play()
                         notified = True
                 else:
                     high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
-                    hs_text = render_text(high_text, True, (158, 158, 158))
+                    hs_text = menu_ui.render_text(high_text, True, (158, 158, 158))
                     screen.blit(hs_text, (SCREEN_WIDTH // 2 - hs_text.get_width() // 2, 610))
         
         next_left = int(8 - (time.time() - star_time))
@@ -1876,42 +732,16 @@ def level_complete():
         else: 
             # Instead of hardcoded text:
             press_text = messages.get("press_space", "Press the spacebar to")
-            p_render = render_text(press_text, True, (158, 158, 158))
+            p_render = menu_ui.render_text(press_text, True, (158, 158, 158))
             screen.blit(p_render, (SCREEN_WIDTH // 2 - p_render.get_width() // 2, SCREEN_HEIGHT - 60))
             wait_text = messages.get("continue_wait", "continue or wait for {next_left}").format(next_left=next_left)
-            w_render = render_text(wait_text, True, (158, 158, 158))
+            w_render = menu_ui.render_text(wait_text, True, (158, 158, 158))
             screen.blit(w_render, (SCREEN_WIDTH // 2 - w_render.get_width() // 2, SCREEN_HEIGHT - 35))
 
         draw_notifications()
         draw_syncing_status()
         pygame.display.update()
         clock.tick(60)
-
-def char_assets():
-    global selected_character, player_img, blink_img, moving_img, moving_img_l, img_width, img_height
-    selected_character = progress["pref"].get("character", default_progress["pref"]["character"])
-    # Load player image
-    if selected_character == "robot": 
-        player_img = pygame.image.load(resource_path(f"char/robot/robot.png")).convert_alpha()
-        blink_img = pygame.image.load(resource_path(f"char/robot/blinkrobot.png")).convert_alpha()
-        moving_img_l = pygame.image.load(resource_path(f"char/robot/smilerobotL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(resource_path(f"char/robot/smilerobot.png")).convert_alpha() # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(resource_path(f"char/evilrobot/evilrobot.png")).convert_alpha()
-        blink_img = pygame.image.load(resource_path(f"char/evilrobot/blinkevilrobot.png")).convert_alpha()
-        moving_img_l = pygame.image.load(resource_path(f"char/evilrobot/movevilrobotL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(resource_path(f"char/evilrobot/movevilrobot.png")).convert_alpha() # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(resource_path(f"char/greenrobot/greenrobot.png")).convert_alpha()
-        blink_img = pygame.image.load(resource_path(f"char/greenrobot/blinkgreenrobot.png")).convert_alpha()
-        moving_img_l = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobotL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobot.png")).convert_alpha() # Resize to fit the game
-    elif selected_character == "ironrobot":
-        player_img = pygame.image.load(resource_path(f"char/ironrobot/ironrobo.png")).convert_alpha()
-        blink_img = pygame.image.load(resource_path(f"char/ironrobot/blinkironrobo.png")).convert_alpha()
-        moving_img_l = pygame.image.load(resource_path(f"char/ironrobot/ironrobomoveL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(resource_path(f"char/ironrobot/ironrobomove.png")).convert_alpha() # Resize to fit the game
-    img_width, img_height = player_img.get_size()
 
 # For saw images
 saw_cache = {}
@@ -1930,17 +760,17 @@ def fin_lvl_logic(lvl):
                 progress["lvls"]["complete_levels"] = lvl
 
             if not is_mute:
-                warp_sound.play()
+                sounds['warp'].play()
 
             if current_time < progress["lvls"]["times"][f"lvl{lvl}"] or progress["lvls"]["times"][f"lvl{lvl}"] == 0:
                 progress["lvls"]["times"][f"lvl{lvl}"] = round(current_time, 2)
             
             if progress["lvls"]["score"][f"lvl{lvl}"] < 100000:
-                progress["lvls"]["medals"][f"lvl{lvl}"] = get_medal(lvl, progress["lvls"]["times"][f"lvl{lvl}"])
+                progress["lvls"]["medals"][f"lvl{lvl}"] = level_logic.get_medal(lvl, progress["lvls"]["times"][f"lvl{lvl}"])
             else:
                 progress["lvls"]["medals"][f"lvl{lvl}"] = "Diamond"
 
-            medal = get_medal(lvl, current_time)
+            medal = level_logic.get_medal(lvl, current_time)
             if medal == "Gold" and deathcount == 0:
                 medal = "Diamond"
                 progress["lvls"]["medals"][f"lvl{lvl}"] = medal
@@ -1950,21 +780,22 @@ def fin_lvl_logic(lvl):
                 new_hs = True
             if not new_hs:
                 hs = progress["lvls"]["score"][f"lvl{lvl}"]
-            update_locked_levels()
-            stars = get_stars(lvl, score)
+            manage_data.update_locked_levels(progress, manifest)
+            stars = level_logic.get_stars(lvl, score)
 
 
 def create_lvl1_screen():
-    global player_img, font, screen, complete_levels, is_mute, is_transitioning, transition_time, current_time, medal, deathcount, score
+    global player_img, screen, complete_levels, is_mute, is_transitioning, transition_time, current_time, medal, deathcount, score
     global new_hs, hs, stars, ctime
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     global x, y, camera_x, camera_y, player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text,spawn_x, spawn_y,  player_rect, on_ground
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
 
+
     buttons.clear()
-    screen.blit(green_background, (0, 0))
-    in_game = load_language(lang_code).get('in_game', {})
+    screen.blit(bgs['green'], (0, 0))
+    in_game = manage_data.load_language(lang_code, manifest).get('in_game', {})
 
     wait_time = None
     death_text = None
@@ -2012,23 +843,23 @@ def create_lvl1_screen():
 
     # Render the texts
     warning_text = in_game.get("warning_message", "Watch out for spikes!")
-    rendered_warning_text = render_text(warning_text, True, (255, 0, 0))  # Render the warning text
+    rendered_warning_text = menu_ui.render_text(warning_text, True, (255, 0, 0))  # Render the warning text
 
     up_text = in_game.get("up_message", "Press UP to Jump!")
-    rendered_up_text = render_text(up_text, True, (0, 0, 0))  # Render the up text
+    rendered_up_text = menu_ui.render_text(up_text, True, (0, 0, 0))  # Render the up text
 
     exit_text = in_game.get("exit_message", "Exit Portal! Come here to win!")
-    rendered_exit_text = render_text(exit_text, True, (0, 73, 0))  # Render the exit text
+    rendered_exit_text = menu_ui.render_text(exit_text, True, (0, 73, 0))  # Render the exit text
 
     moving_text = in_game.get("moving_message", "Not all blocks stay still...")
-    rendered_moving_text = render_text(moving_text, True, (128, 0, 128))  # Render the moving text
+    rendered_moving_text = menu_ui.render_text(moving_text, True, (128, 0, 128))  # Render the moving text
 
     fall_message = in_game.get("fall_message", "Fell too far!")
-    rendered_fall_text = render_text(fall_message, True, (255, 0, 0))  # Render the fall text
+    rendered_fall_text = menu_ui.render_text(fall_message, True, (255, 0, 0))  # Render the fall text
 
     pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
 
-    level_logic.draw_portal(screen, exit_img, exit_portal, camera_x, camera_y)
+    level_logic.draw_portal(screen, assets['exit'], exit_portal, camera_x, camera_y)
     
     screen.blit(rendered_up_text, (700 - camera_x, 200 - camera_y))  # Draws the rendered up text
     screen.blit(rendered_warning_text, (1900 - camera_x, 150 - camera_y))  # Draws the rendered warning text
@@ -2041,7 +872,7 @@ def create_lvl1_screen():
     draw_notifications()
     draw_syncing_status()
 
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
        while running:
         clock.tick_busy_loop(60)
         keys = pygame.key.get_pressed()
@@ -2058,7 +889,7 @@ def create_lvl1_screen():
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
             if not is_mute:
-                jump_sound.play()
+                sounds['jump'].play()
         
 
         # Detect if any movement key is pressed
@@ -2072,7 +903,7 @@ def create_lvl1_screen():
                 player_x += move_speed
 
             if on_ground and not was_moving and not is_mute:
-                move_sound.play()
+                sounds['move'].play()
             was_moving = True
         else:
             was_moving = False
@@ -2096,7 +927,7 @@ def create_lvl1_screen():
             death_text = rendered_fall_text
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                fall_sound.play()
+                sounds['fall'].play()
             velocity_y = 0
             deathcount += 1
 
@@ -2107,12 +938,12 @@ def create_lvl1_screen():
             Achievements.lvl1speed(current_time)
             Achievements.check_green_gold()
 
-            save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl2_screen')
 
         # Drawing
-        screen.blit(green_background, (0, 0))
+        screen.blit(bgs['green'], (0, 0))
 
         pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
     
@@ -2122,10 +953,10 @@ def create_lvl1_screen():
 
         if level_logic.check_spike_collisions(spikes, player_x, player_y, img_width, img_height):
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             velocity_y = 0
             deathcount += 1
 
@@ -2143,7 +974,7 @@ def create_lvl1_screen():
                     elif player_x + img_width > moving_block.x + moving_block.width:  # Colliding with the right side
                         player_x = moving_block.x + moving_block.width
 
-        level_logic.draw_portal(screen, exit_img, exit_portal, camera_x, camera_y)
+        level_logic.draw_portal(screen, assets['exit'], exit_portal, camera_x, camera_y)
 
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
 
@@ -2164,22 +995,22 @@ def create_lvl1_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
+        deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        timer_text = menu_ui.render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(1, current_time)
-        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
+        medal = level_logic.get_medal(1, current_time)
+        level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         if keys[pygame.K_r]:
             resetting()
@@ -2193,7 +1024,7 @@ def create_lvl1_screen():
                 deathcount = 0
             else:
                 countdown = max(0, 3 - round(time.time() - ctime, 2))
-                reset_text = render_text(f"Resetting the level in {countdown:.2f}", True, (255, 0, 0))
+                reset_text = menu_ui.render_text(f"Resetting the level in {countdown:.2f}", True, (255, 0, 0))
                 screen.blit(reset_text, (SCREEN_WIDTH // 2 - 200 , 300))             
         else:
             ctime = None
@@ -2206,15 +1037,15 @@ def create_lvl1_screen():
         pygame.display.update()    
 
 def create_lvl2_screen():
-    global player_img, font, screen, complete_levels, is_mute, selected_character, wait_time, transition_time, is_transitioning, current_time, medal, deathcount, score
+    global player_img, screen, complete_levels, is_mute, selected_character, wait_time, transition_time, is_transitioning, current_time, medal, deathcount, score
     global new_hs, hs, stars, ctime
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     global x, y, camera_x, camera_y, spawn_x, spawn_y,  player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text, player_rect, on_ground
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
 
-    screen.blit(green_background, (0, 0))
-    in_game = load_language(lang_code).get('in_game', {})
+    screen.blit(bgs['green'], (0, 0))
+    in_game = manage_data.load_language(lang_code, manifest).get('in_game', {})
 
     wait_time = None
     death_text = None
@@ -2295,15 +1126,15 @@ def create_lvl2_screen():
     
     # Render the texts
     jump_message = in_game.get("jump_message", "Use orange blocks to jump high distances!")
-    rendered_jump_text = render_text(jump_message, True, (255, 128, 0))  # Render the jump text
+    rendered_jump_text = menu_ui.render_text(jump_message, True, (255, 128, 0))  # Render the jump text
 
     fall_message = in_game.get("fall_message", "Fell too far!")
-    rendered_fall_text = render_text(fall_message, True, (255, 0, 0))  # Render the fall text
+    rendered_fall_text = menu_ui.render_text(fall_message, True, (255, 0, 0))  # Render the fall text
 
     if checkpoint_reached:
-            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
     else:
-            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
 
 
 
@@ -2312,7 +1143,7 @@ def create_lvl2_screen():
     for jump_block in jump_blocks:
             pygame.draw.rect(screen, (255, 128, 0), (jump_block.x - camera_x, jump_block.y - camera_y, jump_block.width, jump_block.height))
 
-    level_logic.draw_portal(screen, exit_img, exit_portal, camera_x, camera_y)
+    level_logic.draw_portal(screen, assets['exit'], exit_portal, camera_x, camera_y)
 
             # Inside the game loop:
     screen.blit(rendered_jump_text, (900 - camera_x, 500 - camera_y))  # Draws the rendered up text
@@ -2320,7 +1151,7 @@ def create_lvl2_screen():
     draw_notifications()
     draw_syncing_status()
 
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -2346,7 +1177,7 @@ def create_lvl2_screen():
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
             if not is_mute:
-                jump_sound.play()
+                sounds['jump'].play()
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -2359,7 +1190,7 @@ def create_lvl2_screen():
                 player_x += move_speed
 
             if on_ground and not was_moving and not is_mute:
-                move_sound.play()
+                sounds['move'].play()
             was_moving = True
         else:
             was_moving = False
@@ -2382,7 +1213,7 @@ def create_lvl2_screen():
         if player_y > 1100:
                 death_text = rendered_fall_text
                 if not is_mute:
-                    fall_sound.play()
+                    sounds['fall'].play()
                 wait_time = pygame.time.get_ticks()
                 player_x, player_y = spawn_x, spawn_y
                 velocity_y = 0
@@ -2395,44 +1226,44 @@ def create_lvl2_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
 
-            save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl3_screen')    
 
         # Drawing
-        screen.blit(green_background, (0, 0))
+        screen.blit(bgs['green'], (0, 0))
 
         if player_rect.colliderect(flag) and not checkpoint_reached:
             checkpoint_reached = True
             spawn_x, spawn_y = 2150, 620  # Store checkpoint position
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
             
         if checkpoint_reached:
-            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
 
         player_x, player_y, velocity_y, on_ground, player_rect = level_logic.block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground)
         
         if level_logic.handle_bottom_collisions(blocks, player_rect, velocity_y):  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
+                death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 if not is_mute:    
-                    hit_sound.play()
+                    sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1 
         
-        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, bounce_sound, False, False)
+        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, sounds['bounce'], False, False)
         level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
 
         if level_logic.check_spike_collisions(spikes, player_x, player_y, img_width, img_height):
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             velocity_y = 0
             deathcount += 1
         
@@ -2452,7 +1283,7 @@ def create_lvl2_screen():
 
         pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
 
-        level_logic.draw_portal(screen, exit_img, exit_portal, camera_x, camera_y)
+        level_logic.draw_portal(screen, assets['exit'], exit_portal, camera_x, camera_y)
         
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
 
@@ -2468,22 +1299,22 @@ def create_lvl2_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
+        deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        timer_text = menu_ui.render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(2, current_time)
-        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
+        medal = level_logic.get_medal(2, current_time)
+        level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         if keys[pygame.K_r]:
             resetting()
@@ -2497,7 +1328,7 @@ def create_lvl2_screen():
                 deathcount = 0
             else:
                 countdown = max(0, 3 - round(time.time() - ctime, 2))
-                reset_text = render_text(f"Resetting the level in {countdown:.2f}", True, (255, 0, 0))
+                reset_text = menu_ui.render_text(f"Resetting the level in {countdown:.2f}", True, (255, 0, 0))
                 screen.blit(reset_text, (SCREEN_WIDTH // 2 - 200 , 300))             
         else:
             ctime = None
@@ -2512,16 +1343,16 @@ def create_lvl2_screen():
 def create_lvl3_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     global x, y, camera_x, camera_y, spawn_x, spawn_y,  player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text, player_rect, on_ground
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
-    screen.blit(green_background, (0, 0))
+    screen.blit(bgs['green'], (0, 0))
     wait_time = None
     death_text = None
     start_time = time.time()
 
-    in_game = load_language(lang_code).get('in_game', {})
+    in_game = manage_data.load_language(lang_code, manifest).get('in_game', {})
 
     # Camera settings
     camera_x = 0  
@@ -2590,20 +1421,20 @@ def create_lvl3_screen():
     clock = pygame.time.Clock()
 
     saw_text = in_game.get("saws_message", "Saws are also dangerous!")
-    rendered_saw_text = render_text(saw_text, True, (255, 0, 0))  # Render the saw text
+    rendered_saw_text = menu_ui.render_text(saw_text, True, (255, 0, 0))  # Render the saw text
 
     key_text = in_game.get("key_message", "Grab the coin and open the block!")
-    rendered_key_text = render_text(key_text, True, (255, 255, 0))  # Render the key text
+    rendered_key_text = menu_ui.render_text(key_text, True, (255, 255, 0))  # Render the key text
 
     # Drawing
-    screen.blit(green_background, (0, 0))
+    screen.blit(bgs['green'], (0, 0))
 
-    screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
-    screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+    screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+    screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
  
         # Draw all saws first
     for x, y, r, color in saws:
-            saw_ig_img = pygame.transform.scale(saw_img, (int(r*2), int(r*2)))
+            saw_ig_img = pygame.transform.scale(assets['saw'], (int(r*2), int(r*2)))
             screen.blit(saw_ig_img, (int(x - r - camera_x), int(y - r - camera_y)))
 
     for block in blocks:
@@ -2621,19 +1452,19 @@ def create_lvl3_screen():
         pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
         pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
-    level_logic.draw_portal(screen, exit_img, exit_portal, camera_x, camera_y)
+    level_logic.draw_portal(screen, assets['exit'], exit_portal, camera_x, camera_y)
 
     # Draw the texts
     screen.blit(rendered_saw_text, (int(550 - camera_x), int(600 - camera_y)))  # Draws the rendered up text
     screen.blit(rendered_key_text, (int(2500 - camera_x), int(200 - camera_y)))  # Draws the rendered up text
 
     fall_message = in_game.get("fall_message", "Fell too far!")
-    rendered_fall_text = render_text(fall_message, True, (255, 0, 0))  # Render the fall text
+    rendered_fall_text = menu_ui.render_text(fall_message, True, (255, 0, 0))  # Render the fall text
 
     draw_notifications()
     draw_syncing_status()
 
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -2662,7 +1493,7 @@ def create_lvl3_screen():
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
             if not is_mute:
-                jump_sound.play()
+                sounds['jump'].play()
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -2675,7 +1506,7 @@ def create_lvl3_screen():
                 player_x += move_speed
 
             if on_ground and not was_moving and not is_mute:
-                move_sound.play()
+                sounds['move'].play()
             was_moving = True
         else:
             was_moving = False
@@ -2696,7 +1527,7 @@ def create_lvl3_screen():
                 death_text = rendered_fall_text
                 wait_time = pygame.time.get_ticks()
                 if not is_mute:
-                    fall_sound.play()
+                    sounds['fall'].play()
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 velocity_y = 0
                 deathcount += 1
@@ -2705,12 +1536,12 @@ def create_lvl3_screen():
             checkpoint_reached = True
             spawn_x, spawn_y = 200, 100  # Store checkpoint position
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
         if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
             checkpoint_reached = False
             checkpoint_reached2 = True
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
             spawn_x, spawn_y = 2100, -400  # Checkpoint position
 
         # Exit portal
@@ -2720,7 +1551,7 @@ def create_lvl3_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
 
-            save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl4_screen')
 
@@ -2736,58 +1567,58 @@ def create_lvl3_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(green_background, (0, 0))
+        screen.blit(bgs['green'], (0, 0))
 
         if checkpoint_reached:
-            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         if checkpoint_reached2:
-            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
  
         # Draw all saws first
 
-        level_logic.draw_saws(screen, saws, saw_img, camera_x, camera_y, saw_cache)
+        level_logic.draw_saws(screen, saws, assets['saw'], camera_x, camera_y, saw_cache)
 
         # 2. Check for saw deaths
         if level_logic.check_saw_collisions(player_rect, saws):
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
 
-        player_x, player_y, velocity_y, on_ground, player_rect = level_logic.handle_key_blocks(screen, open_sound, key_block_pairs, is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y)
+        player_x, player_y, velocity_y, on_ground, player_rect = level_logic.handle_key_blocks(screen, sounds['open'], key_block_pairs, is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y)
 
         player_x, player_y, velocity_y, on_ground, player_rect = level_logic.block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground)
 
         if level_logic.handle_bottom_collisions(blocks, player_rect, velocity_y):  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
+                death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 key_block_pairs[0]["collected"] = False  # Reset key block status
                 if not is_mute:    
-                    hit_sound.play()
+                    sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1 
 
-        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, bounce_sound, False, False)
+        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, sounds['bounce'], False, False)
         level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
 
         if level_logic.check_spike_collisions(spikes, player_x, player_y, img_width, img_height):
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             velocity_y = 0
             deathcount += 1
         
-        level_logic.draw_portal(screen, exit_img, exit_portal, camera_x, camera_y)
+        level_logic.draw_portal(screen, assets['exit'], exit_portal, camera_x, camera_y)
         
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
 
@@ -2805,22 +1636,22 @@ def create_lvl3_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
+        deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        timer_text = menu_ui.render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(3, current_time)
-        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
+        medal = level_logic.get_medal(3, current_time)
+        level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
 
@@ -2832,17 +1663,17 @@ def create_lvl3_screen():
 def create_lvl4_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     global x, y, camera_x, camera_y, spawn_x, spawn_y,  player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text, player_rect, on_ground
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
     buttons.clear()
-    screen.blit(green_background, (0, 0))
+    screen.blit(bgs['green'], (0, 0))
     wait_time = None
     death_text = None
     start_time = time.time()
 
-    in_game = load_language(lang_code).get('in_game', {})
+    in_game = manage_data.load_language(lang_code, manifest).get('in_game', {})
 
     # Camera settings
     camera_x = 0  
@@ -2946,10 +1777,10 @@ def create_lvl4_screen():
     clock = pygame.time.Clock()
 
     # Drawing
-    screen.blit(green_background, (0, 0))
+    screen.blit(bgs['green'], (0, 0))
 
-    screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
-    screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+    screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+    screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
  
     for rotating_saw in rotating_saws:
     # Update angle
@@ -2963,14 +1794,14 @@ def create_lvl4_screen():
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
     # Draw the saw
-            scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
-            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            scale_factor = (rotating_saw['r'] * 2.5) / assets['saw'].get_width()
+            rotated_saw = pygame.transform.rotozoom(assets['saw'], saw_angle, scale_factor)
             rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
             screen.blit(rotated_saw, rect)
 
     for x, y, r, color in saws:
-        scale_factor = (r * 2.5) / saw_img.get_width()
-        rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+        scale_factor = (r * 2.5) / assets['saw'].get_width()
+        rotated_saw = pygame.transform.rotozoom(assets['saw'], saw_angle, scale_factor)
         rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
         screen.blit(rotated_saw, rect)
 
@@ -2988,7 +1819,7 @@ def create_lvl4_screen():
         pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
 
     fall_message = in_game.get("fall_message", "Fell too far!")
-    rendered_fall_text = render_text(fall_message, True, (255, 0, 0))  # Render the fall text
+    rendered_fall_text = menu_ui.render_text(fall_message, True, (255, 0, 0))  # Render the fall text
         
     for pair in key_block_pairs:
             key_x, key_y, key_r, key_color = pair["key"]
@@ -3003,12 +1834,12 @@ def create_lvl4_screen():
         pygame.draw.rect(screen, (128, 0, 128), rect.move(-camera_x, -camera_y))
 
 
-    level_logic.draw_portal(screen, exit_img, exit_portal, camera_x, camera_y)
+    level_logic.draw_portal(screen, assets['exit'], exit_portal, camera_x, camera_y)
 
     draw_notifications()
     draw_syncing_status()
     
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
        while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -3036,7 +1867,7 @@ def create_lvl4_screen():
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
             if not is_mute:
-                jump_sound.play()
+                sounds['jump'].play()
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -3049,7 +1880,7 @@ def create_lvl4_screen():
                 player_x += move_speed
 
             if on_ground and not was_moving and not is_mute:
-                move_sound.play()
+                sounds['move'].play()
             was_moving = True
         else:
             was_moving = False
@@ -3099,7 +1930,7 @@ def create_lvl4_screen():
             death_text = rendered_fall_text
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                fall_sound.play()
+                sounds['fall'].play()
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount += 1
@@ -3112,13 +1943,13 @@ def create_lvl4_screen():
             checkpoint_reached = True
             spawn_x, spawn_y = 1500, 500  # Store checkpoint position
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
         if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
             checkpoint_reached = False
             checkpoint_reached2 = True
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
             pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
             spawn_x, spawn_y = 3150, 100  # Checkpoint position
@@ -3130,7 +1961,7 @@ def create_lvl4_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
 
-            save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl5_screen') 
 
@@ -3146,64 +1977,64 @@ def create_lvl4_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(green_background, (0, 0))
+        screen.blit(bgs['green'], (0, 0))
 
         if checkpoint_reached:
-            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         if checkpoint_reached2:
-            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         
         # Draw key only if not collected
  
 # Saw collision detection and drawing
-        if level_logic.handle_rotating_saws(screen, rotating_saws, blocks, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_rotating_saws(screen, rotating_saws, blocks, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
             key_block_pairs[0]["collected"] = False
 
         # Handle Moving Saws
-        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
             key_block_pairs[0]["collected"] = False
         
-        level_logic.draw_saws(screen, saws, saw_img, camera_x, camera_y, saw_cache)
+        level_logic.draw_saws(screen, saws, assets['saw'], camera_x, camera_y, saw_cache)
 
         # 2. Check for saw deaths
         if level_logic.check_saw_collisions(player_rect, saws):
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
 
-        player_x, player_y, velocity_y, on_ground, player_rect = level_logic.handle_key_blocks(screen, open_sound, key_block_pairs, is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y)
+        player_x, player_y, velocity_y, on_ground, player_rect = level_logic.handle_key_blocks(screen, sounds['open'], key_block_pairs, is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y)
 
         player_x, player_y, velocity_y, on_ground, player_rect = level_logic.block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground)
 
         if level_logic.handle_bottom_collisions(blocks, player_rect, velocity_y):  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
+                death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 key_block_pairs[0]["collected"] = False  # Reset key block status
                 if not is_mute:    
-                    hit_sound.play()
+                    sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1 
 
@@ -3217,23 +2048,23 @@ def create_lvl4_screen():
             if player_rect.colliderect(laser):
                 # Trigger death logic
                 player_x, player_y = spawn_x, spawn_y
-                death_text = render_text(in_game.get("laser_message", "Lasered!"), True, (255, 0, 0))
+                death_text = menu_ui.render_text(in_game.get("laser_message", "Lasered!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 if not is_mute:
-                    laser_sound.play()
+                    sounds['laser'].play()
                 velocity_y = 0
                 deathcount += 1
                 key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
-        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, bounce_sound, False, False)
+        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, sounds['bounce'], False, False)
         level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
 
         if level_logic.check_spike_collisions(spikes, player_x, player_y, img_width, img_height):
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             velocity_y = 0
             deathcount += 1
         
@@ -3255,7 +2086,7 @@ def create_lvl4_screen():
             pygame.draw.rect(screen, (128, 0, 128), rect.move(-camera_x, -camera_y))
 
 
-        level_logic.draw_portal(screen, exit_img, exit_portal, camera_x, camera_y)
+        level_logic.draw_portal(screen, assets['exit'], exit_portal, camera_x, camera_y)
         
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
 
@@ -3269,22 +2100,22 @@ def create_lvl4_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
+        deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        timer_text = menu_ui.render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(4, current_time)
-        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
+        medal = level_logic.get_medal(4, current_time)
+        level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
         draw_notifications()
@@ -3294,17 +2125,17 @@ def create_lvl4_screen():
 def create_lvl5_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     global x, y, camera_x, camera_y, spawn_x, spawn_y,  player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text, player_rect, on_ground
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
     buttons.clear()
-    screen.blit(green_background, (0, 0))
+    screen.blit(bgs['green'], (0, 0))
     wait_time = None
     death_text = None
     start_time = time.time()
 
-    in_game = load_language(lang_code).get('in_game', {})
+    in_game = manage_data.load_language(lang_code, manifest).get('in_game', {})
 
     # Camera settings
     camera_x = 0  
@@ -3419,8 +2250,8 @@ def create_lvl5_screen():
 
     
     # Render the texts
-    screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
-    screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+    screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+    screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
  
     for rotating_saw in rotating_saws:
     # Update angle
@@ -3434,14 +2265,14 @@ def create_lvl5_screen():
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
     # Draw the saw
-            scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
-            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            scale_factor = (rotating_saw['r'] * 2.5) / assets['saw'].get_width()
+            rotated_saw = pygame.transform.rotozoom(assets['saw'], saw_angle, scale_factor)
             rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
             screen.blit(rotated_saw, rect)
     
     for x, y, r, color in saws:
-        scale_factor = (r * 2.5) / saw_img.get_width()
-        rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+        scale_factor = (r * 2.5) / assets['saw'].get_width()
+        rotated_saw = pygame.transform.rotozoom(assets['saw'], saw_angle, scale_factor)
         rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
         screen.blit(rotated_saw, rect)
 
@@ -3460,14 +2291,14 @@ def create_lvl5_screen():
             pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
             pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
-    level_logic.draw_portal(screen, exit_img, exit_portal, camera_x, camera_y)
+    level_logic.draw_portal(screen, assets['exit'], exit_portal, camera_x, camera_y)
 
     fall_message = in_game.get("fall_message", "Fell too far!")
-    rendered_fall_text = render_text(fall_message, True, (255, 0, 0))  # Render the fall text
+    rendered_fall_text = menu_ui.render_text(fall_message, True, (255, 0, 0))  # Render the fall text
     
     draw_notifications()
     draw_syncing_status()
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -3495,7 +2326,7 @@ def create_lvl5_screen():
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
             if not is_mute:
-                jump_sound.play()
+                sounds['jump'].play()
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -3508,7 +2339,7 @@ def create_lvl5_screen():
                 player_x += move_speed
 
             if on_ground and not was_moving and not is_mute:
-                move_sound.play()
+                sounds['move'].play()
             was_moving = True
         else:
             was_moving = False
@@ -3535,7 +2366,7 @@ def create_lvl5_screen():
             death_text = rendered_fall_text
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                fall_sound.play()
+                sounds['fall'].play()
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount += 1
@@ -3548,13 +2379,13 @@ def create_lvl5_screen():
             checkpoint_reached = True
             spawn_x, spawn_y = 2050, -200  # Store checkpoint position
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
         if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
             checkpoint_reached = False
             checkpoint_reached2 = True
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
             pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
             spawn_x, spawn_y = 3450, -550  # Checkpoint position
@@ -3567,7 +2398,7 @@ def create_lvl5_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
 
-            save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl6_screen')
 
@@ -3583,92 +2414,92 @@ def create_lvl5_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(green_background, (0, 0))
+        screen.blit(bgs['green'], (0, 0))
 
         if checkpoint_reached:
-            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         if checkpoint_reached2:
-            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         
         # Draw key only if not collected
  
 # Saw collision detection and drawing
-        if level_logic.handle_rotating_saws(screen, rotating_saws, blocks, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_rotating_saws(screen, rotating_saws, blocks, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
             key_block_pairs[0]["collected"] = False
 
         # Handle Moving Saws
-        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
             key_block_pairs[0]["collected"] = False
         
         # Handle Moving Saws
-        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
             key_block_pairs[0]["collected"] = False
 
-        level_logic.draw_saws(screen, saws, saw_img, camera_x, camera_y, saw_cache)
+        level_logic.draw_saws(screen, saws, assets['saw'], camera_x, camera_y, saw_cache)
 
         # 2. Check for saw deaths
         if level_logic.check_saw_collisions(player_rect, saws):
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
 
-        player_x, player_y, velocity_y, on_ground, player_rect = level_logic.handle_key_blocks(screen, open_sound, key_block_pairs, is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y)
+        player_x, player_y, velocity_y, on_ground, player_rect = level_logic.handle_key_blocks(screen, sounds['open'], key_block_pairs, is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y)
         player_x, player_y, velocity_y, on_ground, player_rect = level_logic.block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground)
         
         if level_logic.handle_bottom_collisions(blocks, player_rect, velocity_y):  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
+                death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 if not is_mute:    
-                    hit_sound.play()
+                    sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1 
 
         for block in walls:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
 
-        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, bounce_sound, False, False)
+        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, sounds['bounce'], False, False)
         level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
 
         if level_logic.check_spike_collisions(spikes, player_x, player_y, img_width, img_height):
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             velocity_y = 0
             deathcount += 1
 
-        level_logic.draw_portal(screen, exit_img, exit_portal, camera_x, camera_y)
+        level_logic.draw_portal(screen, assets['exit'], exit_portal, camera_x, camera_y)
        
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
 
@@ -3682,22 +2513,22 @@ def create_lvl5_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
+        deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        timer_text = menu_ui.render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(5, current_time)
-        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
+        medal = level_logic.get_medal(5, current_time)
+        level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
         
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
         
@@ -3709,16 +2540,16 @@ def create_lvl6_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     start_time = time.time()
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     global x, y, camera_x, camera_y, spawn_x, spawn_y,  player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text, player_rect, on_ground
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
     buttons.clear()
-    screen.blit(green_background, (0, 0))
+    screen.blit(bgs['green'], (0, 0))
 
     wait_time = None
     death_text = None
-    in_game = load_language(lang_code).get('in_game', {})
+    in_game = manage_data.load_language(lang_code, manifest).get('in_game', {})
 
     # Camera settings
     camera_x = 300
@@ -3814,8 +2645,8 @@ def create_lvl6_screen():
     clock = pygame.time.Clock()
 
 
-    screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
-    screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+    screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+    screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
  
     for rotating_saw in rotating_saws:
     # Update angle
@@ -3829,14 +2660,14 @@ def create_lvl6_screen():
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
     # Draw the saw
-            scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
-            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            scale_factor = (rotating_saw['r'] * 2.5) / assets['saw'].get_width()
+            rotated_saw = pygame.transform.rotozoom(assets['saw'], saw_angle, scale_factor)
             rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
             screen.blit(rotated_saw, rect)
 
     for x, y, r, color in saws:
             angle = (pygame.time.get_ticks() // 3) % 360
-            saw_ig_img = saw_img
+            saw_ig_img = assets['saw']
             curr_w, curr_h = saw_ig_img.get_size()
             center_x = x - camera_x
             center_y = y - camera_y
@@ -3864,14 +2695,14 @@ def create_lvl6_screen():
             pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
             pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
-    level_logic.draw_portal(screen, exit_img, exit_portal, camera_x, camera_y)
+    level_logic.draw_portal(screen, assets['exit'], exit_portal, camera_x, camera_y)
 
     fall_message = in_game.get("fall_message", "Fell too far!")
-    rendered_fall_text = render_text(fall_message, True, (255, 0, 0))  # Render the fall text
+    rendered_fall_text = menu_ui.render_text(fall_message, True, (255, 0, 0))  # Render the fall text
 
     draw_notifications()
     draw_syncing_status()
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -3902,7 +2733,7 @@ def create_lvl6_screen():
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
             if not is_mute:
-                jump_sound.play()
+                sounds['jump'].play()
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -3915,7 +2746,7 @@ def create_lvl6_screen():
                 player_x += move_speed
 
             if on_ground and not was_moving and not is_mute:
-                move_sound.play()
+                sounds['move'].play()
             was_moving = True
         else:
             was_moving = False
@@ -3933,7 +2764,7 @@ def create_lvl6_screen():
             death_text = rendered_fall_text
             wait_time = pygame.time.get_ticks()
             if not is_mute and val > 0.35: # type: ignore
-                fall_sound.play()
+                sounds['fall'].play()
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount += 1
@@ -3946,13 +2777,13 @@ def create_lvl6_screen():
             checkpoint_reached = True
             spawn_x, spawn_y = 2400, 350  # Store checkpoint position
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
         if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
             checkpoint_reached = False
             checkpoint_reached2 = True
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
             pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
             spawn_x, spawn_y = 3150, 400  # Checkpoint position
@@ -3964,7 +2795,7 @@ def create_lvl6_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
             Achievements.perfect6(current_time, deathcount)
-            save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('worlds')
 
@@ -3980,62 +2811,62 @@ def create_lvl6_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(green_background, (0, 0))
+        screen.blit(bgs['green'], (0, 0))
 
         if checkpoint_reached:
-            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         if checkpoint_reached2:
-            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         
         # Draw key only if not collected
  
 # Saw collision detection and drawing
-        if level_logic.handle_rotating_saws(screen, rotating_saws, blocks, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_rotating_saws(screen, rotating_saws, blocks, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
 
         # Handle Moving Saws
-        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
         
         # Handle Moving Saws
-        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
 
-        level_logic.draw_saws(screen, saws, saw_img, camera_x, camera_y, saw_cache)
+        level_logic.draw_saws(screen, saws, assets['saw'], camera_x, camera_y, saw_cache)
 
         # 2. Check for saw deaths
         if level_logic.check_saw_collisions(player_rect, saws):
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
 
-        player_x, player_y, velocity_y, on_ground, player_rect = level_logic.handle_key_blocks(screen, open_sound, key_block_pairs, is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y)
+        player_x, player_y, velocity_y, on_ground, player_rect = level_logic.handle_key_blocks(screen, sounds['open'], key_block_pairs, is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y)
 
         for laser in lasers:
             pygame.draw.rect(screen, (255, 0, 0), (int(laser.x - camera_x), int(laser.y - camera_y), laser.width, laser.height))
@@ -4044,10 +2875,10 @@ def create_lvl6_screen():
             # Check if the player collides with the laser
             if player_rect.colliderect(laser):
                 # Trigger death logic
-                death_text = render_text(in_game.get("laser_message", "Lasered!"), True, (255, 0, 0))
+                death_text = menu_ui.render_text(in_game.get("laser_message", "Lasered!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 if not is_mute and val > 0.35:
-                    laser_sound.play()
+                    sounds['laser'].play()
                 player_x, player_y = spawn_x, spawn_y # type: ignore
                 deathcount += 1
                 velocity_y = 0
@@ -4057,26 +2888,26 @@ def create_lvl6_screen():
         
         if level_logic.handle_bottom_collisions(blocks, player_rect, velocity_y):  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
+                death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 if not is_mute:    
-                    hit_sound.play()
+                    sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1 
 
-        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, bounce_sound, False, False)
+        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, sounds['bounce'], False, False)
         level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
 
         if level_logic.check_spike_collisions(spikes, player_x, player_y, img_width, img_height):
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             velocity_y = 0
             deathcount += 1
 
-        level_logic.draw_portal(screen, exit_img, exit_portal, camera_x, camera_y)
+        level_logic.draw_portal(screen, assets['exit'], exit_portal, camera_x, camera_y)
         
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
 
@@ -4090,22 +2921,22 @@ def create_lvl6_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
+        deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        timer_text = menu_ui.render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(6, current_time)
-        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
+        medal = level_logic.get_medal(6, current_time)
+        level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 2500:
@@ -4113,14 +2944,14 @@ def create_lvl6_screen():
                     screen.blit(death_text, (20, 50))
                 else:
                     if not guide:
-                        hscore.play()
+                        sounds['hscore'].play()
                         guide = True
                     
                     if val < 0.15:
-                        screen.blit(render_text('"The strong is not the one who overcomes the people by his strength, but the strong is', True, (255, 255, 0)), (20, 50))
-                        screen.blit(render_text('the one who controls himself while in anger." (Bukhari 6114)', True, (255, 255, 0)), (20, 80)) 
+                        screen.blit(menu_ui.render_text('"The strong is not the one who overcomes the people by his strength, but the strong is', True, (255, 255, 0)), (20, 50))
+                        screen.blit(menu_ui.render_text('the one who controls himself while in anger." (Bukhari 6114)', True, (255, 255, 0)), (20, 80)) 
                     else:
-                        screen.blit(render_text('"Indeed, with hardship comes ease." (Quran 94:6)', True, (255, 255, 0)), (20, 50))
+                        screen.blit(menu_ui.render_text('"Indeed, with hardship comes ease." (Quran 94:6)', True, (255, 255, 0)), (20, 50))
             
             else:
                 wait_time = None
@@ -4134,15 +2965,15 @@ def create_lvl7_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     start_time = time.time()
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
     buttons.clear()
-    screen.blit(mech_background, (0, 0))
+    screen.blit(bgs['mech'], (0, 0))
 
     wait_time = None
     death_text = None
-    in_game = load_language(lang_code).get('in_game', {})
+    in_game = manage_data.load_language(lang_code, manifest).get('in_game', {})
 
     # Camera settings
     camera_x = 300
@@ -4220,8 +3051,8 @@ def create_lvl7_screen():
         }
     ]
 
-    screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
-    screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+    screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+    screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
  
     for rotating_saw in rotating_saws:
             rad = math.radians(rotating_saw['angle'])
@@ -4232,7 +3063,7 @@ def create_lvl7_screen():
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
             angle = (pygame.time.get_ticks() // 3) % 360
-            saw_ig_img = saw_img
+            saw_ig_img = assets['saw']
             curr_w, curr_h = saw_ig_img.get_size()
             center_x = x - camera_x
             center_y = y - camera_y
@@ -4242,7 +3073,7 @@ def create_lvl7_screen():
 
     for x, y, r, color in saws:
             angle = (pygame.time.get_ticks() // 3) % 360
-            saw_ig_img = saw_img
+            saw_ig_img = assets['saw']
             curr_w, curr_h = saw_ig_img.get_size()
             center_x = x - camera_x
             center_y = y - camera_y
@@ -4256,13 +3087,13 @@ def create_lvl7_screen():
     for spike in spikes:
         pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
 
-    level_logic.draw_portal(screen, mechexit_img, exit_portal, camera_x, camera_y)
+    level_logic.draw_portal(screen, assets['mech_exit'], exit_portal, camera_x, camera_y)
     
-    portal_text = render_text(in_game.get("portal_message", "These blue portals teleport you! But to good places... mostly!"), True, (0, 102, 204))
+    portal_text = menu_ui.render_text(in_game.get("portal_message", "These blue portals teleport you! But to good places... mostly!"), True, (0, 102, 204))
 
     draw_notifications()
     draw_syncing_status()
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
        while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -4288,7 +3119,7 @@ def create_lvl7_screen():
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             velocity_y = -jump_strength
             if not is_mute:
-                jump_sound.play()
+                sounds['jump'].play()
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -4301,7 +3132,7 @@ def create_lvl7_screen():
                 player_x += move_speed
 
             if on_ground and not was_moving and not is_mute:
-                move_sound.play()
+                sounds['move'].play()
             was_moving = True
         else:
             was_moving = False
@@ -4317,10 +3148,10 @@ def create_lvl7_screen():
         on_ground = False
 
         if player_y > 1100:
-            death_text = render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                fall_sound.play()
+                sounds['fall'].play()
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount += 1
@@ -4332,7 +3163,7 @@ def create_lvl7_screen():
             checkpoint_reached = True
             spawn_x, spawn_y = 2600, 250  # Store checkpoint position
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
         if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
             checkpoint_reached = False
@@ -4341,7 +3172,7 @@ def create_lvl7_screen():
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
             spawn_x, spawn_y = 150, -1500  # Checkpoint position
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
@@ -4350,7 +3181,7 @@ def create_lvl7_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
 
-            save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl8_screen')
 
@@ -4366,70 +3197,70 @@ def create_lvl7_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(mech_background, (0, 0))
+        screen.blit(bgs['mech'], (0, 0))
 
         if checkpoint_reached:
-            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         if checkpoint_reached2:
-            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         
         # Draw key only if not collected
  
 # Saw collision detection and drawing
-        if level_logic.handle_rotating_saws(screen, rotating_saws, blocks, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_rotating_saws(screen, rotating_saws, blocks, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
 
         # Handle Moving Saws
-        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
         
         # Handle Moving Saws
-        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
 
         for teleporter in teleporters:
             # Draw the entry rectangle
-            level_logic.draw_portal(screen, teleport_img, teleporter["entry"], camera_x, camera_y)
+            level_logic.draw_portal(screen, assets['teleport'], teleporter["entry"], camera_x, camera_y)
             # Draw the exit rectangle
-            level_logic.draw_portal(screen, teleexit_img, teleporter["exit"], camera_x, camera_y)
+            level_logic.draw_portal(screen, assets['teleport_exit'], teleporter["exit"], camera_x, camera_y)
 
            # Check if the player collides with the entry rectangle
             if player_rect.colliderect(teleporter["entry"]):
                 # Teleport the player to the exit rectangle
                 if not is_mute:
-                    warp_sound.play()
+                    sounds['warp'].play()
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
         
-        level_logic.draw_saws(screen, saws, saw_img, camera_x, camera_y, saw_cache)
+        level_logic.draw_saws(screen, saws, assets['saw'], camera_x, camera_y, saw_cache)
 
         # 2. Check for saw deaths
         if level_logic.check_saw_collisions(player_rect, saws):
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
@@ -4438,10 +3269,10 @@ def create_lvl7_screen():
 
         if level_logic.check_spike_collisions(spikes, player_x, player_y, img_width, img_height):
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             velocity_y = 0
             deathcount += 1
 
@@ -4449,14 +3280,14 @@ def create_lvl7_screen():
         
         if level_logic.handle_bottom_collisions(blocks, player_rect, velocity_y):  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
+                death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 if not is_mute:    
-                    hit_sound.play()
+                    sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1 
 
-        level_logic.draw_portal(screen, mechexit_img, exit_portal, camera_x, camera_y)
+        level_logic.draw_portal(screen, assets['mech_exit'], exit_portal, camera_x, camera_y)
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)          
 
         screen.blit(portal_text, (4400 - camera_x, 300 - camera_y))
@@ -4471,22 +3302,22 @@ def create_lvl7_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
+        deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        timer_text = menu_ui.render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(7, current_time)
-        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
+        medal = level_logic.get_medal(7, current_time)
+        level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
         draw_notifications()
@@ -4496,18 +3327,18 @@ def create_lvl7_screen():
 def create_lvl8_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
 
     new_hs = False
     buttons.clear()
-    screen.blit(mech_background, (0, 0))
+    screen.blit(bgs['mech'], (0, 0))
 
     wait_time = None
     death_text = None
     start_time = time.time()
 
-    in_game = load_language(lang_code).get('in_game', {})
+    in_game = manage_data.load_language(lang_code, manifest).get('in_game', {})
 
     # Camera settings
     camera_x = 300
@@ -4603,12 +3434,12 @@ def create_lvl8_screen():
         }
     ]
 
-    screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
-    screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+    screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+    screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
  
     for x, y, r, color in saws:
             angle = (pygame.time.get_ticks() // 3) % 360
-            saw_ig_img = saw_img
+            saw_ig_img = assets['saw']
             curr_w, curr_h = saw_ig_img.get_size()
             center_x = x - camera_x
             center_y = y - camera_y
@@ -4622,20 +3453,20 @@ def create_lvl8_screen():
     for spike in spikes:
         pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
 
-    level_logic.draw_portal(screen, mechexit_img, exit_portal, camera_x, camera_y)
+    level_logic.draw_portal(screen, assets['mech_exit'], exit_portal, camera_x, camera_y)
 
     button1_text = in_game.get("button1_message", "Blue buttons, upon activation, will make you jump higher!")
-    button1_text = render_text(button1_text, True, (0, 102, 204))
+    button1_text = menu_ui.render_text(button1_text, True, (0, 102, 204))
 
     clarify_text = in_game.get("clarify_message", "Until you reach a checkpoint, of course!")
-    clarify_text = render_text(clarify_text, True, (0, 102, 204))
+    clarify_text = menu_ui.render_text(clarify_text, True, (0, 102, 204))
 
     mock_text = in_game.get("mock_message", "Wrong way my guy nothing to see here...")
-    mock_text = render_text(mock_text, True, (255, 0, 0))
+    mock_text = menu_ui.render_text(mock_text, True, (255, 0, 0))
 
     draw_notifications()
     draw_syncing_status()
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
        while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -4664,7 +3495,7 @@ def create_lvl8_screen():
             else:
                 velocity_y = -jump_strength
             if not is_mute:
-                jump_sound.play()
+                sounds['jump'].play()
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -4677,7 +3508,7 @@ def create_lvl8_screen():
                 player_x += move_speed
 
             if on_ground and not was_moving and not is_mute:
-                move_sound.play()
+                sounds['move'].play()
             was_moving = True
         else:
             was_moving = False
@@ -4692,11 +3523,11 @@ def create_lvl8_screen():
         on_ground = False
 
         if player_y > 1100:
-            death_text = render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             weak_grav = False # Reset weak gravity status
             if not is_mute:
-                fall_sound.play()
+                sounds['fall'].play()
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount += 1
@@ -4709,7 +3540,7 @@ def create_lvl8_screen():
             weak_grav = False # Reset weak gravity status
             spawn_x, spawn_y = 8680, -500  # Store checkpoint position
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
         if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
             checkpoint_reached = False
@@ -4719,7 +3550,7 @@ def create_lvl8_screen():
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
             spawn_x, spawn_y = 10000, -350  # Checkpoint position
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
@@ -4728,7 +3559,7 @@ def create_lvl8_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
 
-            save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl9_screen')
 
@@ -4744,71 +3575,71 @@ def create_lvl8_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(mech_background, (0, 0))
+        screen.blit(bgs['mech'], (0, 0))
 
         if checkpoint_reached:
-            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         if checkpoint_reached2:
-            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
 
         # Handle Moving Saws
         for teleporter in teleporters:
             # Draw the entry rectangle
-            level_logic.draw_portal(screen, teleport_img, teleporter["entry"], camera_x, camera_y)
+            level_logic.draw_portal(screen, assets['teleport'], teleporter["entry"], camera_x, camera_y)
             # Draw the exit rectangle
-            level_logic.draw_portal(screen, teleexit_img, teleporter["exit"], camera_x, camera_y)
+            level_logic.draw_portal(screen, assets['teleport_exit'], teleporter["exit"], camera_x, camera_y)
 
            # Check if the player collides with the entry rectangle
             if player_rect.colliderect(teleporter["entry"]):
                 # Teleport the player to the exit rectangle
                 if not is_mute:
-                    warp_sound.play()
+                    sounds['warp'].play()
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
 
-        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
         
         # Handle Moving Saws
-        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
 
-        level_logic.draw_saws(screen, saws, saw_img, camera_x, camera_y, saw_cache)
+        level_logic.draw_saws(screen, saws, assets['saw'], camera_x, camera_y, saw_cache)
 
         # 2. Check for saw deaths
         if level_logic.check_saw_collisions(player_rect, saws):
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
 
-        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, bounce_sound, False, weak_grav)
+        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, sounds['bounce'], False, weak_grav)
         level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
 
         if level_logic.check_spike_collisions(spikes, player_x, player_y, img_width, img_height):
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             velocity_y = 0
             deathcount += 1
 
@@ -4816,10 +3647,10 @@ def create_lvl8_screen():
         
         if level_logic.handle_bottom_collisions(blocks, player_rect, velocity_y):  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
+                death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 if not is_mute:    
-                    hit_sound.play()
+                    sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1 
 
@@ -4843,11 +3674,11 @@ def create_lvl8_screen():
             # If distance is less than radius, weaker gravity activated
             if distance < gravity_weaker_radius and not weak_grav:
                 if not is_mute:
-                    button_sound.play()
+                    sounds['button'].play()
                 weak_grav = True
 
 
-        level_logic.draw_portal(screen, mechexit_img, exit_portal, camera_x, camera_y)
+        level_logic.draw_portal(screen, assets['mech_exit'], exit_portal, camera_x, camera_y)
         
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
 
@@ -4865,22 +3696,22 @@ def create_lvl8_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
+        deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        timer_text = menu_ui.render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(8, current_time)
-        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
+        medal = level_logic.get_medal(8, current_time)
+        level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
         draw_notifications()
@@ -4890,17 +3721,17 @@ def create_lvl8_screen():
 def create_lvl9_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
     buttons.clear()
-    screen.blit(mech_background, (0, 0))
+    screen.blit(bgs['mech'], (0, 0))
     
     wait_time = None
     death_text = None
     start_time = time.time()
 
-    in_game = load_language(lang_code).get('in_game', {})
+    in_game = manage_data.load_language(lang_code, manifest).get('in_game', {})
 
     # Camera settings
     camera_x = 300
@@ -5037,8 +3868,8 @@ def create_lvl9_screen():
     moving_limit_left1 = 4050
     moving_limit_right1 = 5600
 
-    screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
-    screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+    screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+    screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
  
     for x, y, r, color in gravity_strongers:
             # Draw the button as a circle
@@ -5050,12 +3881,12 @@ def create_lvl9_screen():
     for spike in spikes:
         pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
 
-    level_logic.draw_portal(screen, mechexit_img, exit_portal, camera_x, camera_y)
+    level_logic.draw_portal(screen, assets['mech_exit'], exit_portal, camera_x, camera_y)
     
     draw_notifications()
     draw_syncing_status()
 
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
        while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -5088,7 +3919,7 @@ def create_lvl9_screen():
             else:
                 velocity_y = -jump_strength
             if not is_mute:
-                jump_sound.play()
+                sounds['jump'].play()
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -5101,7 +3932,7 @@ def create_lvl9_screen():
                 player_x += move_speed
 
             if on_ground and not was_moving and not is_mute:
-                move_sound.play()
+                sounds['move'].play()
             was_moving = True
         else:
             was_moving = False
@@ -5145,13 +3976,13 @@ def create_lvl9_screen():
                         player_x = block.x + block.width
 
         if player_y > 1100:
-            death_text = render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             key_block_pairs[0]["collected"] = False  # Reset key block status
             strong_grav = False # Reset strong gravity status
             weak_grav = False # Reset weak gravity status
             if not is_mute:    
-                fall_sound.play()
+                sounds['fall'].play()
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount += 1
@@ -5170,7 +4001,7 @@ def create_lvl9_screen():
             strong_grav = False # Reset strong gravity status
             spawn_x, spawn_y = 2300, 260  # Store checkpoint position
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
         if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
             checkpoint_reached = False
@@ -5181,7 +4012,7 @@ def create_lvl9_screen():
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
             spawn_x, spawn_y = 5600, 500  # Checkpoint position
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
@@ -5191,7 +4022,7 @@ def create_lvl9_screen():
             Achievements.lvl90000(score)
             Achievements.check_green_gold()
 
-            save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl10_screen')
 
@@ -5207,53 +4038,53 @@ def create_lvl9_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(mech_background, (0, 0))
+        screen.blit(bgs['mech'], (0, 0))
 
         if checkpoint_reached:
-            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         if checkpoint_reached2:
-            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
  
         # Handle Moving Saws
-        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
         
         # Handle Moving Saws
-        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
 
-        player_x, player_y, velocity_y, on_ground, player_rect = level_logic.handle_key_blocks(screen, open_sound, key_block_pairs, is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y)
+        player_x, player_y, velocity_y, on_ground, player_rect = level_logic.handle_key_blocks(screen, sounds['open'], key_block_pairs, is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y)
 
         for block in walls:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
 
         pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
 
-        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, bounce_sound, strong_grav, weak_grav)
+        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, sounds['bounce'], strong_grav, weak_grav)
         level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
 
         if level_logic.check_spike_collisions(spikes, player_x, player_y, img_width, img_height):
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             velocity_y = 0
             deathcount += 1
 
@@ -5261,10 +4092,10 @@ def create_lvl9_screen():
         
         if level_logic.handle_bottom_collisions(blocks, player_rect, velocity_y):  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
+                death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 if not is_mute:    
-                    hit_sound.play()
+                    sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1 
 
@@ -5288,7 +4119,7 @@ def create_lvl9_screen():
             # If distance is less than radius, stronger gravity activated
             if distance < gravity_stronger_radius and not strong_grav:
                 if not is_mute:
-                    button_sound.play()
+                    sounds['button'].play()
                 strong_grav = True
                 weak_grav = False
 
@@ -5312,18 +4143,18 @@ def create_lvl9_screen():
             # If distance is less than radius, weaker gravity activated
             if distance < gravity_weaker_radius and not weak_grav:
                 if not is_mute:
-                    button_sound.play()
+                    sounds['button'].play()
                 weak_grav = True
                 strong_grav = False
 
-        level_logic.draw_portal(screen, mechexit_img, exit_portal, camera_x, camera_y)
+        level_logic.draw_portal(screen, assets['mech_exit'], exit_portal, camera_x, camera_y)
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
 
         button2_text = in_game.get("button2_message", "Lavender buttons, upon activation, will make you jump lower!")
-        screen.blit(render_text(button2_text, True, (204, 102, 204)), (100 - camera_x, 100 - camera_y))
+        screen.blit(menu_ui.render_text(button2_text, True, (204, 102, 204)), (100 - camera_x, 100 - camera_y))
 
         clarify2_text = in_game.get("clarify_message2", "They also affect your jumps on jump blocks!")
-        screen.blit(render_text(clarify2_text, True, (204, 102, 204)), (1000 - camera_x, 450 - camera_y))
+        screen.blit(menu_ui.render_text(clarify2_text, True, (204, 102, 204)), (1000 - camera_x, 450 - camera_y))
 
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
@@ -5335,22 +4166,22 @@ def create_lvl9_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
+        deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        timer_text = menu_ui.render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(9, current_time)
-        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
+        medal = level_logic.get_medal(9, current_time)
+        level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
         
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
         draw_notifications()
@@ -5361,16 +4192,16 @@ def create_lvl10_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
     new_hs = False
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     buttons.clear()
-    screen.blit(mech_background, (0, 0))
+    screen.blit(bgs['mech'], (0, 0))
 
     wait_time = None
     death_text = None
     start_time = time.time()
 
-    in_game = load_language(lang_code).get('in_game', {})
+    in_game = manage_data.load_language(lang_code, manifest).get('in_game', {})
 
     # Camera settings
     camera_x = 300
@@ -5464,8 +4295,8 @@ def create_lvl10_screen():
     moving_limit_left1 = 2200
     moving_limit_right1 = 2800
 
-    screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
-    screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+    screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+    screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
 
     for rotating_saw in rotating_saws:
     # Update angle
@@ -5478,8 +4309,8 @@ def create_lvl10_screen():
             y = orbit_center_y + rotating_saw['orbit_radius'] * math.sin(rad)
 
     # Draw the saw
-            scale_factor = (rotating_saw['r'] * 2.5) / saw_img.get_width()
-            rotated_saw = pygame.transform.rotozoom(saw_img, saw_angle, scale_factor)
+            scale_factor = (rotating_saw['r'] * 2.5) / assets['saw'].get_width()
+            rotated_saw = pygame.transform.rotozoom(assets['saw'], saw_angle, scale_factor)
             rect = rotated_saw.get_rect(center=(int(x - camera_x), int(y - camera_y)))
             screen.blit(rotated_saw, rect)
 
@@ -5488,7 +4319,7 @@ def create_lvl10_screen():
 
     for x, y, r, color in saws:
             angle = (pygame.time.get_ticks() // 3) % 360
-            saw_ig_img = saw_img
+            saw_ig_img = assets['saw']
             curr_w, curr_h = saw_ig_img.get_size()
             center_x = x - camera_x
             center_y = y - camera_y
@@ -5500,7 +4331,7 @@ def create_lvl10_screen():
     draw_notifications()
     draw_syncing_status()
 
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
        while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -5532,7 +4363,7 @@ def create_lvl10_screen():
             else:
                 velocity_y = -jump_strength
             if not is_mute:
-                jump_sound.play()
+                sounds['jump'].play()
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -5545,7 +4376,7 @@ def create_lvl10_screen():
                 player_x += move_speed
 
             if on_ground and not was_moving and not is_mute:
-                move_sound.play()
+                sounds['move'].play()
             was_moving = True
         else:
             was_moving = False
@@ -5580,12 +4411,12 @@ def create_lvl10_screen():
                         player_x = block.x + block.width
 
         if player_y > 1100:
-            death_text = render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             lights_off = True
             strong_grav = False # Reset strong gravity status
             if not is_mute:    
-                fall_sound.play()
+                sounds['fall'].play()
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount += 1
@@ -5604,7 +4435,7 @@ def create_lvl10_screen():
             strong_grav = False # Reset strong gravity status
             spawn_x, spawn_y = 3100, 260  # Store checkpoint position
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
         if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
             checkpoint_reached = False
@@ -5615,7 +4446,7 @@ def create_lvl10_screen():
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
             spawn_x, spawn_y = 4950, 300  # Checkpoint position
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
@@ -5624,7 +4455,7 @@ def create_lvl10_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
 
-            save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl11_screen')
 
@@ -5640,56 +4471,56 @@ def create_lvl10_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(mech_background, (0, 0))
+        screen.blit(bgs['mech'], (0, 0))
 
         if checkpoint_reached:
-            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         if checkpoint_reached2:
-            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
 
 # Saw collision detection and drawing
-        if level_logic.handle_rotating_saws(screen, rotating_saws, blocks, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_rotating_saws(screen, rotating_saws, blocks, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
 
         # Handle Moving Saws
-        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
         
         # Handle Moving Saws
-        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
 
-        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, bounce_sound, strong_grav, weak_grav)
-        level_logic.draw_saws(screen, saws, saw_img, camera_x, camera_y, saw_cache)
+        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, sounds['bounce'], strong_grav, weak_grav)
+        level_logic.draw_saws(screen, saws, assets['saw'], camera_x, camera_y, saw_cache)
 
         # 2. Check for saw deaths
         if level_logic.check_saw_collisions(player_rect, saws):
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
@@ -5698,10 +4529,10 @@ def create_lvl10_screen():
         
         if level_logic.handle_bottom_collisions(blocks, player_rect, velocity_y):  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
+                death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 if not is_mute:    
-                    hit_sound.play()
+                    sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1 
 
@@ -5727,16 +4558,16 @@ def create_lvl10_screen():
             # If distance is less than radius, stronger gravity activated
             if distance < gravity_stronger_radius and not strong_grav:
                 if not is_mute:
-                    button_sound.play()
+                    sounds['button'].play()
                 strong_grav = True
                 weak_grav = False
 
-        level_logic.draw_portal(screen, mechexit_img, exit_portal, camera_x, camera_y)
+        level_logic.draw_portal(screen, assets['mech_exit'], exit_portal, camera_x, camera_y)
         
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
 
         button2_text = in_game.get("button3_message", "Purple buttons, upon activation, will turn out almost all the lights!")
-        screen.blit(render_text(button2_text, True, (104, 102, 204)), (100 - camera_x, 300 - camera_y))
+        screen.blit(menu_ui.render_text(button2_text, True, (104, 102, 204)), (100 - camera_x, 300 - camera_y))
 
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
@@ -5747,25 +4578,25 @@ def create_lvl10_screen():
         else:
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
-        player_x, player_y, velocity_y, on_ground, player_rect, lights_off = level_logic.handle_light_blocks(screen, lights, on_ground, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, lights_off, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, button_sound)
+        player_x, player_y, velocity_y, on_ground, player_rect, lights_off = level_logic.handle_light_blocks(screen, lights, on_ground, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, lights_off, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, sounds['button'])
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
+        deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        timer_text = menu_ui.render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(10, current_time)
-        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
+        medal = level_logic.get_medal(10, current_time)
+        level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
         draw_notifications()
@@ -5775,13 +4606,13 @@ def create_lvl10_screen():
 def create_lvl11_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
     buttons.clear()
-    screen.blit(mech_background, (0, 0))
+    screen.blit(bgs['mech'], (0, 0))
 
-    in_game = load_language(lang_code).get('in_game', {})
+    in_game = manage_data.load_language(lang_code, manifest).get('in_game', {})
 
     wait_time = None
     death_text = None
@@ -5820,7 +4651,7 @@ def create_lvl11_screen():
     trigger_x = 4650
     espawn_x, espawn_y = 5200, -400
     epos_x, epos_y = espawn_x, espawn_y
-    evilrobo_mascot = pygame.image.load(resource_path(f"char/evilrobot/evilrobot.png")).convert_alpha()
+    evilrobo_mascot = pygame.image.load(manage_data.resource_path(f"char/evilrobot/evilrobot.png")).convert_alpha()
     evilrobo_phase = 0    
 
     # Logic for unlocking Evil Robo
@@ -5908,7 +4739,7 @@ def create_lvl11_screen():
     
     for x, y, r, color in saws:
             angle = (pygame.time.get_ticks() // 3) % 360
-            saw_ig_img = saw_img
+            saw_ig_img = assets['saw']
             curr_w, curr_h = saw_ig_img.get_size()
             center_x = x - camera_x
             center_y = y - camera_y
@@ -5926,9 +4757,9 @@ def create_lvl11_screen():
     draw_syncing_status()
 
     button4_text = in_game.get("button4_message", "Green buttons, upon activation, will give you a massive speed boost!")
-    rendered_button4_text = render_text(button4_text, True, (51, 255, 51))
+    rendered_button4_text = menu_ui.render_text(button4_text, True, (51, 255, 51))
 
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
        while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -5962,7 +4793,7 @@ def create_lvl11_screen():
             else:
                 velocity_y = -jump_strength
             if not is_mute:
-                jump_sound.play()
+                sounds['jump'].play()
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -5981,7 +4812,7 @@ def create_lvl11_screen():
                     player_x += move_speed
 
             if on_ground and not was_moving and not is_mute:
-                move_sound.play()
+                sounds['move'].play()
             was_moving = True
         else:
             was_moving = False
@@ -6012,14 +4843,14 @@ def create_lvl11_screen():
                         player_x = rect.x + rect.width
 
         if player_y > 1100:
-            death_text = render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
             evilrobo_phase = 0
             epos_x, epos_y = espawn_x, espawn_y
             lights_off = True
             stamina = False
             wait_time = pygame.time.get_ticks()
             if not is_mute:    
-                fall_sound.play()
+                sounds['fall'].play()
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount += 1
@@ -6039,7 +4870,7 @@ def create_lvl11_screen():
             lights_off = True
             spawn_x, spawn_y = 1400, 420  # Store checkpoint position
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
         if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
             checkpoint_reached = False
@@ -6050,7 +4881,7 @@ def create_lvl11_screen():
             pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
             spawn_x, spawn_y = 5600, 330  # Checkpoint position
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
@@ -6059,7 +4890,7 @@ def create_lvl11_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
 
-            save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl12_screen')    
 
@@ -6075,55 +4906,55 @@ def create_lvl11_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(mech_background, (0, 0))
+        screen.blit(bgs['mech'], (0, 0))
 
         if checkpoint_reached:
-            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         if checkpoint_reached2:
-            screen.blit(act_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_2_x - camera_x), (flag_2_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
 
         # Handle Moving Saws
-        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
         
         # Handle Moving Saws
-        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
 
-        if level_logic.handle_rushing_saws(screen, rushing_saws, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_rushing_saws(screen, rushing_saws, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
 
-        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, bounce_sound, strong_grav, weak_grav)
-        level_logic.draw_saws(screen, saws, saw_img, camera_x, camera_y, saw_cache)
+        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, sounds['bounce'], strong_grav, weak_grav)
+        level_logic.draw_saws(screen, saws, assets['saw'], camera_x, camera_y, saw_cache)
 
         # 2. Check for saw deaths
         if level_logic.check_saw_collisions(player_rect, saws):
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
@@ -6139,14 +4970,14 @@ def create_lvl11_screen():
                 laser_rect = pygame.Rect(block['x'] + 4, block['y'] + block['height'] + 5, block['width'] - 8 , 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground and player_x != block['x']:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
+                death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 evilrobo_phase = 0
                 epos_x, epos_y = espawn_x, espawn_y
                 stamina = False
                 wait_time = pygame.time.get_ticks()
                 lights_off = True
                 if not is_mute:    
-                    hit_sound.play()
+                    sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1
 
@@ -6154,10 +4985,10 @@ def create_lvl11_screen():
 
         if level_logic.check_spike_collisions(spikes, player_x, player_y, img_width, img_height):
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             velocity_y = 0
             deathcount += 1
 
@@ -6165,10 +4996,10 @@ def create_lvl11_screen():
         
         if level_logic.handle_bottom_collisions(blocks, player_rect, velocity_y):  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
+                death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 if not is_mute:    
-                    hit_sound.play()
+                    sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1 
 
@@ -6192,12 +5023,12 @@ def create_lvl11_screen():
             # If distance is less than radius, stronger gravity activated
             if distance < speedster_radius and not stamina:
                 if not is_mute:
-                    button_sound.play()
+                    sounds['button'].play()
                 strong_grav = False
                 stamina = True
                 weak_grav = False
 
-        level_logic.draw_portal(screen, mechexit_img, exit_portal, camera_x, camera_y)
+        level_logic.draw_portal(screen, assets['mech_exit'], exit_portal, camera_x, camera_y)
         # Player Image
         screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
 
@@ -6207,14 +5038,14 @@ def create_lvl11_screen():
             screen.blit(evilrobo_mascot, ((epos_x - camera_x), (epos_y - camera_y)))
 
             if evilrobo_phase == 0 and player_x < trigger_x:
-                sus_message = render_text("Huh? Is there anyone there?", True, (255, 20, 12))
+                sus_message = menu_ui.render_text("Huh? Is there anyone there?", True, (255, 20, 12))
                 screen.blit(sus_message, (4800 - camera_x, -450 - camera_y))
             else:
                 if evilrobo_phase < 1:
                     evilrobo_phase = 1  # Prevents repeating
 
         if evilrobo_phase == 1 and player_y < -300 and lights_off:
-            holup_message = render_text("HEY! Get away from here!", True, (185, 0, 0))
+            holup_message = menu_ui.render_text("HEY! Get away from here!", True, (185, 0, 0))
             screen.blit(holup_message, (4800 - camera_x, -450 - camera_y))
             
         if evilrobo_phase == 1 and lights_off:
@@ -6230,7 +5061,7 @@ def create_lvl11_screen():
         if evilrobo_phase == 2:
             screen.blit(evilrobo_mascot, (int(epos_x - camera_x), int(epos_y - camera_y)))
             if player_y > -300:
-                confused_text = render_text("WHERE DID HE GO????", True, (82, 0, 0))
+                confused_text = menu_ui.render_text("WHERE DID HE GO????", True, (82, 0, 0))
                 screen.blit(confused_text, ((epos_x - camera_x), (epos_y - camera_y - 40)))
                 if not unlock:
                     unlock = True
@@ -6254,7 +5085,7 @@ def create_lvl11_screen():
             screen.fill((255, 255, 255))
             stamina = False
             if not is_mute:
-                hit_sound.play()
+                sounds['hit'].play()
             deathcount += 1
 
         if player_x > 4800 and player_y < -300 and not lights_off and evilrobo_phase == 2:
@@ -6269,13 +5100,13 @@ def create_lvl11_screen():
                 stamina = False
                 lights_off = True
                 if not is_mute:
-                    hit_sound.play()
+                    sounds['hit'].play()
 
         screen.blit(rendered_button4_text, (-320 - camera_x, 300 - camera_y))
 
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
         
-        player_x, player_y, velocity_y, on_ground, player_rect, lights_off = level_logic.handle_light_blocks(screen, lights, on_ground, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, lights_off, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, button_sound)
+        player_x, player_y, velocity_y, on_ground, player_rect, lights_off = level_logic.handle_light_blocks(screen, lights, on_ground, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, lights_off, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, sounds['button'])
 
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
@@ -6287,22 +5118,22 @@ def create_lvl11_screen():
             camera_y = 0  # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
+        deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        timer_text = menu_ui.render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(11, current_time)
-        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
+        medal = level_logic.get_medal(11, current_time)
+        level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
         draw_notifications()
@@ -6312,13 +5143,13 @@ def create_lvl11_screen():
 def create_lvl12_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
     buttons.clear()
-    screen.blit(mech_background, (0, 0))
+    screen.blit(bgs['mech'], (0, 0))
 
-    in_game = load_language(lang_code).get('in_game', {})
+    in_game = manage_data.load_language(lang_code, manifest).get('in_game', {})
 
     wait_time = None
     death_text = None
@@ -6432,12 +5263,12 @@ def create_lvl12_screen():
     draw_syncing_status()
 
     timed_coin_text_2 = in_game.get("timed_coin_message_2", "time. Run before they close again, or at worst, crush you...")
-    rendered_timed_text_2 = render_text(timed_coin_text_2, True, (255, 128, 0))
+    rendered_timed_text_2 = menu_ui.render_text(timed_coin_text_2, True, (255, 128, 0))
 
     timed_coin_text = in_game.get("timed_coin_message", "Orange coins are timed! They open blocks for a limited")
-    rendered_timed_text = render_text(timed_coin_text, True, (255, 128, 0))
+    rendered_timed_text = menu_ui.render_text(timed_coin_text, True, (255, 128, 0))
 
-    if transition.x <= -transition.image.get_width():
+    if not transition.active:
       while running:
         clock.tick(60)
         keys = pygame.key.get_pressed()
@@ -6474,7 +5305,7 @@ def create_lvl12_screen():
             else:
                 velocity_y = -jump_strength
             if not is_mute:
-                jump_sound.play()
+                sounds['jump'].play()
 
         # Detect if any movement key is pressed
         moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
@@ -6497,7 +5328,7 @@ def create_lvl12_screen():
                     player_x += velocity_x
 
             if on_ground and not was_moving and not is_mute:
-                move_sound.play()
+                sounds['move'].play()
             was_moving = True
         else:
             was_moving = False
@@ -6522,14 +5353,14 @@ def create_lvl12_screen():
             strong_grav = False
             spawn_x, spawn_y = 3900, 150  # Store checkpoint position
             if not is_mute:
-                checkpoint_sound.play()
+                sounds['checkpoint'].play()
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
             fin_lvl_logic(12)
             level_complete()
-            save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
            
             # Check if all medals from lvl1 to lvl12 are "Gold"
             Achievements.check_green_gold()
@@ -6544,60 +5375,60 @@ def create_lvl12_screen():
             pygame.draw.rect(screen, (255, 215, 0), flag.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
         # Drawing
-        screen.blit(mech_background, (0, 0))
+        screen.blit(bgs['mech'], (0, 0))
 
         if checkpoint_reached:
-            screen.blit(act_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_act'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         else:
-            screen.blit(nact_cp, ((flag_1_x - camera_x), (flag_1_y - camera_y)))
+            screen.blit(assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
 
         # Handle Moving Saws
-        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws(screen, moving_saws, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
         
         # Handle Moving Saws
-        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, saw_img, camera_x, camera_y, saw_cache):
+        if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, assets['saw'], camera_x, camera_y, saw_cache):
             # Death logic (same as above)
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
-            if not is_mute: death_sound.play()
+            if not is_mute: sounds['death'].play()
             velocity_y = 0
 
-        level_logic.draw_saws(screen, saws, saw_img, camera_x, camera_y, saw_cache)
+        level_logic.draw_saws(screen, saws, assets['saw'], camera_x, camera_y, saw_cache)
 
         # 2. Check for saw deaths
         if level_logic.check_saw_collisions(player_rect, saws):
-            death_text = render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
 
-        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, bounce_sound, strong_grav, weak_grav)
+        player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, sounds['bounce'], strong_grav, weak_grav)
         level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
 
         player_x, player_y, velocity_y, on_ground, player_rect = level_logic.block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground)
         
         if level_logic.handle_bottom_collisions(blocks, player_rect, velocity_y):  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
+                death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
                 wait_time = pygame.time.get_ticks()
                 if not is_mute:    
-                    hit_sound.play()
+                    sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1 
 
-        level_logic.draw_portal(screen, mechexit_img, exit_portal, camera_x, camera_y)
+        level_logic.draw_portal(screen, assets['mech_exit'], exit_portal, camera_x, camera_y)
 
         screen.blit(rendered_timed_text, (0 - camera_x, -80 - camera_y))
         
@@ -6614,7 +5445,7 @@ def create_lvl12_screen():
                     pair["locked_time"] = pygame.time.get_ticks()
                     pair["collected"] = True
                     if not is_mute:
-                        open_sound.play()
+                        sounds['open'].play()
 
             # Draw key and block only if not collected
             if not pair["collected"]:
@@ -6630,7 +5461,7 @@ def create_lvl12_screen():
             
                     if player_rect.colliderect(pair["block"]):
                         if not is_mute:
-                         hit_sound.play()
+                         sounds['hit'].play()
                         deathcount += 1
                         stamina = False  # Reset stamina status
                         lights_off = True
@@ -6642,7 +5473,7 @@ def create_lvl12_screen():
                             pair["timer"] = 0  # Reset the timer for all key blocks
                         velocity_y = 0  # Reset vertical speed
                         wait_time = pygame.time.get_ticks()  # Start the wait time
-                        death_text = render_text(in_game.get("crushed_message", "Crushed!"), True, (255, 0, 0))
+                        death_text = menu_ui.render_text(in_game.get("crushed_message", "Crushed!"), True, (255, 0, 0))
 
         for pair in key_block_pairs_timed:
             if not pair["collected"]:  # Only active locked blocks
@@ -6681,7 +5512,7 @@ def create_lvl12_screen():
             # If distance is less than radius, stronger gravity activated
             if distance < gravity_stronger_radius and not strong_grav:
                 if not is_mute:
-                    button_sound.play()
+                    sounds['button'].play()
                 strong_grav = True
                 weak_grav = False
 
@@ -6705,41 +5536,41 @@ def create_lvl12_screen():
             # If distance is less than radius, weaker gravity activated
             if distance < gravity_weaker_radius and not weak_grav:
                 if not is_mute:
-                    button_sound.play()
+                    sounds['button'].play()
                 weak_grav = True
                 strong_grav = False
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        deaths_rendered = render_text(deaths_val, True, (255, 255, 255))
+        deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = render_text(timer_txt, True, (255, 255, 255))  # white color
+        timer_text = menu_ui.render_text(timer_txt, True, (255, 255, 255))  # white color
 
         # Initialize and draw the reset and quit text
         reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+        rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
 
         quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+        rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(12, current_time)
-        level_logic.draw_medals(screen, medal, deathcount, medals_img, timer_text.get_width(), SCREEN_WIDTH)
+        medal = level_logic.get_medal(12, current_time)
+        level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
 
         if level_logic.check_spike_collisions(spikes, player_x, player_y, img_width, img_height):
             player_x, player_y = spawn_x, spawn_y
-            death_text = render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             if not is_mute:
-                death_sound.play()
+                sounds['death'].play()
             velocity_y = 0
             deathcount += 1
 
         if player_y > 1100:
-            death_text = render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
+            death_text = menu_ui.render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()  # Start the wait time
             weak_grav = False
             strong_grav = False
@@ -6747,7 +5578,7 @@ def create_lvl12_screen():
                 pair["collected"] = False  # Reset the collected status for all keys
                 pair["timer"] = 0  # Reset the timer for all key blocks
             if not is_mute:    
-                fall_sound.play()
+                sounds['fall'].play()
             player_x, player_y = spawn_x, spawn_y  # Reset player position
             velocity_y = 0
             deathcount += 1
@@ -6771,10 +5602,12 @@ def create_lvl12_screen():
 
 transition_time = None
 is_transitioning = False
+pending_lang_code = None
+selected_id = None
 
 # Handle actions based on current page
 def handle_action(key):
-    global progress, current_page, pending_level, level_load_time, transition, is_transitioning, transition_time,locked_char_sound_played, locked_char_sound_time
+    global progress, current_page, pending_level, level_load_time, transition, is_transitioning, transition_time,locked_char_sound_played, locked_char_sound_time, manifest, lang_code, pending_lang_code, selected_id
     
     global pending_page
     if current_page == 'main_menu':
@@ -6867,25 +5700,29 @@ def handle_action(key):
         elif key == "Ambience":
             muting_amb()
     elif current_page == "Account":
-        if key == "new_account":
-            # Go to your existing login/ID generation screen
+        if key == "back":
+            if not is_transitioning:
+                transition.start("settings")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "settings"
+        if key == "login":
+            # Go to login screen for existing users
             if not is_transitioning:
                 transition.start("login_screen") 
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "login_screen"
+        elif key == "new_account":
+            # Go to registration screen for new accounts
+            if not is_transitioning:
+                transition.start("registration_screen") 
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "registration_screen"
         elif key and key.startswith("load_user_"):
             # Extract ID from the key string
             selected_id = key.replace("load_user_", "")
-            # Update manifest to set 'last_used' so load_progress knows which one to grab
-            if os.path.exists(ACCOUNTS_FILE):
-                with open(ACCOUNTS_FILE, "r") as f:
-                    manifest = json.load(f)
-                manifest["last_used"] = selected_id
-                with open(ACCOUNTS_FILE, "w") as f:
-                    json.dump(manifest, f, indent=4)
-            # Load the data and move to main menu
-            progress = load_progress()
             if not is_transitioning:
                 transition.start("main_menu")
                 transition_time = pygame.time.get_ticks()
@@ -6919,7 +5756,7 @@ def handle_action(key):
                 pending_page = "settings"
         elif key in ["en", "fr", "es", "de", "zh_cn", "tr", "ru", "jp", "id", "kr", "ar", "pk"]:
             if not is_transitioning:
-                change_language(key)
+                pending_lang_code = key
                 transition.start("main_menu")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
@@ -6950,7 +5787,7 @@ def handle_action(key):
                 pending_page = "main_menu"
     elif current_page == "character_select":
         if key == "locked" and not locked_char_sound_played and not is_mute:
-            death_sound.play()
+            sounds['death'].play()
             locked_char_sound_played = False
             locked_char_sound_time = time.time()
         if key == "back":
@@ -6962,7 +5799,7 @@ def handle_action(key):
 
 # Start with main menu
 set_page('main_menu')
-update_locked_levels() # Update locked levels every frame!
+manage_data.update_locked_levels(progress, manifest) # Update locked levels every frame!
 
 # Global variables(only needed before main loop)!
 button_hovered_last_frame = False
@@ -6984,280 +5821,33 @@ input_mode = "ID"  # Toggle between typing ID or Password
 session_timeout = 3600 * 24 * 60
 last_login = 0
 
-def hash_password(password):
-    # Convert the string to bytes, then create a SHA-256 hash
-    return hashlib.sha256(password.encode()).hexdigest()
-
-def show_login_screen():
-    global username, user_pass, input_mode, login_done, progress, buttons, er, notification_text, notification_time, notif, error_code
-    settings = load_language(lang_code).get('settings', {})
-    login_done = False
-    status_msg = ""
-    status_color = (180, 180, 180)
-    if transition.x <= -transition.image.get_width():
-       while not login_done:
-        screen.blit(background, (0, 0))
-        # 1. Header
-        id_title_text = settings.get("login_header", "LOGIN / REGISTER")
-        id_title = render_text(id_title_text, True, (255, 255, 255))
-        screen.blit(id_title, (SCREEN_WIDTH // 2 - id_title.get_width() // 2, 80))
-
-        # 2. Instructions
-        instr_txt = settings.get("login_instr1", "Enter your username and password to access your account, or create a new one.")
-        instr = render_text(instr_txt, True, (255, 255, 255))
-        screen.blit(instr, (SCREEN_WIDTH // 2 - instr.get_width() // 2 , 200))
-        
-        instr_txt2 = settings.get("login_instr2", "If the account does not exist, a new account will be created for you.")
-        instr2 = render_text(instr_txt2, True, (255, 255, 255))
-        screen.blit(instr2, (SCREEN_WIDTH // 2 - instr2.get_width() // 2 , 230))
-
-        instr_txt3 = settings.get("login_instr3", "Press TAB to switch between inputting Password and Username. To return, press ESC.")
-        instr3 = render_text(instr_txt3, True, (255, 255, 255))
-        screen.blit(instr3, (SCREEN_WIDTH // 2 - instr3.get_width() // 2 , 260))
-        
-        instr_txt4 = settings.get("case_warning", "Usernames and Passwords are case sensitive!")
-        instr4 = render_text(instr_txt4, True, (255, 255, 255))
-        screen.blit(instr4, (SCREEN_WIDTH // 2 - instr4.get_width() // 2 , 290))
-
-        # 3. Status Message (Errors, Success, etc.)
-        if status_msg:
-            s_surf = render_text(status_msg, True, status_color)
-            screen.blit(s_surf, (SCREEN_WIDTH // 2 - s_surf.get_width() // 2, 350))
-
-        # 4. Inputs
-        # USERNAME
-        u_color = (255, 255, 255) if input_mode == "USER" else (80, 80, 80)
-        u_text = settings.get("username_label", "Username") # Just gets the word
-        u_surf = render_text(f"{u_text}: {username}", True, u_color) # Stick them together here
-        screen.blit(u_surf, (SCREEN_WIDTH // 2 - u_surf.get_width() // 2, 400))
-
-        # PASSWORD
-        p_color = (255, 255, 255) if input_mode == "PASS" else (80, 80, 80) 
-        p_text = settings.get("password_label", "Password") # Just gets the word
-        stars = "*" * len(user_pass)
-        p_surf = render_text(f"{p_text}: {stars}", True, p_color) # Stick them together here
-        screen.blit(p_surf, (SCREEN_WIDTH // 2 - p_surf.get_width() // 2, 450))
-        
-        # Submit button
-        submit_txt = settings.get("submit_prompt", "Press ENTER to Continue")
-        submit_surf = render_text(submit_txt, True, (0, 255, 0))
-        screen.blit(submit_surf, (SCREEN_WIDTH // 2 - submit_surf.get_width() // 2, 550))
-        
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                login_done = True
-                set_page("quit_confirm")
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_TAB:
-                    input_mode = "PASS" if input_mode == "USER" else "USER"
-                
-                if event.key == pygame.K_ESCAPE:
-                    login_done = True
-                    set_page("Account")
-
-                elif event.key == pygame.K_RETURN:
-                    if len(username) > 2 and len(user_pass) > 3:
-                        status_msg = settings.get("checking_vault", "Checking Cloud Vault...")
-                        status_color = (255, 255, 0)
-                        pygame.display.update()
-                        result = recover_account_from_cloud(username, user_pass)
-        # Access the notification globals
-                        global notif, notification_text, notification_time, er
-                        if isinstance(result, dict):
-            # [SCENARIO 1] SUCCESS
-                         progress = result
-                         save_progress(progress)
-            
-            # TRIGGER NOTIFICATION
-                         login_success_text = settings.get("login_success", "Login Successful!")
-                         notification_text = render_text(login_success_text, True, (0, 255, 0))
-                         notification_time = time.time()
-                         notif = True
-                         login_done = True
-                         if not is_mute: notify_sound.play()
-                         set_page("Account") # Explicitly set the page back
-                         return
-
-                        elif result == "CONN_ERROR":
-                            if not is_mute: 
-                                hit_sound.play()
-                            conn_error_text = settings.get("conn_error", "Connection Error: Cloud Vault is unreachable.")
-                            notification_text = render_text(conn_error_text, True, (255, 0, 0))
-                            notif = True
-                            notification_time = time.time()
-                            set_page("main_menu")
-                            return
-                        
-                        elif result == "WRONG_AUTH":
-            # [SCENARIO 2] WRONG PASS
-                         status_msg = settings.get("wrong_pass", "Incorrect Password.")
-                         status_color = (255, 50, 50)
-                         if not is_mute: death_sound.play()
-            
-                        else:
-                         # CASE: Username doesn't exist in cloud. This is a signup.
-                            guest_id_to_promote = None
-                            
-                            # Check the local manifest for a Guest (Username: "")
-                            if os.path.exists(ACCOUNTS_FILE):
-                                try:
-                                    with open(ACCOUNTS_FILE, "r") as f:
-                                        manifest = json.load(f)
-                                        users_list = manifest.get("users", {})
-                                        
-                                        # We look specifically for the empty string ""
-                                        for p_id, user_info in users_list.items():
-                                            if user_info.get("username") == "":
-                                                guest_id_to_promote = p_id
-                                                break
-                                except Exception as e:
-                                    er = True
-                                    error_code = f"Manifest Read Error: {e}"
-                                    if not is_mute:
-                                        hit_sound.play()
-                                    notification_time = time.time()
-
-                            # 2. Assign the ID
-                            if guest_id_to_promote:
-                                # PROMOTE the guest ID to this new username
-                                progress["player"]["ID"] = guest_id_to_promote
-                                print(f"Migrating Guest ID {guest_id_to_promote} to {username}")
-                            else:
-                                # No guest found, create a brand new ID
-                                # Initialize with DEFAULT STATS for a new user
-                                progress = copy.deepcopy(default_progress)
-                                progress["player"]["ID"] = generate_player_id()
-                                print(f"No guest found. Generated new ID: {progress['player']['ID']}")
-
-                            # 3. Update the credentials
-                            progress["player"]["Username"] = username
-                            progress["player"]["Pass"] = hash_password(user_pass)
-
-                            # 4. Save and Sync
-                            # This will create/update the row in your Google Sheet using the selected ID
-                            save_progress(progress)
-                            threading.Thread(target=sync_vault_to_cloud, args=(progress,), daemon=True).start()
-                            login_done = True
-                            if not is_mute: notify_sound.play()
-                            notification_txt = settings.get("account_created", "Account Created and Logged In!")
-                            notification_text = render_text(notification_txt, True, (0, 255, 0))
-                            notif = True
-                            notification_time = time.time()
-                            set_page("main_menu")
-                            return        
-                    else:
-                        if not is_mute:
-                            death_sound.play()
-                        status_msg = settings.get("too_short", "Username or Password too short.")
-                        status_color = (255, 50, 50)
-                
-                elif event.key == pygame.K_BACKSPACE:
-                    if input_mode == "USER": username = username[:-1]
-                    else: user_pass = user_pass[:-1]
-                
-                else:
-                    if event.unicode.isalnum() or event.unicode in " _-":
-                        if input_mode == "USER" and len(username) < 15:
-                            username += event.unicode
-                        elif input_mode == "PASS" and len(user_pass) < 20:
-                            user_pass += event.unicode
-        
-        draw_notifications()
-        draw_syncing_status()
-
-        pygame.display.flip()
-    pygame.display.update()
-
-
-def create_account_selector():
-    global buttons
-    buttons.clear()
-    settings = load_language(lang_code).get('settings', {})
-
-    # 1. Load manifest
-    manifest = {"users": {}}
-    if os.path.exists(ACCOUNTS_FILE):
-        try:
-            with open(ACCOUNTS_FILE, "r") as f:
-                manifest = json.load(f)
-        except: pass
-    
-    accounts = list(manifest.get("users", {}).items())
-    
-    # --- LAYOUT CONSTANTS ---
-    COLUMN_WIDTH = 300
-    START_Y = 200
-    MAX_Y = SCREEN_HEIGHT - 150
-    SPACING_Y = 72
-    
-    # Calculate how many columns we actually have
-    num_accounts = len(accounts) + 1  # +1 for the "New Player" button
-    items_per_col = (MAX_Y - START_Y) // SPACING_Y
-    num_cols = (num_accounts // items_per_col) + 1
-    
-    # Calculate the starting X so the WHOLE group is centered
-    # Total width is (number of columns * width), then we find the center
-    total_group_width = num_cols * COLUMN_WIDTH
-    start_x = (SCREEN_WIDTH // 2) - (total_group_width // 2) + (COLUMN_WIDTH // 2)
-
-    current_x = start_x
-    current_y = START_Y
-
-    # 2. Render Account Buttons
-    for p_id, info in accounts:
-        name_str = info.get("username", "Unknown")
-        rendered_name = render_text(name_str, True, (255, 255, 255))
-
-        # Check if we need to wrap to a new column
-        if current_y >= MAX_Y:
-            current_y = START_Y
-            current_x += COLUMN_WIDTH
-            
-        # Left-aligning looks better in columns:
-        # We use current_x as the anchor for the left side of the text
-        rect = rendered_name.get_rect(topleft=(current_x - 100, current_y))
-
-        buttons.append((rendered_name, rect, f"load_user_{p_id}", False))
-        current_y += SPACING_Y
-
-    # 3. "New Player" Button (Follows the same grid logic)
-    if current_y > MAX_Y:
-        current_y = START_Y
-        current_x += COLUMN_WIDTH
-
-    new_txt = settings.get("new_acc", "+ NEW PLAYER")
-    new_txt_rendered = render_text(new_txt, True, (0, 255, 200)) # Highlighted color
-    new_rect = new_txt_rendered.get_rect(topleft=(current_x - 100, current_y))
-    buttons.append((new_txt_rendered, new_rect, "new_account", False))
-
-if not is_mute and SCREEN_WIDTH > MIN_WIDTH and SCREEN_HEIGHT > MIN_HEIGHT:
-    click_sound.play()
-
 # Info
 
 # First define current XP outside the loop
-level, xp_needed, xp_total = xp()
+level, xp_needed, xp_total = manage_data.xp(progress, Achievements)
 if level < 20:
     color = (255, 255, 255)
 else:
     color = (225, 212, 31)
 
-XP_text = font_text.render(f"{level}", True, color)
+XP_text = fonts['mega'].render(f"{level}", True, color)
 if level < 20:
-    XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, color)
+    XP_text2 = menu_ui.render_text(f"{xp_needed}/{xp_total}", True, color)
 else:
-    max_txt = load_language(lang_code).get('messages', {}).get("max_level", "MAX LEVEL!")
-    XP_text2 = render_text(max_txt, True, color)
+    max_txt = manage_data.load_language(lang_code, manifest).get('messages', {}).get("max_level", "MAX LEVEL!")
+    XP_text2 = menu_ui.render_text(max_txt, True, color)
+
+if not is_mute and SCREEN_WIDTH > MIN_WIDTH and SCREEN_HEIGHT > MIN_HEIGHT:
+    sounds['click'].play()
 
 while running:
     # This is in the main loop, unlike the other texts, because it needs to update if the player changes!
-    ID_text = render_text(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
+    ID_text = menu_ui.render_text(f"ID: {progress['player']['ID']}", True, (255, 255, 255))
     ID_pos = (SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
 
-    messages = load_language(lang_code).get('messages', {})
+    messages = manage_data.load_language(lang_code, manifest).get('messages', {})
     # Clear screen!
-    screen.blit(background, (0, 0))
+    screen.blit(bgs['plain'], (0, 0))
     mouse_pos = pygame.mouse.get_pos()
 
     if transition_time is not None and pygame.time.get_ticks() - transition_time > 1000:
@@ -7266,20 +5856,20 @@ while running:
 
     # Handle transition timer and page change
     if is_transitioning and transition_time is not None and pending_page is not None:
-        if transition.x >= 0:
+        if transition.phase == 1:
             # Then recheck if XP has been added or not.
-            level, xp_needed, xp_total = xp()
+            level, xp_needed, xp_total = manage_data.xp(progress, Achievements)
             if level < 20:
                 color = (255, 255, 255)
             else:
                 color = (225, 212, 31)
 
-            XP_text = font_text.render(f"{level}", True, color)
+            XP_text = fonts['mega'].render(f"{level}", True, color)
             if level < 20:
-                XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, color)
+                XP_text2 = menu_ui.render_text(f"{xp_needed}/{xp_total}", True, color)
             else:
-                max_txt = load_language(lang_code).get('messages', {}).get("max_level", "MAX LEVEL!")
-                XP_text2 = render_text(max_txt, True, color)
+                max_txt = manage_data.load_language(lang_code, manifest).get('messages', {}).get("max_level", "MAX LEVEL!")
+                XP_text2 = menu_ui.render_text(max_txt, True, color)
                 # Then let transition loop play as normal
             is_transitioning = False
             current_pending = pending_page
@@ -7290,7 +5880,7 @@ while running:
     XP_pos2 = (SCREEN_WIDTH - (XP_text2.get_width() + 10), 50)
     XP_pos = (SCREEN_WIDTH - (XP_text.get_width() + XP_text2.get_width() + 30), 30)
     xp_center_x = XP_pos[0] + (XP_text.get_width() / 2)
-    badge_x = xp_center_x - (badge.get_width() / 2)
+    badge_x = xp_center_x - (assets['badge'].get_width() / 2)
     badge_pos = (badge_x, 32)
 
     if SCREEN_WIDTH < MIN_WIDTH or SCREEN_HEIGHT < MIN_HEIGHT:
@@ -7312,18 +5902,18 @@ while running:
             screen.fill((0, 0, 0))
 
             # Display the robo image
-            screen.blit(evilrobot_img, (SCREEN_WIDTH // 2 - evilrobot_img.get_width() // 2, SCREEN_HEIGHT // 2 - 200))
+            screen.blit(robos['evilrobot'], (SCREEN_WIDTH // 2 - robos['evilrobot'].get_width() // 2, SCREEN_HEIGHT // 2 - 200))
 
             # Render the text
-            messages = load_language(lang_code).get('messages', {})
+            messages = manage_data.load_language(lang_code, manifest).get('messages', {})
             deny_text = messages.get("deny_message", "Access denied!")
-            rendered_deny_text = render_text(deny_text, True, (255, 100, 100))
+            rendered_deny_text = menu_ui.render_text(deny_text, True, (255, 100, 100))
             error_text = messages.get("error_message","Your screen resolution is too small! Increase the screen")
-            rendered_error_text = render_text(error_text, True, (255, 255, 255))
+            rendered_error_text = menu_ui.render_text(error_text, True, (255, 255, 255))
             error_text2 = messages.get("error_message2", "resolution in your system settings.")
-            rendered_error_text2 = render_text(error_text2, True, (255, 255, 255))
+            rendered_error_text2 = menu_ui.render_text(error_text2, True, (255, 255, 255))
             countdown_text = messages.get("countdown_message", "Closing in {countdown} second(s)...").format(countdown=countdown)
-            rendered_countdown_text = render_text(countdown_text, True, (255, 100, 100))
+            rendered_countdown_text = menu_ui.render_text(countdown_text, True, (255, 100, 100))
 
             # Center the text
             screen.blit(rendered_deny_text, (SCREEN_WIDTH // 2 - rendered_deny_text.get_width() // 2, SCREEN_HEIGHT // 2 - 280))            
@@ -7345,74 +5935,92 @@ while running:
             if event.type == pygame.QUIT:
                 set_page("quit_confirm")
 
+            # Handle login screen events
+            elif current_page == "login_screen" and event.type == pygame.KEYDOWN:
+                acc_sys.handle_login_events(events, manifest, lang_code, is_mute, sounds, progress, set_page)
+                break  # Stop processing other events for this frame
+
+            # Handle registration screen events
+            elif current_page == "registration_screen" and event.type == pygame.KEYDOWN:
+                acc_sys.handle_registration_events(events, manifest, lang_code, is_mute, sounds, progress, set_page, manage_data.ACCOUNTS_FILE)
+                break  # Stop processing other events for this frame
+
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # Only process clicks if enough time has passed since last page change
-                if current_page not in ["levels", "mech_levels", "worlds"]:
+                if current_page == "Account":
                     for _, rect, key, is_locked in buttons:
                         if rect.collidepoint(event.pos):
                             if key is not None and not is_mute:
-                                click_sound.play()
+                                sounds['click'].play()
+                            # Only execute action when transition is fully covering screen
+                            handle_action(key)
+                            last_page_change_time = time.time()
+                elif current_page not in ["levels", "mech_levels", "worlds", "login_screen", "registration_screen"]:
+                    for _, rect, key, is_locked in menu_ui.buttons:
+                        if rect.collidepoint(event.pos):
+                            if key is not None and not is_mute:
+                                sounds['click'].play()
                             handle_action(key)
                             last_page_change_time = time.time()
                 elif current_page in ["levels", "mech_levels", "worlds"]:
-                    for rendered, rect, key, is_locked in buttons:
+                    for rendered, rect, key, is_locked in menu_ui.buttons:
                         if rect.collidepoint(event.pos):
                             if key is not None and not is_mute:
-                                click_sound.play()
+                                sounds['click'].play()
                             handle_action(key)  # Only load level on click!
                     
         if current_page == "main_menu":
-            screen.blit(logo, ((SCREEN_WIDTH // 2 - logo.get_width() // 2), -20))
-            screen.blit(lilrobopeek, ((SCREEN_WIDTH - lilrobopeek.get_width()), (SCREEN_HEIGHT - lilrobopeek.get_height())))
+            screen.blit(ui['logo'], ((SCREEN_WIDTH // 2 - ui['logo'].get_width() // 2), -20))
+            screen.blit(bgs['lilrobopeek'], ((SCREEN_WIDTH - bgs['lilrobopeek'].get_width()), (SCREEN_HEIGHT - bgs['lilrobopeek'].get_height())))
             screen.blit(ID_text, ID_pos)
             if level < 20:
-                screen.blit(badge, badge_pos)
+                screen.blit(assets['badge'], badge_pos)
             else:
-                screen.blit(max_badge, badge_pos)
+                screen.blit(assets['max_badge'], badge_pos)
             screen.blit(XP_text, XP_pos)
             screen.blit(XP_text2, XP_pos2)
         # Render the main menu buttons
             hovered_key = None
-            for rendered, rect, key, is_locked in buttons:
+            for rendered, rect, key, is_locked in menu_ui.buttons:
                 mouse_pos = pygame.mouse.get_pos()
-                if studio_logo_rect.collidepoint(mouse_pos):
-                    screen.blit(studio_glow, studio_glow_rect.topleft)
+                if ui['studio_logo_rect'].collidepoint(mouse_pos):
+                    screen.blit(ui['studio_glow'], ui['studio_glow_rect'].topleft)
                     if not logo_hover:
                         if not is_mute:
-                            hover_sound.play()
+                            sounds['hover'].play()
                         logo_hover = True
                     if event.type == pygame.MOUSEBUTTONDOWN and not logo_click:    
                         if not is_mute:
-                            click_sound.play()    
+                            sounds['click'].play()    
                         webbrowser.open("https://omerarfan.github.io/lilrobowebsite/") 
                         logo_click = True
                 else:
-                    screen.blit(studio_logo, studio_logo_rect.topleft)
+                    screen.blit(ui['studio_logo'], ui['studio_logo_rect'].topleft)
                     logo_hover = False
                     logo_click = False
 
                 if rect.collidepoint(mouse_pos):
                     hovered_key = key
                     if hovered_key != last_hovered_key and not is_mute:
-                        hover_sound.play()
+                        sounds['hover'].play()
 
                 screen.blit(rendered, rect)
             last_hovered_key = hovered_key
 
         if current_page == "achievements":
-            create_achieve_screen()
+            menu_ui.create_achieve_screen(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH)
 
         if current_page == "character_select":
-         screen.blit(background, (0, 0))
+         screen.blit(bgs['plain'], (0, 0))
 
          # Initialize locked sound effect and mouse position
          locked_sound_played = False
          mouse_pos = pygame.mouse.get_pos()
 
-         messages = load_language(lang_code).get('messages', {})  # Fetch localized messages
-         header_txt = load_language(lang_code).get('main_menu', {})
+         messages = manage_data.load_language(lang_code, manifest).get('messages', {})  # Fetch localized messages
+         header_txt = manage_data.load_language(lang_code, manifest).get('main_menu', {})
          char_sel = header_txt.get("character_select", "Character Select")
-         char_text = render_text(char_sel, True, (255, 255, 255))
+         char_text = menu_ui.render_text(char_sel, True, (255, 255, 255))
          screen.blit(char_text, (SCREEN_WIDTH // 2 - 100, 50))
 
          # Check if characters are locked
@@ -7421,12 +6029,12 @@ while running:
          greenrobo_unlock = progress["char"].get("greenrobo", False)
          ironrobo_unlock = progress["char"].get("ironrobo", False)
          # Get currently selected character
-         selected_character = progress["pref"].get("character", default_progress["pref"]["character"])
+         selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
          # Draw images
-         screen.blit(robot_img, robot_rect)     
-         screen.blit(evilrobot_img if evilrobo_unlock else locked_img, evilrobot_rect)
-         screen.blit(greenrobot_img if greenrobo_unlock else locked_img, greenrobot_rect)
-         screen.blit(ironrobot_img if ironrobo_unlock else locked_img, ironrobot_rect)
+         screen.blit(robos['robot'], robot_rect)     
+         screen.blit(robos['evilrobot'] if evilrobo_unlock else robos['locked'], evilrobot_rect)
+         screen.blit(robos['greenrobot'] if greenrobo_unlock else robos['locked'], greenrobot_rect)
+         screen.blit(robos['ironrobot'] if ironrobo_unlock else robos['locked'], ironrobot_rect)
          # Draw a highlight border around the selected character
          highlight_colors = {
           "robot": (63, 72, 204),
@@ -7469,21 +6077,21 @@ while running:
     # Display locked message for 5 seconds
          if wait_time is not None:
             if pygame.time.get_ticks() - wait_time < 5000:
-             rendered_locked_text = render_text(locked_text, True, (255, 255, 0))
+             rendered_locked_text = menu_ui.render_text(locked_text, True, (255, 255, 0))
              screen.blit(rendered_locked_text, ((SCREEN_WIDTH // 2 - rendered_locked_text.get_width() // 2), 100))
             else:
              wait_time = None
 
         if current_page == "language_select":
-            screen.blit(background, (0, 0))
-            screen.blit(heading_text, (SCREEN_WIDTH // 2 - heading_text.get_width() // 2, 50))
-
+            menu_ui.create_language_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH)
+            
         if current_page == "quit_confirm":
-            screen.blit(background, (0, 0))
+            screen.blit(bgs['plain'], (0, 0))
             # Render the quit confirmation text
+            quit_text, quit_text_rect = menu_ui.create_quit_confirm_buttons(lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH)
             screen.blit(quit_text, quit_text_rect)
-            screen.blit(quitbot, (SCREEN_WIDTH // 2 - robot_img.get_width() // 2, SCREEN_HEIGHT // 2 - 200))
-            button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovered_last_frame)
+            screen.blit(robos['greenrobot_moving'], (SCREEN_WIDTH // 2 - robos['robot'].get_width() // 2, SCREEN_HEIGHT // 2 - 200))
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, sounds['hover'], is_mute, mouse_pos, button_hovered_last_frame)
 
             # Allow returning to the main menu with ESC
             keys = pygame.key.get_pressed()
@@ -7528,14 +6136,14 @@ while running:
         
         elif current_page == "levels" or current_page == "mech_levels":
             if current_page == "levels":
-                screen.blit(green_background, (0, 0))
-                disk_img = greendisk_img
+                screen.blit(bgs['green'], (0, 0))
+                disk_img = disks['green']
             else:
-                screen.blit(mech_background, (0, 0))
-                disk_img = mechdisk_img
+                screen.blit(bgs['mech'], (0, 0))
+                disk_img = disks['mech']
             # Fetch the localized "Select a Level" text dynamically
             select_text = current_lang.get("level_display", "Select a Level")
-            rendered_select_text = render_text(select_text, True, (255, 255, 255))
+            rendered_select_text = menu_ui.render_text(select_text, True, (255, 255, 255))
             select_text_rect = rendered_select_text.get_rect(center=(SCREEN_WIDTH // 2, 50))
 
             # Draw the "Select a Level" text
@@ -7543,83 +6151,85 @@ while running:
 
             # Render buttons for levels
 
-            for rendered, rect, key, is_locked in buttons:
+            for rendered, rect, key, is_locked in menu_ui.buttons:
                 if rect.collidepoint(mouse_pos):
                     if key is not None:
                         # Unlocked level
-                        screen.blit(greendisk_img, rect)
+                        screen.blit(disk_img, rect)
                     else:
-                        screen.blit(lockeddisk_img, rect)
-                    button_hovered_last_frame = menu_ui.hover_effect(screen, rect, hover_sound, is_mute, button_hovered_last_frame)
+                        screen.blit(disks['locked'], rect)
+                    button_hovered_last_frame = menu_ui.hover_effect(screen, rect, sounds['hover'], is_mute, button_hovered_last_frame)
             # Show Level stats - check current mouse position every frame
-            for text_surface, disk_rect, key, is_locked in buttons:
+            for text_surface, disk_rect, key, is_locked in menu_ui.buttons:
                 if disk_rect.collidepoint(mouse_pos):
                     if key != "next" and key != "back" and not is_locked:
                         hs = progress["lvls"]['score'][key]
                         high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
-                        lvl_score_text = render_text(high_text, True, (255, 255, 0))
+                        lvl_score_text = menu_ui.render_text(high_text, True, (255, 255, 0))
 
                         # Adjust position as needed
                         screen.blit(lvl_score_text, (SCREEN_WIDTH // 2 - lvl_score_text.get_width() // 2, SCREEN_HEIGHT - 50))
                         s = key
                         num = int(s[3:])  # Skip the first 3 characters
-                        medals = progress["lvls"]['medals'][key]
-                        if medals != "None":
-                            screen.blit(medals_img[medals], (SCREEN_WIDTH // 2 - medals_img[medals].get_width() // 2 - 210, SCREEN_HEIGHT - 80))
-                        stars = get_stars(num, progress["lvls"]['score'][key])
+                        medal_name = progress["lvls"]['medals'][key]
+                        if medal_name != "None":
+                            screen.blit(medals[medal_name], (SCREEN_WIDTH // 2 - medals[medal_name].get_width() // 2 - 210, SCREEN_HEIGHT - 80))
+                        stars = level_logic.get_stars(num, progress["lvls"]['score'][key])
                         if stars >= 1:
-                            screen.blit(s_star_img, (SCREEN_WIDTH // 2 - 25, SCREEN_HEIGHT - 80))
+                            screen.blit(assets['star_small'], (SCREEN_WIDTH // 2 - 25, SCREEN_HEIGHT - 80))
                         if stars >= 2:
-                            screen.blit(s_star_img, (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 80))
+                            screen.blit(assets['star_small'], (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 80))
                         if stars == 3:
-                            screen.blit(s_star_img, (SCREEN_WIDTH // 2 + 25, SCREEN_HEIGHT - 80))
+                            screen.blit(assets['star_small'], (SCREEN_WIDTH // 2 + 25, SCREEN_HEIGHT - 80))
             
-            for text_surface, disk_rect, key, is_locked in buttons: 
+            for text_surface, disk_rect, key, is_locked in menu_ui.buttons: 
                 if key is not None:
                     screen.blit(disk_img, disk_rect)
                 else:
-                    screen.blit(lockeddisk_img, disk_rect)
+                    screen.blit(disks['locked'], disk_rect)
                 text_rect = text_surface.get_rect(center=(disk_rect.x + 50, disk_rect.y + 50))
                 screen.blit(text_surface, text_rect)
 
         elif current_page == "settings":
-            screen.blit(background, (0, 0))
-            settings_menu()
-            button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovered_last_frame)
+            menu_ui.settings_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, sounds['hover'], is_mute, mouse_pos, button_hovered_last_frame)
 
         elif current_page == "About":   
-            about_menu()
-            button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovered_last_frame)
+            menu_ui.about_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, version)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, sounds['hover'], is_mute, mouse_pos, button_hovered_last_frame)
             
         elif current_page == "Audio":
-            screen.blit(background, (0, 0))
-            audio_settings_menu()
-            button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovered_last_frame)
+            menu_ui.audio_settings_menu(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, is_mute, is_mute_amb)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, sounds['hover'], is_mute, mouse_pos, button_hovered_last_frame)
 
         elif current_page == "Account":
-            screen.blit(background, (0, 0))
-            settings = load_language(lang_code).get('settings', {})  # Fetch localized messages
+            screen.blit(bgs['plain'], (0, 0))
+            account_lang = manage_data.load_language(lang_code, manifest).get('settings', {})  # Fetch localized messages
             # 1. Draw the Title Manually Here
 
-            title_text = settings.get("select", "SELECT PROFILE")
-            title = render_text(title_text, True, (255, 255, 255))
+            title_text = account_lang.get("select", "SELECT PROFILE")
+            title = menu_ui.render_text(title_text, True, (255, 255, 255))
             screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 80))
 
             # 2. Draw the Buttons (Using the standard button loop)
-            button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovered_last_frame)
+            acc_sys.create_account_selector(manage_data.ACCOUNTS_FILE, lang_code, manifest, transition, screen, bgs, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, sounds, draw_notifications, draw_syncing_status, buttons)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, sounds['hover'], is_mute, mouse_pos, button_hovered_last_frame)
 
         elif current_page == "login_screen":
-            show_login_screen()
+            acc_sys.draw_login_screen(screen, SCREEN_WIDTH, SCREEN_HEIGHT, lang_code, manifest, bgs)
+
+        elif current_page == "registration_screen":
+            acc_sys.draw_registration_screen(screen, SCREEN_WIDTH, SCREEN_HEIGHT, lang_code, manifest, bgs)
         
         else:
-            button_hovered_last_frame = menu_ui.draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovered_last_frame)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, sounds['hover'], is_mute, mouse_pos, button_hovered_last_frame)
         
         draw_notifications()
 
         draw_syncing_status()
         
         mouse_pos = pygame.mouse.get_pos()
-        screen.blit(cursor_img, mouse_pos)
+        screen.blit(ui['cursor'], mouse_pos)
 
         if transition.active:
             transition.update()
