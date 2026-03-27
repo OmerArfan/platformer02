@@ -14,6 +14,7 @@ import requests
 from io import StringIO
 import pygame
 import acc_sys
+from level_logic import get_stars
 
 pygame.font.init()
 
@@ -80,7 +81,37 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
+with open(resource_path("data/thresholds.json"), "r", encoding="utf-8") as f:
+    thresholds_data = json.load(f)
+    level_thresholds = thresholds_data["level_thresholds"]
+    score_thresholds = thresholds_data["score_thresholds"]
+
 fonts = {}
+
+def char_assets(selected_character):
+    # Load player image
+    if selected_character == "robot": 
+        player_img = pygame.image.load(resource_path(f"char/robot/robot.png")).convert_alpha()
+        blink_img = pygame.image.load(resource_path(f"char/robot/blinkrobot.png")).convert_alpha()
+        moving_img_l = pygame.image.load(resource_path(f"char/robot/smilerobotL.png")).convert_alpha() # Resize to fit the game
+        moving_img = pygame.image.load(resource_path(f"char/robot/smilerobot.png")).convert_alpha() # Resize to fit the game
+    elif selected_character == "evilrobot":
+        player_img = pygame.image.load(resource_path(f"char/evilrobot/evilrobot.png")).convert_alpha()
+        blink_img = pygame.image.load(resource_path(f"char/evilrobot/blinkevilrobot.png")).convert_alpha()
+        moving_img_l = pygame.image.load(resource_path(f"char/evilrobot/movevilrobotL.png")).convert_alpha() # Resize to fit the game
+        moving_img = pygame.image.load(resource_path(f"char/evilrobot/movevilrobot.png")).convert_alpha() # Resize to fit the game
+    elif selected_character == "greenrobot":
+        player_img = pygame.image.load(resource_path(f"char/greenrobot/greenrobot.png")).convert_alpha()
+        blink_img = pygame.image.load(resource_path(f"char/greenrobot/blinkgreenrobot.png")).convert_alpha()
+        moving_img_l = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobotL.png")).convert_alpha() # Resize to fit the game
+        moving_img = pygame.image.load(resource_path(f"char/greenrobot/movegreenrobot.png")).convert_alpha() # Resize to fit the game
+    elif selected_character == "ironrobot":
+        player_img = pygame.image.load(resource_path(f"char/ironrobot/ironrobo.png")).convert_alpha()
+        blink_img = pygame.image.load(resource_path(f"char/ironrobot/blinkironrobo.png")).convert_alpha()
+        moving_img_l = pygame.image.load(resource_path(f"char/ironrobot/ironrobomoveL.png")).convert_alpha() # Resize to fit the game
+        moving_img = pygame.image.load(resource_path(f"char/ironrobot/ironrobomove.png")).convert_alpha() # Resize to fit the game
+    img_width, img_height = player_img.get_size()
+    return player_img, blink_img, moving_img, moving_img_l, img_width, img_height
 
 def init_accs():
     global lang_code, is_mute, is_mute_amb
@@ -114,6 +145,21 @@ def init_fonts():
         'mega': pygame.font.Font(font_path, 55)
     }
     return fonts
+
+def update_locked_levels(progress, manifest):
+    all_levels = ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
+    # Always start with all levels locked except lvl2 (which unlocks after lvl1 is completed)
+    locked = set(all_levels)
+    score = progress["lvls"].get("score", {})
+
+    # Unlock levels if the previous level's time is not 0
+    for i, lvl in enumerate(all_levels):
+        prev_lvl = f"lvl{i+1}"
+        if score.get(prev_lvl, 0) != 0:
+            locked.discard(lvl)  # Unlock this level
+
+    progress["lvls"]["locked_levels"] = list(locked)
+    save_progress(progress, manifest)
 
 def load_language(lang_code, manifest):
     try:
@@ -234,7 +280,7 @@ def load_progress():
     return data
 
 # Save progress to file
-def save_progress(data, manifest=None):
+def save_progress(data, manifest):
     global notification_text, notification_time, error_code, notif, er
     global save_count
     global SAVE_FILE 
@@ -242,7 +288,7 @@ def save_progress(data, manifest=None):
     # If manifest not provided, load it locally
     if manifest is None:
         try:
-            with open(LOCAL_MANIFEST_FILE, "r", encoding="utf-8") as f:
+            with open(ACCOUNTS_FILE, "r", encoding="utf-8") as f:
                 manifest = json.load(f)
         except:
             manifest = {"last_used": "", "users": {}, "pref": {"language": "en", "sfx": True, "ambience": True}}
@@ -489,3 +535,63 @@ def fetch_cloud_data_by_id(target_id):
         print(f"Silent Sync Error: {e}")
         
     return None
+
+def xp(progress, Achievements):
+    # XP from scores
+    scores = progress["lvls"]["score"]
+    score_xp = sum(scores.values()) // 1000
+
+    # XP from stars
+    stars = 0
+    for level in range(1, 13):
+        score = scores.get(f"lvl{level}", 0)
+        stars += get_stars(level, score)
+    star_xp = stars * 20  # 50 XP per star
+
+    # XP from achievements
+    achievements = progress["achieved"]  # your achievements dict
+    achievement_xp = {
+     "speedy_starter": 30,
+     "zen_os": 150,
+     "over_9k": 150,
+     "chase_escape": 25,
+     "golden": 200,
+     "lvl20": 0,
+    }
+
+    # Sum XP for unlocked achievements
+    ach_xp = sum(xp for ach, unlocked in achievements.items() if unlocked for name, xp in achievement_xp.items() if ach == name)
+
+    # Total XP
+    total_xp = score_xp + ach_xp + star_xp
+    progress["player"]["XP"] = total_xp
+    def xp_needed(level):
+        return int(50 * (1.1 ** (level - 1)))  # or tweak multiplier
+
+    def calculate_level(total_xp):
+        level = 1
+        xp_left = total_xp
+        while xp_left >= xp_needed(level):
+            xp_left -= xp_needed(level)
+            level += 1
+        return level, xp_left
+
+    level, xp_in_level = calculate_level(total_xp)
+    progress["player"]["Level"] = level
+    Achievements.check_xplvl20(level)
+    return level, xp_in_level, xp_needed(level)
+
+def update_xp_ui(progress, Achievements, manifest):
+    global level, xp_needed, xp_total, XP_text, XP_text2
+
+    level, xp_needed, xp_total = xp(progress, Achievements)
+
+    if level < 20:
+        color = (255, 255, 255)
+        XP_text = fonts['mega'].render(str(level), True, color)
+        XP_text2 = menu_ui.render_text(f"{xp_needed}/{xp_total}", True, color)
+    else:
+        color = (225, 212, 31)
+        XP_text = fonts['mega'].render(str(level), True, color)
+        max_txt = load_language(lang_code, manifest).get('messages', {}).get("max_level", "MAX LEVEL!")
+        XP_text2 = menu_ui.render_text(max_txt, True, color)   

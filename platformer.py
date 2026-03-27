@@ -7,14 +7,14 @@ import time
 import random
 import webbrowser
 
-import level_logic
 import menu_ui
 import manage_data
 import startup
+import level_logic
 import acc_sys
 
 # GAME VERSION
-version = "1.3.6.2"
+version = "1.3.6.3"
 
 # Initialize audio
 pygame.mixer.init()
@@ -208,38 +208,6 @@ while ps < 100:
 if ps == 100:
  running = True
 
-with open(manage_data.resource_path("data/thresholds.json"), "r", encoding="utf-8") as f:
-    thresholds_data = json.load(f)
-    level_thresholds = thresholds_data["level_thresholds"]
-    score_thresholds = thresholds_data["score_thresholds"]
-    
-# Function to get medal based on time
-def get_medal(level, time_taken):
-    thresholds = next((t for t in level_thresholds if t['level'] == level), None)
-    if not thresholds:
-        return "None"
-    if time_taken <= thresholds['gold']:
-        return "Gold"
-    elif time_taken <= thresholds['silver']:
-        return "Silver"
-    elif time_taken <= thresholds['bronze']:
-        return "Bronze"
-    else:
-        return "None"
-
-def get_stars(level, score):
-    thresholds = next((t for t in score_thresholds if t['level'] == level), None)
-    if not thresholds:
-        return 0
-    if score >= thresholds['3']:
-        return 3
-    elif score >= thresholds['2']:
-        return 2
-    elif score >= thresholds['1']:
-        return 1
-    else:
-        return 0
-
 class Achievements:
     @staticmethod
     def get_notif_text(ach_key, default_name):
@@ -275,7 +243,7 @@ class Achievements:
         if ctime <= 30 and deaths <= 0 and not unlock:
             progress["achieved"]["zen_os"] = True
             progress["char"]["ironrobo"] = True
-            manage_data.save_progress(progress)
+            manage_data.save_progress(progress, manifest)
             # LOCALIZED HERE
             notification_text = Achievements.get_notif_text("zen_os", "Zenith of Six")
             if not is_mute:
@@ -303,7 +271,7 @@ class Achievements:
         if not unlock:
             progress["achieved"]["chase_escape"] = True
             progress["char"]["evilrobo"] = True
-            manage_data.save_progress(progress)
+            manage_data.save_progress(progress, manifest)
             # LOCALIZED HERE
             notification_text = Achievements.get_notif_text("chase_escape", "Chased and Escaped")
             if not is_mute:
@@ -319,7 +287,7 @@ class Achievements:
         if all_gold and not unlock:        
             progress["achieved"]["golden"] = True
             progress["char"]["greenrobo"] = True
-            manage_data.save_progress(progress)
+            manage_data.save_progress(progress, manifest)
             # LOCALIZED HERE
             notification_text = Achievements.get_notif_text("golden", "Golden!")
             if not is_mute:
@@ -333,7 +301,7 @@ class Achievements:
         unlock = progress["achieved"].get("lv20", False)
         if Level >= 20 and not unlock:
             progress["achieved"]["lv20"] = True
-            manage_data.save_progress(progress)
+            manage_data.save_progress(progress, manifest)
             # LOCALIZED HERE
             notification_text = Achievements.get_notif_text("lv20", "XP Collector!")
             if not is_mute:
@@ -441,51 +409,6 @@ buttons = []
     # Now switch the page
    # buttons.clear()
 
-def xp():
-    # XP from scores
-    scores = progress["lvls"]["score"]
-    score_xp = sum(scores.values()) // 1000
-
-    # XP from stars
-    stars = 0
-    for level in range(1, 13):
-        score = scores.get(f"lvl{level}", 0)
-        stars += get_stars(level, score)
-    star_xp = stars * 20  # 50 XP per star
-
-    # XP from achievements
-    achievements = progress["achieved"]  # your achievements dict
-    achievement_xp = {
-     "speedy_starter": 30,
-     "zen_os": 150,
-     "over_9k": 150,
-     "chase_escape": 25,
-     "golden": 200,
-     "lvl20": 0,
-    }
-
-    # Sum XP for unlocked achievements
-    ach_xp = sum(xp for ach, unlocked in achievements.items() if unlocked for name, xp in achievement_xp.items() if ach == name)
-
-    # Total XP
-    total_xp = score_xp + ach_xp + star_xp
-    progress["player"]["XP"] = total_xp
-    def xp_needed(level):
-        return int(50 * (1.1 ** (level - 1)))  # or tweak multiplier
-
-    def calculate_level(total_xp):
-        level = 1
-        xp_left = total_xp
-        while xp_left >= xp_needed(level):
-            xp_left -= xp_needed(level)
-            level += 1
-        return level, xp_left
-
-    level, xp_in_level = calculate_level(total_xp)
-    progress["player"]["Level"] = level
-    Achievements.check_xplvl20(level)
-    return level, xp_in_level, xp_needed(level)
-
 #Initialize default character
 selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
 
@@ -505,21 +428,6 @@ def quit_game(progress):
 #    global last_page_change_time
 #    last_page_change_time = time.time()  # Track the time when going back
 #    set_page('main_menu')
-
-def update_locked_levels():
-    all_levels = ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
-    # Always start with all levels locked except lvl2 (which unlocks after lvl1 is completed)
-    locked = set(all_levels)
-    score = progress["lvls"].get("score", {})
-
-    # Unlock levels if the previous level's time is not 0
-    for i, lvl in enumerate(all_levels):
-        prev_lvl = f"lvl{i+1}"
-        if score.get(prev_lvl, 0) != 0:
-            locked.discard(lvl)  # Unlock this level
-
-    progress["lvls"]["locked_levels"] = list(locked)
-    manage_data.save_progress(progress)
 
 def muting_sfx():
     global is_mute
@@ -543,22 +451,6 @@ def muting_amb():
     # Save directly to manifest
     manage_data.update_local_manifest(progress)
 
-
-def update_xp_ui():
-    global level, xp_needed, xp_total, XP_text, XP_text2
-
-    level, xp_needed, xp_total = xp()
-
-    if level < 20:
-        color = (255, 255, 255)
-        XP_text = fonts['mega'].render(str(level), True, color)
-        XP_text2 = menu_ui.render_text(f"{xp_needed}/{xp_total}", True, color)
-    else:
-        color = (225, 212, 31)
-        XP_text = fonts['mega'].render(str(level), True, color)
-        max_txt = manage_data.load_language(lang_code, manifest).get('messages', {}).get("max_level", "MAX LEVEL!")
-        XP_text2 = menu_ui.render_text(max_txt, True, color)    
-
 # Central page switcher
 def set_page(page):
     global current_page, current_lang  # Explicitly mark current_page and current_lang as global
@@ -566,7 +458,7 @@ def set_page(page):
 
     # Reload the current language data for the new page
     if page == 'main_menu':
-        update_xp_ui() # Update XP display when returning to main menu, especially in case of different users.
+        manage_data.update_xp_ui(progress, Achievements, manifest) # Update XP display when returning to main menu, especially in case of different users.
         current_lang = manage_data.load_language(lang_code, manifest).get('main_menu', {})
         menu_ui.create_main_menu_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH)
     elif page == "achievements":
@@ -646,7 +538,7 @@ def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg):
         if unlock_flag:
             selected_character = char_key
             progress["pref"]["character"] = selected_character
-            manage_data.save_progress(progress)
+            manage_data.save_progress(progress, manifest)
             if not is_mute:
                 sounds['click'].play()
         else:
@@ -773,7 +665,7 @@ def level_complete():
         screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, 300 - score_text.get_height() // 2))
 
         # Check for XP gained
-        xp()
+        manage_data.xp(progress, Achievements)
         new_xp = progress["player"].get("XP", 0)
         gain = new_xp - old_xp
         if time.time() - star_time > 3.2:
@@ -851,32 +743,6 @@ def level_complete():
         pygame.display.update()
         clock.tick(60)
 
-def char_assets():
-    global selected_character, player_img, blink_img, moving_img, moving_img_l, img_width, img_height
-    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
-    # Load player image
-    if selected_character == "robot": 
-        player_img = pygame.image.load(manage_data.resource_path(f"char/robot/robot.png")).convert_alpha()
-        blink_img = pygame.image.load(manage_data.resource_path(f"char/robot/blinkrobot.png")).convert_alpha()
-        moving_img_l = pygame.image.load(manage_data.resource_path(f"char/robot/smilerobotL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(manage_data.resource_path(f"char/robot/smilerobot.png")).convert_alpha() # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(manage_data.resource_path(f"char/evilrobot/evilrobot.png")).convert_alpha()
-        blink_img = pygame.image.load(manage_data.resource_path(f"char/evilrobot/blinkevilrobot.png")).convert_alpha()
-        moving_img_l = pygame.image.load(manage_data.resource_path(f"char/evilrobot/movevilrobotL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(manage_data.resource_path(f"char/evilrobot/movevilrobot.png")).convert_alpha() # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(manage_data.resource_path(f"char/greenrobot/greenrobot.png")).convert_alpha()
-        blink_img = pygame.image.load(manage_data.resource_path(f"char/greenrobot/blinkgreenrobot.png")).convert_alpha()
-        moving_img_l = pygame.image.load(manage_data.resource_path(f"char/greenrobot/movegreenrobotL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(manage_data.resource_path(f"char/greenrobot/movegreenrobot.png")).convert_alpha() # Resize to fit the game
-    elif selected_character == "ironrobot":
-        player_img = pygame.image.load(manage_data.resource_path(f"char/ironrobot/ironrobo.png")).convert_alpha()
-        blink_img = pygame.image.load(manage_data.resource_path(f"char/ironrobot/blinkironrobo.png")).convert_alpha()
-        moving_img_l = pygame.image.load(manage_data.resource_path(f"char/ironrobot/ironrobomoveL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(manage_data.resource_path(f"char/ironrobot/ironrobomove.png")).convert_alpha() # Resize to fit the game
-    img_width, img_height = player_img.get_size()
-
 # For saw images
 saw_cache = {}
 
@@ -900,11 +766,11 @@ def fin_lvl_logic(lvl):
                 progress["lvls"]["times"][f"lvl{lvl}"] = round(current_time, 2)
             
             if progress["lvls"]["score"][f"lvl{lvl}"] < 100000:
-                progress["lvls"]["medals"][f"lvl{lvl}"] = get_medal(lvl, progress["lvls"]["times"][f"lvl{lvl}"])
+                progress["lvls"]["medals"][f"lvl{lvl}"] = level_logic.get_medal(lvl, progress["lvls"]["times"][f"lvl{lvl}"])
             else:
                 progress["lvls"]["medals"][f"lvl{lvl}"] = "Diamond"
 
-            medal = get_medal(lvl, current_time)
+            medal = level_logic.get_medal(lvl, current_time)
             if medal == "Gold" and deathcount == 0:
                 medal = "Diamond"
                 progress["lvls"]["medals"][f"lvl{lvl}"] = medal
@@ -914,17 +780,18 @@ def fin_lvl_logic(lvl):
                 new_hs = True
             if not new_hs:
                 hs = progress["lvls"]["score"][f"lvl{lvl}"]
-            update_locked_levels()
-            stars = get_stars(lvl, score)
+            manage_data.update_locked_levels(progress, manifest)
+            stars = level_logic.get_stars(lvl, score)
 
 
 def create_lvl1_screen():
     global player_img, screen, complete_levels, is_mute, is_transitioning, transition_time, current_time, medal, deathcount, score
     global new_hs, hs, stars, ctime
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     global x, y, camera_x, camera_y, player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text,spawn_x, spawn_y,  player_rect, on_ground
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
+
 
     buttons.clear()
     screen.blit(bgs['green'], (0, 0))
@@ -1071,7 +938,7 @@ def create_lvl1_screen():
             Achievements.lvl1speed(current_time)
             Achievements.check_green_gold()
 
-            manage_data.save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl2_screen')
 
@@ -1142,7 +1009,7 @@ def create_lvl1_screen():
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(1, current_time)
+        medal = level_logic.get_medal(1, current_time)
         level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         if keys[pygame.K_r]:
@@ -1172,9 +1039,9 @@ def create_lvl1_screen():
 def create_lvl2_screen():
     global player_img, screen, complete_levels, is_mute, selected_character, wait_time, transition_time, is_transitioning, current_time, medal, deathcount, score
     global new_hs, hs, stars, ctime
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     global x, y, camera_x, camera_y, spawn_x, spawn_y,  player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text, player_rect, on_ground
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
 
     screen.blit(bgs['green'], (0, 0))
@@ -1359,7 +1226,7 @@ def create_lvl2_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
 
-            manage_data.save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl3_screen')    
 
@@ -1446,7 +1313,7 @@ def create_lvl2_screen():
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(2, current_time)
+        medal = level_logic.get_medal(2, current_time)
         level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         if keys[pygame.K_r]:
@@ -1476,9 +1343,9 @@ def create_lvl2_screen():
 def create_lvl3_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     global x, y, camera_x, camera_y, spawn_x, spawn_y,  player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text, player_rect, on_ground
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
     screen.blit(bgs['green'], (0, 0))
     wait_time = None
@@ -1684,7 +1551,7 @@ def create_lvl3_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
 
-            manage_data.save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl4_screen')
 
@@ -1783,7 +1650,7 @@ def create_lvl3_screen():
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(3, current_time)
+        medal = level_logic.get_medal(3, current_time)
         level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
@@ -1796,9 +1663,9 @@ def create_lvl3_screen():
 def create_lvl4_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     global x, y, camera_x, camera_y, spawn_x, spawn_y,  player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text, player_rect, on_ground
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
     buttons.clear()
     screen.blit(bgs['green'], (0, 0))
@@ -2094,7 +1961,7 @@ def create_lvl4_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
 
-            manage_data.save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl5_screen') 
 
@@ -2247,7 +2114,7 @@ def create_lvl4_screen():
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(4, current_time)
+        medal = level_logic.get_medal(4, current_time)
         level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
@@ -2258,9 +2125,9 @@ def create_lvl4_screen():
 def create_lvl5_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     global x, y, camera_x, camera_y, spawn_x, spawn_y,  player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text, player_rect, on_ground
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
     buttons.clear()
     screen.blit(bgs['green'], (0, 0))
@@ -2531,7 +2398,7 @@ def create_lvl5_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
 
-            manage_data.save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl6_screen')
 
@@ -2660,7 +2527,7 @@ def create_lvl5_screen():
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(5, current_time)
+        medal = level_logic.get_medal(5, current_time)
         level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
         
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
@@ -2673,9 +2540,9 @@ def create_lvl6_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     start_time = time.time()
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
     global x, y, camera_x, camera_y, spawn_x, spawn_y,  player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text, player_rect, on_ground
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
     buttons.clear()
     screen.blit(bgs['green'], (0, 0))
@@ -2928,7 +2795,7 @@ def create_lvl6_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
             Achievements.perfect6(current_time, deathcount)
-            manage_data.save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('worlds')
 
@@ -3068,7 +2935,7 @@ def create_lvl6_screen():
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(6, current_time)
+        medal = level_logic.get_medal(6, current_time)
         level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         if wait_time is not None:
@@ -3098,8 +2965,8 @@ def create_lvl7_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     start_time = time.time()
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
     buttons.clear()
     screen.blit(bgs['mech'], (0, 0))
@@ -3314,7 +3181,7 @@ def create_lvl7_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
 
-            manage_data.save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl8_screen')
 
@@ -3449,7 +3316,7 @@ def create_lvl7_screen():
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(7, current_time)
+        medal = level_logic.get_medal(7, current_time)
         level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
@@ -3460,8 +3327,8 @@ def create_lvl7_screen():
 def create_lvl8_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
 
     new_hs = False
     buttons.clear()
@@ -3692,7 +3559,7 @@ def create_lvl8_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
 
-            manage_data.save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl9_screen')
 
@@ -3843,7 +3710,7 @@ def create_lvl8_screen():
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(8, current_time)
+        medal = level_logic.get_medal(8, current_time)
         level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
@@ -3854,8 +3721,8 @@ def create_lvl8_screen():
 def create_lvl9_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
     buttons.clear()
     screen.blit(bgs['mech'], (0, 0))
@@ -4155,7 +4022,7 @@ def create_lvl9_screen():
             Achievements.lvl90000(score)
             Achievements.check_green_gold()
 
-            manage_data.save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl10_screen')
 
@@ -4313,7 +4180,7 @@ def create_lvl9_screen():
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(9, current_time)
+        medal = level_logic.get_medal(9, current_time)
         level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
         
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
@@ -4325,8 +4192,8 @@ def create_lvl10_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
     new_hs = False
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     buttons.clear()
     screen.blit(bgs['mech'], (0, 0))
 
@@ -4588,7 +4455,7 @@ def create_lvl10_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
 
-            manage_data.save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl11_screen')
 
@@ -4728,7 +4595,7 @@ def create_lvl10_screen():
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(10, current_time)
+        medal = level_logic.get_medal(10, current_time)
         level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
@@ -4739,8 +4606,8 @@ def create_lvl10_screen():
 def create_lvl11_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
     buttons.clear()
     screen.blit(bgs['mech'], (0, 0))
@@ -5023,7 +4890,7 @@ def create_lvl11_screen():
             # Check if all medals from lvl1 to lvl11 are "Gold"
             Achievements.check_green_gold()
 
-            manage_data.save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
             running = False
             set_page('lvl12_screen')    
 
@@ -5265,7 +5132,7 @@ def create_lvl11_screen():
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(11, current_time)
+        medal = level_logic.get_medal(11, current_time)
         level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.death_message(screen, death_text, wait_time, duration=2500)
@@ -5276,8 +5143,8 @@ def create_lvl11_screen():
 def create_lvl12_screen():
     global player_img, font, screen, complete_levels, is_mute, selected_character, current_time, medal, deathcount, score
     global new_hs, hs, stars
-    global selected_character, player_img, moving_img, moving_img_l, img_width, img_height
-    char_assets()
+    selected_character = progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(selected_character)
     new_hs = False
     buttons.clear()
     screen.blit(bgs['mech'], (0, 0))
@@ -5493,7 +5360,7 @@ def create_lvl12_screen():
         if player_rect.colliderect(exit_portal):
             fin_lvl_logic(12)
             level_complete()
-            manage_data.save_progress(progress)  # Save progress to JSON file
+            manage_data.save_progress(progress, manifest)  # Save progress to JSON file
            
             # Check if all medals from lvl1 to lvl12 are "Gold"
             Achievements.check_green_gold()
@@ -5688,7 +5555,7 @@ def create_lvl12_screen():
 
         level_logic.draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
-        medal = get_medal(12, current_time)
+        medal = level_logic.get_medal(12, current_time)
         level_logic.draw_medals(screen, medal, deathcount, medals, timer_text.get_width(), SCREEN_WIDTH)
 
         level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
@@ -5932,7 +5799,7 @@ def handle_action(key):
 
 # Start with main menu
 set_page('main_menu')
-update_locked_levels() # Update locked levels every frame!
+manage_data.update_locked_levels(progress, manifest) # Update locked levels every frame!
 
 # Global variables(only needed before main loop)!
 button_hovered_last_frame = False
@@ -5957,7 +5824,7 @@ last_login = 0
 # Info
 
 # First define current XP outside the loop
-level, xp_needed, xp_total = xp()
+level, xp_needed, xp_total = manage_data.xp(progress, Achievements)
 if level < 20:
     color = (255, 255, 255)
 else:
@@ -5991,7 +5858,7 @@ while running:
     if is_transitioning and transition_time is not None and pending_page is not None:
         if transition.phase == 1:
             # Then recheck if XP has been added or not.
-            level, xp_needed, xp_total = xp()
+            level, xp_needed, xp_total = manage_data.xp(progress, Achievements)
             if level < 20:
                 color = (255, 255, 255)
             else:
@@ -6307,7 +6174,7 @@ while running:
                         medal_name = progress["lvls"]['medals'][key]
                         if medal_name != "None":
                             screen.blit(medals[medal_name], (SCREEN_WIDTH // 2 - medals[medal_name].get_width() // 2 - 210, SCREEN_HEIGHT - 80))
-                        stars = get_stars(num, progress["lvls"]['score'][key])
+                        stars = level_logic.get_stars(num, progress["lvls"]['score'][key])
                         if stars >= 1:
                             screen.blit(assets['star_small'], (SCREEN_WIDTH // 2 - 25, SCREEN_HEIGHT - 80))
                         if stars >= 2:
