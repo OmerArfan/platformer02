@@ -13,7 +13,7 @@ import state
 import levels
 
 # GAME VERSION
-version = "1.3.7.1"
+version = "1.3.7.2"
 
 # Initialize audio
 pygame.mixer.init()
@@ -57,16 +57,6 @@ sync_finish_time = None
 
 running = False
 
-def draw_loading_bar(stage_name, percent):
-    screen.blit(bg, (0, 0))
-    complete = None
-    text = manage_data.fonts['def'].render(f"{stage_name}", True, (255, 255, 255))
-    text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 60))
-    screen.blit(text, text_rect)
-    menu_ui.draw_loading_orb(screen, text_rect.x, text_rect.y, complete)
-    pygame.draw.rect(screen, (0, 0, 255), (0, SCREEN_HEIGHT - 10, (SCREEN_WIDTH / 100)*percent, 10))
-    pygame.display.flip()
-
 loader = startup.load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT)
 loading = True
 
@@ -77,7 +67,7 @@ while loading:
 
     try:
         stage, ps = next(loader)
-        draw_loading_bar(stage, ps)
+        menu_ui.draw_loading_bar(screen, bg, SCREEN_WIDTH, SCREEN_HEIGHT, stage, ps)
         
     except StopIteration:
         if manage_data.is_mute_amb:
@@ -129,37 +119,10 @@ evilrobot_rect = manage_data.robos['evilrobot'].get_rect(topleft=(SCREEN_WIDTH /
 greenrobot_rect = manage_data.robos['greenrobot'].get_rect(topleft=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50))
 ironrobot_rect = manage_data.robos['ironrobot'].get_rect(topleft=(SCREEN_WIDTH // 2 + 150, SCREEN_HEIGHT // 2 - 50))
 
-def quit_game():
-    manage_data.sync_vault_to_cloud(manage_data.progress, manage_data.manifest)
-    pygame.quit()
-    sys.exit()
-
 #def go_back():
 #    global last_page_change_time
 #    last_page_change_time = time.time()  # Track the time when going back
 #    state.set_page('main_menu')
-
-def muting_sfx():
-    global is_mute
-    manage_data.is_mute = not manage_data.is_mute
-    # Save directly to manage_data.manifest (pass 'manage_data.progress' so it can see player ID/Level)
-    manage_data.update_local_manifest(manage_data.progress)
-
-def muting_amb():
-    global is_mute_amb
-    # Toggle the state
-    manage_data.is_mute_amb = not manage_data.is_mute_amb
-    
-    # Apply the change to the mixer
-    if manage_data.is_mute_amb:
-        pygame.mixer.music.stop()
-    else:
-        # If your game has a specific music file, trigger it here
-        pygame.mixer.music.play(-1) 
-        pass
-        
-    # Save directly to manage_data.manifest
-    manage_data.update_local_manage_data.manifest(manage_data.progress)
 
 def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg):
     if rect.collidepoint(pygame.mouse.get_pos()):
@@ -615,12 +578,11 @@ while running:
 
         elif current_page == "registration_screen":
             acc_sys.draw_registration_screen(screen, SCREEN_WIDTH, SCREEN_HEIGHT, manage_data.lang_code, manage_data.manifest, manage_data.bgs)
-        
+    
         else:
             button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)
         
         menu_ui.draw_notifs(notif, er, notification_time, None, None, screen, SCREEN_WIDTH)
-
         menu_ui.draw_syncing_status(sync_status, sync_finish_time, is_syncing, SCREEN_WIDTH, SCREEN_HEIGHT, screen)
 
         mouse_pos = pygame.mouse.get_pos()

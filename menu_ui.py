@@ -1,9 +1,9 @@
 import pygame
 import arabic_reshaper
-import json
 import time
 from bidi.algorithm import get_display
 import manage_data
+import math
 
 def render_text(text, Boolean, color):
     # 1. PICK THE FONT (Your existing Unicode Logic)
@@ -63,7 +63,64 @@ def hover_effect(screen, rect, hover_sound, is_mute, button_hovered_last_frame):
     button_hovered_last_frame = hovered
     return button_hovered_last_frame
 
+def draw_notifs(notif, er, notification_time, notification_text, error_code, screen, SCREEN_WIDTH):
+    if notif:
+            if time.time() - notification_time < 4:  # Show for 4 seconds
+                screen.blit(notification_text, (SCREEN_WIDTH // 2 - notification_text.get_width() // 2, 100))
+    else:
+        notif = False
+
+    if er:
+        if notification_time is not None and time.time() - notification_time < 4:  # Show for 4 seconds
+            screen.blit(error_code, (SCREEN_WIDTH // 2 - error_code.get_width() // 2, 130))
+    else:
+        er = False
+
 buttons = []
+
+def draw_loading_bar(screen, bg, SCREEN_WIDTH, SCREEN_HEIGHT, stage_name, percent):
+    screen.blit(bg, (0, 0))
+    complete = None
+    text = manage_data.fonts['def'].render(f"{stage_name}", True, (255, 255, 255))
+    text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 60))
+    screen.blit(text, text_rect)
+    draw_loading_orb(screen, text_rect.x, text_rect.y, complete)
+    pygame.draw.rect(screen, (0, 0, 255), (0, SCREEN_HEIGHT - 10, (SCREEN_WIDTH / 100)*percent, 10))
+    pygame.display.flip()
+
+def draw_loading_orb(screen, text_x, text_y, show_time):
+        # Calculate the orbit position using current time
+        angle_rad = time.time() * 8 
+        orbit_radius = 15
+        
+        # Define the center point for the circle to orbit around
+        orbit_center_x = text_x - 30
+        orbit_center_y = text_y + 15 # Adjusted to center it vertically with text
+
+        if show_time is None:
+          for i in range(3):
+            # offset each dot by 0.5 radians so they follow each other
+            dot_angle = angle_rad - (i * 0.5) 
+            x = orbit_center_x + orbit_radius * math.cos(dot_angle)
+            y = orbit_center_y + orbit_radius * math.sin(dot_angle)
+            # Make trailing dots smaller or dimmer
+            alpha = 255 - (i * 80) 
+            pygame.draw.circle(screen, (alpha, alpha, alpha), (int(x), int(y)), 5 - i)
+
+def draw_syncing_status(sync_status, sync_finish_time, is_syncing, SCREEN_WIDTH, SCREEN_HEIGHT, screen):
+    if is_syncing:
+        if sync_finish_time is not None:
+            if time.time() - sync_finish_time > 1:
+                is_syncing = False
+                sync_finish_time = None
+                return
+
+        # 1. Render and draw the text
+        syncing_text = render_text(sync_status, True, (255, 255, 255))
+        text_x = SCREEN_WIDTH - syncing_text.get_width() - 10
+        text_y = SCREEN_HEIGHT - 60
+        screen.blit(syncing_text, (text_x, text_y))
+        draw_loading_orb(screen, text_x, text_y, sync_finish_time)
 
 def create_achieve_screen(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH):
     global current_lang

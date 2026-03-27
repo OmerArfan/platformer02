@@ -1,3 +1,4 @@
+import sys
 import pygame
 import manage_data
 import menu_ui
@@ -268,7 +269,7 @@ def handle_action(key, transition):
                 pending_page = "main_menu"
     elif current_page == "character_select":
         if key == "locked" and not locked_char_sound_played and not is_mute:
-            sounds['death'].play()
+            manage_data.sounds['death'].play()
             locked_char_sound_played = False
             locked_char_sound_time = time.time()
         if key == "back":
@@ -304,7 +305,7 @@ def set_page(screen, page, SCREEN_HEIGHT, SCREEN_WIDTH, lang_code, manifest, pro
     elif page == "Audio":
         menu_ui.audio_settings_menu(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, is_mute, is_mute_amb)
     elif page == "Account":
-        acc_sys.create_account_selector(manage_data.ACCOUNTS_FILE, lang_code, manifest, transition, screen, bgs, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, sounds, draw_notifications, draw_syncing_status, buttons)
+        acc_sys.create_account_selector(manage_data.ACCOUNTS_FILE, lang_code, manifest, transition, screen, bgs, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, manage_data.sounds, menu_ui.draw_notifs, menu_ui.draw_syncing_status, buttons)
     elif page == "login_screen":
         acc_sys.reset_login_state()
     elif page == "registration_screen":
@@ -356,3 +357,30 @@ def set_page(screen, page, SCREEN_HEIGHT, SCREEN_WIDTH, lang_code, manifest, pro
     elif page == 'lvl12_screen':
         current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
         levels.create_lvl12_screen()
+
+def muting_sfx():
+    global is_mute
+    manage_data.is_mute = not manage_data.is_mute
+    # Save directly to manage_data.manifest (pass 'manage_data.progress' so it can see player ID/Level)
+    manage_data.update_local_manifest(manage_data.progress)
+
+def muting_amb():
+    global is_mute_amb
+    # Toggle the state
+    manage_data.is_mute_amb = not manage_data.is_mute_amb
+    
+    # Apply the change to the mixer
+    if manage_data.is_mute_amb:
+        pygame.mixer.music.stop()
+    else:
+        # If your game has a specific music file, trigger it here
+        pygame.mixer.music.play(-1) 
+        pass
+        
+    # Save directly to manage_data.manifest
+    manage_data.update_local_manage_data.manifest(manage_data.progress)
+
+def quit_game():
+    manage_data.sync_vault_to_cloud(manage_data.progress, manage_data.manifest)
+    pygame.quit()
+    sys.exit()
