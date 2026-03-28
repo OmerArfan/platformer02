@@ -13,7 +13,7 @@ import levels
 
 # GAME VERSION
 manage_data.version = "1.3.7.4"
-manage_data.kernel = "0.1.0"
+manage_data.kernel = "0.1.1"
 
 # Initialize audio
 pygame.mixer.init()

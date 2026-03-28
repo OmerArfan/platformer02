@@ -128,6 +128,14 @@ def init_disks():
             pygame.image.load(manage_data.resource_path("oimgs/disks/mechdisk.png")).convert_alpha(),
             (100, 100)
         ),
+        'greenpack': pygame.transform.scale(
+            pygame.image.load(manage_data.resource_path("oimgs/disks/greenpack.png")).convert_alpha(),
+            (220, 220)
+        ),
+        'mechpack': pygame.transform.scale(
+            pygame.image.load(manage_data.resource_path("oimgs/disks/mechpack.png")).convert_alpha(),
+            (220, 220)
+        ),
         'locked': pygame.transform.scale(
             pygame.image.load(manage_data.resource_path("oimgs/disks/lockeddisk.png")).convert_alpha(),
             (100, 100)

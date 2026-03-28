@@ -272,16 +272,16 @@ def worlds(screen, lang_code, manifest, progress, bgs, disks):
 
     # 2. Draw the Disks
     # Use the rect to blit so the image is centered on our coordinates
-    mech_rect = disks['mech'].get_rect(center=mech_center)
-    green_rect = disks['green'].get_rect(center=green_center)
+    mech_rect = disks['mechpack'].get_rect(center=mech_center)
+    green_rect = disks['greenpack'].get_rect(center=green_center)
     
-    screen.blit(disks['mech'], mech_rect)
-    screen.blit(disks['green'], green_rect)
+    screen.blit(disks['mechpack'], mech_rect)
+    screen.blit(disks['greenpack'], green_rect)
 
     # 3. Add Disks to the Button List
     # Format: (surface/image, rect, action_key, is_locked)
-    buttons.append((disks['green'], green_rect, "levels", False))
-    buttons.append((disks['mech'], mech_rect, "mech_levels", False))
+    buttons.append((disks['greenpack'], green_rect, "levels", False))
+    buttons.append((disks['mechpack'], mech_rect, "mech_levels", False))
 
     # --- Back Button Logic ---
     back_text = current_lang.get("back", "Back")        
@@ -418,7 +418,7 @@ def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, b
             button_hovered_last_frame = hover_effect(screen, rect, manage_data.sounds['hover'], manage_data.is_mute, button_hovered_last_frame)
             
             # Metadata (Score/Stars) - Only for level buttons
-            if key not in [None, "next", "back"] and not is_locked:
+            if key.startswith("lvl") and not is_locked:
                 score = manage_data.progress["lvls"]['score'][key]
                 
                 # Highscore
