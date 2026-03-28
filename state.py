@@ -299,7 +299,7 @@ def set_page(screen, page, lang_code, manifest, progress, Achievements, bgs, dis
         current_lang = manage_data.load_language(lang_code, manifest).get('language_select', {})
         menu_ui.create_language_buttons(screen, lang_code, manifest, progress)
     elif page == "worlds":
-        menu_ui.worlds(screen, lang_code, manifest, progress, bgs, disks)
+        menu_ui.worlds(screen, lang_code, manifest, progress, bgs, manage_data.disks)
     elif page == "settings":
         menu_ui.settings_menu(screen, lang_code, manifest, bgs)
     elif page == "About":

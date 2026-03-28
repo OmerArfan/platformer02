@@ -240,6 +240,8 @@ def load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT):
     manage_data.ui = init_ui_images(SCREEN_WIDTH, SCREEN_HEIGHT)
     manage_data.bgs = init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT)
     manage_data.assets = init_assets()
+    manage_data.disks = init_disks()
+    manage_data.medals = init_medals()
     
     yield "Calibrating Robots...", 92
     manage_data.robos = init_robos()

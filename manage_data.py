@@ -14,7 +14,7 @@ import requests
 from io import StringIO
 import pygame
 import acc_sys
-from level_logic import get_stars
+import level_logic
 
 pygame.font.init()
 
@@ -127,7 +127,7 @@ def char_assets(selected_character):
     img_width, img_height = player_img.get_size()
     return player_img, blink_img, moving_img, moving_img_l, img_width, img_height
 
-def change_ambience(new_file, is_mute_amb):
+def change_ambience(new_file):
   if not is_mute_amb:
     pygame.mixer.music.load(resource_path(new_file))
     pygame.mixer.music.set_volume(2)  # Adjust as needed
@@ -532,7 +532,7 @@ def xp(progress, Achievements):
     stars = 0
     for level in range(1, 13):
         score = scores.get(f"lvl{level}", 0)
-        stars += get_stars(level, score)
+        stars += level_logic.get_stars(level, score)
     star_xp = stars * 20  # 50 XP per star
 
     # XP from achievements

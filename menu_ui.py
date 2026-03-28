@@ -2,8 +2,10 @@ import pygame
 import arabic_reshaper
 import time
 from bidi.algorithm import get_display
+import level_logic
 import manage_data
 import math
+import state
 
 def render_text(text, Boolean, color):
     # 1. PICK THE FONT (Your existing Unicode Logic)
@@ -63,7 +65,8 @@ def hover_effect(screen, rect, hover_sound, is_mute, button_hovered_last_frame):
     button_hovered_last_frame = hovered
     return button_hovered_last_frame
 
-def draw_notifs(notif, er, notification_time, notification_text, error_code, screen):
+def draw_notifs(screen):
+    global notif, er, notification_time, notification_text, error_code
     if notif:
             if time.time() - notification_time < 4:  # Show for 4 seconds
                 screen.blit(notification_text, (manage_data.SCREEN_WIDTH // 2 - notification_text.get_width() // 2, 100))
@@ -107,7 +110,8 @@ def draw_loading_orb(screen, text_x, text_y, show_time):
             alpha = 255 - (i * 80) 
             pygame.draw.circle(screen, (alpha, alpha, alpha), (int(x), int(y)), 5 - i)
 
-def draw_syncing_status(sync_status, sync_finish_time, is_syncing, screen):
+def draw_syncing_status(screen):
+    global is_syncing, sync_status, sync_finish_time
     if is_syncing:
         if sync_finish_time is not None:
             if time.time() - sync_finish_time > 1:
@@ -115,7 +119,6 @@ def draw_syncing_status(sync_status, sync_finish_time, is_syncing, screen):
                 sync_finish_time = None
                 return
 
-        # 1. Render and draw the text
         syncing_text = render_text(sync_status, True, (255, 255, 255))
         text_x = manage_data.SCREEN_WIDTH - syncing_text.get_width() - 10
         text_y = manage_data.SCREEN_HEIGHT - 60
@@ -269,11 +272,11 @@ def worlds(screen, lang_code, manifest, progress, bgs, disks):
 
     # 2. Draw the Disks
     # Use the rect to blit so the image is centered on our coordinates
-    green_rect = disks['green'].get_rect(center=green_center)
     mech_rect = disks['mech'].get_rect(center=mech_center)
+    green_rect = disks['green'].get_rect(center=green_center)
     
-    screen.blit(disks['green'], green_rect)
     screen.blit(disks['mech'], mech_rect)
+    screen.blit(disks['green'], green_rect)
 
     # 3. Add Disks to the Button List
     # Format: (surface/image, rect, action_key, is_locked)
@@ -391,11 +394,99 @@ def mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
     next_text = current_lang.get("next", "next")
     rendered_next = render_text(next_text, True, (255, 255, 255))
 
-    next_rect = pygame.Rect(0, 0, 100, 100)
-    next_rect.center = (manage_data.SCREEN_WIDTH - 90, manage_data.SCREEN_HEIGHT // 2)
+def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, button_hovered_last_frame):
+    # 1. Dynamic Setup
+    world_type = 'green' if current_page == "levels" else 'mech'
+    screen.blit(manage_data.bgs[world_type], (0, 0))
+    disk_img = manage_data.disks[world_type]
+    
+    # 2. Header
+    title = render_text(current_lang.get("level_display", "Select"), True, (255, 255, 255))
+    screen.blit(title, title.get_rect(center=(manage_data.SCREEN_WIDTH // 2, 50)))
 
-    text_rect = rendered_next.get_rect(center=next_rect.center)
-    screen.blit(rendered_next, text_rect)
+    # 3. The Unified Loop
+    for text_surf, rect, key, is_locked in buttons:
+        is_hovered = rect.collidepoint(mouse_pos)
+        
+        # Draw Disk & Text
+        img = disk_img if key and not is_locked else manage_data.disks['locked']
+        screen.blit(img, rect)
+        screen.blit(text_surf, text_surf.get_rect(center=rect.center))
+
+        if is_hovered:
+            # Hover logic
+            button_hovered_last_frame = hover_effect(screen, rect, manage_data.sounds['hover'], manage_data.is_mute, button_hovered_last_frame)
+            
+            # Metadata (Score/Stars) - Only for level buttons
+            if key not in [None, "next", "back"] and not is_locked:
+                score = manage_data.progress["lvls"]['score'][key]
+                
+                # Highscore
+                hs_txt = render_text(messages.get("hs_m", "HS: {hs}").format(hs=score), True, (255, 255, 0))
+                screen.blit(hs_txt, (manage_data.SCREEN_WIDTH//2 - hs_txt.get_width()//2, manage_data.SCREEN_HEIGHT - 50))
+                
+                # Medals & Stars
+                medal = manage_data.progress["lvls"]['medals'][key]
+                if medal != "None":
+                    screen.blit(manage_data.medals[medal], (manage_data.SCREEN_WIDTH // 2 - 250, manage_data.SCREEN_HEIGHT - 80))
+                
+                stars = level_logic.get_stars(int(key[3:]), score)
+                for i in range(stars):
+                    screen.blit(manage_data.assets['star_small'], (manage_data.SCREEN_WIDTH // 2 + (i-1)*25, manage_data.SCREEN_HEIGHT - 80))
+                    
+    return button_hovered_last_frame
+
+def draw_character_select(screen, mouse_pos, events, transition, rect, key):
+         screen.blit(manage_data.bgs['plain'], (0, 0))
+
+         locked_sound_played = False
+         mouse_pos = pygame.mouse.get_pos()
+
+         messages = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {})  # Fetch localized messages
+         header_txt = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('main_menu', {})
+         char_sel = header_txt.get("character_select", "Character Select")
+         char_text = render_text(char_sel, True, (255, 255, 255))
+         screen.blit(char_text, (manage_data.SCREEN_WIDTH // 2 - 100, 50))
+
+         manage_data.unlocked_robos = {
+            'robot': True,
+            'evilrobot': manage_data.progress["char"].get("evilrobo", False),
+            'greenrobot': manage_data.progress["char"].get("greenrobo", False),
+            'ironrobot': manage_data.progress["char"].get("ironrobo", False)
+         }
+         
+         selected_character = manage_data.progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+         
+         screen.blit(manage_data.robos['robot'], manage_data.robo_rects['robot'])     
+         screen.blit(manage_data.robos['evilrobot'] if manage_data.unlocked_robos['evilrobot'] else manage_data.robos['locked'], manage_data.robo_rects['evilrobot'])
+         screen.blit(manage_data.robos['greenrobot'] if manage_data.unlocked_robos['greenrobot'] else manage_data.robos['locked'], manage_data.robo_rects['greenrobot'])
+         screen.blit(manage_data.robos['ironrobot'] if manage_data.unlocked_robos['ironrobot'] else manage_data.robos['locked'], manage_data.robo_rects['ironrobot'])
+         # Draw a highlight border around the selected character
+         highlight_colors = {
+          "robot": (63, 72, 204),
+          "evilrobot": (128, 0, 128),
+          "greenrobot": (25, 195, 21),
+          "ironrobot": (64, 64, 64),
+         }
+        
+         if selected_character in manage_data.robo_rects:
+          pygame.draw.rect(screen, highlight_colors[selected_character], manage_data.robo_rects[selected_character].inflate(5, 5), 5)
+
+         for event in events:
+           if event.type == pygame.QUIT:
+            state.set_page(screen, "quit_confirm", manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+
+           elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if manage_data.robo_rects['robot'].collidepoint(mouse_pos):
+                manage_data.try_select_robo(manage_data.unlocked_robos['robot'], "robot", manage_data.robo_rects['robot'], "placeholder", "Imagine if this actually popped up in game BRO-", transition)
+            elif manage_data.robo_rects['evilrobot'].collidepoint(mouse_pos):
+                manage_data.try_select_robo(manage_data.unlocked_robos['evilrobot'], "evilrobot", manage_data.robo_rects['evilrobot'], "evillocked_message", "Encounter this robot in an alternative route to unlock him!", transition)
+            elif manage_data.robo_rects['greenrobot'].collidepoint(mouse_pos):
+                manage_data.try_select_robo(manage_data.unlocked_robos['greenrobot'], "greenrobot", manage_data.robo_rects['greenrobot'], "greenlocked_message", "Get GOLD rank in all Green World Levels to unlock this robot!", transition)
+            elif manage_data.robo_rects['ironrobot'].collidepoint(mouse_pos):
+                manage_data.try_select_robo(manage_data.unlocked_robos['ironrobot'], "ironrobot", manage_data.robo_rects['ironrobot'], "ironlocked_message", "Unlock the Zenith Of Six achievement to get this character!", transition)
+            elif rect.collidepoint(mouse_pos):
+                state.handle_action(key, transition, manage_data.current_page)
 
 def character_select(lang_code, manifest):
     
@@ -474,26 +565,31 @@ def about_menu(screen, lang_code, manifest, bgs, version):
     credit_text = render_text(credit, True, (255, 255, 255))
     credit_pos = ((manage_data.SCREEN_WIDTH // 2 - credit_text.get_width() // 2), 280)
 
-    ver = settings_lang.get("version_credit", "Game Version: {version}").format(version=version)
+    ver = settings_lang.get("version_credit", "Game Version: {version}").format(version=manage_data.version)
     ver_text = render_text(ver, True, (255, 255, 255))
     ver_pos = ((manage_data.SCREEN_WIDTH // 2 - ver_text.get_width() // 2), 320)
 
+    ker = settings_lang.get("kernel_credit", "Cleobo Version: {kernel}").format(kernel=manage_data.kernel)
+    ker_text = render_text(ker, True, (255, 255, 255))
+    ker_pos = ((manage_data.SCREEN_WIDTH // 2 - ker_text.get_width() // 2), 360)
+
     thx = settings_lang.get("thanks", "Thank you for playing! You are amazing!")
     thx_text = render_text(thx, True, (0, 255, 0))
-    thx_pos = ((manage_data.SCREEN_WIDTH // 2 - thx_text.get_width() // 2), 400)
+    thx_pos = ((manage_data.SCREEN_WIDTH // 2 - thx_text.get_width() // 2), 440)
 
     bugs = settings_lang.get("bugs", "If you find any bugs, please report them on the GitHub repository.")
     bugs_text = render_text(bugs, True, (242, 123, 32))
-    bugs_pos = ((manage_data.SCREEN_WIDTH // 2 - bugs_text.get_width() // 2), 440)
+    bugs_pos = ((manage_data.SCREEN_WIDTH // 2 - bugs_text.get_width() // 2), 480)
 
     sorry = settings_lang.get("sorry", "Sorry for any inconvenience caused by bugs.")
     sorry_text = render_text(sorry, True, (242, 123, 32))
-    sorry_pos = ((manage_data.SCREEN_WIDTH // 2 - sorry_text.get_width() // 2), 480)
+    sorry_pos = ((manage_data.SCREEN_WIDTH // 2 - sorry_text.get_width() // 2), 520)
 
     screen.blit(logo_text, logo_pos)
     screen.blit(site_text, site_pos)
     screen.blit(credit_text, credit_pos)
     screen.blit(ver_text, ver_pos)
+    screen.blit(ker_text, ker_pos)
     screen.blit(thx_text, thx_pos)
     screen.blit(bugs_text, bugs_pos)
     screen.blit(sorry_text, sorry_pos)
