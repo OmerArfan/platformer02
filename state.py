@@ -5,9 +5,9 @@ import menu_ui
 import os
 import json
 import webbrowser
-import levels
 import acc_sys
 import time
+import levels
 
 class TransitionManager:
     def __init__(self, screen, left_image, right_image, speed=40):
@@ -31,7 +31,7 @@ class TransitionManager:
         self.target_page = target_page
         self.hold_time = 0
 
-    def update(self, lang_code, screen, SCREEN_HEIGHT, SCREEN_WIDTH, version, transition, manifest, progress):
+    def update(self, lang_code, screen, version, transition, manifest, progress):
         global pending_lang_code, selected_id
         
         if not self.active:
@@ -44,14 +44,15 @@ class TransitionManager:
             self.right_x -= self.speed
             
             # Check if they've met in the middle
-            mid_point = SCREEN_WIDTH // 2
+            mid_point = manage_data.SCREEN_WIDTH // 2
             if self.left_x + self.left_image.get_width() >= mid_point and self.right_x <= mid_point:
                 self.left_x = mid_point - self.left_image.get_width()
                 self.right_x = mid_point
                 self.phase = 1
                 self.hold_time = pygame.time.get_ticks()
 
-        elif self.phase == 1:  # Hold phase
+        elif self.phase == 1:
+            manage_data.current_page = self.target_page  # Hold phase
             if pygame.time.get_ticks() - self.hold_time >= self.hold_duration:
                 # Change language if pending
                 if pending_lang_code:
@@ -69,7 +70,7 @@ class TransitionManager:
                     # Load the data and move to main menu
                     progress = manage_data.load_progress()
                     selected_id = None
-                set_page(screen, self.target_page, SCREEN_HEIGHT, SCREEN_WIDTH, lang_code, manifest, progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+                set_page(screen, manage_data.current_page, lang_code, manifest, progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, version, manage_data.is_mute, manage_data.is_mute_amb, transition)
                 self.phase = 2
 
         elif self.phase == 2:  # Slide-out phase
@@ -88,8 +89,8 @@ is_transitioning = False
 pending_lang_code = None
 selected_id = None
 
-def handle_action(key, transition):
-    global progress, current_page, is_transitioning, transition_time, locked_char_sound_played, locked_char_sound_time, manifest, lang_code, pending_lang_code, selected_id
+def handle_action(key, transition, current_page):
+    global progress, is_transitioning, transition_time, locked_char_sound_played, locked_char_sound_time, manifest, lang_code, pending_lang_code, selected_id
     
     global pending_page
     if current_page == 'main_menu':
@@ -260,7 +261,7 @@ def handle_action(key, transition):
                 pending_page = f"{key}_screen"
     elif current_page == "quit_confirm":
         if key == "yes":
-            quit_game(progress)
+            quit_game()
         elif key == "no":
             if not is_transitioning:
                 transition.start("main_menu")
@@ -280,47 +281,48 @@ def handle_action(key, transition):
                 pending_page = "main_menu"
 
 # Central page switcher
-def set_page(screen, page, SCREEN_HEIGHT, SCREEN_WIDTH, lang_code, manifest, progress, Achievements, bgs, disks, version, is_mute, is_mute_amb, transition):
+def set_page(screen, page, lang_code, manifest, progress, Achievements, bgs, disks, version, is_mute, is_mute_amb, transition):
     global current_page, current_lang  # Explicitly mark current_page and current_lang as global
-    current_page = page
+    page = manage_data.current_page
+    current_page = page  # Update the global current_page variable
 
     # Reload the current language data for the new page
     if page == 'main_menu':
         manage_data.update_xp_ui(progress, Achievements, manifest) # Update XP display when returning to main menu, especially in case of different users.
         current_lang = manage_data.load_language(lang_code, manifest).get('main_menu', {})
-        menu_ui.create_main_menu_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH)
+        menu_ui.create_main_menu_buttons(screen, lang_code, manifest, progress)
     elif page == "achievements":
-        menu_ui.create_achieve_screen(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH)
+        menu_ui.create_achieve_screen(screen, lang_code, manifest, progress)
     elif page == 'character_select':
-        menu_ui.character_select(lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH)
+        menu_ui.character_select(lang_code, manifest)
     elif page == 'language_select':
         current_lang = manage_data.load_language(lang_code, manifest).get('language_select', {})
-        menu_ui.create_language_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH)
+        menu_ui.create_language_buttons(screen, lang_code, manifest, progress)
     elif page == "worlds":
-        menu_ui.worlds(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, disks)
+        menu_ui.worlds(screen, lang_code, manifest, progress, bgs, disks)
     elif page == "settings":
-        menu_ui.settings_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs)
+        menu_ui.settings_menu(screen, lang_code, manifest, bgs)
     elif page == "About":
-        menu_ui.about_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, version)
+        menu_ui.about_menu(screen, lang_code, manifest, bgs, version)
     elif page == "Audio":
-        menu_ui.audio_settings_menu(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, is_mute, is_mute_amb)
+        menu_ui.audio_settings_menu(screen, lang_code, manifest, progress, bgs, is_mute, is_mute_amb)
     elif page == "Account":
-        acc_sys.create_account_selector(manage_data.ACCOUNTS_FILE, lang_code, manifest, transition, screen, bgs, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, manage_data.sounds, menu_ui.draw_notifs, menu_ui.draw_syncing_status, buttons)
+        acc_sys.create_account_selector(manage_data.ACCOUNTS_FILE, lang_code, manifest, transition, screen, bgs, is_mute, manage_data.sounds, menu_ui.draw_notifs, menu_ui.draw_syncing_status, menu_ui.buttons)
     elif page == "login_screen":
         acc_sys.reset_login_state()
     elif page == "registration_screen":
         acc_sys.reset_login_state()
     elif page == 'levels':
         current_lang = manage_data.load_language(lang_code, manifest).get('levels', {})
-        menu_ui.green_world_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, disks)
+        menu_ui.green_world_buttons(screen, lang_code, manifest, progress, bgs, disks)
         manage_data.change_ambience("audio/amb/greenambience.wav")
     elif page == 'mech_levels':
         current_lang = manage_data.load_language(lang_code, manifest).get('levels', {})
-        menu_ui.mech_world_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, disks)
+        menu_ui.mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks)
         manage_data.change_ambience("audio/amb/mechambience.wav")
     elif page == 'quit_confirm':
         current_lang = manage_data.load_language(lang_code, manifest).get('messages', {})
-        menu_ui.create_quit_confirm_buttons(lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH)
+        menu_ui.create_quit_confirm_buttons(lang_code, manifest)
     elif page == 'lvl1_screen':  # New page for Level 1
         current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
         levels.create_lvl1_screen()
@@ -378,7 +380,7 @@ def muting_amb():
         pass
         
     # Save directly to manage_data.manifest
-    manage_data.update_local_manage_data.manifest(manage_data.progress)
+    manage_data.update_local_manifest(manage_data.progress)
 
 def quit_game():
     manage_data.sync_vault_to_cloud(manage_data.progress, manage_data.manifest)

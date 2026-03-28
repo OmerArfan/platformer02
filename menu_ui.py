@@ -63,29 +63,29 @@ def hover_effect(screen, rect, hover_sound, is_mute, button_hovered_last_frame):
     button_hovered_last_frame = hovered
     return button_hovered_last_frame
 
-def draw_notifs(notif, er, notification_time, notification_text, error_code, screen, SCREEN_WIDTH):
+def draw_notifs(notif, er, notification_time, notification_text, error_code, screen):
     if notif:
             if time.time() - notification_time < 4:  # Show for 4 seconds
-                screen.blit(notification_text, (SCREEN_WIDTH // 2 - notification_text.get_width() // 2, 100))
+                screen.blit(notification_text, (manage_data.SCREEN_WIDTH // 2 - notification_text.get_width() // 2, 100))
     else:
         notif = False
 
     if er:
         if notification_time is not None and time.time() - notification_time < 4:  # Show for 4 seconds
-            screen.blit(error_code, (SCREEN_WIDTH // 2 - error_code.get_width() // 2, 130))
+            screen.blit(error_code, (manage_data.SCREEN_WIDTH // 2 - error_code.get_width() // 2, 130))
     else:
         er = False
 
 buttons = []
 
-def draw_loading_bar(screen, bg, SCREEN_WIDTH, SCREEN_HEIGHT, stage_name, percent):
+def draw_loading_bar(screen, bg, stage_name, percent):
     screen.blit(bg, (0, 0))
     complete = None
     text = manage_data.fonts['def'].render(f"{stage_name}", True, (255, 255, 255))
-    text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 60))
+    text_rect = text.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 60))
     screen.blit(text, text_rect)
     draw_loading_orb(screen, text_rect.x, text_rect.y, complete)
-    pygame.draw.rect(screen, (0, 0, 255), (0, SCREEN_HEIGHT - 10, (SCREEN_WIDTH / 100)*percent, 10))
+    pygame.draw.rect(screen, (0, 0, 255), (0, manage_data.SCREEN_HEIGHT - 10, (manage_data.SCREEN_WIDTH / 100)*percent, 10))
     pygame.display.flip()
 
 def draw_loading_orb(screen, text_x, text_y, show_time):
@@ -107,7 +107,7 @@ def draw_loading_orb(screen, text_x, text_y, show_time):
             alpha = 255 - (i * 80) 
             pygame.draw.circle(screen, (alpha, alpha, alpha), (int(x), int(y)), 5 - i)
 
-def draw_syncing_status(sync_status, sync_finish_time, is_syncing, SCREEN_WIDTH, SCREEN_HEIGHT, screen):
+def draw_syncing_status(sync_status, sync_finish_time, is_syncing, screen):
     if is_syncing:
         if sync_finish_time is not None:
             if time.time() - sync_finish_time > 1:
@@ -117,12 +117,12 @@ def draw_syncing_status(sync_status, sync_finish_time, is_syncing, SCREEN_WIDTH,
 
         # 1. Render and draw the text
         syncing_text = render_text(sync_status, True, (255, 255, 255))
-        text_x = SCREEN_WIDTH - syncing_text.get_width() - 10
-        text_y = SCREEN_HEIGHT - 60
+        text_x = manage_data.SCREEN_WIDTH - syncing_text.get_width() - 10
+        text_y = manage_data.SCREEN_HEIGHT - 60
         screen.blit(syncing_text, (text_x, text_y))
         draw_loading_orb(screen, text_x, text_y, sync_finish_time)
 
-def create_achieve_screen(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH):
+def create_achieve_screen(screen, lang_code, manifest, progress):
     global current_lang
     buttons.clear()
     current_lang = manage_data.load_language(lang_code, manifest)
@@ -136,7 +136,7 @@ def create_achieve_screen(screen, lang_code, manifest, progress, SCREEN_HEIGHT, 
     # 1. Render Main Header
     ach_txt = header_data.get("achievements", "Achievements")
     ach_header = render_text(ach_txt, True, (255, 255, 255))
-    screen.blit(ach_header, (SCREEN_WIDTH // 2 - ach_header.get_width() // 2, 50))
+    screen.blit(ach_header, (manage_data.SCREEN_WIDTH // 2 - ach_header.get_width() // 2, 50))
 
     ach_list = [
         "zen_os",
@@ -170,7 +170,7 @@ def create_achieve_screen(screen, lang_code, manifest, progress, SCREEN_HEIGHT, 
 
         title_surf = render_text(title_str, True, color)
         if lang_code == "ar" or lang_code == "pk":
-            x_pos = SCREEN_WIDTH - 100 - title_surf.get_width()
+            x_pos = manage_data.SCREEN_WIDTH - 100 - title_surf.get_width()
         else:
             x_pos = 100
         screen.blit(title_surf, (x_pos, y_offset))
@@ -183,10 +183,10 @@ def create_achieve_screen(screen, lang_code, manifest, progress, SCREEN_HEIGHT, 
 
     back_text = back_data.get("back", "Back")
     rendered_back = render_text(back_text, True, (255, 255, 255))
-    back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100))
+    back_rect = rendered_back.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 100))
     buttons.append((rendered_back, back_rect, "back", False))
 
-def create_main_menu_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH):
+def create_main_menu_buttons(screen, lang_code, manifest, progress):
 
     global current_lang, buttons
     current_lang = manage_data.load_language(lang_code, manifest).get('main_menu', {})
@@ -195,16 +195,16 @@ def create_main_menu_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGH
 
     # Center buttons vertically and horizontally
     button_spacing = 72 
-    start_y = (SCREEN_HEIGHT // 2) - (len(button_texts) * button_spacing // 2) + 150
+    start_y = (manage_data.SCREEN_HEIGHT // 2) - (len(button_texts) * button_spacing // 2) + 150
 
     for i, key in enumerate(button_texts):
         text = current_lang[key]
         rendered = render_text(text, True, (255, 255, 255))
-        rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, start_y + i * button_spacing)) 
+        rect = rendered.get_rect(center=(manage_data.SCREEN_WIDTH // 2, start_y + i * button_spacing)) 
         buttons.append((rendered, rect, key, False))
 
 
-def create_language_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH):
+def create_language_buttons(screen, lang_code, manifest, progress):
     global current_lang, buttons
     current_lang = manage_data.load_language(lang_code, manifest).get('language_select', {})
     buttons.clear()
@@ -230,12 +230,12 @@ def create_language_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT
 
     # Calculate starting positions to center the grid
     grid_width = (buttons_per_row - 1) * spacing_x
-    start_x = (SCREEN_WIDTH - grid_width) // 2
-    start_y = (SCREEN_HEIGHT // 2) - (len(language_options) // buttons_per_row * spacing_y // 2)
+    start_x = (manage_data.SCREEN_WIDTH - grid_width) // 2
+    start_y = (manage_data.SCREEN_HEIGHT // 2) - (len(language_options) // buttons_per_row * spacing_y // 2)
 
     heading = start.get("language", "Change Language")
     heading_text = render_text(heading, True, (255 , 255, 255))
-    screen.blit(heading_text, (SCREEN_WIDTH // 2 - heading_text.get_width() // 2, 50))
+    screen.blit(heading_text, (manage_data.SCREEN_WIDTH // 2 - heading_text.get_width() // 2, 50))
 
     for i, (display_name, code) in enumerate(language_options):
         text = display_name
@@ -253,10 +253,10 @@ def create_language_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT
     # Add a "Back" button at the bottom center
     back_text = current_lang.get("back", "Back")
     rendered_back = render_text(back_text, True, (255, 255, 255))
-    back_rect = rendered_back.get_rect(center=(SCREEN_WIDTH // 2, y + spacing_y + 40))
+    back_rect = rendered_back.get_rect(center=(manage_data.SCREEN_WIDTH // 2, y + spacing_y + 40))
     buttons.append((rendered_back, back_rect, "back", False))
 
-def worlds(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, disks):
+def worlds(screen, lang_code, manifest, progress, bgs, disks):
     global current_lang, buttons
     buttons.clear()
     current_lang = manage_data.load_language(lang_code, manifest).get('language_select', {})
@@ -264,8 +264,8 @@ def worlds(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, b
 
     # 1. Define Positions
     # We define the center points so the image and the button hitbox align perfectly
-    green_center = (SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2)
-    mech_center = (SCREEN_WIDTH // 2 + 250, SCREEN_HEIGHT // 2)
+    green_center = (manage_data.SCREEN_WIDTH // 2 - 250, manage_data.SCREEN_HEIGHT // 2)
+    mech_center = (manage_data.SCREEN_WIDTH // 2 + 250, manage_data.SCREEN_HEIGHT // 2)
 
     # 2. Draw the Disks
     # Use the rect to blit so the image is centered on our coordinates
@@ -285,7 +285,7 @@ def worlds(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, b
     rendered_back = render_text(back_text, True, (255, 255, 255))
 
     back_rect = pygame.Rect(0, 0, rendered_back.get_width(), rendered_back.get_height())
-    back_rect.center = (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 200)
+    back_rect.center = (manage_data.SCREEN_WIDTH // 2 , manage_data.SCREEN_HEIGHT - 200)
 
     text_rect = rendered_back.get_rect(center=back_rect.center)
     screen.blit(rendered_back, text_rect)
@@ -293,7 +293,7 @@ def worlds(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, b
     # Add the back button
     buttons.append((rendered_back, back_rect, "back", False))
 
-def green_world_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, disks):
+def green_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
     global current_lang, buttons
     buttons.clear()
 
@@ -307,8 +307,8 @@ def green_world_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SC
     spacing_y = 160
 
     grid_width = (buttons_per_row - 1) * spacing_x
-    start_x = (SCREEN_WIDTH - grid_width) // 2
-    start_y = ((SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2)) + 50
+    start_x = (manage_data.SCREEN_WIDTH - grid_width) // 2
+    start_y = ((manage_data.SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2)) + 50
 
     for i, level in enumerate(level_options):
         col = i % buttons_per_row
@@ -326,8 +326,8 @@ def green_world_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SC
     rendered_back = render_text(back_text, True, (255, 255, 255))
 
     # Create a fixed 100x100 hitbox centered at the right location
-    back_rect = pygame.Rect(SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, SCREEN_HEIGHT - 175, 100, 100)
-    back_rect.center = (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 200)
+    back_rect = pygame.Rect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 100, 100)
+    back_rect.center = (manage_data.SCREEN_WIDTH // 2 , manage_data.SCREEN_HEIGHT - 200)
 
     # Then during draw phase: center the text inside that fixed rect
     text_rect = rendered_back.get_rect(center=back_rect.center)
@@ -340,12 +340,12 @@ def green_world_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SC
     rendered_next = render_text(next_text, True, (255, 255, 255))
 
     next_rect = pygame.Rect(0, 0, 100, 100)
-    next_rect.center = (SCREEN_WIDTH - 90, SCREEN_HEIGHT // 2)
+    next_rect.center = (manage_data.SCREEN_WIDTH - 90, manage_data.SCREEN_HEIGHT // 2)
 
     text_rect = rendered_next.get_rect(center=next_rect.center)
     screen.blit(rendered_next, text_rect)
 
-def mech_world_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, disks):
+def mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
     global current_lang, buttons
     buttons.clear()
 
@@ -359,8 +359,8 @@ def mech_world_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCR
     spacing_y = 160
 
     grid_width = (buttons_per_row - 1) * spacing_x
-    start_x = (SCREEN_WIDTH - grid_width) // 2
-    start_y = ((SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2)) + 50
+    start_x = (manage_data.SCREEN_WIDTH - grid_width) // 2
+    start_y = ((manage_data.SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2)) + 50
 
     for i, level in enumerate(level_options):
         col = i % buttons_per_row
@@ -378,8 +378,8 @@ def mech_world_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCR
     rendered_back = render_text(back_text, True, (255, 255, 255))
 
     # Create a fixed 100x100 hitbox centered at the right location
-    back_rect = pygame.Rect(SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, SCREEN_HEIGHT - 175, 100, 100)
-    back_rect.center = (SCREEN_WIDTH // 2 , SCREEN_HEIGHT - 200)
+    back_rect = pygame.Rect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 100, 100)
+    back_rect.center = (manage_data.SCREEN_WIDTH // 2 , manage_data.SCREEN_HEIGHT - 200)
 
     # Then during draw phase: center the text inside that fixed rect
     text_rect = rendered_back.get_rect(center=back_rect.center)
@@ -392,12 +392,12 @@ def mech_world_buttons(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCR
     rendered_next = render_text(next_text, True, (255, 255, 255))
 
     next_rect = pygame.Rect(0, 0, 100, 100)
-    next_rect.center = (SCREEN_WIDTH - 90, SCREEN_HEIGHT // 2)
+    next_rect.center = (manage_data.SCREEN_WIDTH - 90, manage_data.SCREEN_HEIGHT // 2)
 
     text_rect = rendered_next.get_rect(center=next_rect.center)
     screen.blit(rendered_next, text_rect)
 
-def character_select(lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH):
+def character_select(lang_code, manifest):
     
     # Clear screen
     buttons.clear()
@@ -407,12 +407,12 @@ def character_select(lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH):
     for i, key in enumerate(button_texts):
         text = current_lang[key]
         rendered = render_text(text, True, (255, 255, 255))
-        rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100)) 
+        rect = rendered.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 100)) 
         buttons.append((rendered, rect, key, False))
    
     pygame.display.flip()
 
-def settings_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs):
+def settings_menu(screen, lang_code, manifest, bgs):
     global current_lang, buttons
     # 1. Load language (only once per page change is better, but this works)
     current_lang = manage_data.load_language(lang_code, manifest).get('settings', {})
@@ -432,14 +432,14 @@ def settings_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs)
 
     heading = setting_lang.get("settings", "Settings")
     heading_text = render_text(heading, True, (255 , 255, 255))
-    screen.blit(heading_text, (SCREEN_WIDTH // 2 - heading_text.get_width() // 2, 200))
+    screen.blit(heading_text, (manage_data.SCREEN_WIDTH // 2 - heading_text.get_width() // 2, 200))
 
     button_spacing = 72
-    start_y = (SCREEN_HEIGHT // 2) - (len(button_data) * button_spacing // 2) + 150
+    start_y = (manage_data.SCREEN_HEIGHT // 2) - (len(button_data) * button_spacing // 2) + 150
 
     for i, (display_text, internal_key) in enumerate(button_data):
         rendered = render_text(display_text, True, (255, 255, 255))
-        rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, start_y + i * button_spacing)) 
+        rect = rendered.get_rect(center=(manage_data.SCREEN_WIDTH // 2, start_y + i * button_spacing)) 
         # Store the internal_key so handle_action knows what was clicked
         buttons.append((rendered, rect, internal_key, False))
 
@@ -452,7 +452,7 @@ def settings_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs)
             pygame.draw.rect(screen, (0, 213, 0), rect.inflate(20, 10), 2)
         screen.blit(rendered, rect)
 
-def about_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, version):
+def about_menu(screen, lang_code, manifest, bgs, version):
     global buttons
     buttons.clear()
     screen.blit(bgs['plain'], (0, 0))
@@ -460,35 +460,35 @@ def about_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, ve
 
     title = settings_lang.get("About", "About")
     title_rendered = render_text(title, True, (255, 255, 255))
-    screen.blit(title_rendered, (SCREEN_WIDTH // 2 - title_rendered.get_width() // 2, 100))
+    screen.blit(title_rendered, (manage_data.SCREEN_WIDTH // 2 - title_rendered.get_width() // 2, 100))
 
     site = settings_lang.get("site_credit", "Sound effects used from pixabay.com and edited using Audacity")
     site_text = render_text(site, True, (255, 255, 255))
-    site_pos = ((SCREEN_WIDTH // 2 - site_text.get_width() // 2), 200)
+    site_pos = ((manage_data.SCREEN_WIDTH // 2 - site_text.get_width() // 2), 200)
 
     logo = settings_lang.get("logo_credit", "Logo and Backgrounds made with canva.com")
     logo_text = render_text(logo, True, (255, 255, 255))
-    logo_pos = ((SCREEN_WIDTH // 2- logo_text.get_width() // 2), 240)
+    logo_pos = ((manage_data.SCREEN_WIDTH // 2- logo_text.get_width() // 2), 240)
 
     credit = settings_lang.get("credit_credit", "Made by Omer Arfan")
     credit_text = render_text(credit, True, (255, 255, 255))
-    credit_pos = ((SCREEN_WIDTH // 2 - credit_text.get_width() // 2), 280)
+    credit_pos = ((manage_data.SCREEN_WIDTH // 2 - credit_text.get_width() // 2), 280)
 
     ver = settings_lang.get("version_credit", "Game Version: {version}").format(version=version)
     ver_text = render_text(ver, True, (255, 255, 255))
-    ver_pos = ((SCREEN_WIDTH // 2 - ver_text.get_width() // 2), 320)
+    ver_pos = ((manage_data.SCREEN_WIDTH // 2 - ver_text.get_width() // 2), 320)
 
     thx = settings_lang.get("thanks", "Thank you for playing! You are amazing!")
     thx_text = render_text(thx, True, (0, 255, 0))
-    thx_pos = ((SCREEN_WIDTH // 2 - thx_text.get_width() // 2), 400)
+    thx_pos = ((manage_data.SCREEN_WIDTH // 2 - thx_text.get_width() // 2), 400)
 
     bugs = settings_lang.get("bugs", "If you find any bugs, please report them on the GitHub repository.")
     bugs_text = render_text(bugs, True, (242, 123, 32))
-    bugs_pos = ((SCREEN_WIDTH // 2 - bugs_text.get_width() // 2), 440)
+    bugs_pos = ((manage_data.SCREEN_WIDTH // 2 - bugs_text.get_width() // 2), 440)
 
     sorry = settings_lang.get("sorry", "Sorry for any inconvenience caused by bugs.")
     sorry_text = render_text(sorry, True, (242, 123, 32))
-    sorry_pos = ((SCREEN_WIDTH // 2 - sorry_text.get_width() // 2), 480)
+    sorry_pos = ((manage_data.SCREEN_WIDTH // 2 - sorry_text.get_width() // 2), 480)
 
     screen.blit(logo_text, logo_pos)
     screen.blit(site_text, site_pos)
@@ -500,15 +500,15 @@ def about_menu(screen, lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, ve
 
     support_text = settings_lang.get("support", "Support / Report Bugs")
     support_rendered = render_text(support_text, True, (255, 255, 255))
-    support_rect = support_rendered.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 122))
+    support_rect = support_rendered.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 122))
     buttons.append((support_rendered, support_rect, "Support", False))
 
     back_text = settings_lang.get("Back", "Back")
     rendered = render_text(back_text, True, (255, 255, 255))
-    rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 50))
+    rect = rendered.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 50))
     buttons.append((rendered, rect, "Back", False))
 
-def audio_settings_menu(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SCREEN_WIDTH, bgs, is_mute, is_mute_amb):
+def audio_settings_menu(screen, lang_code, manifest, progress, bgs, is_mute, is_mute_amb):
     global buttons
     buttons.clear()
     screen.blit(bgs['plain'], (0, 0))
@@ -517,7 +517,7 @@ def audio_settings_menu(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SC
     # 1. Draw Title
     title_str = settings_lang.get("Audio", "Audio")
     title_txt = render_text(title_str, True, (255, 255, 255))
-    screen.blit(title_txt, (SCREEN_WIDTH // 2 - title_txt.get_width() // 2, 200))
+    screen.blit(title_txt, (manage_data.SCREEN_WIDTH // 2 - title_txt.get_width() // 2, 200))
     
     # 2. Sound Buttons (SFX)
     sound_label = settings_lang.get("Sound", "Sound")
@@ -529,7 +529,7 @@ def audio_settings_menu(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SC
         sfx_text_str = settings_lang.get("Mute", "Mute {setting}").format(setting=sound_label)
     
     renderedsfx = render_text(sfx_text_str, True, (255, 255, 255))
-    rectsfx = renderedsfx.get_rect(center=(SCREEN_WIDTH // 2, 350))
+    rectsfx = renderedsfx.get_rect(center=(manage_data.SCREEN_WIDTH // 2, 350))
     buttons.append((renderedsfx, rectsfx, "SFX", False)) # Keeping "SFX" as the internal ID for your click handler
 
     # 3. Ambience Buttons
@@ -540,13 +540,13 @@ def audio_settings_menu(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SC
         amb_text_str = settings_lang.get("Mute", "Mute {setting}").format(setting=amb_label)
     
     renderedamb = render_text(amb_text_str, True, (255, 255, 255))
-    rectamb = renderedamb.get_rect(center=(SCREEN_WIDTH // 2, 450))
+    rectamb = renderedamb.get_rect(center=(manage_data.SCREEN_WIDTH // 2, 450))
     buttons.append((renderedamb, rectamb, "Ambience", False))
 
     # 4. Back Button
     back_txt = settings_lang.get("Back", "Back")
     renderedback = render_text(back_txt, True, (255, 255, 255))
-    rectback = renderedback.get_rect(center=(SCREEN_WIDTH // 2, 550))
+    rectback = renderedback.get_rect(center=(manage_data.SCREEN_WIDTH // 2, 550))
     buttons.append((renderedback, rectback, "Back", False))
     
     # Blit everything to the screen
@@ -555,7 +555,7 @@ def audio_settings_menu(screen, lang_code, manifest, progress, SCREEN_HEIGHT, SC
     screen.blit(renderedback, rectback)
 
 
-def create_quit_confirm_buttons(lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH):
+def create_quit_confirm_buttons(lang_code, manifest):
     global current_lang, buttons
     buttons.clear()
 
@@ -565,18 +565,18 @@ def create_quit_confirm_buttons(lang_code, manifest, SCREEN_HEIGHT, SCREEN_WIDTH
 
     # Store the quit confirmation text for rendering in the main loop
     quit_text = render_text(confirm_quit, True, (255, 255, 255))
-    quit_text_rect = quit_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 25))
+    quit_text_rect = quit_text.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT // 2 - 25))
 
     # Create "Yes" button
     yes_text = messages.get("yes", "Yes")
     rendered_yes = render_text(yes_text, True, (255, 255, 255))
-    yes_rect = rendered_yes.get_rect(center=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 50))
+    yes_rect = rendered_yes.get_rect(center=(manage_data.SCREEN_WIDTH // 2 - 100, manage_data.SCREEN_HEIGHT // 2 + 50))
     buttons.append((rendered_yes, yes_rect, "yes", False))
 
     # Create "No" button
     no_text = messages.get("no", "No")
     rendered_no = render_text(no_text, True, (255, 255, 255))
-    no_rect = rendered_no.get_rect(center=(SCREEN_WIDTH // 2 + 100, SCREEN_HEIGHT // 2 + 50))
+    no_rect = rendered_no.get_rect(center=(manage_data.SCREEN_WIDTH // 2 + 100, manage_data.SCREEN_HEIGHT // 2 + 50))
     buttons.append((rendered_no, no_rect, "no", False))
 
     return quit_text, quit_text_rect

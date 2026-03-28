@@ -30,6 +30,7 @@ medals = {}
 disks = {}
 robos = {}
 fonts = {}
+current_page = 'main_menu'
 
 default_progress = {
     "player": {
@@ -581,3 +582,131 @@ def update_xp_ui(progress, Achievements, manifest):
         XP_text = fonts['mega'].render(str(level), True, color)
         max_txt = load_language(lang_code, manifest).get('messages', {}).get("max_level", "MAX LEVEL!")
         XP_text2 = menu_ui.render_text(max_txt, True, color)   
+
+
+class Achievements:
+    @staticmethod
+    def get_notif_text(ach_key, default_name):
+        # Helper to build the 'Achievement Unlocked: Name' string
+        lang = change_language(lang_code, manifest, progress)
+        ach_data = lang.get("achieve", {})
+        
+        # Get "Achievement Unlocked:" prefix
+        prefix = ach_data.get("unlock", "Achievement unlocked:")
+        # Get the specific name (e.g., "Speedy Starter!")
+        name = ach_data.get(ach_key, default_name)
+        
+        # Combine them and render
+        full_string = f"{prefix} {name}"
+        return menu_ui.render_text(full_string, True, (255, 255, 0))
+
+    def lvl1speed(ctime):
+        global notification_text, notification_time, notif
+        unlock = progress["achieved"].get("speedy_starter", False)
+        if ctime <= 4.5 and not unlock:
+            progress["achieved"]["speedy_starter"] = True  
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("speedy_starter", "Speedy Starter")
+            if not is_mute:
+                sounds['notify'].play()
+            if notification_time is None:
+                notif = True
+                notification_time = time.time()
+    
+    def perfect6(ctime, deaths):
+        global notification_text, notification_time, notif
+        unlock = progress["achieved"].get("zen_os", False)
+        if ctime <= 30 and deaths <= 0 and not unlock:
+            progress["achieved"]["zen_os"] = True
+            progress["char"]["ironrobo"] = True
+            save_progress(progress, manifest)
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("zen_os", "Zenith of Six")
+            if not is_mute:
+                sounds['notify'].play()
+            if notification_time is None:
+                notif = True
+                notification_time = time.time()
+
+    def lvl90000(score):
+        global notification_text, notification_time, notif
+        unlock = progress["achieved"].get("over_9k", False)
+        if score >= 105000 and not unlock:
+            progress["achieved"]["over_9k"] = True          
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("over_9k", "It's over 9000!!")
+            if not is_mute:
+                sounds['notify'].play()
+            if notification_time is None:
+                notif = True
+                notification_time = time.time()
+    
+    def evilchase():
+        global notification_text, notification_time, notif
+        unlock = progress["achieved"].get("chase_escape", False)
+        if not unlock:
+            progress["achieved"]["chase_escape"] = True
+            progress["char"]["evilrobo"] = True
+            save_progress(progress, manifest)
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("chase_escape", "Chased and Escaped")
+            if not is_mute:
+                sounds['notify'].play()
+            if notification_time is None:
+                notif = True
+                notification_time = time.time()
+    
+    def check_green_gold():
+        global notification_text, notification_time, notif
+        all_gold = all(progress["lvls"]["medals"][f"lvl{i}"] in ["Gold", "Diamond"] for i in range(1, 7))
+        unlock = progress["achieved"].get("golden", False)
+        if all_gold and not unlock:        
+            progress["achieved"]["golden"] = True
+            progress["char"]["greenrobo"] = True
+            save_progress(progress, manifest)
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("golden", "Golden!")
+            if not is_mute:
+                sounds['notify'].play()
+            if notification_time is None:
+                notif = True
+                notification_time = time.time()
+    
+    def check_xplvl20(Level):
+        global notification_text, notification_time, notif
+        unlock = progress["achieved"].get("lv20", False)
+        if Level >= 20 and not unlock:
+            progress["achieved"]["lv20"] = True
+            save_progress(progress, manifest)
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("lv20", "XP Collector!")
+            if not is_mute:
+                sounds['notify'].play()
+            if notification_time is None:
+                notif = True
+                notification_time = time.time()
+
+import state
+
+def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg, transition):
+    if rect.collidepoint(pygame.mouse.get_pos()):
+        global wait_time, selected_character, locked_char_sound_time, locked_char_sound_played
+        charsel = load_language(lang_code, manifest).get('char_select', {})
+
+        if unlock_flag:
+            selected_character = char_key
+            progress["pref"]["character"] = selected_character
+            save_progress(progress, manifest)
+            if not is_mute:
+                sounds['click'].play()
+        else:
+            state.handle_action("locked", transition, current_page)  # Trigger the locked transition effect
+            if not locked_char_sound_played or time.time() - locked_char_sound_time > 1.5: # type: ignore
+                if not is_mute:
+                    sounds['death'].play()
+                locked_char_sound_time = time.time()
+                locked_char_sound_played = True
+            if wait_time is None:
+                wait_time = pygame.time.get_ticks()
+            global locked_text
+            locked_text = charsel.get(locked_msg_key, fallback_msg)
