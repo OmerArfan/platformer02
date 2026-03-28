@@ -129,9 +129,6 @@ def create_achieve_screen(screen, lang_code, manifest, progress):
     global current_lang
     buttons.clear()
     current_lang = manage_data.load_language(lang_code, manifest)
-    # 1. Load the sections with fallback to the root dictionary
-    # This covers both nested: current_lang["achieve"]["zen_os"] 
-    # and flat: current_lang["zen_os"]
     ach_data = current_lang.get("achieve", {}) 
     header_data = current_lang.get("main_menu", {})
     back_data = current_lang.get("language_select", {})
@@ -151,9 +148,7 @@ def create_achieve_screen(screen, lang_code, manifest, progress):
         "chase_escape",
         "chase_escape_desc",
         "golden", 
-        "golden_desc",
-        "lv20", 
-        "lv20_desc"
+        "golden_desc"
     ]
 
     y_offset = 120 
@@ -189,12 +184,62 @@ def create_achieve_screen(screen, lang_code, manifest, progress):
     back_rect = rendered_back.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 100))
     buttons.append((rendered_back, back_rect, "back", False))
 
-def create_main_menu_buttons(screen, lang_code, manifest, progress):
+def draw_profile(screen):
+    global current_lang, buttons
+    buttons.clear()
+    screen.blit(manage_data.bgs['plain'], (0, 0))
+    current_lang = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('main_menu', {})
+    profile_text = current_lang.get("profile", "Profile")
+    rendered_profile = render_text(profile_text, True, (255, 255, 255))
+    screen.blit(rendered_profile, (manage_data.SCREEN_WIDTH // 2 - rendered_profile.get_width() // 2, 50))
+    
+    current_lang = manage_data.load_language(manage_data.lang_code, manage_data.manifest)
+    back_data = current_lang.get("language_select", {})
 
+    level, xp_needed, xp_total = manage_data.xp()
+    if level < 20:
+        color = (255, 255, 255)
+        XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, color)
+        badge = manage_data.assets['badge']
+        bar = 280*(xp_needed/xp_total)
+    else:
+        max_txt = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {}).get("max_level", "MAX LEVEL!")
+        color = (225, 212, 31)
+        XP_text2 = render_text(max_txt, True, color)
+        badge = manage_data.assets['max_badge']
+        bar = 280
+
+    player_text = render_text(f"Username: {manage_data.progress['player']['Username']}", True, (255, 255, 255))
+    player_pos = (manage_data.SCREEN_WIDTH // 2 - (player_text.get_width() // 2), 100)
+
+    ID_text = render_text(f"ID: {manage_data.progress['player']['ID']}", True, (255, 255, 255))
+    ID_pos = (manage_data.SCREEN_WIDTH // 2 - (ID_text.get_width() // 2), 150)
+
+    XP_text = manage_data.fonts['mega'].render(f"{level}", True, color)
+    XP_pos2 = (manage_data.SCREEN_WIDTH // 2 - (XP_text2.get_width() + 10), 210)
+    XP_pos = (manage_data.SCREEN_WIDTH // 2 - (XP_text.get_width() + XP_text2.get_width() + 30), 200)
+
+    xp_center_x = XP_pos[0] + (XP_text.get_width() / 2)
+    badge_x = xp_center_x - (manage_data.assets['badge'].get_width() // 2)
+    badge_pos = (badge_x, 200)
+
+    screen.blit(badge, badge_pos)
+    screen.blit(XP_text, XP_pos)
+    screen.blit(XP_text2, XP_pos2)
+    screen.blit(ID_text, ID_pos)
+    screen.blit(player_text, player_pos)
+    pygame.draw.rect(screen, color, (XP_pos2[0], 255, bar, 15))
+
+    back_text = back_data.get("back", "Back")
+    rendered_back = render_text(back_text, True, (255, 255, 255))
+    back_rect = rendered_back.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 100))
+    buttons.append((rendered_back, back_rect, "back", False))
+    
+def create_main_menu_buttons(screen, lang_code, manifest, progress):
     global current_lang, buttons
     current_lang = manage_data.load_language(lang_code, manifest).get('main_menu', {})
     buttons.clear()
-    button_texts = ["start", "achievements", "character_select", "settings", "quit"]
+    button_texts = ["start", "achievements", "character_select", "settings", "profile", "quit"]
 
     # Center buttons vertically and horizontally
     button_spacing = 72 
@@ -205,7 +250,6 @@ def create_main_menu_buttons(screen, lang_code, manifest, progress):
         rendered = render_text(text, True, (255, 255, 255))
         rect = rendered.get_rect(center=(manage_data.SCREEN_WIDTH // 2, start_y + i * button_spacing)) 
         buttons.append((rendered, rect, key, False))
-
 
 def create_language_buttons(screen, lang_code, manifest, progress):
     global current_lang, buttons
@@ -418,7 +462,8 @@ def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, b
             button_hovered_last_frame = hover_effect(screen, rect, manage_data.sounds['hover'], manage_data.is_mute, button_hovered_last_frame)
             
             # Metadata (Score/Stars) - Only for level buttons
-            if key.startswith("lvl") and not is_locked:
+            if key is not None:
+              if key.startswith("lvl") and not is_locked:
                 score = manage_data.progress["lvls"]['score'][key]
                 
                 # Highscore

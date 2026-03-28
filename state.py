@@ -68,7 +68,7 @@ class TransitionManager:
                         with open(manage_data.ACCOUNTS_FILE, "w") as f:
                             json.dump(manifest, f, indent=4)
                     # Load the data and move to main menu
-                    progress = manage_data.load_progress()
+                    manage_data.progress = manage_data.load_progress()
                     selected_id = None
                 set_page(screen, manage_data.current_page, lang_code, manifest, progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, version, manage_data.is_mute, manage_data.is_mute_amb, transition)
                 self.phase = 2
@@ -79,6 +79,7 @@ class TransitionManager:
             
             if self.left_x <= -self.left_image.get_width() and self.right_x >= self.screen.get_width():
                 self.active = False
+                self.phase = 0
 
         # Draw both images
         self.screen.blit(self.left_image, (self.left_x, 0))
@@ -88,6 +89,10 @@ transition_time = None
 is_transitioning = False
 pending_lang_code = None
 selected_id = None
+
+locked_char_sound_time = None
+locked_char_sound_played = False
+wait_time = None
 
 def handle_action(key, transition, current_page):
     global progress, is_transitioning, transition_time, locked_char_sound_played, locked_char_sound_time, manifest, lang_code, pending_lang_code, selected_id
@@ -118,6 +123,12 @@ def handle_action(key, transition, current_page):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "settings"
+        elif key == "profile":
+            if not is_transitioning:
+                transition.start("profile")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "profile"
         elif key == "quit":
             if not is_transitioning:
                 transition.start("quit_confirm")
@@ -269,10 +280,17 @@ def handle_action(key, transition, current_page):
                 is_transitioning = True
                 pending_page = "main_menu"
     elif current_page == "character_select":
-        if key == "locked" and not locked_char_sound_played and not is_mute:
+        if key == "locked" and not locked_char_sound_played and not manage_data.is_mute:
             manage_data.sounds['death'].play()
             locked_char_sound_played = False
             locked_char_sound_time = time.time()
+        if key == "back":
+            if not is_transitioning:
+                transition.start("main_menu")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "main_menu"
+    elif current_page == "profile":
         if key == "back":
             if not is_transitioning:
                 transition.start("main_menu")
@@ -288,9 +306,10 @@ def set_page(screen, page, lang_code, manifest, progress, Achievements, bgs, dis
 
     # Reload the current language data for the new page
     if page == 'main_menu':
-        manage_data.update_xp_ui(progress, Achievements, manifest) # Update XP display when returning to main menu, especially in case of different users.
         current_lang = manage_data.load_language(lang_code, manifest).get('main_menu', {})
         menu_ui.create_main_menu_buttons(screen, lang_code, manifest, progress)
+    elif page == "profile":
+        menu_ui.draw_profile(screen)
     elif page == "achievements":
         menu_ui.create_achieve_screen(screen, lang_code, manifest, progress)
     elif page == 'character_select':
@@ -307,7 +326,7 @@ def set_page(screen, page, lang_code, manifest, progress, Achievements, bgs, dis
     elif page == "Audio":
         menu_ui.audio_settings_menu(screen, lang_code, manifest, progress, bgs, is_mute, is_mute_amb)
     elif page == "Account":
-        acc_sys.create_account_selector(manage_data.ACCOUNTS_FILE, lang_code, manifest, transition, screen, bgs, is_mute, manage_data.sounds, menu_ui.draw_notifs, menu_ui.draw_syncing_status, menu_ui.buttons)
+        acc_sys.create_account_selector()
     elif page == "login_screen":
         acc_sys.reset_login_state()
     elif page == "registration_screen":
@@ -385,4 +404,4 @@ def muting_amb():
 def quit_game():
     manage_data.sync_vault_to_cloud(manage_data.progress, manage_data.manifest)
     pygame.quit()
-    sys.exit()
+    sys.exit()()

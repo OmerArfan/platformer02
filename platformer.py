@@ -12,8 +12,8 @@ import state
 import levels
 
 # GAME VERSION
-manage_data.version = "1.3.7.4"
-manage_data.kernel = "0.1.1"
+manage_data.version = "1.3.7.5"
+manage_data.kernel = "0.1.2"
 
 # Initialize audio
 pygame.mixer.init()
@@ -124,40 +124,19 @@ manage_data.update_locked_levels(manage_data.progress, manage_data.manifest) # U
 button_hovered_last_frame = False
 last_hovered_key = None
 main_menu_hover = None
-wait_time = None
 logo_hover = False
 logo_click = False
 image_paths = None
 image_surfaces = None
-locked_char_sound_time = None
-locked_char_sound_played = False
 
 ## ACCOUNTS LOGIC
 username = ""
 user_pass = ""
 
-# First define current XP outside the loop
-level, xp_needed, xp_total = manage_data.xp(manage_data.progress, manage_data.Achievements)
-if level < 20:
-    color = (255, 255, 255)
-else:
-    color = (225, 212, 31)
-
-XP_text = manage_data.fonts['mega'].render(f"{level}", True, color)
-if level < 20:
-    XP_text2 = menu_ui.render_text(f"{xp_needed}/{xp_total}", True, color)
-else:
-    max_txt = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {}).get("max_level", "MAX LEVEL!")
-    XP_text2 = menu_ui.render_text(max_txt, True, color)
-
 if not manage_data.is_mute and manage_data.SCREEN_WIDTH > MIN_WIDTH and manage_data.SCREEN_HEIGHT > MIN_HEIGHT:
     manage_data.sounds['click'].play()
 
 while running:
-    # This is in the main loop, unlike the other texts, because it needs to update if the player changes!
-    ID_text = menu_ui.render_text(f"ID: {manage_data.progress['player']['ID']}", True, (255, 255, 255))
-    ID_pos = (manage_data.SCREEN_WIDTH - (ID_text.get_width() + 10), 0)
-
     messages = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {})
     # Clear screen!
     screen.blit(manage_data.bgs['plain'], (0, 0))
@@ -167,31 +146,12 @@ while running:
         state.transition_time = None
         state.is_transitioning = False
 
-    if state.is_transitioning and state.transition_time is not None and state.pending_page is not None:
-        if transition.phase == 1:
-            level, xp_needed, xp_total = manage_data.xp(manage_data.progress, manage_data.Achievements)
-            if level < 20:
-                color = (255, 255, 255)
-            else:
-                color = (225, 212, 31)
-
-            XP_text = manage_data.fonts['mega'].render(f"{level}", True, color)
-            if level < 20:
-                XP_text2 = menu_ui.render_text(f"{xp_needed}/{xp_total}", True, color)
-            else:
-                max_txt = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {}).get("max_level", "MAX LEVEL!")
-                XP_text2 = menu_ui.render_text(max_txt, True, color)
+    if transition.phase == 1:
             state.is_transitioning = False
             current_pending = state.pending_page
             state.transition_time = None
             state.pending_page = None
             state.set_page(screen, current_pending, manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
-
-    XP_pos2 = (manage_data.SCREEN_WIDTH - (XP_text2.get_width() + 10), 50)
-    XP_pos = (manage_data.SCREEN_WIDTH - (XP_text.get_width() + XP_text2.get_width() + 30), 30)
-    xp_center_x = XP_pos[0] + (XP_text.get_width() / 2)
-    badge_x = xp_center_x - (manage_data.assets['badge'].get_width() / 2)
-    badge_pos = (badge_x, 32)
 
     if manage_data.SCREEN_WIDTH < MIN_WIDTH or manage_data.SCREEN_HEIGHT < MIN_HEIGHT:
         countdown = 5  # seconds
@@ -239,11 +199,11 @@ while running:
 
             # Handle login screen events
             elif manage_data.current_page == "login_screen" and event.type == pygame.KEYDOWN:
-                acc_sys.handle_login_events(events, manage_data.manifest, manage_data.lang_code, manage_data.is_mute, manage_data.sounds, manage_data.progress, state.set_page)
+                acc_sys.handle_login_events(screen, transition, events, manage_data.manifest, manage_data.lang_code, manage_data.is_mute, manage_data.sounds, manage_data.progress, state.set_page)
                 break  # Stop processing other events for this frame
 
             elif manage_data.current_page == "registration_screen" and event.type == pygame.KEYDOWN:
-                acc_sys.handle_registration_events(events, manage_data.manifest, manage_data.lang_code, manage_data.is_mute, manage_data.sounds, manage_data.progress, state.set_page, manage_data.ACCOUNTS_FILE)
+                acc_sys.handle_registration_events(screen, transition, events, manage_data.manifest, manage_data.lang_code, manage_data.is_mute, manage_data.sounds, manage_data.progress, state.set_page, manage_data.ACCOUNTS_FILE)
                 break  # Stop processing other events for this frame
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -262,7 +222,7 @@ while running:
                                 manage_data.sounds['click'].play()
                             state.handle_action(key, transition, manage_data.current_page)
                             last_page_change_time = time.time()
-                elif manage_data.current_page in ["levels", "mech_levels", "worlds"]:
+                else:
                     for rendered, rect, key, is_locked in menu_ui.buttons:
                         if rect.collidepoint(event.pos):
                             if key is not None and not manage_data.is_mute:
@@ -272,13 +232,6 @@ while running:
         if manage_data.current_page == "main_menu":
             screen.blit(manage_data.ui['logo'], ((manage_data.SCREEN_WIDTH // 2 - manage_data.ui['logo'].get_width() // 2), -20))
             screen.blit(manage_data.bgs['lilrobopeek'], ((manage_data.SCREEN_WIDTH - manage_data.bgs['lilrobopeek'].get_width()), (manage_data.SCREEN_HEIGHT - manage_data.bgs['lilrobopeek'].get_height())))
-            screen.blit(ID_text, ID_pos)
-            if level < 20:
-                screen.blit(manage_data.assets['badge'], badge_pos)
-            else:
-                screen.blit(manage_data.assets['max_badge'], badge_pos)
-            screen.blit(XP_text, XP_pos)
-            screen.blit(XP_text2, XP_pos2)
             hovered_key = None
             for rendered, rect, key, is_locked in menu_ui.buttons:
                 mouse_pos = pygame.mouse.get_pos()
@@ -305,6 +258,9 @@ while running:
 
                 screen.blit(rendered, rect)
             last_hovered_key = hovered_key
+
+        if manage_data.current_page == 'profile':
+            menu_ui.draw_profile(screen)
 
         if manage_data.current_page == "achievements":
             menu_ui.create_achieve_screen(screen, manage_data.lang_code, manage_data.manifest, manage_data.progress)
@@ -350,14 +306,14 @@ while running:
             title = menu_ui.render_text(title_text, True, (255, 255, 255))
             screen.blit(title, (manage_data.SCREEN_WIDTH // 2 - title.get_width() // 2, 80))
             
-            acc_sys.create_account_selector(manage_data.ACCOUNTS_FILE, manage_data.lang_code, manage_data.manifest, transition, screen, manage_data.bgs, manage_data.is_mute, manage_data.sounds, menu_ui.draw_notifs, menu_ui.draw_syncing_status, menu_ui.buttons)
+            acc_sys.create_account_selector()
             button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)
 
         elif manage_data.current_page == "login_screen":
-            acc_sys.draw_login_screen(screen, manage_data.lang_code, manage_data.manifest, manage_data.bgs)
+            acc_sys.draw_login_screen(screen)
 
         elif manage_data.current_page == "registration_screen":
-            acc_sys.draw_registration_screen(screen, manage_data.lang_code, manage_data.manifest, manage_data.bgs)
+            acc_sys.draw_registration_screen(screen)
     
         else:
             button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)

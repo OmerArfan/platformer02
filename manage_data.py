@@ -184,7 +184,7 @@ def change_language(lang, manifest, progress):
     return current_lang
 
 def load_progress():
-    global SAVE_FILE, notification_time 
+    global SAVE_FILE
     
     data = copy.deepcopy(default_progress) 
 
@@ -268,7 +268,7 @@ def load_progress():
 
 # Save progress to file
 def save_progress(data, manifest):
-    global notification_text, notification_time, error_code, notif, er
+    global notification_text,error_code, notif, er
     global save_count
     global SAVE_FILE 
 
@@ -286,7 +286,7 @@ def save_progress(data, manifest):
          #   hit_sound.play()
         notification_text = menu_ui.render_text("Refusing to save: Invalid data structure!", True, (255, 0, 0))
         notif = True
-        notification_time = time.time()
+        menu_ui.notification_time = time.time()
         return
 
     # 2. Folder & Path Logic
@@ -323,18 +323,18 @@ def save_progress(data, manifest):
         #    hit_sound.play()
         notification_text = menu_ui.render_text("Error: Save file is locked by another program.", True, (255, 0, 0))
         notif = True
-        notification_time = time.time()
+        menu_ui.notification_time = time.time()
             
     except Exception as e:
         er = True
         error_code = menu_ui.render_text(f"Save Error: {str(e)}", True, (255, 0, 0))
        # if not is_mute:
         #   hit_sound.play()
-        notification_time = time.time()
+        menu_ui.notification_time = time.time()
         print(f"Detailed save error: {e}")
 
 def update_local_manifest(data):
-    global er, error_code, is_mute, notification_time
+    global er, error_code, is_mute
     # 1. Load existing manifest
     manifest = {"last_used": "", "users": {}, "pref": {"language": "en", "sfx": True, "ambience": True}}
     if os.path.exists(ACCOUNTS_FILE):
@@ -388,7 +388,7 @@ def update_local_manifest(data):
         #if not is_mute: hit_sound.play()
         error_code = menu_ui.render_text(f"Local manifest error: {e}", True, (255, 0, 0))
         er = True
-        notification_time = time.time()
+        menu_ui.notification_time = time.time()
         print(f"Error during manifest save: {e}")
 
 def sync_missing_data(data):
@@ -523,7 +523,8 @@ def fetch_cloud_data_by_id(target_id):
         
     return None
 
-def xp(progress, Achievements):
+def xp():
+    global progress
     # XP from scores
     scores = progress["lvls"]["score"]
     score_xp = sum(scores.values()) // 1000
@@ -568,9 +569,8 @@ def xp(progress, Achievements):
     Achievements.check_xplvl20(level)
     return level, xp_in_level, xp_needed(level)
 
-def update_xp_ui(progress, Achievements, manifest):
-    global level, xp_needed, xp_total, XP_text, XP_text2
-
+def update_xp_ui():
+    global progress, lang_code, manifest
     level, xp_needed, xp_total = xp(progress, Achievements)
 
     if level < 20:
@@ -583,6 +583,7 @@ def update_xp_ui(progress, Achievements, manifest):
         max_txt = load_language(lang_code, manifest).get('messages', {}).get("max_level", "MAX LEVEL!")
         XP_text2 = menu_ui.render_text(max_txt, True, color)   
 
+    return XP_text, XP_text2
 
 class Achievements:
     @staticmethod
@@ -601,7 +602,6 @@ class Achievements:
         return menu_ui.render_text(full_string, True, (255, 255, 0))
 
     def lvl1speed(ctime):
-        global notification_text, notification_time, notif
         unlock = progress["achieved"].get("speedy_starter", False)
         if ctime <= 4.5 and not unlock:
             progress["achieved"]["speedy_starter"] = True  
@@ -609,12 +609,12 @@ class Achievements:
             notification_text = Achievements.get_notif_text("speedy_starter", "Speedy Starter")
             if not is_mute:
                 sounds['notify'].play()
-            if notification_time is None:
+            if menu_ui.notification_time is None:
                 notif = True
-                notification_time = time.time()
+                menu_ui.notification_time = time.time()
     
     def perfect6(ctime, deaths):
-        global notification_text, notification_time, notif
+        global notification_text
         unlock = progress["achieved"].get("zen_os", False)
         if ctime <= 30 and deaths <= 0 and not unlock:
             progress["achieved"]["zen_os"] = True
@@ -624,12 +624,12 @@ class Achievements:
             notification_text = Achievements.get_notif_text("zen_os", "Zenith of Six")
             if not is_mute:
                 sounds['notify'].play()
-            if notification_time is None:
+            if menu_ui.notification_time is None:
                 notif = True
-                notification_time = time.time()
+                menu_ui.notification_time = time.time()
 
     def lvl90000(score):
-        global notification_text, notification_time, notif
+        global notification_text
         unlock = progress["achieved"].get("over_9k", False)
         if score >= 105000 and not unlock:
             progress["achieved"]["over_9k"] = True          
@@ -637,12 +637,12 @@ class Achievements:
             notification_text = Achievements.get_notif_text("over_9k", "It's over 9000!!")
             if not is_mute:
                 sounds['notify'].play()
-            if notification_time is None:
+            if menu_ui.notification_time is None:
                 notif = True
-                notification_time = time.time()
+                menu_ui.notification_time = time.time()
     
     def evilchase():
-        global notification_text, notification_time, notif
+        global notification_text
         unlock = progress["achieved"].get("chase_escape", False)
         if not unlock:
             progress["achieved"]["chase_escape"] = True
@@ -652,12 +652,12 @@ class Achievements:
             notification_text = Achievements.get_notif_text("chase_escape", "Chased and Escaped")
             if not is_mute:
                 sounds['notify'].play()
-            if notification_time is None:
+            if menu_ui.notification_time is None:
                 notif = True
-                notification_time = time.time()
+                menu_ui.notification_time = time.time()
     
     def check_green_gold():
-        global notification_text, notification_time, notif
+        global notification_text
         all_gold = all(progress["lvls"]["medals"][f"lvl{i}"] in ["Gold", "Diamond"] for i in range(1, 7))
         unlock = progress["achieved"].get("golden", False)
         if all_gold and not unlock:        
@@ -668,12 +668,12 @@ class Achievements:
             notification_text = Achievements.get_notif_text("golden", "Golden!")
             if not is_mute:
                 sounds['notify'].play()
-            if notification_time is None:
+            if menu_ui.notification_time is None:
                 notif = True
-                notification_time = time.time()
+                menu_ui.notification_time = time.time()
     
     def check_xplvl20(Level):
-        global notification_text, notification_time, notif
+        global notification_text
         unlock = progress["achieved"].get("lv20", False)
         if Level >= 20 and not unlock:
             progress["achieved"]["lv20"] = True
@@ -682,15 +682,15 @@ class Achievements:
             notification_text = Achievements.get_notif_text("lv20", "XP Collector!")
             if not is_mute:
                 sounds['notify'].play()
-            if notification_time is None:
+            if menu_ui.notification_time is None:
                 notif = True
-                notification_time = time.time()
+                menu_ui.notification_time = time.time()
 
 import state
 
 def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg, transition):
     if rect.collidepoint(pygame.mouse.get_pos()):
-        global wait_time, selected_character, locked_char_sound_time, locked_char_sound_played
+        global selected_character
         charsel = load_language(lang_code, manifest).get('char_select', {})
 
         if unlock_flag:
@@ -701,12 +701,12 @@ def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg, t
                 sounds['click'].play()
         else:
             state.handle_action("locked", transition, current_page)  # Trigger the locked transition effect
-            if not locked_char_sound_played or time.time() - locked_char_sound_time > 1.5: # type: ignore
+            if not state.locked_char_sound_played or time.time() - state.locked_char_sound_time > 1.5: # type: ignore
                 if not is_mute:
                     sounds['death'].play()
-                locked_char_sound_time = time.time()
-                locked_char_sound_played = True
-            if wait_time is None:
-                wait_time = pygame.time.get_ticks()
+                state.locked_char_sound_time = time.time()
+                state.locked_char_sound_played = True
+            if state.wait_time is None:
+                state.wait_time = pygame.time.get_ticks()
             global locked_text
             locked_text = charsel.get(locked_msg_key, fallback_msg)
