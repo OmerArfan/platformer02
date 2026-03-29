@@ -795,7 +795,6 @@ def create_lvl3_screen(screen, transition):
             screen.blit(manage_data.assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
  
         # Draw all saws first
-
         level_logic.draw_saws(screen, saws, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache)
 
         # 2. Check for saw deaths
@@ -807,8 +806,6 @@ def create_lvl3_screen(screen, transition):
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
-
-        player_x, player_y, velocity_y, on_ground, player_rect = level_logic.handle_key_blocks(screen, manage_data.sounds['open'], key_block_pairs, manage_data.is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y)
 
         player_x, player_y, velocity_y, on_ground, player_rect = level_logic.block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground)
 
@@ -833,7 +830,9 @@ def create_lvl3_screen(screen, transition):
                 manage_data.sounds['death'].play()
             velocity_y = 0
             deathcount += 1
-        
+            
+        player_x, player_y, velocity_y, on_ground, player_rect = level_logic.handle_key_blocks(screen, manage_data.sounds['open'], key_block_pairs, manage_data.is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y)
+
         level_logic.draw_portal(screen, manage_data.assets['exit'], exit_portal, camera_x, camera_y)
         
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
@@ -1135,7 +1134,6 @@ def create_lvl4_screen(screen, transition):
             deathcount += 1
             key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
-        # Saw collision detection
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
 
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
@@ -1190,6 +1188,21 @@ def create_lvl4_screen(screen, transition):
         
         # Draw key only if not collected
  
+         # Draw all lasers first
+        for laser in lasers:
+            pygame.draw.rect(screen, (255, 0, 0), (int(laser.x - camera_x), int(laser.y - camera_y), laser.width, laser.height))
+            # Check if the player collides with the laser
+            if player_rect.colliderect(laser):
+                # Trigger death logic
+                player_x, player_y = spawn_x, spawn_y
+                death_text = menu_ui.render_text(in_game.get("laser_message", "Lasered!"), True, (255, 0, 0))
+                wait_time = pygame.time.get_ticks()
+                if not manage_data.is_mute:
+                    manage_data.sounds['laser'].play()
+                velocity_y = 0
+                deathcount += 1
+                key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
+
 # Saw collision detection and drawing
         if level_logic.handle_rotating_saws(screen, rotating_saws, blocks, player_rect, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache):
             # Death logic
@@ -1223,6 +1236,7 @@ def create_lvl4_screen(screen, transition):
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
+            key_block_pairs[0]["collected"] = False
 
         player_x, player_y, velocity_y, on_ground, player_rect = level_logic.handle_key_blocks(screen, manage_data.sounds['open'], key_block_pairs, manage_data.is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y)
 
@@ -1238,24 +1252,6 @@ def create_lvl4_screen(screen, transition):
                 velocity_y = 0
                 deathcount += 1 
 
-        # Draw all lasers first
-        for laser in lasers:
-            pygame.draw.rect(screen, (255, 0, 0), (int(laser.x - camera_x), int(laser.y - camera_y), laser.width, laser.height))
-
-        # Then check for collision with lasers
-        for laser in lasers:
-            # Check if the player collides with the laser
-            if player_rect.colliderect(laser):
-                # Trigger death logic
-                player_x, player_y = spawn_x, spawn_y
-                death_text = menu_ui.render_text(in_game.get("laser_message", "Lasered!"), True, (255, 0, 0))
-                wait_time = pygame.time.get_ticks()
-                if not manage_data.is_mute:
-                    manage_data.sounds['laser'].play()
-                velocity_y = 0
-                deathcount += 1
-                key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
-
         player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, manage_data.is_mute, manage_data.sounds['bounce'], False, False)
         level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
 
@@ -1267,6 +1263,7 @@ def create_lvl4_screen(screen, transition):
                 manage_data.sounds['death'].play()
             velocity_y = 0
             deathcount += 1
+            key_block_pairs[0]["collected"] = False
         
         for block in moving_blocks:
             rect = block['rect']
@@ -1654,6 +1651,7 @@ def create_lvl5_screen(screen, transition):
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
+            key_block_pairs[0]["collected"] = False 
 
         player_x, player_y, velocity_y, on_ground, player_rect = level_logic.handle_key_blocks(screen, manage_data.sounds['open'], key_block_pairs, manage_data.is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y)
         player_x, player_y, velocity_y, on_ground, player_rect = level_logic.block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground)
@@ -1666,6 +1664,7 @@ def create_lvl5_screen(screen, transition):
                     manage_data.sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1 
+                key_block_pairs[0]["collected"] = False 
 
         for block in walls:
             pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
@@ -1681,6 +1680,7 @@ def create_lvl5_screen(screen, transition):
                 manage_data.sounds['death'].play()
             velocity_y = 0
             deathcount += 1
+            key_block_pairs[0]["collected"] = False 
 
         level_logic.draw_portal(screen, manage_data.assets['exit'], exit_portal, camera_x, camera_y)
        
@@ -1960,7 +1960,7 @@ def create_lvl6_screen(screen, transition):
             menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
             
             manage_data.Achievements.check_green_gold()
-            #manage_data.Achievements.perfect6(current_time, deathcount)
+            manage_data.Achievements.perfect6(current_time, deathcount)
             manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
             
             state.handle_action('quit', transition, manage_data.current_page)
@@ -2000,6 +2000,7 @@ def create_lvl6_screen(screen, transition):
             deathcount += 1
             if not manage_data.is_mute: manage_data.sounds['death'].play()
             velocity_y = 0
+            key_block_pairs[0]["collected"] = False 
 
         # Handle Moving Saws
         if level_logic.handle_moving_saws(screen, moving_saws, player_rect, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache):
@@ -2010,6 +2011,7 @@ def create_lvl6_screen(screen, transition):
             deathcount += 1
             if not manage_data.is_mute: manage_data.sounds['death'].play()
             velocity_y = 0
+            key_block_pairs[0]["collected"] = False 
         
         # Handle Moving Saws
         if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache):
@@ -2020,6 +2022,7 @@ def create_lvl6_screen(screen, transition):
             deathcount += 1
             if not manage_data.is_mute: manage_data.sounds['death'].play()
             velocity_y = 0
+            key_block_pairs[0]["collected"] = False 
 
         level_logic.draw_saws(screen, saws, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache)
 
@@ -2032,13 +2035,12 @@ def create_lvl6_screen(screen, transition):
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
+            key_block_pairs[0]["collected"] = False 
 
         player_x, player_y, velocity_y, on_ground, player_rect = level_logic.handle_key_blocks(screen, manage_data.sounds['open'], key_block_pairs, manage_data.is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y)
 
         for laser in lasers:
             pygame.draw.rect(screen, (255, 0, 0), (int(laser.x - camera_x), int(laser.y - camera_y), laser.width, laser.height))
-
-        for laser in lasers:
             # Check if the player collides with the laser
             if player_rect.colliderect(laser):
                 # Trigger death logic
@@ -2060,7 +2062,8 @@ def create_lvl6_screen(screen, transition):
                 if not manage_data.is_mute:    
                     manage_data.sounds['hit'].play()
                 velocity_y = 0
-                deathcount += 1 
+                deathcount += 1
+                key_block_pairs[0]["collected"] = False  
 
         player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, manage_data.is_mute, manage_data.sounds['bounce'], False, False)
         level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
@@ -2073,6 +2076,7 @@ def create_lvl6_screen(screen, transition):
                 manage_data.sounds['death'].play()
             velocity_y = 0
             deathcount += 1
+            key_block_pairs[0]["collected"] = False 
 
         level_logic.draw_portal(screen, manage_data.assets['exit'], exit_portal, camera_x, camera_y)
         
@@ -2328,8 +2332,6 @@ def create_lvl7_screen(screen, transition):
         if player_rect.colliderect(exit_portal):
             score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 7)
             menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
-            
-            manage_data.Achievements.check_green_gold()
 
             manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
             
@@ -2707,8 +2709,6 @@ def create_lvl8_screen(screen, transition):
         if player_rect.colliderect(exit_portal):
             score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 8)
             menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
-            
-            manage_data.Achievements.check_green_gold()
 
             manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
             
@@ -2760,6 +2760,7 @@ def create_lvl8_screen(screen, transition):
             deathcount += 1
             if not manage_data.is_mute: manage_data.sounds['death'].play()
             velocity_y = 0
+            weak_grav = False
         
         # Handle Moving Saws
         if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache):
@@ -2770,6 +2771,7 @@ def create_lvl8_screen(screen, transition):
             deathcount += 1
             if not manage_data.is_mute: manage_data.sounds['death'].play()
             velocity_y = 0
+            weak_grav = False
 
         level_logic.draw_saws(screen, saws, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache)
 
@@ -2782,6 +2784,7 @@ def create_lvl8_screen(screen, transition):
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
+            weak_grav = False
 
         player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, manage_data.is_mute, manage_data.sounds['bounce'], False, weak_grav)
         level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
@@ -2794,6 +2797,7 @@ def create_lvl8_screen(screen, transition):
                 manage_data.sounds['death'].play()
             velocity_y = 0
             deathcount += 1
+            weak_grav = False
 
         player_x, player_y, velocity_y, on_ground, player_rect = level_logic.block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground)
         
@@ -2804,31 +2808,11 @@ def create_lvl8_screen(screen, transition):
                 if not manage_data.is_mute:    
                     manage_data.sounds['hit'].play()
                 velocity_y = 0
-                deathcount += 1 
+                deathcount += 1
+                weak_grav = False 
 
-        for x, y, r, color in gravity_weakers:
-            # Draw the button as a circle
-            if not weak_grav:
-                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
-
-        for gravity_weaker in gravity_weakers:
-            gravity_weaker_x, gravity_weaker_y, gravity_weaker_radius, _ = gravity_weaker
-
-        # Find the closest point on the player's rectangle to the button's center
-            closest_x = max(player_rect.left, min(gravity_weaker_x, player_rect.right))
-            closest_y = max(player_rect.top, min(gravity_weaker_y, player_rect.bottom))
-
-            # Calculate the distance between the closest point and the button's center
-            dx = closest_x - gravity_weaker_x
-            dy = closest_y - gravity_weaker_y
-            distance = (dx**2 + dy**2)**0.5
-
-            # If distance is less than radius, weaker gravity activated
-            if distance < gravity_weaker_radius and not weak_grav:
-                if not manage_data.is_mute:
-                    manage_data.sounds['button'].play()
-                weak_grav = True
-
+        if level_logic.handling_gravity_weakers(screen, gravity_weakers, player_rect, camera_x, camera_y, weak_grav):
+            weak_grav = True
 
         level_logic.draw_portal(screen, manage_data.assets['mech_exit'], exit_portal, camera_x, camera_y)
         
@@ -3098,7 +3082,7 @@ def create_lvl9_screen(screen, transition):
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
         on_ground = False
 
-        for block in blocks + [moving_block]:
+        for block in moving_block:
             if player_rect.colliderect(block):
                 # Falling onto a block
                 if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
@@ -3172,11 +3156,10 @@ def create_lvl9_screen(screen, transition):
             menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
             
             manage_data.Achievements.lvl90000(score)
-            manage_data.Achievements.check_green_gold()
 
-            manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
             
-            state.set_page(screen, 'lvl10_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+            state.handle_action('lvl10_screen', transition, manage_data.current_page)
             running = False
 
         # Draw flag
@@ -3211,6 +3194,8 @@ def create_lvl9_screen(screen, transition):
             deathcount += 1
             if not manage_data.is_mute: manage_data.sounds['death'].play()
             velocity_y = 0
+            weak_grav = False 
+            strong_grav = False
         
         # Handle Moving Saws
         if level_logic.handle_moving_saws_x(screen, moving_saws_x, player_rect, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache):
@@ -3221,6 +3206,8 @@ def create_lvl9_screen(screen, transition):
             deathcount += 1
             if not manage_data.is_mute: manage_data.sounds['death'].play()
             velocity_y = 0
+            weak_grav = False 
+            strong_grav = False
 
         player_x, player_y, velocity_y, on_ground, player_rect = level_logic.handle_key_blocks(screen, manage_data.sounds['open'], key_block_pairs, manage_data.is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y)
 
@@ -3240,6 +3227,8 @@ def create_lvl9_screen(screen, transition):
                 manage_data.sounds['death'].play()
             velocity_y = 0
             deathcount += 1
+            weak_grav = False 
+            strong_grav = False
 
         player_x, player_y, velocity_y, on_ground, player_rect = level_logic.block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground)
         
@@ -3251,54 +3240,16 @@ def create_lvl9_screen(screen, transition):
                     manage_data.sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1 
-
-        for x, y, r, color in gravity_strongers:
-            # Draw the button as a circle
-            if not strong_grav:
-                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
-
-        for gravity_stronger in gravity_strongers:
-            gravity_stronger_x, gravity_stronger_y, gravity_stronger_radius, _ = gravity_stronger
-
-        # Find the closest point on the player's rectangle to the button's center
-            closest_x = max(player_rect.left, min(gravity_stronger_x, player_rect.right))
-            closest_y = max(player_rect.top, min(gravity_stronger_y, player_rect.bottom))
-
-            # Calculate the distance between the closest point and the button's center
-            dx = closest_x - gravity_stronger_x
-            dy = closest_y - gravity_stronger_y
-            distance = (dx**2 + dy**2)**0.5
-
-            # If distance is less than radius, stronger gravity activated
-            if distance < gravity_stronger_radius and not strong_grav:
-                if not manage_data.is_mute:
-                    manage_data.sounds['button'].play()
-                strong_grav = True
-                weak_grav = False
-
-        for x, y, r, color in gravity_weakers:
-            # Draw the button as a circle
-            if not weak_grav:
-                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
-
-        for gravity_weaker in gravity_weakers:
-            gravity_weaker_x, gravity_weaker_y, gravity_weaker_radius, _ = gravity_weaker
-
-        # Find the closest point on the player's rectangle to the button's center
-            closest_x = max(player_rect.left, min(gravity_weaker_x, player_rect.right))
-            closest_y = max(player_rect.top, min(gravity_weaker_y, player_rect.bottom))
-
-            # Calculate the distance between the closest point and the button's center
-            dx = closest_x - gravity_weaker_x
-            dy = closest_y - gravity_weaker_y
-            distance = (dx**2 + dy**2)**0.5
-
-            # If distance is less than radius, weaker gravity activated
-            if distance < gravity_weaker_radius and not weak_grav:
-                if not manage_data.is_mute:
-                    manage_data.sounds['button'].play()
-                weak_grav = True
+                weak_grav = False 
                 strong_grav = False
+
+        if level_logic.handling_gravity_strongers(screen, gravity_strongers, player_rect, camera_x, camera_y, strong_grav):
+            strong_grav = True
+            weak_grav = False 
+
+        if level_logic.handling_gravity_weakers(screen, gravity_weakers, player_rect, camera_x, camera_y, weak_grav):
+            weak_grav = True
+            strong_grav = False
 
         level_logic.draw_portal(screen, manage_data.assets['mech_exit'], exit_portal, camera_x, camera_y)
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
@@ -3589,12 +3540,10 @@ def create_lvl10_screen(screen, transition):
         if player_rect.colliderect(exit_portal):
             score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 10)
             menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
-            
-            manage_data.Achievements.check_green_gold()
 
-            manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
             
-            state.set_page(screen, 'lvl11_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+            state.handle_action('lvl11_screen', transition, manage_data.current_page)
             running = False
 
         # Draw flag
@@ -3674,31 +3623,12 @@ def create_lvl10_screen(screen, transition):
                 velocity_y = 0
                 deathcount += 1 
 
+
         pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
 
-        for x, y, r, color in gravity_strongers:
-            # Draw the button as a circle
-            if not strong_grav:
-                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
-
-        for gravity_stronger in gravity_strongers:
-            gravity_stronger_x, gravity_stronger_y, gravity_stronger_radius, _ = gravity_stronger
-
-        # Find the closest point on the player's rectangle to the button's center
-            closest_x = max(player_rect.left, min(gravity_stronger_x, player_rect.right))
-            closest_y = max(player_rect.top, min(gravity_stronger_y, player_rect.bottom))
-
-            # Calculate the distance between the closest point and the button's center
-            dx = closest_x - gravity_stronger_x
-            dy = closest_y - gravity_stronger_y
-            distance = (dx**2 + dy**2)**0.5
-
-            # If distance is less than radius, stronger gravity activated
-            if distance < gravity_stronger_radius and not strong_grav:
-                if not manage_data.is_mute:
-                    manage_data.sounds['button'].play()
-                strong_grav = True
-                weak_grav = False
+        if level_logic.handling_gravity_strongers(screen, gravity_strongers, player_rect, camera_x, camera_y, strong_grav):
+            strong_grav = True
+            weak_grav = False
 
         level_logic.draw_portal(screen, manage_data.assets['mech_exit'], exit_portal, camera_x, camera_y)
         
@@ -4025,12 +3955,10 @@ def create_lvl11_screen(screen, transition):
         if player_rect.colliderect(exit_portal):
             score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 11)
             menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
-            
-            manage_data.Achievements.check_green_gold()
 
-            manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
             
-            state.set_page('lvl12_screen')
+            state.handle_action('lvl12_screen', transition, manage_data.current_page)
             running = False    
 
         # Draw flag
@@ -4321,8 +4249,6 @@ def create_lvl12_screen(screen, transition):
     camera_speed = 0.5
     deathcount = 0
     was_moving = False
-    lights_off = True
-    saw_angle = 0
 
     # Draw flag
     flag = pygame.Rect(3900, 200, 100, 125)  # x, y, width, height
@@ -4342,7 +4268,6 @@ def create_lvl12_screen(screen, transition):
             "key": (300, 100, 30, (255, 119, 0)),
             "block": pygame.Rect(1900, 0, 100, 200),
             "collected": False,
-            "timer": 0,  # Timer for the key block
             "duration": 5000,  # Duration for which the block is active
             "locked_time": None
         },
@@ -4350,7 +4275,6 @@ def create_lvl12_screen(screen, transition):
             "key": (4000, 250, 30, (255, 119, 0)),
             "block": pygame.Rect(4150, 400, 50, 250),
             "collected": False,
-            "timer": 0,  # Timer for the key block
             "duration": 3500,  # Duration for which the block is active
             "locked_time": None
         }
@@ -4360,8 +4284,8 @@ def create_lvl12_screen(screen, transition):
         pygame.Rect(0, 200, 2000, 100),
         pygame.Rect(1900, -1000, 100, 1000),
         pygame.Rect(3200, -50, 800, 100),
-        pygame.Rect(3600, 300, 600, 100),
-        pygame.Rect(4100, -700, 100, 1000),
+        pygame.Rect(3600, 300, 500, 100),
+        pygame.Rect(4100, -700, 101, 1100),
         pygame.Rect(3450, 650, 1000, 100),
         pygame.Rect(3350, 0, 100, 750),
         pygame.Rect(2300, 200, 150, 100),
@@ -4428,7 +4352,7 @@ def create_lvl12_screen(screen, transition):
             deathcount = 0
             for pair in key_block_pairs_timed:
                 pair["collected"] = False  # Reset the collected status for all keys
-                pair["timer"] = 0  # Reset the timer for all key blocks
+                pair["locked_time"] = None  # Reset the timer for all key blocks
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
@@ -4487,7 +4411,6 @@ def create_lvl12_screen(screen, transition):
         if player_rect.colliderect(flag) and not checkpoint_reached:
             checkpoint_reached = True
             stamina = False  # Reset stamina status
-            lights_off = True
             weak_grav = False
             strong_grav = False
             spawn_x, spawn_y = 3900, 150  # Store checkpoint position
@@ -4500,11 +4423,8 @@ def create_lvl12_screen(screen, transition):
             score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 12)
             menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
             manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
-           
-            # Check if all manage_data.medals from lvl1 to lvl12 are "Gold"
-            manage_data.Achievements.check_green_gold()
             
-            state.set_page('main_menu')  
+            state.handle_action('quit', transition, manage_data.current_page)
             running = False  
 
         # Draw flag
@@ -4540,6 +4460,11 @@ def create_lvl12_screen(screen, transition):
             deathcount += 1
             if not manage_data.is_mute: manage_data.sounds['death'].play()
             velocity_y = 0
+            weak_grav = False
+            strong_grav = False
+            for pair in key_block_pairs_timed:
+                pair["collected"] = False  # Reset the collected status for all keys
+                pair["locked_time"] = None  # Reset the timer for all key blocks
 
         level_logic.draw_saws(screen, saws, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache)
 
@@ -4552,6 +4477,11 @@ def create_lvl12_screen(screen, transition):
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
+            strong_grav = False
+            weak_grav = False
+            for pair in key_block_pairs_timed:
+                pair["collected"] = False  # Reset the collected status for all keys
+                pair["locked_time"] = None  # Reset the timer for all key blocks
 
         player_x, player_y, velocity_y = level_logic.jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, manage_data.is_mute, manage_data.sounds['bounce'], strong_grav, weak_grav)
         level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
@@ -4566,6 +4496,11 @@ def create_lvl12_screen(screen, transition):
                     manage_data.sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1 
+                strong_grav = False
+                weak_grav = False
+                for pair in key_block_pairs_timed:
+                    pair["collected"] = False  # Reset the collected status for all keys
+                    pair["locked_time"] = None  # Reset the timer for all key blocks
 
         level_logic.draw_portal(screen, manage_data.assets['mech_exit'], exit_portal, camera_x, camera_y)
 
@@ -4573,111 +4508,29 @@ def create_lvl12_screen(screen, transition):
         
         screen.blit(rendered_timed_text_2, (-20 - camera_x, -30 - camera_y))
         
-        for pair in key_block_pairs_timed:
-            key_x, key_y, key_r, key_color = pair["key"]
-            block = pair["block"]
+        if level_logic.handling_gravity_strongers(screen, gravity_strongers, player_rect, camera_x, camera_y, strong_grav):
+            strong_grav = True
+            weak_grav = False
 
-            key_rect = pygame.Rect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
+        if level_logic.handling_gravity_weakers(screen, gravity_weakers, player_rect, camera_x, camera_y, weak_grav):
+            strong_grav = False
+            weak_grav = True
 
-            if player_rect.colliderect(key_rect):
-                if not pair["collected"]:
-                    pair["locked_time"] = pygame.time.get_ticks()
-                    pair["collected"] = True
-                    if not manage_data.is_mute:
-                        manage_data.sounds['open'].play()
-
-            # Draw key and block only if not collected
-            if not pair["collected"]:
-                pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
-                pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
-
-            # Reset after duration
-            if pair["locked_time"] is not None:
-                if pair["collected"] and (pygame.time.get_ticks() - pair["locked_time"]) > pair["duration"]:
-                    pair["collected"] = False
-                    pair["locked_time"] = None  # Reset timer
-                    # Check if player is inside block when it reappears
-            
-                    if player_rect.colliderect(pair["block"]):
-                        if not manage_data.is_mute:
-                         manage_data.sounds['hit'].play()
-                        deathcount += 1
-                        stamina = False  # Reset stamina status
-                        lights_off = True
-                        weak_grav = False
-                        strong_grav = False
-                        player_x, player_y = spawn_x, spawn_y
-                        for pair in key_block_pairs_timed:
-                            pair["collected"] = False  # Reset the collected status for all keys
-                            pair["timer"] = 0  # Reset the timer for all key blocks
-                        velocity_y = 0  # Reset vertical speed
-                        wait_time = pygame.time.get_ticks()  # Start the wait time
-                        death_text = menu_ui.render_text(in_game.get("crushed_message", "Crushed!"), True, (255, 0, 0))
-
-        for pair in key_block_pairs_timed:
-            if not pair["collected"]:  # Only active locked blocks
-                block = pair["block"]
-                if player_rect.colliderect(block):
-            # Falling onto a block
-                    if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
-                        player_y = block.y - img_height
-                        velocity_y = 0
-                        on_ground = True
-
-            # Horizontal collisions
-                    elif player_x + img_width > block.x and player_x < block.x + block.width:
-                        if player_x < block.x:
-                            player_x = block.x - img_width
-                        elif player_x + img_width > block.x + block.width:
-                            player_x = block.x + block.width
-
-        for x, y, r, color in gravity_strongers:
-            # Draw the button as a circle
-            if not strong_grav:
-                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
-
-        for gravity_stronger in gravity_strongers:
-            gravity_stronger_x, gravity_stronger_y, gravity_stronger_radius, _ = gravity_stronger
-
-        # Find the closest point on the player's rectangle to the button's center
-            closest_x = max(player_rect.left, min(gravity_stronger_x, player_rect.right))
-            closest_y = max(player_rect.top, min(gravity_stronger_y, player_rect.bottom))
-
-            # Calculate the distance between the closest point and the button's center
-            dx = closest_x - gravity_stronger_x
-            dy = closest_y - gravity_stronger_y
-            distance = (dx**2 + dy**2)**0.5
-
-            # If distance is less than radius, stronger gravity activated
-            if distance < gravity_stronger_radius and not strong_grav:
-                if not manage_data.is_mute:
-                    manage_data.sounds['button'].play()
-                strong_grav = True
-                weak_grav = False
-
-        for x, y, r, color in gravity_weakers:
-            # Draw the button as a circle
-            if not weak_grav:
-                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
-
-        for gravity_weaker in gravity_weakers:
-            gravity_weaker_x, gravity_weaker_y, gravity_weaker_radius, _ = gravity_weaker
-
-        # Find the closest point on the player's rectangle to the button's center
-            closest_x = max(player_rect.left, min(gravity_weaker_x, player_rect.right))
-            closest_y = max(player_rect.top, min(gravity_weaker_y, player_rect.bottom))
-
-            # Calculate the distance between the closest point and the button's center
-            dx = closest_x - gravity_weaker_x
-            dy = closest_y - gravity_weaker_y
-            distance = (dx**2 + dy**2)**0.5
-
-            # If distance is less than radius, weaker gravity activated
-            if distance < gravity_weaker_radius and not weak_grav:
-                if not manage_data.is_mute:
-                    manage_data.sounds['button'].play()
-                weak_grav = True
-                strong_grav = False
+        is_crushed, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y, on_ground = level_logic.handle_key_blocks_timed(screen, key_block_pairs_timed, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y, on_ground)
+        if is_crushed:
+            if not manage_data.is_mute:
+                manage_data.sounds['hit'].play()
+            deathcount += 1
+            stamina = False  # Reset stamina status
+            weak_grav = False
+            strong_grav = False
+            for pair in key_block_pairs_timed:
+                pair["collected"] = False  # Reset the collected status for all keys
+                pair["locked_time"] = None  # Reset the timer for all key blocks
+            player_x, player_y = spawn_x, spawn_y
+            velocity_y = 0  # Reset vertical speed
+            wait_time = pygame.time.get_ticks()  # Start the wait time
+            death_text = menu_ui.render_text(in_game.get("crushed_message", "Crushed!"), True, (255, 0, 0))
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
@@ -4707,6 +4560,11 @@ def create_lvl12_screen(screen, transition):
                 manage_data.sounds['death'].play()
             velocity_y = 0
             deathcount += 1
+            strong_grav = False
+            weak_grav = False
+            for pair in key_block_pairs_timed:
+                pair["collected"] = False  # Reset the collected status for all keys
+                pair["locked_time"] = None  # Reset the timer for all key blocks
 
         if player_y > 1100:
             death_text = menu_ui.render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
@@ -4715,7 +4573,7 @@ def create_lvl12_screen(screen, transition):
             strong_grav = False
             for pair in key_block_pairs_timed:
                 pair["collected"] = False  # Reset the collected status for all keys
-                pair["timer"] = 0  # Reset the timer for all key blocks
+                pair["locked_time"] = None  # Reset the timer for all key blocks
             if not manage_data.is_mute:    
                 manage_data.sounds['fall'].play()
             player_x, player_y = spawn_x, spawn_y  # Reset player position

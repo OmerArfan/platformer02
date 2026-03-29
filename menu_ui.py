@@ -232,8 +232,8 @@ def draw_profile(screen):
     screen.blit(XP_text2, XP_pos2)
     screen.blit(ID_text, ID_pos)
     screen.blit(player_text, player_pos)
-    pygame.draw.rect(screen, color, (XP_pos2[0], 240, bar, 25))
-    pygame.draw.rect(screen, color, (XP_pos2[0], 240, 250, 25), 2)
+    pygame.draw.rect(screen, color, (XP_pos2[0] + 10, 240, bar, 25))
+    pygame.draw.rect(screen, color, (XP_pos2[0] + 10, 240, 250, 25), 2)
 
     back_text = back_data.get("back", "Back")
     rendered_back = render_text(back_text, True, (255, 255, 255))
@@ -289,7 +289,7 @@ def create_main_menu_buttons(screen, lang_code, manifest, progress):
     global current_lang, buttons
     current_lang = manage_data.load_language(lang_code, manifest).get('main_menu', {})
     buttons.clear()
-    button_texts = ["start", "achievements", "character_select", "settings", "profile", "quit"]
+    button_texts = ["start", "achievements", "character_select", "settings", "quit"]
 
     # Center buttons vertically and horizontally
     button_spacing = 72 
@@ -739,21 +739,48 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
          if selected_character in manage_data.robo_rects:
           pygame.draw.rect(screen, highlight_colors[selected_character], manage_data.robo_rects[selected_character].inflate(5, 5), 5)
 
+         # Display locked message if one exists
+         if hasattr(state, 'locked_message') and state.locked_message is not None:
+             screen.blit(state.locked_message, (manage_data.SCREEN_WIDTH // 2 - state.locked_message.get_width() // 2, 100))
+
          for event in events:
            if event.type == pygame.QUIT:
             state.set_page(screen, "quit_confirm", manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 
            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if manage_data.robo_rects['robot'].collidepoint(mouse_pos):
-                manage_data.try_select_robo(manage_data.unlocked_robos['robot'], "robot", manage_data.robo_rects['robot'], "placeholder", "Imagine if this actually popped up in game BRO-", transition)
+                try_select_robo(manage_data.unlocked_robos['robot'], "robot", manage_data.robo_rects['robot'], "placeholder", "Imagine if this actually popped up in game BRO-", transition)
             elif manage_data.robo_rects['evilrobot'].collidepoint(mouse_pos):
-                manage_data.try_select_robo(manage_data.unlocked_robos['evilrobot'], "evilrobot", manage_data.robo_rects['evilrobot'], "evillocked_message", "Encounter this robot in an alternative route to unlock him!", transition)
+                try_select_robo(manage_data.unlocked_robos['evilrobot'], "evilrobot", manage_data.robo_rects['evilrobot'], "evillocked_message", "Encounter this robot in an alternative route to unlock him!", transition)
             elif manage_data.robo_rects['greenrobot'].collidepoint(mouse_pos):
-                manage_data.try_select_robo(manage_data.unlocked_robos['greenrobot'], "greenrobot", manage_data.robo_rects['greenrobot'], "greenlocked_message", "Get GOLD rank in all Green World Levels to unlock this robot!", transition)
+                try_select_robo(manage_data.unlocked_robos['greenrobot'], "greenrobot", manage_data.robo_rects['greenrobot'], "greenlocked_message", "Get GOLD rank in all Green World Levels to unlock this robot!", transition)
             elif manage_data.robo_rects['ironrobot'].collidepoint(mouse_pos):
-                manage_data.try_select_robo(manage_data.unlocked_robos['ironrobot'], "ironrobot", manage_data.robo_rects['ironrobot'], "ironlocked_message", "Unlock the Zenith Of Six achievement to get this character!", transition)
+                try_select_robo(manage_data.unlocked_robos['ironrobot'], "ironrobot", manage_data.robo_rects['ironrobot'], "ironlocked_message", "Unlock the Zenith Of Six achievement to get this character!", transition)
             elif rect.collidepoint(mouse_pos):
                 state.handle_action(key, transition, manage_data.current_page)
+
+def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg, transition):
+    if rect.collidepoint(pygame.mouse.get_pos()):
+        global selected_character
+        charsel = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('char_select', {})
+
+        if unlock_flag:
+            selected_character = char_key
+            manage_data.progress["pref"]["character"] = selected_character
+            manage_data.save_progress(manage_data.progress, manage_data.manifest)
+            if not manage_data.is_mute:
+                manage_data.sounds['click'].play()
+        else:
+            state.handle_action("locked", transition, manage_data.current_page)  # Trigger the locked transition effect
+            if not state.locked_char_sound_played or time.time() - state.locked_char_sound_time > 1.5: # type: ignore
+                if not manage_data.is_mute:
+                    manage_data.sounds['death'].play()
+                state.locked_char_sound_time = time.time()
+                state.locked_char_sound_played = True
+            if state.wait_time is None:
+                state.wait_time = pygame.time.get_ticks()
+            locked_text = charsel.get(locked_msg_key, fallback_msg)
+            state.locked_message = render_text(locked_text, True, (255, 255, 0))
 
 def character_select(lang_code, manifest):
     

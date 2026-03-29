@@ -10,8 +10,8 @@ import state
 import levels
 
 # GAME VERSION
-manage_data.version = "1.3.7.9"
-manage_data.kernel = "0.1.4.2"
+manage_data.version = "1.3.8"
+manage_data.kernel = "0.1.4.3"
 
 # Initialize pygame
 pygame.init()

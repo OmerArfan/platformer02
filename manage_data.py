@@ -696,31 +696,6 @@ class Achievements:
                 notif = True
                 menu_ui.notification_time = time.time()
 
-import state
-
-def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg, transition):
-    if rect.collidepoint(pygame.mouse.get_pos()):
-        global selected_character
-        charsel = load_language(lang_code, manifest).get('char_select', {})
-
-        if unlock_flag:
-            selected_character = char_key
-            progress["pref"]["character"] = selected_character
-            save_progress(progress, manifest)
-            if not is_mute:
-                sounds['click'].play()
-        else:
-            state.handle_action("locked", transition, current_page)  # Trigger the locked transition effect
-            if not state.locked_char_sound_played or time.time() - state.locked_char_sound_time > 1.5: # type: ignore
-                if not is_mute:
-                    sounds['death'].play()
-                state.locked_char_sound_time = time.time()
-                state.locked_char_sound_played = True
-            if state.wait_time is None:
-                state.wait_time = pygame.time.get_ticks()
-            global locked_text
-            locked_text = charsel.get(locked_msg_key, fallback_msg)
-
 def check_for_new_gamenews(return_count):
     url = "https://omerarfan.github.io/lilrobowebsite/gamestuff.html"
     try:
