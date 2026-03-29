@@ -153,17 +153,18 @@ def create_lvl1_screen(screen, transition):
             deathcount += 1
 
         if player_rect.colliderect(exit_portal):
-            score, base_score, medal_score, death_score, time_score, stars = score, base_score, medal_score, death_score, time_score, stars =level_logic.fin_lvl_logic(current_time, deathcount, medal, 1)
+            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 1)
             menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
-            # Check if all manage_data.medals from lvl1 to lvl11 are "Gold"
+            
             manage_data.Achievements.lvl1speed(current_time)
             manage_data.Achievements.check_green_gold()
 
             manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            state.handle_action('lvl2_screen', transition, manage_data.current_page)
+            
             running = False
-            state.set_page(screen, 'lvl2_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+            
 
-        # Drawing
         screen.blit(manage_data.bgs['green'], (0, 0))
 
         pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
@@ -442,14 +443,15 @@ def create_lvl2_screen(screen, transition):
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            score, base_score, medal_score, death_score, time_score, stars =level_logic.fin_lvl_logic(current_time, deathcount, medal, 2)
-            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs,  medal, stars)
-            # Check if all manage_data.medals from lvl1 to lvl11 are "Gold"
+            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 2)
+            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
+            
             manage_data.Achievements.check_green_gold()
 
-            manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            
+            state.handle_action('lvl3_screen', transition, manage_data.current_page)
             running = False
-            state.set_page(screen, 'lvl3_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)    
 
         # Drawing
         screen.blit(manage_data.bgs['green'], (0, 0))
@@ -759,14 +761,15 @@ def create_lvl3_screen(screen, transition):
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            score, base_score, medal_score, death_score, time_score, stars =level_logic.fin_lvl_logic(current_time, deathcount, medal, 3)
-            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs,  medal, stars)    
-            # Check if all manage_data.medals from lvl1 to lvl11 are "Gold"
+            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 3)
+            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
+            
             manage_data.Achievements.check_green_gold()
 
-            manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            
+            state.handle_action('lvl4_screen', transition, manage_data.current_page)
             running = False
-            state.set_page(screen, 'lvl4_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 
         # Draw flag
         if checkpoint_reached:
@@ -1152,14 +1155,15 @@ def create_lvl4_screen(screen, transition):
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            score, base_score, medal_score, death_score, time_score, stars =level_logic.fin_lvl_logic(current_time, deathcount, medal, 4)
-            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs,  medal, stars)
-            # Check if all manage_data.medals from lvl1 to lvl11 are "Gold"
+            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 4)
+            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
+            
             manage_data.Achievements.check_green_gold()
 
-            manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            
+            state.handle_action('lvl5_screen', transition, manage_data.current_page)
             running = False
-            state.set_page(screen, 'lvl5_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition) 
 
         # Draw flag
         if checkpoint_reached:
@@ -1571,15 +1575,15 @@ def create_lvl5_screen(screen, transition):
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            score, base_score, medal_score, death_score, time_score, stars =level_logic.fin_lvl_logic(current_time, deathcount, medal, 5)
-            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs,  medal, stars)
-
-            # Check if all manage_data.medals from lvl1 to lvl11 are "Gold"
+            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 5)
+            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
+            
             manage_data.Achievements.check_green_gold()
 
-            manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            
+            state.handle_action('lvl6_screen', transition, manage_data.current_page)
             running = False
-            state.set_page(screen, 'lvl6_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 
         # Draw flag
         if checkpoint_reached:
@@ -1952,14 +1956,15 @@ def create_lvl6_screen(screen, transition):
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            score, base_score, medal_score, death_score, time_score, stars =level_logic.fin_lvl_logic(current_time, deathcount, medal, 6)
-            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs,  medal, stars)
-            # Check if all manage_data.medals from lvl1 to lvl11 are "Gold"
+            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 6)
+            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
+            
             manage_data.Achievements.check_green_gold()
-            manage_data.Achievements.perfect6(current_time, deathcount)
-            manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            #manage_data.Achievements.perfect6(current_time, deathcount)
+            manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            
+            state.handle_action('quit', transition, manage_data.current_page)
             running = False
-            state.set_page(screen, 'worlds', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 
         # Draw flag
         if checkpoint_reached:
@@ -2321,14 +2326,15 @@ def create_lvl7_screen(screen, transition):
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            score, base_score, medal_score, death_score, time_score, stars =level_logic.fin_lvl_logic(current_time, deathcount, medal, 7)
-            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs,  medal, stars)
-            # Check if all manage_data.medals from lvl1 to lvl11 are "Gold"
+            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 7)
+            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
+            
             manage_data.Achievements.check_green_gold()
 
-            manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            
+            state.handle_action('lvl8_screen', transition, manage_data.current_page)
             running = False
-            state.set_page(screen, 'lvl8_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 
         # Draw flag
         if checkpoint_reached:
@@ -2699,14 +2705,15 @@ def create_lvl8_screen(screen, transition):
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            score, base_score, medal_score, death_score, time_score, stars =level_logic.fin_lvl_logic(current_time, deathcount, medal, 8)
-            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs,  medal, stars)
-            # Check if all manage_data.medals from lvl1 to lvl11 are "Gold"
+            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 8)
+            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
+            
             manage_data.Achievements.check_green_gold()
 
-            manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            
+            state.handle_action('lvl9_screen', transition, manage_data.current_page)
             running = False
-            state.set_page(screen, 'lvl9_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 
         # Draw flag
         if checkpoint_reached:
@@ -3161,15 +3168,16 @@ def create_lvl9_screen(screen, transition):
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            score, base_score, medal_score, death_score, time_score, stars =level_logic.fin_lvl_logic(current_time, deathcount, medal, 9)
-            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs,  medal, stars)
-            # Check if all manage_data.medals from lvl1 to lvl11 are "Gold"
+            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 9)
+            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
+            
             manage_data.Achievements.lvl90000(score)
             manage_data.Achievements.check_green_gold()
 
             manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
-            running = False
+            
             state.set_page(screen, 'lvl10_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+            running = False
 
         # Draw flag
         if checkpoint_reached:
@@ -3579,14 +3587,15 @@ def create_lvl10_screen(screen, transition):
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            score, base_score, medal_score, death_score, time_score, stars =level_logic.fin_lvl_logic(current_time, deathcount, medal, 10)
-            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs,  medal, stars)
-            # Check if all manage_data.medals from lvl1 to lvl11 are "Gold"
+            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 10)
+            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
+            
             manage_data.Achievements.check_green_gold()
 
             manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
-            running = False
+            
             state.set_page(screen, 'lvl11_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+            running = False
 
         # Draw flag
         if checkpoint_reached:
@@ -4014,14 +4023,15 @@ def create_lvl11_screen(screen, transition):
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            score, base_score, medal_score, death_score, time_score, stars =level_logic.fin_lvl_logic(current_time, deathcount, medal, 11)
-            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs,  medal, stars)
-            # Check if all manage_data.medals from lvl1 to lvl11 are "Gold"
+            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 11)
+            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
+            
             manage_data.Achievements.check_green_gold()
 
             manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
-            running = False
-            state.set_page('lvl12_screen')    
+            
+            state.set_page('lvl12_screen')
+            running = False    
 
         # Draw flag
         if checkpoint_reached:
@@ -4487,15 +4497,15 @@ def create_lvl12_screen(screen, transition):
 
         # Exit portal
         if player_rect.colliderect(exit_portal):
-            score, base_score, medal_score, death_score, time_score, stars =level_logic.fin_lvl_logic(current_time, deathcount, medal, 12)
-            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs,  medal, stars)
-            manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
+            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 12)
+            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
+            manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
            
             # Check if all manage_data.medals from lvl1 to lvl12 are "Gold"
             manage_data.Achievements.check_green_gold()
             
-            running = False
-            state.set_page('main_menu')    
+            state.set_page('main_menu')  
+            running = False  
 
         # Draw flag
         if checkpoint_reached:

@@ -47,15 +47,18 @@ def fin_lvl_logic(current_time, deathcount, medal, lvl):
             if medal == "Gold" and deathcount == 0:
                 medal = "Diamond"
                 manage_data.progress["lvls"]["medals"][f"lvl{lvl}"] = medal
-            score, base_score, medal_score, death_score, time_score = score_calc(current_time, deathcount)
+            score, base_score, medal_score, death_score, time_score = score_calc(current_time, deathcount, medal)
             if manage_data.progress["lvls"]["score"][f"lvl{lvl}"] < score or manage_data.progress["lvls"]["score"][f"lvl{lvl}"] == 0:
                 manage_data.progress["lvls"]["score"][f"lvl{lvl}"] = score
                 new_hs = True
+            else:
+                new_hs = False
+
             if not new_hs:
                 hs = manage_data.progress["lvls"]["score"][f"lvl{lvl}"]
             manage_data.update_locked_levels(manage_data.progress, manage_data.manifest)
             stars = get_stars(lvl, score)
-            return score, base_score, medal_score, death_score, time_score, stars
+            return score, base_score, medal_score, death_score, time_score, stars, new_hs, hs
 
 # Function to get medal based on time
 def get_medal(level, time_taken):

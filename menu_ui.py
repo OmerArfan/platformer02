@@ -554,7 +554,7 @@ class StarParticles:
             
 stareffects = []
 
-def level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, stareffects, medal, stars):
+def level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars):
     messages = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {})
     display_score = 0
     star1_p, star2_p, star3_p = False, False, False
@@ -610,6 +610,9 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
                      star_channel.play(manage_data.sounds['star3'])
                     star3_p = True
 
+        if medal == "Gold" and death_score == 0:
+            medal = "Diamond"
+
         if medal != "None":
             screen.blit(manage_data.medals[medal], (manage_data.SCREEN_WIDTH // 2 - 200, 300 - manage_data.medals[medal].get_height() // 2))
 
@@ -626,7 +629,7 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
         screen.blit(score_text, (manage_data.SCREEN_WIDTH // 2 - score_text.get_width() // 2, 300 - score_text.get_height() // 2))
 
         # Check for XP gained
-        manage_data.xp(manage_data.progress, manage_data.Achievements)
+        manage_data.xp()
         new_xp = manage_data.progress["player"].get("XP", 0)
         gain = new_xp - old_xp
         if time.time() - star_time > 3.2:
@@ -697,8 +700,8 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
             w_render = render_text(wait_text, True, (158, 158, 158))
             screen.blit(w_render, (manage_data.SCREEN_WIDTH // 2 - w_render.get_width() // 2, manage_data.SCREEN_HEIGHT - 35))
 
-        draw_notifs()
-        draw_syncing_status()
+        draw_notifs(screen)
+        draw_syncing_status(screen)
         pygame.display.update()
         clock.tick(60)
 

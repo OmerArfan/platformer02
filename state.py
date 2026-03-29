@@ -277,6 +277,13 @@ def handle_action(key, transition, current_page):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "worlds"
+        else:
+            # This is for the in-level pause menu, so we don't want to trigger if they click on locked levels in the background
+            if key and key.startswith("lvl") and not is_transitioning:
+                transition.start(key)
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = key
     elif current_page == "quit_confirm":
         if key == "yes":
             quit_game()
