@@ -2,6 +2,12 @@ import pygame
 import math
 import manage_data
 
+ctime = None # global only for resetting
+def resetting():
+    global ctime
+    if ctime is None:
+        ctime = pygame.time.get_ticks()
+
 def score_calc(current_time, deathcount, medal):
     base_score = 100000 # From where the score is added to/subtracted from
     token_score = 0

@@ -342,42 +342,10 @@ def set_page(screen, page, lang_code, manifest, progress, Achievements, bgs, dis
     elif page == 'quit_confirm':
         current_lang = manage_data.load_language(lang_code, manifest).get('messages', {})
         menu_ui.create_quit_confirm_buttons(lang_code, manifest)
-    elif page == 'lvl1_screen':  # New page for Level 1
-        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
-        levels.create_lvl1_screen(screen, transition)
-    elif page == 'lvl2_screen':  # New page for Level 2
-        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
-        levels.create_lvl2_screen()
-    elif page == 'lvl3_screen':  # New page for Level 3
-        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
-        levels.create_lvl3_screen()
-    elif page == 'lvl4_screen':  # New page for Level 4
-        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
-        levels.create_lvl4_screen()
-    elif page == 'lvl5_screen':  # New page for Level 5
-        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
-        levels.create_lvl5_screen()
-    elif page == 'lvl6_screen':
-        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
-        levels.create_lvl6_screen()
-    elif page == 'lvl7_screen':
-        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
-        levels.create_lvl7_screen()
-    elif page == 'lvl8_screen':
-        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
-        levels.create_lvl8_screen()
-    elif page == 'lvl9_screen':
-        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
-        levels.create_lvl9_screen()
-    elif page == 'lvl10_screen':
-        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
-        levels.create_lvl10_screen()
-    elif page == 'lvl11_screen':
-        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
-        levels.create_lvl11_screen()
-    elif page == 'lvl12_screen':
-        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
-        levels.create_lvl12_screen()
+    elif "lvl" in page:
+            current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
+            lvl_func = getattr(levels, f"create_{page}")
+            lvl_func(screen, transition)
 
 def muting_sfx():
     global is_mute
@@ -404,4 +372,4 @@ def muting_amb():
 def quit_game():
     manage_data.sync_vault_to_cloud(manage_data.progress, manage_data.manifest)
     pygame.quit()
-    sys.exit()()
+    sys.exit()

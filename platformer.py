@@ -1,7 +1,6 @@
 import pygame
 import os
 import sys
-import time
 import webbrowser
 
 import menu_ui
@@ -12,8 +11,8 @@ import state
 import levels
 
 # GAME VERSION
-manage_data.version = "1.3.7.6"
-manage_data.kernel = "0.1.3"
+manage_data.version = "1.3.7.8"
+manage_data.kernel = "0.1.4"
 
 # Initialize pygame
 pygame.init()
@@ -66,6 +65,8 @@ running = True
 transition = state.TransitionManager(screen, manage_data.bgs['trans_left'], manage_data.bgs['trans_right'])
 current_lang = manage_data.change_language(manage_data.lang_code, manage_data.manifest, manage_data.progress)
 menu_ui.buttons = []
+# For saw images
+manage_data.saw_cache = {}
 
 #def load_level(level_id):
 #    global manage_data.current_page, buttons
@@ -103,15 +104,6 @@ manage_data.robo_rects = {
     'greenrobot': manage_data.robos['greenrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT // 2 - 50)),
     'ironrobot': manage_data.robos['ironrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 150, manage_data.SCREEN_HEIGHT // 2 - 50))
 }
-
-# For saw images
-manage_data.saw_cache = {}
-ctime = None # global only for resetting
-
-def resetting():
-    global ctime
-    if ctime is None:
-        ctime = pygame.time.get_ticks()
 
 # Start with main menu
 state.set_page(screen, 'main_menu', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
@@ -151,42 +143,7 @@ while running:
             state.set_page(screen, current_pending, manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 
     if manage_data.SCREEN_WIDTH < MIN_WIDTH or manage_data.SCREEN_HEIGHT < MIN_HEIGHT:
-        countdown = 5  # seconds
-        clock = pygame.time.Clock()
-        start_time = pygame.time.get_ticks()
-
-        while countdown > 0:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-            elapsed = (pygame.time.get_ticks() - start_time) // 1000
-            countdown = 5 - elapsed
-            screen.fill((0, 0, 0))
-            screen.blit(manage_data.bgs['evilrobot'], (manage_data.SCREEN_WIDTH // 2 - manage_data.bgs['evilrobot'].get_width() // 2, manage_data.SCREEN_HEIGHT // 2 - 200))
-
-            messages = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {})
-            deny_text = messages.get("deny_message", "Access denied!")
-            rendered_deny_text = menu_ui.render_text(deny_text, True, (255, 100, 100))
-            error_text = messages.get("error_message","Your screen resolution is too small! Increase the screen")
-            rendered_error_text = menu_ui.render_text(error_text, True, (255, 255, 255))
-            error_text2 = messages.get("error_message2", "resolution in your system settings.")
-            rendered_error_text2 = menu_ui.render_text(error_text2, True, (255, 255, 255))
-            countdown_text = messages.get("countdown_message", "Closing in {countdown} second(s)...").format(countdown=countdown)
-            rendered_countdown_text = menu_ui.render_text(countdown_text, True, (255, 100, 100))
-
-            screen.blit(rendered_deny_text, (manage_data.SCREEN_WIDTH // 2 - rendered_deny_text.get_width() // 2, manage_data.SCREEN_HEIGHT // 2 - 280))            
-            screen.blit(rendered_error_text, (manage_data.SCREEN_WIDTH // 2 - rendered_error_text.get_width() // 2, manage_data.SCREEN_HEIGHT // 2 - 40))
-            screen.blit(rendered_error_text2, (manage_data.SCREEN_WIDTH // 2 - rendered_error_text2.get_width() // 2, manage_data.SCREEN_HEIGHT // 2))
-            screen.blit(rendered_countdown_text, (manage_data.SCREEN_WIDTH // 2 - rendered_countdown_text.get_width() // 2, manage_data.SCREEN_HEIGHT // 2 + 50))
-
-            pygame.display.flip()
-            clock.tick(30)
-
-        pygame.quit()
-        sys.exit()
-
+        menu_ui.show_resolution_limit(screen)
     else:
         events = pygame.event.get()
         
@@ -224,40 +181,21 @@ while running:
                             state.handle_action(key, transition, manage_data.current_page)
                     
         if manage_data.current_page == "main_menu":
-            screen.blit(manage_data.ui['logo'], ((manage_data.SCREEN_WIDTH // 2 - manage_data.ui['logo'].get_width() // 2), -20))
-            screen.blit(manage_data.bgs['lilrobopeek'], ((manage_data.SCREEN_WIDTH - manage_data.bgs['lilrobopeek'].get_width()), (manage_data.SCREEN_HEIGHT - manage_data.bgs['lilrobopeek'].get_height())))
-            hovered_key = None
-            for rendered, rect, key, is_locked in menu_ui.buttons:
-                mouse_pos = pygame.mouse.get_pos()
-                if manage_data.ui['studio_logo_rect'].collidepoint(mouse_pos):
-                    screen.blit(manage_data.ui['studio_glow'], manage_data.ui['studio_glow_rect'].topleft)
-                    if not logo_hover:
-                        if not manage_data.is_mute:
-                            manage_data.sounds['hover'].play()
-                        logo_hover = True
-                    if event.type == pygame.MOUSEBUTTONDOWN and not logo_click:    
-                        if not manage_data.is_mute:
-                            manage_data.sounds['click'].play()    
-                        webbrowser.open("https://omerarfan.github.io/lilrobowebsite/") 
-                        logo_click = True
-                        new_news_available = False
-                        manage_data.manifest["other"]["last_news_count"] = manage_data.check_for_new_gamenews(True)
-                        manage_data.update_local_manifest(manage_data.progress)
-                else:
-                    screen.blit(manage_data.ui['studio_logo'], manage_data.ui['studio_logo_rect'].topleft)
-                    logo_hover = False
-                    logo_click = False
-                
-                if new_news_available:
-                    screen.blit(menu_ui.new_txt(), (20, manage_data.SCREEN_HEIGHT - 50))
-
-                if rect.collidepoint(mouse_pos):
-                    hovered_key = key
-                    if hovered_key != last_hovered_key and not manage_data.is_mute:
-                        manage_data.sounds['hover'].play()
-
-                screen.blit(rendered, rect)
-            last_hovered_key = hovered_key
+            ui_states = {
+                'logo_hover': logo_hover, 
+                'logo_click': logo_click, 
+                'last_hovered': last_hovered_key, 
+                'new_news': new_news_available
+            }
+            
+            # One line to rule them all
+            updated_states = menu_ui.draw_main_menu(screen, event, ui_states)
+            
+            # Sync states back
+            logo_hover = updated_states['logo_hover']
+            logo_click = updated_states['logo_click']
+            last_hovered_key = updated_states['last_hovered']
+            new_news_available = updated_states['new_news']
 
         if manage_data.current_page == 'profile':
             menu_ui.draw_profile(screen)

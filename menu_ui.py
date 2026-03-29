@@ -1,4 +1,5 @@
 import sys
+import webbrowser
 
 import pygame
 import arabic_reshaper
@@ -204,13 +205,13 @@ def draw_profile(screen):
         color = (255, 255, 255)
         XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, color)
         badge = manage_data.assets['badge']
-        bar = 280*(xp_needed/xp_total)
+        bar = 250*(xp_needed/xp_total)
     else:
         max_txt = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {}).get("max_level", "MAX LEVEL!")
         color = (225, 212, 31)
         XP_text2 = render_text(max_txt, True, color)
         badge = manage_data.assets['max_badge']
-        bar = 280
+        bar = 250
 
     player_text = render_text(f"Username: {manage_data.progress['player']['Username']}", True, (255, 255, 255))
     player_pos = (manage_data.SCREEN_WIDTH // 2 - (player_text.get_width() // 2), 100)
@@ -219,7 +220,7 @@ def draw_profile(screen):
     ID_pos = (manage_data.SCREEN_WIDTH // 2 - (ID_text.get_width() // 2), 150)
 
     XP_text = manage_data.fonts['mega'].render(f"{level}", True, color)
-    XP_pos2 = (manage_data.SCREEN_WIDTH // 2 - (XP_text2.get_width() + 10), 210)
+    XP_pos2 = (manage_data.SCREEN_WIDTH // 2 - (XP_text2.get_width() + 10), 205)
     XP_pos = (manage_data.SCREEN_WIDTH // 2 - (XP_text.get_width() + XP_text2.get_width() + 30), 200)
 
     xp_center_x = XP_pos[0] + (XP_text.get_width() / 2)
@@ -231,13 +232,59 @@ def draw_profile(screen):
     screen.blit(XP_text2, XP_pos2)
     screen.blit(ID_text, ID_pos)
     screen.blit(player_text, player_pos)
-    pygame.draw.rect(screen, color, (XP_pos2[0], 255, bar, 15))
+    pygame.draw.rect(screen, color, (XP_pos2[0], 240, bar, 25))
+    pygame.draw.rect(screen, color, (XP_pos2[0], 240, 250, 25), 2)
 
     back_text = back_data.get("back", "Back")
     rendered_back = render_text(back_text, True, (255, 255, 255))
     back_rect = rendered_back.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 100))
     buttons.append((rendered_back, back_rect, "back", False))
     
+def draw_main_menu(screen, event, ui_states):
+    # ui_states = {'logo_hover': bool, 'logo_click': bool, 'last_hovered': str, 'new_news': bool}
+    
+    # 1. Draw static backgrounds/logo
+    screen.blit(manage_data.ui['logo'], ((manage_data.SCREEN_WIDTH // 2 - manage_data.ui['logo'].get_width() // 2), -20))
+    screen.blit(manage_data.bgs['lilrobopeek'], ((manage_data.SCREEN_WIDTH - manage_data.bgs['lilrobopeek'].get_width()), (manage_data.SCREEN_HEIGHT - manage_data.bgs['lilrobopeek'].get_height())))
+
+    mouse_pos = pygame.mouse.get_pos()
+    hovered_key = None
+
+    # 2. Studio Logo Logic (Website link + Glow)
+    if manage_data.ui['studio_logo_rect'].collidepoint(mouse_pos):
+        screen.blit(manage_data.ui['studio_glow'], manage_data.ui['studio_glow_rect'].topleft)
+        if not ui_states['logo_hover'] and not manage_data.is_mute:
+            manage_data.sounds['hover'].play()
+        ui_states['logo_hover'] = True
+        
+        if event.type == pygame.MOUSEBUTTONDOWN and not ui_states['logo_click']:
+            if not manage_data.is_mute: manage_data.sounds['click'].play()
+            webbrowser.open("https://omerarfan.github.io/lilrobowebsite/") 
+            ui_states['logo_click'] = True
+            ui_states['new_news'] = False
+            # Update news manifest
+            manage_data.manifest["other"]["last_news_count"] = manage_data.check_for_new_gamenews(True)
+            manage_data.update_local_manifest(manage_data.progress)
+    else:
+        screen.blit(manage_data.ui['studio_logo'], manage_data.ui['studio_logo_rect'].topleft)
+        ui_states['logo_hover'] = False
+        ui_states['logo_click'] = False
+
+    # 3. News Notification
+    if ui_states['new_news']:
+        screen.blit(new_txt(), (20, manage_data.SCREEN_HEIGHT - 50))
+
+    # 4. Buttons Loop
+    for rendered, rect, key, is_locked in buttons:
+        if rect.collidepoint(mouse_pos):
+            hovered_key = key
+            if hovered_key != ui_states['last_hovered'] and not manage_data.is_mute:
+                manage_data.sounds['hover'].play()
+        screen.blit(rendered, rect)
+
+    ui_states['last_hovered'] = hovered_key
+    return ui_states
+
 def create_main_menu_buttons(screen, lang_code, manifest, progress):
     global current_lang, buttons
     current_lang = manage_data.load_language(lang_code, manifest).get('main_menu', {})
@@ -507,7 +554,7 @@ class StarParticles:
             
 stareffects = []
 
-def level_complete(screen, base_score, medal_score, death_score, time_score, score, display_score, new_hs, hs, stareffects, medal, stars):
+def level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, stareffects, medal, stars):
     messages = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {})
     display_score = 0
     star1_p, star2_p, star3_p = False, False, False
@@ -656,8 +703,6 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
         clock.tick(60)
 
 def draw_character_select(screen, mouse_pos, events, transition, rect, key):
-         screen.blit(manage_data.bgs['plain'], (0, 0))
-
          locked_sound_played = False
          mouse_pos = pygame.mouse.get_pos()
 
@@ -719,8 +764,6 @@ def character_select(lang_code, manifest):
         rendered = render_text(text, True, (255, 255, 255))
         rect = rendered.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 100)) 
         buttons.append((rendered, rect, key, False))
-   
-    pygame.display.flip()
 
 def settings_menu(screen, lang_code, manifest, bgs):
     global current_lang, buttons
@@ -900,3 +943,46 @@ def new_txt():
     current_lang = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('main_menu', {})
     new_txt = render_text(current_lang.get("new", "Update Available!"), True, (225, 212, 31))
     return new_txt
+
+# Inside menu_ui.py (or similar)
+def show_resolution_limit(screen):
+    countdown = 5
+    clock = pygame.time.Clock()
+    start_time = pygame.time.get_ticks()
+
+    while countdown > 0:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        elapsed = (pygame.time.get_ticks() - start_time) // 1000
+        countdown = 5 - elapsed
+        
+        screen.fill((0, 0, 0))
+        
+        # Center the evil robot
+        robo_x = manage_data.SCREEN_WIDTH // 2 - manage_data.robos['evilrobot'].get_width() // 2
+        robo_y = manage_data.SCREEN_HEIGHT // 2 - 200
+        screen.blit(manage_data.robos['evilrobot'], (robo_x, robo_y))
+
+        # Fetch localized messages
+        messages = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {})
+        
+        # Render texts using your existing menu_ui.render_text logic
+        texts = [
+            (messages.get("deny_message", "Access denied!"), (255, 100, 100), -280),
+            (messages.get("error_message", "Your screen resolution is too small!"), (255, 255, 255), -40),
+            (messages.get("error_message2", "Increase the resolution in system settings."), (255, 255, 255), 0),
+            (messages.get("countdown_message", "Closing in {countdown} seconds...").format(countdown=countdown), (255, 100, 100), 50)
+        ]
+
+        for text_str, color, offset in texts:
+            rendered = render_text(text_str, True, color)
+            screen.blit(rendered, (manage_data.SCREEN_WIDTH // 2 - rendered.get_width() // 2, manage_data.SCREEN_HEIGHT // 2 + offset))
+
+        pygame.display.flip()
+        clock.tick(30)
+
+    pygame.quit()
+    sys.exit()
