@@ -282,8 +282,8 @@ def save_progress(data, manifest):
 
     # 1. Basic Validation: Ensure we aren't saving an empty/broken object
     if not data or "lvls" not in data or "player" not in data:
-        #if not is_mute:
-         #   hit_sound.play()
+        if not is_mute:
+           sounds['hit'].play()
         notification_text = menu_ui.render_text("Refusing to save: Invalid data structure!", True, (255, 0, 0))
         notif = True
         menu_ui.notification_time = time.time()
@@ -334,9 +334,13 @@ def save_progress(data, manifest):
         print(f"Detailed save error: {e}")
 
 def update_local_manifest(data):
-    global er, error_code, is_mute
+    global er, error_code, is_mute, manifest
+    
+    # Store the current last_news_count before reloading
+    previous_news_count = manifest.get("other", {}).get("last_news_count", 0) if manifest else 0
+    
     # 1. Load existing manifest
-    manifest = {"last_used": "", "users": {}, "pref": {"language": "en", "sfx": True, "ambience": True}}
+    manifest = {"last_used": "", "users": {}, "pref": {"language": "en", "sfx": True, "ambience": True}, "other": {"last_news_count": 0}}
     if os.path.exists(ACCOUNTS_FILE):
         try:
             with open(ACCOUNTS_FILE, "r") as f:
@@ -371,6 +375,12 @@ def update_local_manifest(data):
         "level": current_lvl,
         "last_login": date.today().strftime("%Y-%m-%d")
     }
+
+    if "other" not in manifest:
+        manifest["other"] = {"last_news_count": 0}
+    
+    # Preserve the last_news_count that was set in-memory (don't overwrite with stale disk value)
+    manifest["other"]["last_news_count"] = previous_news_count
 
     # 4. Save with Backup
     try:
@@ -710,3 +720,30 @@ def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg, t
                 state.wait_time = pygame.time.get_ticks()
             global locked_text
             locked_text = charsel.get(locked_msg_key, fallback_msg)
+
+def check_for_new_gamenews(return_count):
+    url = "https://omerarfan.github.io/lilrobowebsite/gamestuff.html"
+    try:
+        # 3 second timeout so the game doesn't hang if offline
+        response = requests.get(url, timeout=3)
+        if response.status_code == 200:
+            online_count = response.text.count('<a href="gamenews')
+            
+            # Get the count from our manifest
+            local_count = manifest.get("other", {}).get("last_news_count", 0)
+            
+            # If online has more, we have new news!
+            if online_count > local_count:
+                print(local_count, online_count)
+                if return_count:
+                    return online_count
+                else:
+                    return True
+            
+    except Exception as e:
+        print(f"News check failed: {e}")
+    
+    if return_count:
+        return manifest["other"]["last_news_count"]
+    else:
+        return False

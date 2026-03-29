@@ -2,9 +2,7 @@ import pygame
 import math
 import manage_data
 
-def score_calc():
-    global current_time, medal, deathcount, score
-    global base_score, medal_score, death_score, time_score
+def score_calc(current_time, deathcount, medal):
     base_score = 100000 # From where the score is added to/subtracted from
     token_score = 0
     time_score = int(current_time * 160)
@@ -20,36 +18,38 @@ def score_calc():
         medal_score = 25000
     death_score = deathcount * 300
     score = max(500, base_score - medal_score - death_score - time_score + token_score)
+    return score, base_score, medal_score, death_score, time_score
 
 # ALgorithm for logic stuff when level is completed
-def fin_lvl_logic(lvl):
-            global medal, hs, stars, new_hs
-            if progress["lvls"]["complete_levels"] < lvl:
-                progress["lvls"]["complete_levels"] = lvl
+def fin_lvl_logic(current_time, deathcount, medal, lvl):
+            global hs, stars, new_hs
+            if manage_data.progress["lvls"]["complete_levels"] < lvl:
+                manage_data.progress["lvls"]["complete_levels"] = lvl
 
-            if not is_mute:
-                sounds['warp'].play()
+            if not manage_data.is_mute:
+                manage_data.sounds['warp'].play()
 
-            if current_time < progress["lvls"]["times"][f"lvl{lvl}"] or progress["lvls"]["times"][f"lvl{lvl}"] == 0:
-                progress["lvls"]["times"][f"lvl{lvl}"] = round(current_time, 2)
+            if current_time < manage_data.progress["lvls"]["times"][f"lvl{lvl}"] or manage_data.progress["lvls"]["times"][f"lvl{lvl}"] == 0:
+                manage_data.progress["lvls"]["times"][f"lvl{lvl}"] = round(current_time, 2)
             
-            if progress["lvls"]["score"][f"lvl{lvl}"] < 100000:
-                progress["lvls"]["medals"][f"lvl{lvl}"] = level_logic.get_medal(lvl, progress["lvls"]["times"][f"lvl{lvl}"])
+            if manage_data.progress["lvls"]["score"][f"lvl{lvl}"] < 100000:
+                manage_data.progress["lvls"]["medals"][f"lvl{lvl}"] = get_medal(lvl, manage_data.progress["lvls"]["times"][f"lvl{lvl}"])
             else:
-                progress["lvls"]["medals"][f"lvl{lvl}"] = "Diamond"
+                manage_data.progress["lvls"]["medals"][f"lvl{lvl}"] = "Diamond"
 
             medal = get_medal(lvl, current_time)
             if medal == "Gold" and deathcount == 0:
                 medal = "Diamond"
-                progress["lvls"]["medals"][f"lvl{lvl}"] = medal
-            score_calc()
-            if progress["lvls"]["score"][f"lvl{lvl}"] < score or progress["lvls"]["score"][f"lvl{lvl}"] == 0:
-                progress["lvls"]["score"][f"lvl{lvl}"] = score
+                manage_data.progress["lvls"]["medals"][f"lvl{lvl}"] = medal
+            score, base_score, medal_score, death_score, time_score = score_calc(current_time, deathcount)
+            if manage_data.progress["lvls"]["score"][f"lvl{lvl}"] < score or manage_data.progress["lvls"]["score"][f"lvl{lvl}"] == 0:
+                manage_data.progress["lvls"]["score"][f"lvl{lvl}"] = score
                 new_hs = True
             if not new_hs:
-                hs = progress["lvls"]["score"][f"lvl{lvl}"]
-            manage_data.update_locked_levels(progress, manifest)
+                hs = manage_data.progress["lvls"]["score"][f"lvl{lvl}"]
+            manage_data.update_locked_levels(manage_data.progress, manage_data.manifest)
             stars = get_stars(lvl, score)
+            return score, base_score, medal_score, death_score, time_score, stars
 
 # Function to get medal based on time
 def get_medal(level, time_taken):

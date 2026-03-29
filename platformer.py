@@ -12,11 +12,8 @@ import state
 import levels
 
 # GAME VERSION
-manage_data.version = "1.3.7.5"
-manage_data.kernel = "0.1.2"
-
-# Initialize audio
-pygame.mixer.init()
+manage_data.version = "1.3.7.6"
+manage_data.kernel = "0.1.3"
 
 # Initialize pygame
 pygame.init()
@@ -56,6 +53,7 @@ while loading:
         menu_ui.draw_loading_bar(screen, bg, stage, ps)
         
     except StopIteration:
+        new_news_available = manage_data.check_for_new_gamenews(False)
         if manage_data.is_mute_amb:
             pygame.mixer.music.stop()
         else:
@@ -63,7 +61,6 @@ while loading:
             pygame.mixer.music.play(-1)
             
         loading = False
-
 running = True
 
 transition = state.TransitionManager(screen, manage_data.bgs['trans_left'], manage_data.bgs['trans_right'])
@@ -212,22 +209,19 @@ while running:
                         if rect.collidepoint(event.pos):
                             if key is not None and not manage_data.is_mute:
                                 manage_data.sounds['click'].play()
-                            # Only execute action when transition is fully covering screen
                             state.handle_action(key, transition, manage_data.current_page)
-                            last_page_change_time = time.time()
                 elif manage_data.current_page not in ["levels", "mech_levels", "worlds", "login_screen", "registration_screen"]:
                     for _, rect, key, is_locked in menu_ui.buttons:
                         if rect.collidepoint(event.pos):
                             if key is not None and not manage_data.is_mute:
                                 manage_data.sounds['click'].play()
                             state.handle_action(key, transition, manage_data.current_page)
-                            last_page_change_time = time.time()
                 else:
                     for rendered, rect, key, is_locked in menu_ui.buttons:
                         if rect.collidepoint(event.pos):
                             if key is not None and not manage_data.is_mute:
                                 manage_data.sounds['click'].play()
-                            state.handle_action(key, transition, manage_data.current_page)  # Only load level on click!
+                            state.handle_action(key, transition, manage_data.current_page)
                     
         if manage_data.current_page == "main_menu":
             screen.blit(manage_data.ui['logo'], ((manage_data.SCREEN_WIDTH // 2 - manage_data.ui['logo'].get_width() // 2), -20))
@@ -246,10 +240,16 @@ while running:
                             manage_data.sounds['click'].play()    
                         webbrowser.open("https://omerarfan.github.io/lilrobowebsite/") 
                         logo_click = True
+                        new_news_available = False
+                        manage_data.manifest["other"]["last_news_count"] = manage_data.check_for_new_gamenews(True)
+                        manage_data.update_local_manifest(manage_data.progress)
                 else:
                     screen.blit(manage_data.ui['studio_logo'], manage_data.ui['studio_logo_rect'].topleft)
                     logo_hover = False
                     logo_click = False
+                
+                if new_news_available:
+                    screen.blit(menu_ui.new_txt(), (20, manage_data.SCREEN_HEIGHT - 50))
 
                 if rect.collidepoint(mouse_pos):
                     hovered_key = key
@@ -281,7 +281,7 @@ while running:
         elif "lvl" in manage_data.current_page:
             # Dynamically find and call the function in the levels module
             lvl_func = getattr(levels, f"create_{manage_data.current_page}")
-            lvl_func()
+            lvl_func(screen, transition)
         
         elif manage_data.current_page == "levels" or manage_data.current_page == "mech_levels":
             button_hovered_last_frame = menu_ui.draw_level_select(screen, mouse_pos, manage_data.current_page, current_lang, messages, button_hovered_last_frame)

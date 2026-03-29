@@ -344,7 +344,7 @@ def set_page(screen, page, lang_code, manifest, progress, Achievements, bgs, dis
         menu_ui.create_quit_confirm_buttons(lang_code, manifest)
     elif page == 'lvl1_screen':  # New page for Level 1
         current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
-        levels.create_lvl1_screen()
+        levels.create_lvl1_screen(screen, transition)
     elif page == 'lvl2_screen':  # New page for Level 2
         current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
         levels.create_lvl2_screen()

@@ -1,3 +1,5 @@
+import sys
+
 import pygame
 import arabic_reshaper
 import time
@@ -6,6 +8,7 @@ import level_logic
 import manage_data
 import math
 import state
+import random
 
 def render_text(text, Boolean, color):
     # 1. PICK THE FONT (Your existing Unicode Logic)
@@ -481,6 +484,177 @@ def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, b
                     
     return button_hovered_last_frame
 
+class StarParticles:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.radius = random.randint(2, 4)
+        self.color = (255, 255, 100)
+        self.life = 80  # frames
+        # Wider horizontal spread, initial upward velocity
+        self.vel = [random.uniform(-3, 3), random.uniform(-6, -3)]
+        self.gravity = 0.35  # Gravity strength
+
+    def update(self):
+        self.vel[1] += self.gravity  # Apply gravity
+        self.x += self.vel[0]
+        self.y += self.vel[1]
+        self.life -= 1
+
+    def draw(self, surface):
+        if self.life > 0:
+            pygame.draw.circle(surface, self.color, (int(self.x), int(self.y)), self.radius)
+            
+stareffects = []
+
+def level_complete(screen, base_score, medal_score, death_score, time_score, score, display_score, new_hs, hs, stareffects, medal, stars):
+    messages = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {})
+    display_score = 0
+    star1_p, star2_p, star3_p = False, False, False
+    star_time = time.time()
+    running = True
+    notified = False
+    clock = pygame.time.Clock()
+    star_channel = pygame.mixer.Channel(2)
+    lvl_comp = messages.get("lvl_comp", "Level Complete!")
+    old_xp = manage_data.progress["player"].get("XP", 0)
+    rendered_lvl_comp = render_text(lvl_comp, True, (255, 255, 255))
+    while running:
+        screen.blit(manage_data.bgs['end'], (0, 0))
+        keys = pygame.key.get_pressed()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        screen.blit(rendered_lvl_comp, (manage_data.SCREEN_WIDTH // 2 - rendered_lvl_comp.get_width() // 2, 50))
+
+        # Animate score
+        
+        if display_score < score:
+          if not manage_data.is_mute:
+            manage_data.sounds['hover'].play()
+          display_score += max(5, (score // 71))
+
+        if stars >= 1 and (time.time() - star_time > 0.5):
+                screen.blit(manage_data.assets['star'], (manage_data.SCREEN_WIDTH // 2 - 231, 110))
+                if not star1_p:
+                 for _ in range(40):  # Add some particles at star position
+                    stareffects.append(StarParticles(manage_data.SCREEN_WIDTH // 2 - 230 + manage_data.assets['star'].get_width() // 2, 110 + manage_data.assets['star'].get_height() // 2)) 
+                 if not manage_data.is_mute:
+                  star_channel.play(manage_data.sounds['star1'])
+                star1_p = True
+
+        if stars >= 2 and (time.time() - star_time > 1.5):
+                screen.blit(manage_data.assets['star'], (manage_data.SCREEN_WIDTH // 2 - 76, 110))
+                if not star2_p and star1_p: 
+                    for _ in range(40):  # Add some particles at star position
+                     stareffects.append(StarParticles(manage_data.SCREEN_WIDTH // 2 - 75 + manage_data.assets['star'].get_width() // 2, 110 + manage_data.assets['star'].get_height() // 2))  
+                    if not manage_data.is_mute:
+                     star_channel.play(manage_data.sounds['star2'])
+                    star2_p = True
+
+        if stars >= 3 and (time.time() - star_time  >  2.5):
+                screen.blit(manage_data.assets['star'], (manage_data.SCREEN_WIDTH // 2 + 79, 110)) 
+                if  not star3_p and star2_p: 
+                    for _ in range(40):  # Add some particles at star position
+                      stareffects.append(StarParticles(manage_data.SCREEN_WIDTH // 2 + 80 + manage_data.assets['star'].get_width() // 2, 110 + manage_data.assets['star'].get_height() // 2)) 
+                    if not manage_data.is_mute:
+                     star_channel.play(manage_data.sounds['star3'])
+                    star3_p = True
+
+        if medal != "None":
+            screen.blit(manage_data.medals[medal], (manage_data.SCREEN_WIDTH // 2 - 200, 300 - manage_data.medals[medal].get_height() // 2))
+
+        for particle in stareffects[:]:
+         particle.update()
+         particle.draw(screen)
+         if particle.life <= 0:
+            stareffects.remove(particle)
+        
+        if display_score > score:
+            display_score = score
+        
+        score_text = manage_data.fonts['mega'].render(str(display_score), True, (255, 255, 255))
+        screen.blit(score_text, (manage_data.SCREEN_WIDTH // 2 - score_text.get_width() // 2, 300 - score_text.get_height() // 2))
+
+        # Check for XP gained
+        manage_data.xp(manage_data.progress, manage_data.Achievements)
+        new_xp = manage_data.progress["player"].get("XP", 0)
+        gain = new_xp - old_xp
+        if time.time() - star_time > 3.2:
+            xp_text = messages.get("xp_gained", "XP Gained: +{gain}").format(gain=gain)
+            xp_render = render_text(xp_text, True, (0, 188, 255))
+            screen.blit(xp_render, (manage_data.SCREEN_WIDTH // 2 - xp_render.get_width() // 2, 350))
+
+        # Show Breakdown
+        if score > 500: 
+         if time.time() - star_time > 4:
+            break_text = messages.get("breakdown", "BREAKDOWN")
+            break_render = render_text(break_text, True, (158, 158, 158))
+            screen.blit(break_render, (manage_data.SCREEN_WIDTH // 2 - break_render.get_width() // 2, 400))
+         if time.time() - star_time > 4.2:
+            base_text = messages.get("base_score", "Base Score: {bs}").format(bs=base_score)
+            base_render = render_text(base_text, True, (158, 158, 158))
+            screen.blit(base_render, (manage_data.SCREEN_WIDTH // 2 - base_render.get_width() // 2, 440))
+         if time.time() - star_time > 4.4:
+            medal_text = messages.get("medal_score", "Medal score: {ms}").format(ms=-medal_score)
+            medal_render = render_text(medal_text, True, (158, 158, 158))
+            screen.blit(medal_render, (manage_data.SCREEN_WIDTH // 2 - medal_render.get_width() // 2, 480))
+         if time.time() - star_time > 4.6:   
+            death_text = messages.get("death_score", "Death Penalty: {ds}").format(ds=-death_score)
+            death_render = render_text(death_text, True, (158, 158, 158))
+            screen.blit(death_render, (manage_data.SCREEN_WIDTH // 2 - death_render.get_width() // 2, 520))
+         if time.time() - star_time > 4.8:
+            time_text = messages.get("time_score", "Time Penalty: {ts}").format(ts=-time_score)
+            time_render = render_text(time_text, True, (158, 158, 158))
+            screen.blit(time_render, (manage_data.SCREEN_WIDTH // 2 - time_render.get_width() // 2, 560))
+        else:
+            if time.time() - star_time > 4:
+             low_text = messages.get("lowest", "Lowest possible score!")
+             low_render = render_text(low_text, True, (255, 0, 0))
+             screen.blit(low_render, (manage_data.SCREEN_WIDTH // 2 - low_render.get_width() // 2, 500))
+             if time_score > death_score:
+                 reason_text = messages.get("time_reason", "You took too long to")
+                 reason_text_2 = messages.get("time_reason_2", "complete the level.")
+             else:
+                 reason_text = messages.get("death_reason", "You died too many times!")
+                 reason_text_2 = messages.get("death_reason_2", "")
+             reason_render = render_text(reason_text, True, (255, 0, 0))
+             screen.blit(reason_render, (manage_data.SCREEN_WIDTH // 2 - reason_render.get_width() // 2, 540))
+             reason_render_2 = render_text(reason_text_2, True, (255, 0, 0))
+             screen.blit(reason_render_2, (manage_data.SCREEN_WIDTH // 2 - reason_render_2.get_width() // 2, 580))
+
+        if time.time() - star_time > 5.5:  # Show for 3.5 seconds
+                if new_hs:
+                    hs_text = messages.get("new_hs", "New High Score!")
+                    new_hs_text = render_text(hs_text, True, (255, 215, 0))
+                    screen.blit(new_hs_text, (manage_data.SCREEN_WIDTH // 2 - new_hs_text.get_width() // 2, 610))
+                    if not manage_data.is_mute and not notified:
+                        manage_data.sounds['hscore'].play()
+                        notified = True
+                else:
+                    high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
+                    hs_text = render_text(high_text, True, (158, 158, 158))
+                    screen.blit(hs_text, (manage_data.SCREEN_WIDTH // 2 - hs_text.get_width() // 2, 610))
+        
+        next_left = int(8 - (time.time() - star_time))
+        if time.time() - star_time > 9 or keys[pygame.K_SPACE]:
+                running = False
+        else: 
+            # Instead of hardcoded text:
+            press_text = messages.get("press_space", "Press the spacebar to")
+            p_render = render_text(press_text, True, (158, 158, 158))
+            screen.blit(p_render, (manage_data.SCREEN_WIDTH // 2 - p_render.get_width() // 2, manage_data.SCREEN_HEIGHT - 60))
+            wait_text = messages.get("continue_wait", "continue or wait for {next_left}").format(next_left=next_left)
+            w_render = render_text(wait_text, True, (158, 158, 158))
+            screen.blit(w_render, (manage_data.SCREEN_WIDTH // 2 - w_render.get_width() // 2, manage_data.SCREEN_HEIGHT - 35))
+
+        draw_notifs()
+        draw_syncing_status()
+        pygame.display.update()
+        clock.tick(60)
+
 def draw_character_select(screen, mouse_pos, events, transition, rect, key):
          screen.blit(manage_data.bgs['plain'], (0, 0))
 
@@ -722,4 +896,7 @@ def create_quit_confirm_buttons(lang_code, manifest):
 
     return quit_text, quit_text_rect
 
-    pygame.display.flip()  # Update the display to show the quit confirmation screen
+def new_txt():
+    current_lang = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('main_menu', {})
+    new_txt = render_text(current_lang.get("new", "Update Available!"), True, (225, 212, 31))
+    return new_txt
