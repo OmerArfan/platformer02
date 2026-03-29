@@ -270,6 +270,13 @@ def handle_action(key, transition, current_page):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = f"{key}_screen"
+    elif "lvl" in current_page:
+        if key == "quit":
+            if not is_transitioning:
+                transition.start("worlds")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "worlds"
     elif current_page == "quit_confirm":
         if key == "yes":
             quit_game()

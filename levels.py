@@ -104,7 +104,7 @@ def create_lvl1_screen(screen, transition):
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                state.set_page('levels')
+                state.handle_action("quit", transition, manage_data.current_page)
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -161,7 +161,7 @@ def create_lvl1_screen(screen, transition):
 
             manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
             running = False
-            state.set_page('lvl2_screen')
+            state.set_page(screen, 'lvl2_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 
         # Drawing
         screen.blit(manage_data.bgs['green'], (0, 0))
@@ -392,7 +392,7 @@ def create_lvl2_screen(screen, transition):
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                state.set_page('levels')
+                state.handle_action("quit", transition, manage_data.current_page)
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -449,7 +449,7 @@ def create_lvl2_screen(screen, transition):
 
             manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
             running = False
-            state.set_page('lvl3_screen')    
+            state.set_page(screen, 'lvl3_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)    
 
         # Drawing
         screen.blit(manage_data.bgs['green'], (0, 0))
@@ -700,7 +700,7 @@ def create_lvl3_screen(screen, transition):
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                state.set_page("levels")
+                state.handle_action("quit", transition, manage_data.current_page)
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -766,7 +766,7 @@ def create_lvl3_screen(screen, transition):
 
             manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
             running = False
-            state.set_page('lvl4_screen')
+            state.set_page(screen, 'lvl4_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 
         # Draw flag
         if checkpoint_reached:
@@ -1057,7 +1057,7 @@ def create_lvl4_screen(screen, transition):
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                state.set_page("levels")
+                state.handle_action("quit", transition, manage_data.current_page)
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -1159,7 +1159,7 @@ def create_lvl4_screen(screen, transition):
 
             manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
             running = False
-            state.set_page('lvl5_screen') 
+            state.set_page(screen, 'lvl5_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition) 
 
         # Draw flag
         if checkpoint_reached:
@@ -1499,7 +1499,7 @@ def create_lvl5_screen(screen, transition):
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                state.set_page("levels")
+                state.handle_action("quit", transition, manage_data.current_page)
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -1579,7 +1579,7 @@ def create_lvl5_screen(screen, transition):
 
             manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
             running = False
-            state.set_page('lvl6_screen')
+            state.set_page(screen, 'lvl6_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 
         # Draw flag
         if checkpoint_reached:
@@ -1889,7 +1889,7 @@ def create_lvl6_screen(screen, transition):
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                state.set_page("levels")
+                state.handle_action("quit", transition, manage_data.current_page)
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -1959,7 +1959,7 @@ def create_lvl6_screen(screen, transition):
             manage_data.Achievements.perfect6(current_time, deathcount)
             manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
             running = False
-            state.set_page('worlds')
+            state.set_page(screen, 'worlds', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 
         # Draw flag
         if checkpoint_reached:
@@ -2258,7 +2258,7 @@ def create_lvl7_screen(screen, transition):
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                state.set_page("mech_levels")
+                state.handle_action("quit", transition, manage_data.current_page)
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -2328,7 +2328,7 @@ def create_lvl7_screen(screen, transition):
 
             manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
             running = False
-            state.set_page('lvl8_screen')
+            state.set_page(screen, 'lvl8_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 
         # Draw flag
         if checkpoint_reached:
@@ -2631,7 +2631,7 @@ def create_lvl8_screen(screen, transition):
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                state.set_page("mech_levels")
+                state.handle_action("quit", transition, manage_data.current_page)
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -2706,7 +2706,7 @@ def create_lvl8_screen(screen, transition):
 
             manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
             running = False
-            state.set_page('lvl9_screen')
+            state.set_page(screen, 'lvl9_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 
         # Draw flag
         if checkpoint_reached:
@@ -3053,7 +3053,7 @@ def create_lvl9_screen(screen, transition):
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                state.set_page("mech_levels")
+                state.handle_action("quit", transition, manage_data.current_page)
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -3169,7 +3169,7 @@ def create_lvl9_screen(screen, transition):
 
             manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
             running = False
-            state.set_page('lvl10_screen')
+            state.set_page(screen, 'lvl10_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 
         # Draw flag
         if checkpoint_reached:
@@ -3481,7 +3481,7 @@ def create_lvl10_screen(screen, transition):
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                state.set_page("mech_levels")
+                state.handle_action("quit", transition, manage_data.current_page)
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -3586,7 +3586,7 @@ def create_lvl10_screen(screen, transition):
 
             manage_data.save_manage_data.progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
             running = False
-            state.set_page('lvl11_screen')
+            state.set_page(screen, 'lvl11_screen', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 
         # Draw flag
         if checkpoint_reached:
@@ -3911,7 +3911,7 @@ def create_lvl11_screen(screen, transition):
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                state.set_page("mech_levels")
+                state.handle_action("quit", transition, manage_data.current_page)
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
@@ -4423,7 +4423,7 @@ def create_lvl12_screen(screen, transition):
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
                 running = False
-                state.set_page("mech_levels")
+                state.handle_action("quit", transition, manage_data.current_page)
 
         # Input
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:

@@ -1,7 +1,6 @@
 import pygame
 import os
 import sys
-import webbrowser
 
 import menu_ui
 import manage_data
@@ -12,7 +11,7 @@ import levels
 
 # GAME VERSION
 manage_data.version = "1.3.7.8"
-manage_data.kernel = "0.1.4"
+manage_data.kernel = "0.1.4.1"
 
 # Initialize pygame
 pygame.init()
@@ -25,7 +24,7 @@ if sys.platform.startswith('linux'):
     os.environ['SDL_VIDEODRIVER'] = 'x11'
 
 pygame.display.set_caption("Roboquix")
-MIN_WIDTH, MIN_HEIGHT = 1250, 700
+MIN_WIDTH, MIN_HEIGHT = 1250, 750
 
 # First of all, LOAD THE DAMN BGGG
 bg = pygame.image.load(manage_data.resource_path("bgs/PlainBackground.png")).convert()
@@ -65,7 +64,6 @@ running = True
 transition = state.TransitionManager(screen, manage_data.bgs['trans_left'], manage_data.bgs['trans_right'])
 current_lang = manage_data.change_language(manage_data.lang_code, manage_data.manifest, manage_data.progress)
 menu_ui.buttons = []
-# For saw images
 manage_data.saw_cache = {}
 
 #def load_level(level_id):
@@ -84,8 +82,6 @@ manage_data.saw_cache = {}
 
 # To handle notifications
 menu_ui.notification_time = None
-
-# Variables for handling display notifications
 menu_ui.notif = False
 menu_ui.er = False
 
@@ -112,15 +108,8 @@ manage_data.update_locked_levels(manage_data.progress, manage_data.manifest) # U
 # Global variables(only needed before main loop)!
 button_hovered_last_frame = False
 last_hovered_key = None
-main_menu_hover = None
 logo_hover = False
 logo_click = False
-image_paths = None
-image_surfaces = None
-
-## ACCOUNTS LOGIC
-username = ""
-user_pass = ""
 
 if not manage_data.is_mute and manage_data.SCREEN_WIDTH > MIN_WIDTH and manage_data.SCREEN_HEIGHT > MIN_HEIGHT:
     manage_data.sounds['click'].play()
@@ -161,13 +150,7 @@ while running:
                 break  # Stop processing other events for this frame
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if manage_data.current_page == "Account":
-                    for _, rect, key, is_locked in menu_ui.buttons:
-                        if rect.collidepoint(event.pos):
-                            if key is not None and not manage_data.is_mute:
-                                manage_data.sounds['click'].play()
-                            state.handle_action(key, transition, manage_data.current_page)
-                elif manage_data.current_page not in ["levels", "mech_levels", "worlds", "login_screen", "registration_screen"]:
+                if manage_data.current_page == "Account" and manage_data.current_page not in ["levels", "mech_levels", "worlds", "login_screen", "registration_screen"]:
                     for _, rect, key, is_locked in menu_ui.buttons:
                         if rect.collidepoint(event.pos):
                             if key is not None and not manage_data.is_mute:
