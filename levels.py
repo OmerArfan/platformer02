@@ -4188,9 +4188,6 @@ def create_lvl11_screen(screen, transition):
         screen.blit(rendered_button4_text, (-320 - camera_x, 300 - camera_y))
 
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
-        
-        if evilrobo_phase == 0 and lights_off:
-            player_x, player_y, velocity_y, on_ground, player_rect, lights_off = level_logic.handle_light_blocks(screen, lights, on_ground, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, lights_off, manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT, manage_data.is_mute, manage_data.sounds['button'])
 
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
