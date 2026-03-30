@@ -4,6 +4,7 @@
       "achievements": "Achievements",
       "character_select": "Character Select",
       "settings": "Settings",
+      "profile": "Profile",
       "quit": "Quit",
       "language": "Change Language"
     }
@@ -36,14 +37,17 @@
     "Unmute": "Unmute {setting}",
     "Account": "Account",
     "Back": "Back",
-    "new_acc": "+ NEW PLAYER",
     "select": "SELECT PROFILE",
     "sync_stat1": "Syncing Vault to Cloud...",
     "sync_stat2": "Sync failed!",
     "sync_stat3": "Success!",
-    "login_header": "LOGIN / REGISTER",
-    "login_instr1": "Enter your username and the password for your account.",
-    "login_instr2": "If the account does not exist, a new account will be created for you.",
+    "register_instr1": "Create a new account with a username and password.",
+    "register_instr2": "Your account will be synced to the cloud.",
+    "new_acc": "New Account",
+    "acc_not_found": "Account does not exist.",
+    "login_header": "Login",
+    "login_instr1": "Enter your username and password to access your account."
+    ,"login_instr2": "If the account does not exist, a new account will be created for you.",
     "login_instr3": "Press TAB to switch between inputting Password and Username. To return, press ESC.",
     "case_warning": "Usernames and Passwords are case sensitive!"
     ,"username_label": "Username",
@@ -85,6 +89,10 @@
   "confirm_quit": "Are you sure you want to quit?",
   "yes": "Yes",
   "no": "No"
+  ,"deny_message": "Access denied!"
+  ,"error_message": "Your screen resolution is too small!"
+  ,"error_message2": "Increase the resolution in system settings."
+  ,"countdown_message": "Closing in {countdown} seconds..."
   ,"lvl_comp": "Level Complete!"
   ,"hs_m":"Highscore: {hs}" 
   ,"new_hs": "New High Score!"

@@ -4,6 +4,7 @@
       "character_select": "Sélection de personnage",
       "achievements": "Réalisations",
       "settings": "Paramètres",
+      "profile": "Profil",
       "quit": "Quitter",
       "language": "Changer de langue"
     }
@@ -27,13 +28,16 @@
     "Unmute": "Activer le son : {setting}",
     "Account": "Compte",
     "Back": "Retour",
-    "new_acc": "+ NOUVEAU JOUEUR",
     "select": "SÉLECTIONNER UN PROFIL",
     "sync_stat1": "Synchronisation du coffre vers le Cloud...",
     "sync_stat2": "Échec de la synchronisation !",
     "sync_stat3": "Succès !",
-    "login_header": "CONNEXION / S'INSCRIRE",
-    "login_instr1": "Entrez votre nom d'utilisateur et le mot de passe de votre compte.",
+    "register_instr1": "Créez un nouveau compte avec un nom d'utilisateur et un mot de passe.",
+    "register_instr2": "Votre compte sera synchronisé avec le cloud.",
+    "new_acc": "Nouveau compte",
+    "acc_not_found": "Le compte n'existe pas.",
+    "login_header": "Connexion",
+    "login_instr1": "Entrez votre nom d'utilisateur et votre mot de passe pour accéder à votre compte.",
     "login_instr2": "Si le compte n'existe pas, un nouveau compte sera créé pour vous.",
     "login_instr3": "Appuyez sur TAB pour basculer entre le mot de passe et l'utilisateur. ÉCHAP pour revenir.",
     "case_warning": "Les noms d'utilisateur et mots de passe sont sensibles à la casse !"
