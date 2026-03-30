@@ -1,6 +1,7 @@
 import pygame
 import manage_data
 import os
+import json
 
 # Path to sound folder
 SOUND_FOLDER = manage_data.resource_path("audio")
@@ -127,6 +128,14 @@ def init_disks():
             pygame.image.load(manage_data.resource_path("oimgs/disks/mechdisk.png")).convert_alpha(),
             (100, 100)
         ),
+        'greenpack': pygame.transform.scale(
+            pygame.image.load(manage_data.resource_path("oimgs/disks/greenpack.png")).convert_alpha(),
+            (220, 220)
+        ),
+        'mechpack': pygame.transform.scale(
+            pygame.image.load(manage_data.resource_path("oimgs/disks/mechpack.png")).convert_alpha(),
+            (220, 220)
+        ),
         'locked': pygame.transform.scale(
             pygame.image.load(manage_data.resource_path("oimgs/disks/lockeddisk.png")).convert_alpha(),
             (100, 100)
@@ -142,7 +151,8 @@ def init_assets():
             pygame.image.load(manage_data.resource_path("oimgs/ig/star.png")).convert_alpha(),
             (150, 140)
         ),
-        'star_small': None,  # Will be set below
+        'star_small': None,
+        'star_normal': None, # set below  
         'exit': pygame.transform.scale(
             pygame.image.load(manage_data.resource_path("oimgs/portal/exit.png")).convert_alpha(),
             (140, 180)
@@ -161,18 +171,18 @@ def init_assets():
         ),
         'badge': pygame.transform.scale(
             pygame.image.load(manage_data.resource_path("oimgs/ig/badge.png")).convert_alpha(),
-            (70, 70)
+            (80, 80)
         ),
         'max_badge': pygame.transform.scale(
             pygame.image.load(manage_data.resource_path("oimgs/ig/max-badge.png")).convert_alpha(),
-            (70, 70)
+            (80, 80)
         ),
         'saw': pygame.image.load(manage_data.resource_path("oimgs/ig/saw.png")).convert_alpha(),
         'cpoint_inact': pygame.image.load(manage_data.resource_path("oimgs/checkpoints/yellow_flag.png")).convert_alpha(),
         'cpoint_act': pygame.image.load(manage_data.resource_path("oimgs/checkpoints/green_flag.png")).convert_alpha(),
-    }
+    }    
     assets['star_small'] = pygame.transform.scale(assets['star'], (20, 17))
-    
+    assets['star_normal'] = pygame.transform.scale(assets['star'], (100, 93))
     return assets
 
 def init_robos():
@@ -188,3 +198,62 @@ def init_robos():
     }
     
     return robos
+
+def init_accs():
+    global lang_code, is_mute, is_mute_amb
+    if os.path.exists(manage_data.ACCOUNTS_FILE):
+        with open(manage_data.ACCOUNTS_FILE, "r") as f:
+            manifest = json.load(f)
+            global_pref = manifest.get("pref", {})
+            lang_code = global_pref.get("language", "en")
+            # Invert 'sfx' back to 'is_mute'
+            is_mute = not global_pref.get("sfx", True) 
+            is_mute_amb = not global_pref.get("ambience", True)
+    else:
+        lang_code = "en"
+        is_mute = False
+        is_mute_amb = False
+    return manifest, lang_code, is_mute, is_mute_amb
+
+def init_fonts():
+    global fonts
+    font_path_ch = manage_data.resource_path('fonts/NotoSansSC-SemiBold.ttf')
+    font_path_jp = manage_data.resource_path('fonts/NotoSansJP-SemiBold.ttf')
+    font_path_kr = manage_data.resource_path('fonts/NotoSansKR-SemiBold.ttf')
+    font_path_ar = manage_data.resource_path("fonts/NotoNaskhArabic-Bold.ttf")
+    font_path = manage_data.resource_path('fonts/NotoSansDisplay-SemiBold.ttf')
+    fonts = {
+        'ch': pygame.font.Font(font_path_ch, 25),
+        'jp': pygame.font.Font(font_path_jp, 25),
+        'kr': pygame.font.Font(font_path_kr, 25),
+        'def': pygame.font.Font(font_path, 25),
+        'ar': pygame.font.Font(font_path_ar, 25),
+        'mega': pygame.font.Font(font_path, 55)
+    }
+    return fonts
+
+import manage_data
+
+def load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT):
+    manage_data.fonts = init_fonts()
+    yield "Loading settings...", 6
+    manage_data.manifest, manage_data.lang_code, manage_data.is_mute, manage_data.is_mute_amb = init_accs()
+    
+    yield "Checking for latest save...", 10
+    manage_data.progress = manage_data.load_progress()
+    
+    yield "Loading sounds...", 19
+    manage_data.sounds = init_sounds()
+    
+    yield "Loading textures...", 41
+    manage_data.ui = init_ui_images(SCREEN_WIDTH, SCREEN_HEIGHT)
+    manage_data.bgs = init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT)
+    manage_data.assets = init_assets()
+    manage_data.disks = init_disks()
+    manage_data.medals = init_medals()
+    
+    yield "Calibrating Robots...", 92
+    manage_data.robos = init_robos()
+    
+    yield "Systems Ready!", 100
+    return True # Just a signal that we finished

@@ -4,8 +4,10 @@
       "character_select": "Sélection de personnage",
       "achievements": "Réalisations",
       "settings": "Paramètres",
+      "profile": "Profil",
       "quit": "Quitter",
-      "language": "Changer de langue"
+      "language": "Changer de langue",
+      "new": "Mise à jour disponible !"
     }
     ,"language_select": {
       "back": "Retour"
@@ -27,13 +29,16 @@
     "Unmute": "Activer le son : {setting}",
     "Account": "Compte",
     "Back": "Retour",
-    "new_acc": "+ NOUVEAU JOUEUR",
     "select": "SÉLECTIONNER UN PROFIL",
     "sync_stat1": "Synchronisation du coffre vers le Cloud...",
     "sync_stat2": "Échec de la synchronisation !",
     "sync_stat3": "Succès !",
-    "login_header": "CONNEXION / S'INSCRIRE",
-    "login_instr1": "Entrez votre nom d'utilisateur et le mot de passe de votre compte.",
+    "register_instr1": "Créez un nouveau compte avec un nom d'utilisateur et un mot de passe.",
+    "register_instr2": "Votre compte sera synchronisé avec le cloud.",
+    "new_acc": "Nouveau compte",
+    "acc_not_found": "Le compte n'existe pas.",
+    "login_header": "Connexion",
+    "login_instr1": "Entrez votre nom d'utilisateur et votre mot de passe pour accéder à votre compte.",
     "login_instr2": "Si le compte n'existe pas, un nouveau compte sera créé pour vous.",
     "login_instr3": "Appuyez sur TAB pour basculer entre le mot de passe et l'utilisateur. ÉCHAP pour revenir.",
     "case_warning": "Les noms d'utilisateur et mots de passe sont sensibles à la casse !"
@@ -75,6 +80,7 @@
     "xp_rew": "{XP} XP"
   },
   "levels": {
+  "worlds": "Sélectionner le monde",
   "level_display": "CHOISIR UN NIVEAU",
   "back": "retour"
   ,"next": "prochain"
@@ -134,6 +140,10 @@
   ,"button4_message": "Les boutons verts, une fois activés, vous donneront un énorme coup de pouce de vitesse !"
   ,"timed_coin_message": "Les pièces oranges sont chronométrées ! Elles ouvrent des blocs pour un temps"
   ,"timed_coin_message_2": "limité. Courez avant qu'ils ne se referment, ou pire, vous écrasent..."
+  ,"crushed_message": "Écrasé !",
+  "evilrobo1": "Hein ? Il y a quelqu'un ?",
+  "evilrobo2": "HÉ ! Allez-vous-en d'ici !",
+  "evilrobo3": "OÙ EST-IL PASSÉ ????"
 }
 ,"in_game_ice":{
 "temp": "Température: {current_temp}"
@@ -141,6 +151,5 @@
 "freeze_message": "Mais pense à te réchauffer un peu, ne meurs pas de froid !",
 "overheat_message1": "Souviens-toi aussi de surveiller ta température, et si",
 "overheat_message2": "tu surchauffes trop, tiens-toi sur un bloc de glace à proximité !"
-
 }
 }

@@ -4,8 +4,10 @@
     "character_select": "キャラクター選択",
     "settings": "設定",
     "achievements": "実績",
+    "profile": "プロフィール",
     "quit": "終了",
-    "language": "言語を変更"
+    "language": "言語を変更",
+    "new": "アップデートがあります！"
   },
   "language_select": {
     "back": "戻る"
@@ -27,14 +29,16 @@
     "Unmute": "{setting}のミュートを解除",
     "Account": "アカウント",
     "Back": "戻る",
-    "new_acc": "+ 新規プレイヤー",
     "select": "プロフィール選択",
     "sync_stat1": "保管庫をクラウドに同期中...",
     "sync_stat2": "同期に失敗しました！",
     "sync_stat3": "成功しました！",
-    "login_header": "ログイン / 新規登録",
-    "login_instr1": "ユーザー名とアカウントのパスワードを入力してください。",
-    "login_instr2": "アカウントが存在しない場合は、新規作成されます。",
+    "register_instr1": "ユーザー名とパスワードで新しいアカウントを作成します。",
+    "register_instr2": "アカウントはクラウドに同期されます。",
+    "new_acc": "新規アカウント",
+    "acc_not_found": "アカウントが存在しません。",
+    "login_header": "ログイン",
+    "login_instr1": "ユーザー名とパスワードを入力してアカウントにアクセスしてください。",
     "login_instr3": "TABでパスワードとユーザー名を切り替え、ESCで戻ります。",
     "case_warning": "ユーザー名とパスワードは大文字と小文字を区別します！"
     ,"username_label": "ユーザー名",
@@ -75,6 +79,7 @@
     "back": "戻る"
   },
   "levels": {
+    "worlds": "ワールド選択",
     "level_display": "レベルを選択",
     "back": "戻る",
     "next": "次へ"
@@ -134,6 +139,10 @@
     "button4_message": "緑のボタンを押すとスピードが大幅アップ！"
     ,"timed_coin_message": "オレンジコインは時間制限あり！一定時間ブロックを"
     ,"timed_coin_message_2": "開きます。再び閉じて押しつぶされる前に走り抜けましょう..."
+    ,"crushed_message": "ぺしゃんこ！",
+    "evilrobo1": "ん？誰かいるのか？",
+    "evilrobo2": "おい！ここから失せろ！",
+    "evilrobo3": "どこへ行ったんだ！？"
   },
   "in_game_ice": {
     "temp": "温度: {current_temp}",

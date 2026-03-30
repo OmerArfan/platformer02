@@ -4,8 +4,10 @@
       "character_select": "Charakterauswahl",
       "achievements": "Leistungen",
       "settings": "Einstellungen",
+      "profile": "Profil",
       "quit": "aufhören",
-      "language": "Sprache ändern"
+      "language": "Sprache ändern",
+      "new": "Update verfügbar!"
     }
     ,"language_select": {
       "back": "Zurück"
@@ -27,14 +29,17 @@
     "Mute": "{setting} stummschalten",
     "Unmute": "Stummschaltung für {setting} aufheben",
     "Back": "Zurück",
-    "new_acc": "+ NEUER SPIELER",
     "select": "PROFIL AUSWÄHLEN",
     "sync_stat1": "Tresor mit Cloud synchronisieren...",
     "sync_stat2": "Synchronisierung fehlgeschlagen! ",
     "sync_stat3": "Erfolgreich!"
-    ,"login_header": "ANMELDEN / REGISTRIEREN",
-    "login_instr1": "Geben Sie Ihren Benutzernamen und das Passwort für Ihr Konto ein.",
-    "login_instr2": "Wenn das Konto nicht existiert, wird ein neues Konto für Sie erstellt.",
+    ,"register_instr1": "Erstellen Sie ein neues Konto mit einem Benutzernamen und Passwort.",
+    "register_instr2": "Ihr Konto wird mit der Cloud synchronisiert.",
+    "new_acc": "Neues Konto",
+    "acc_not_found": "Konto existiert nicht.",
+    "login_header": "Anmelden",
+    "login_instr1": "Geben Sie Ihren Benutzernamen und Ihr Passwort ein, um auf Ihr Konto zuzugreifen."
+    ,"login_instr2": "Wenn das Konto nicht existiert, wird ein neues Konto für Sie erstellt.",
     "login_instr3": "TAB zum Wechseln zwischen Passwort/Nutzer. ESC zum Zurückkehren.",
     "case_warning": "Benutzernamen und Passwörter sind fallsensitiv (Groß-/Kleinschreibung)!"
     ,"username_label": "Benutzername",
@@ -75,6 +80,7 @@
     "xp_rew": "{XP} EP"
   }
   ,"levels": {
+  "worlds": "Welt auswählen",
   "level_display": "WÄHLE EINEN LEVEL",
   "back": "Zurück"
   ,"next": "Nächste"
@@ -134,7 +140,11 @@
   ,"button4_message": "Grüne Tasten geben bei Aktivierung einen massiven Geschwindigkeitsschub!"
   ,"timed_coin_message": "Orangefarbene Münzen sind zeitlich begrenzt! Sie öffnen Blöcke für eine"
   ,"timed_coin_message_2": "begrenzte Zeit. Lauf, bevor sie sich wieder schließen oder dich zerquetschen..."
-  }
+  ,"crushed_message": "Zermalmt!",
+  "evilrobo1": "Hä? Ist da jemand?",
+  "evilrobo2": "HEY! Verschwinde von hier!",
+  "evilrobo3": "WO IST ER HINGEGANGEN????"  
+}
   ,"in_game_ice":{
   "temp": "Temperatur: {current_temp}",
   "ice_message": "Eisblöcke schmelzen, wenn du auf ihnen stehst! Aber sie kühlen dich auch ab!",

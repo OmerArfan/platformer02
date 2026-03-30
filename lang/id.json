@@ -4,8 +4,10 @@
     "character_select": "Pilih Karakter",
     "settings": "Pengaturan",
     "achievements": "Prestasi",
+    "profile": "Profil",
     "quit": "Keluar",
-    "language": "Ganti Bahasa"
+    "language": "Ganti Bahasa",
+    "new": "Pembaruan Tersedia!"
   },
   "language_select": {
     "back": "Kembali"
@@ -27,13 +29,16 @@
     "Unmute": "Bunyikan {setting}",
     "Account": "Akun",
     "Back": "Kembali",
-    "new_acc": "+ PEMAIN BARU",
     "select": "PILIH PROFIL",
     "sync_stat1": "Menyinkronkan Vault ke Cloud...",
     "sync_stat2": "Sinkronisasi gagal!",
     "sync_stat3": "Berhasil!"
-    ,"login_header": "MASUK / DAFTAR",
-    "login_instr1": "Masukkan nama pengguna dan kata sandi untuk akun Anda.",
+    ,"register_instr1": "Buat akun baru dengan nama pengguna dan kata sandi.",
+    "register_instr2": "Akun Anda akan disinkronkan ke cloud.",
+    "new_acc": "Akun Baru",
+    "acc_not_found": "Akun tidak ditemukan.",
+    "login_header": "Masuk",
+    "login_instr1": "Masukkan nama pengguna dan kata sandi Anda untuk mengakses akun Anda.",
     "login_instr2": "Jika akun tidak ada, akun baru akan dibuat untuk Anda.",
     "login_instr3": "Tekan TAB untuk beralih antara Kata Sandi dan Nama Pengguna. Tekan ESC untuk kembali.",
     "case_warning": "Nama pengguna dan Kata sandi peka terhadap huruf besar/kecil!"
@@ -75,6 +80,7 @@
     "xp_rew": "{XP} XP"
   },
   "levels": {
+    "worlds": "Pilih Dunia",
     "level_display": "PILIH LEVEL",
     "back": "Kembali",
     "next": "Berikutnya"
@@ -134,6 +140,10 @@
     "button4_message": "Tombol hijau akan memberikan dorongan kecepatan besar!"
     ,"timed_coin_message": "Koin oranye terbatas waktu! Mereka membuka balok untuk waktu"
     ,"timed_coin_message_2": "terbatas. Lari sebelum mereka tertutup lagi, atau paling buruk, menghancurkanmu..."
+    ,"crushed_message": "Hancur!",
+    "evilrobo1": "Hah? Apa ada orang di sana?",
+    "evilrobo2": "HEI! Pergi dari sini!",
+    "evilrobo3": "KE MANA DIA PERGI????"
   },
   "in_game_ice": {
     "temp": "Suhu: {current_temp}",

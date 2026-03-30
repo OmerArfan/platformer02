@@ -2,6 +2,66 @@ import pygame
 import math
 import manage_data
 
+ctime = None # global only for resetting
+def resetting():
+    global ctime
+    if ctime is None:
+        ctime = pygame.time.get_ticks()
+
+def score_calc(current_time, deathcount, medal):
+    base_score = 100000 # From where the score is added to/subtracted from
+    token_score = 0
+    time_score = int(current_time * 160)
+    if medal == "Diamond":
+        medal_score = -10000
+    elif medal == "Gold":
+        medal_score = 5000
+    elif medal == "Silver":
+        medal_score = 10000
+    elif medal == "Bronze":
+        medal_score = 15000
+    else:
+        medal_score = 25000
+    death_score = deathcount * 300
+    score = max(500, base_score - medal_score - death_score - time_score + token_score)
+    return score, base_score, medal_score, death_score, time_score
+
+# ALgorithm for logic stuff when level is completed
+def fin_lvl_logic(current_time, deathcount, medal, lvl):
+            print(manage_data.progress["lvls"]["score"][f"lvl{lvl}"])
+            if manage_data.progress["lvls"]["complete_levels"] < lvl:
+                manage_data.progress["lvls"]["complete_levels"] = lvl
+
+            if not manage_data.is_mute:
+                manage_data.sounds['warp'].play()
+
+            if current_time < manage_data.progress["lvls"]["times"][f"lvl{lvl}"] or manage_data.progress["lvls"]["times"][f"lvl{lvl}"] == 0:
+                manage_data.progress["lvls"]["times"][f"lvl{lvl}"] = round(current_time, 2)
+            
+            if manage_data.progress["lvls"]["score"][f"lvl{lvl}"] < 100000:
+                manage_data.progress["lvls"]["medals"][f"lvl{lvl}"] = get_medal(lvl, manage_data.progress["lvls"]["times"][f"lvl{lvl}"])
+            else:
+                manage_data.progress["lvls"]["medals"][f"lvl{lvl}"] = "Diamond"
+
+            medal = get_medal(lvl, current_time)
+
+            if medal == "Gold" and deathcount == 0:
+                medal = "Diamond"
+                manage_data.progress["lvls"]["medals"][f"lvl{lvl}"] = medal
+            score, base_score, medal_score, death_score, time_score = score_calc(current_time, deathcount, medal)
+            if manage_data.progress["lvls"]["score"][f"lvl{lvl}"] < score or manage_data.progress["lvls"]["score"][f"lvl{lvl}"] == 0:
+                manage_data.progress["lvls"]["score"][f"lvl{lvl}"] = score
+                new_hs = True
+                hs = score
+            else:
+                new_hs = False
+                hs = manage_data.progress["lvls"]["score"][f"lvl{lvl}"]
+            print(new_hs)
+
+            manage_data.update_locked_levels(manage_data.progress, manage_data.manifest)
+            stars = get_stars(lvl, score)
+            return score, base_score, medal_score, death_score, time_score, stars, new_hs, hs
+
 # Function to get medal based on time
 def get_medal(level, time_taken):
     thresholds = next((t for t in manage_data.level_thresholds if t['level'] == level), None)
@@ -190,6 +250,53 @@ def handle_key_blocks(screen, open_sound, key_block_pairs, is_mute, on_ground, p
 
     return player_x, player_y, velocity_y, on_ground, player_rect
 
+def handle_key_blocks_timed(screen, key_block_pairs_timed, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y, on_ground):
+    for pair in key_block_pairs_timed:
+            key_x, key_y, key_r, key_color = pair["key"]
+            block = pair["block"]
+
+            key_rect = pygame.Rect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
+
+            if player_rect.colliderect(key_rect):
+                if not pair["collected"]:
+                    pair["locked_time"] = pygame.time.get_ticks()
+                    pair["collected"] = True
+                    if not manage_data.is_mute:
+                        manage_data.sounds['open'].play()
+
+            # Draw key and block only if not collected
+            if not pair["collected"]:
+                pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
+                pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
+
+            # Reset after duration
+            if pair.get("locked_time") is not None:
+                if pair["collected"] and (pygame.time.get_ticks() - pair["locked_time"]) > pair["duration"]:
+                    pair["collected"] = False
+                    pair["locked_time"] = None  # Reset timer
+                    # Check if player is inside block when it reappears
+            
+                    if player_rect.colliderect(pair["block"]):
+                        return True, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y, on_ground
+
+            if not pair["collected"]:  # Only active locked blocks
+                block = pair["block"]
+                if player_rect.colliderect(block):
+            # Falling onto a block
+                    if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
+                        player_y = block.y - img_height
+                        velocity_y = 0
+                        on_ground = True
+
+            # Horizontal collisions
+                    elif player_x + img_width > block.x and player_x < block.x + block.width:
+                        if player_x < block.x:
+                            player_x = block.x - img_width
+                        elif player_x + img_width > block.x + block.width:
+                            player_x = block.x + block.width
+
+    return False, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y, on_ground
+
 def point_in_triangle(px, py, a, b, c):
     def sign(p1, p2, p3):
         return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
@@ -376,6 +483,81 @@ def handle_rushing_saws(screen, rushing_saws, player_rect, saw_img, camera_x, ca
             collision = True
             
     return collision
+
+def handling_gravity_weakers(screen, gravity_weakers, player_rect, camera_x, camera_y, weak_grav):
+        for x, y, r, color in gravity_weakers:
+            # Draw the button as a circle
+            if not weak_grav:
+                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+        for gravity_weaker in gravity_weakers:
+            gravity_weaker_x, gravity_weaker_y, gravity_weaker_radius, _ = gravity_weaker
+
+        # Find the closest point on the player's rectangle to the button's center
+            closest_x = max(player_rect.left, min(gravity_weaker_x, player_rect.right))
+            closest_y = max(player_rect.top, min(gravity_weaker_y, player_rect.bottom))
+
+            # Calculate the distance between the closest point and the button's center
+            dx = closest_x - gravity_weaker_x
+            dy = closest_y - gravity_weaker_y
+            distance = (dx**2 + dy**2)**0.5
+
+            # If distance is less than radius, weaker gravity activated
+            if distance < gravity_weaker_radius and not weak_grav:
+                if not manage_data.is_mute:
+                    manage_data.sounds['button'].play()
+                return True
+        return False
+
+def handling_gravity_strongers(screen, gravity_strongers, player_rect, camera_x, camera_y, strong_grav):
+        for x, y, r, color in gravity_strongers:
+            # Draw the button as a circle
+            if not strong_grav:
+                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+        for gravity_stronger in gravity_strongers:
+            gravity_stronger_x, gravity_stronger_y, gravity_stronger_radius, _ = gravity_stronger
+
+        # Find the closest point on the player's rectangle to the button's center
+            closest_x = max(player_rect.left, min(gravity_stronger_x, player_rect.right))
+            closest_y = max(player_rect.top, min(gravity_stronger_y, player_rect.bottom))
+
+            # Calculate the distance between the closest point and the button's center
+            dx = closest_x - gravity_stronger_x
+            dy = closest_y - gravity_stronger_y
+            distance = (dx**2 + dy**2)**0.5
+
+            # If distance is less than radius, stronger gravity activated
+            if distance < gravity_stronger_radius and not strong_grav:
+                if not manage_data.is_mute:
+                    manage_data.sounds['button'].play()
+                return True
+        return False
+
+def handle_speedsters(screen, speedsters, player_rect, camera_x, camera_y, stamina):
+        for x, y, r, color in speedsters:
+            # Draw the button as a circle
+            if not stamina:
+                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+        for speedster in speedsters:
+            speedster_x, speedster_y, speedster_radius, _ = speedster
+
+        # Find the closest point on the player's rectangle to the button's center
+            closest_x = max(player_rect.left, min(speedster_x, player_rect.right))
+            closest_y = max(player_rect.top, min(speedster_y, player_rect.bottom))
+
+            # Calculate the distance between the closest point and the button's center
+            dx = closest_x - speedster_x
+            dy = closest_y - speedster_y
+            distance = (dx**2 + dy**2)**0.5
+
+            # If distance is less than radius, stronger gravity activated
+            if distance < speedster_radius and not stamina:
+                if not manage_data.is_mute:
+                    manage_data.sounds['button'].play()
+                return True
+        return False
 
 def handle_light_blocks(screen, lights, on_ground, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, lights_off, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, button_sound):
   

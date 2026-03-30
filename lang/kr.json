@@ -4,8 +4,10 @@
     "character_select": "캐릭터 선택",
     "settings": "설정",
     "achievements": "성과",
+    "profile": "프로필",
     "quit": "종료",
-    "language": "언어 변경"
+    "language": "언어 변경",
+    "new": "업데이트 가능!"
   },
   "language_select": {
     "back": "뒤로"
@@ -27,13 +29,16 @@
     "Unmute": "{setting} 음소거 해제",
     "Account": "계정",
     "Back": "뒤로",
-    "new_acc": "+ 새 플레이어",
     "select": "프로필 선택",
     "sync_stat1": "금고를 클라우드에 동기화 중...",
     "sync_stat2": "동기화 실패!",
     "sync_stat3": "성공!",
-    "login_header": "로그인 / 회원가입",
-    "login_instr1": "사용자 이름과 계정 비밀번호를 입력하세요.",
+    "register_instr1": "사용자 이름과 비밀번호로 새 계정을 만듭니다.",
+    "register_instr2": "계정이 클라우드에 동기화됩니다.",
+    "new_acc": "새 계정",
+    "acc_not_found": "계정이 존재하지 않습니다.",
+    "login_header": "로그인",
+    "login_instr1": "계정에 액세스하려면 사용자 이름과 비밀번호를 입력하십시오.",
     "login_instr2": "계정이 존재하지 않으면 새 계정이 생성됩니다.",
     "login_instr3": "TAB을 눌러 비밀번호와 사용자 이름 전환, ESC를 눌러 돌아가기.",
     "case_warning": "사용자 이름과 비밀번호는 대소문자를 구분합니다!"
@@ -75,6 +80,7 @@
     "back": "뒤로"
   },
   "levels": {
+    "worlds": "월드 선택",
     "level_display": "레벨 선택",
     "back": "뒤로",
     "next": "다음"
@@ -134,6 +140,10 @@
     "button4_message": "초록색 버튼을 누르면 엄청난 속도 부스트가 주어집니다!"
     ,"timed_coin_message": "오렌지 코인은 시간 제한이 있습니다! 짧은 시간 동안 블록을"
     ,"timed_coin_message_2": "엽니다. 다시 닫혀서 깔리기 전에 서둘러 뛰세요..."
+    ,"crushed_message": "박살났다!",
+    "evilrobo1": "응? 거기 누구 있어?",
+    "evilrobo2": "야! 여기서 당장 꺼져!",
+    "evilrobo3": "어디로 간 거야????"
   },
   "in_game_ice": {
     "temp": "온도: {current_temp}",

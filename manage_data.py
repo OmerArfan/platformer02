@@ -14,9 +14,23 @@ import requests
 from io import StringIO
 import pygame
 import acc_sys
-from level_logic import get_stars
+import level_logic
 
 pygame.font.init()
+
+# The Global Asset Vault
+manifest, lang_code = None, None
+is_mute, is_mute_amb = False, False
+progress = {}
+sounds = {}
+ui = {}
+bgs = {}
+assets = {}
+medals = {}
+disks = {}
+robos = {}
+fonts = {}
+current_page = 'main_menu'
 
 default_progress = {
     "player": {
@@ -113,38 +127,11 @@ def char_assets(selected_character):
     img_width, img_height = player_img.get_size()
     return player_img, blink_img, moving_img, moving_img_l, img_width, img_height
 
-def init_accs():
-    global lang_code, is_mute, is_mute_amb
-    if os.path.exists(ACCOUNTS_FILE):
-        with open(ACCOUNTS_FILE, "r") as f:
-            manifest = json.load(f)
-            global_pref = manifest.get("pref", {})
-            lang_code = global_pref.get("language", "en")
-            # Invert 'sfx' back to 'is_mute'
-            is_mute = not global_pref.get("sfx", True) 
-            is_mute_amb = not global_pref.get("ambience", True)
-    else:
-        lang_code = "en"
-        is_mute = False
-        is_mute_amb = False
-    return manifest, lang_code, is_mute, is_mute_amb
-
-def init_fonts():
-    global fonts
-    font_path_ch = resource_path('fonts/NotoSansSC-SemiBold.ttf')
-    font_path_jp = resource_path('fonts/NotoSansJP-SemiBold.ttf')
-    font_path_kr = resource_path('fonts/NotoSansKR-SemiBold.ttf')
-    font_path_ar = resource_path("fonts/NotoNaskhArabic-Bold.ttf")
-    font_path = resource_path('fonts/NotoSansDisplay-SemiBold.ttf')
-    fonts = {
-        'ch': pygame.font.Font(font_path_ch, 25),
-        'jp': pygame.font.Font(font_path_jp, 25),
-        'kr': pygame.font.Font(font_path_kr, 25),
-        'def': pygame.font.Font(font_path, 25),
-        'ar': pygame.font.Font(font_path_ar, 25),
-        'mega': pygame.font.Font(font_path, 55)
-    }
-    return fonts
+def change_ambience(new_file):
+  if not is_mute_amb:
+    pygame.mixer.music.load(resource_path(new_file))
+    pygame.mixer.music.set_volume(2)  # Adjust as needed
+    pygame.mixer.music.play(-1)
 
 def update_locked_levels(progress, manifest):
     all_levels = ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
@@ -197,7 +184,7 @@ def change_language(lang, manifest, progress):
     return current_lang
 
 def load_progress():
-    global SAVE_FILE, notification_time 
+    global SAVE_FILE
     
     data = copy.deepcopy(default_progress) 
 
@@ -273,7 +260,7 @@ def load_progress():
                 print(f"Cloud is ahead! ({cloud_xp} XP). Updating local save...")
                 data = cloud_data
                 # Update the physical file so we don't have to fetch again next time
-                save_progress(data) 
+                save_progress(data, manifest) 
             else:
                 print(f"Local save is the latest version ({local_xp} XP).")
 
@@ -281,7 +268,7 @@ def load_progress():
 
 # Save progress to file
 def save_progress(data, manifest):
-    global notification_text, notification_time, error_code, notif, er
+    global notification_text,error_code, notif, er
     global save_count
     global SAVE_FILE 
 
@@ -295,11 +282,11 @@ def save_progress(data, manifest):
 
     # 1. Basic Validation: Ensure we aren't saving an empty/broken object
     if not data or "lvls" not in data or "player" not in data:
-        #if not is_mute:
-         #   hit_sound.play()
+        if not is_mute:
+           sounds['hit'].play()
         notification_text = menu_ui.render_text("Refusing to save: Invalid data structure!", True, (255, 0, 0))
         notif = True
-        notification_time = time.time()
+        menu_ui.notification_time = time.time()
         return
 
     # 2. Folder & Path Logic
@@ -336,20 +323,24 @@ def save_progress(data, manifest):
         #    hit_sound.play()
         notification_text = menu_ui.render_text("Error: Save file is locked by another program.", True, (255, 0, 0))
         notif = True
-        notification_time = time.time()
+        menu_ui.notification_time = time.time()
             
     except Exception as e:
         er = True
         error_code = menu_ui.render_text(f"Save Error: {str(e)}", True, (255, 0, 0))
        # if not is_mute:
         #   hit_sound.play()
-        notification_time = time.time()
+        menu_ui.notification_time = time.time()
         print(f"Detailed save error: {e}")
 
 def update_local_manifest(data):
-    global er, error_code, is_mute, notification_time
+    global er, error_code, is_mute, manifest
+    
+    # Store the current last_news_count before reloading
+    previous_news_count = manifest.get("other", {}).get("last_news_count", 7) if manifest else 7
+    
     # 1. Load existing manifest
-    manifest = {"last_used": "", "users": {}, "pref": {"language": "en", "sfx": True, "ambience": True}}
+    manifest = {"last_used": "", "users": {}, "pref": {"language": "en", "sfx": True, "ambience": True}, "other": {"last_news_count": 7}}
     if os.path.exists(ACCOUNTS_FILE):
         try:
             with open(ACCOUNTS_FILE, "r") as f:
@@ -385,6 +376,12 @@ def update_local_manifest(data):
         "last_login": date.today().strftime("%Y-%m-%d")
     }
 
+    if "other" not in manifest:
+        manifest["other"] = {"last_news_count": 7}
+    
+    # Preserve the last_news_count that was set in-memory (don't overwrite with stale disk value)
+    manifest["other"]["last_news_count"] = previous_news_count
+
     # 4. Save with Backup
     try:
         # Create the backup of the OLD version before we save the NEW one
@@ -401,7 +398,7 @@ def update_local_manifest(data):
         #if not is_mute: hit_sound.play()
         error_code = menu_ui.render_text(f"Local manifest error: {e}", True, (255, 0, 0))
         er = True
-        notification_time = time.time()
+        menu_ui.notification_time = time.time()
         print(f"Error during manifest save: {e}")
 
 def sync_missing_data(data):
@@ -536,7 +533,27 @@ def fetch_cloud_data_by_id(target_id):
         
     return None
 
-def xp(progress, Achievements):
+def get_all_cloud_ids():
+    """Fetch all player IDs from the cloud vault to check for collisions."""
+    CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQNm-8l1C38UGFt-lJT3ft5DARYZcjMwsWfVYGrtAqDy0bR8MQFcLJSRFqYYX7mbra_P2cWl1-i0WYW/pub?gid=1459647032&single=true&output=csv"
+    cloud_ids = set()
+    
+    try:
+        response = requests.get(CSV_URL, timeout=10)
+        if response.status_code == 200:
+            f = StringIO(response.text)
+            reader = csv.DictReader(f)
+            for row in reader:
+                player_id = row.get('ID')
+                if player_id and player_id.strip():  # Only add non-empty IDs
+                    cloud_ids.add(player_id.strip())
+    except Exception as e:
+        print(f"Error fetching cloud IDs: {e}")
+    
+    return cloud_ids
+
+def xp():
+    global progress
     # XP from scores
     scores = progress["lvls"]["score"]
     score_xp = sum(scores.values()) // 1000
@@ -545,7 +562,7 @@ def xp(progress, Achievements):
     stars = 0
     for level in range(1, 13):
         score = scores.get(f"lvl{level}", 0)
-        stars += get_stars(level, score)
+        stars += level_logic.get_stars(level, score)
     star_xp = stars * 20  # 50 XP per star
 
     # XP from achievements
@@ -581,9 +598,8 @@ def xp(progress, Achievements):
     Achievements.check_xplvl20(level)
     return level, xp_in_level, xp_needed(level)
 
-def update_xp_ui(progress, Achievements, manifest):
-    global level, xp_needed, xp_total, XP_text, XP_text2
-
+def update_xp_ui():
+    global progress, lang_code, manifest
     level, xp_needed, xp_total = xp(progress, Achievements)
 
     if level < 20:
@@ -595,3 +611,135 @@ def update_xp_ui(progress, Achievements, manifest):
         XP_text = fonts['mega'].render(str(level), True, color)
         max_txt = load_language(lang_code, manifest).get('messages', {}).get("max_level", "MAX LEVEL!")
         XP_text2 = menu_ui.render_text(max_txt, True, color)   
+
+    return XP_text, XP_text2
+
+class Achievements:
+    @staticmethod
+    def get_notif_text(ach_key, default_name):
+        # Helper to build the 'Achievement Unlocked: Name' string
+        lang = change_language(lang_code, manifest, progress)
+        ach_data = lang.get("achieve", {})
+        
+        # Get "Achievement Unlocked:" prefix
+        prefix = ach_data.get("unlock", "Achievement unlocked:")
+        # Get the specific name (e.g., "Speedy Starter!")
+        name = ach_data.get(ach_key, default_name)
+        
+        # Combine them and render
+        full_string = f"{prefix} {name}"
+        return menu_ui.render_text(full_string, True, (255, 255, 0))
+
+    def lvl1speed(ctime):
+        unlock = progress["achieved"].get("speedy_starter", False)
+        if ctime <= 4.5 and not unlock:
+            progress["achieved"]["speedy_starter"] = True  
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("speedy_starter", "Speedy Starter")
+            if not is_mute:
+                sounds['notify'].play()
+            if menu_ui.notification_time is None:
+                notif = True
+                menu_ui.notification_time = time.time()
+    
+    def perfect6(ctime, deaths):
+        global notification_text
+        unlock = progress["achieved"].get("zen_os", False)
+        if ctime <= 30 and deaths <= 0 and not unlock:
+            progress["achieved"]["zen_os"] = True
+            progress["char"]["ironrobo"] = True
+            save_progress(progress, manifest)
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("zen_os", "Zenith of Six")
+            if not is_mute:
+                sounds['notify'].play()
+            if menu_ui.notification_time is None:
+                notif = True
+                menu_ui.notification_time = time.time()
+
+    def lvl90000(score):
+        global notification_text
+        unlock = progress["achieved"].get("over_9k", False)
+        if score >= 105000 and not unlock:
+            progress["achieved"]["over_9k"] = True          
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("over_9k", "It's over 9000!!")
+            if not is_mute:
+                sounds['notify'].play()
+            if menu_ui.notification_time is None:
+                notif = True
+                menu_ui.notification_time = time.time()
+    
+    def evilchase():
+        global notification_text
+        unlock = progress["achieved"].get("chase_escape", False)
+        if not unlock:
+            progress["achieved"]["chase_escape"] = True
+            progress["char"]["evilrobo"] = True
+            save_progress(progress, manifest)
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("chase_escape", "Chased and Escaped")
+            if not is_mute:
+                sounds['notify'].play()
+            if menu_ui.notification_time is None:
+                notif = True
+                menu_ui.notification_time = time.time()
+    
+    def check_green_gold():
+        global notification_text
+        all_gold = all(progress["lvls"]["medals"][f"lvl{i}"] in ["Gold", "Diamond"] for i in range(1, 7))
+        unlock = progress["achieved"].get("golden", False)
+        if all_gold and not unlock:        
+            progress["achieved"]["golden"] = True
+            progress["char"]["greenrobo"] = True
+            save_progress(progress, manifest)
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("golden", "Golden!")
+            if not is_mute:
+                sounds['notify'].play()
+            if menu_ui.notification_time is None:
+                notif = True
+                menu_ui.notification_time = time.time()
+    
+    def check_xplvl20(Level):
+        global notification_text
+        unlock = progress["achieved"].get("lv20", False)
+        if Level >= 20 and not unlock:
+            progress["achieved"]["lv20"] = True
+            save_progress(progress, manifest)
+            # LOCALIZED HERE
+            notification_text = Achievements.get_notif_text("lv20", "XP Collector!")
+            if not is_mute:
+                sounds['notify'].play()
+            if menu_ui.notification_time is None:
+                notif = True
+                menu_ui.notification_time = time.time()
+
+def check_for_new_gamenews(return_count):
+    url = "https://omerarfan.github.io/lilrobowebsite/gamestuff.html"
+    try:
+        # 3 second timeout so the game doesn't hang if offline
+        response = requests.get(url, timeout=3)
+        if response.status_code == 200:
+            online_count = response.text.count('<a href="gamenews')
+            
+            # Get the count from our manifest
+            local_count = manifest.get("other", {}).get("last_news_count", 7)
+            if local_count < 7:
+                local_count = 7  # Default to 7 if not set, since we started counting from 7
+            
+            # If online has more, we have new news!
+            if online_count > local_count:
+                print(local_count, online_count)
+                if return_count:
+                    return online_count
+                else:
+                    return True
+            
+    except Exception as e:
+        print(f"News check failed: {e}")
+    
+    if return_count:
+        return manifest["other"]["last_news_count"]
+    else:
+        return False
