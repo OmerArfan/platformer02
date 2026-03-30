@@ -2405,6 +2405,8 @@ def create_lvl7_screen(screen, transition):
                 if not manage_data.is_mute:
                     manage_data.sounds['warp'].play()
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
+                # Update player_rect immediately after teleport to prevent collision handlers from using old position
+                player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
         
         level_logic.draw_saws(screen, saws, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache)
 
@@ -2751,6 +2753,8 @@ def create_lvl8_screen(screen, transition):
                 if not manage_data.is_mute:
                     manage_data.sounds['warp'].play()
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
+                # Update player_rect immediately after teleport to prevent collision handlers from using old position
+                player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
 
         if level_logic.handle_moving_saws(screen, moving_saws, player_rect, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache):
             # Death logic (same as above)
@@ -2826,10 +2830,10 @@ def create_lvl8_screen(screen, transition):
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
 
         # Adjust the camera's Y position when the player moves up
-        if player_y <= 200:
-            camera_y = player_y - 200
+        if player_y <= 440:
+            camera_y = player_y - 440
         else:
-            camera_y = 0  # Keep the camera fixed when the player is below the threshold
+            camera_y = 0 # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
