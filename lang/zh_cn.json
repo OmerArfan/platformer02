@@ -6,7 +6,8 @@
       "settings": "设置",
       "profile": "个人资料",
       "quit": "辞职",
-      "language": "更改语言"
+      "language": "更改语言",
+      "new": "有可用更新！"
     }
     ,"language_select": {
           "back": "返回"
@@ -79,6 +80,7 @@
     "xp_rew": "{XP} 经验值"
   }
   ,"levels": {
+    "worlds": "选择世界",
     "level_display": "选择一个级别",
     "back": "返回"
     ,"next": "下一个"
@@ -138,6 +140,10 @@
     ,"button4_message": "绿色按钮激活时会给你一个巨大的速度提升！"
     ,"timed_coin_message": "橙色硬币是计时的！它们会开启方块一段"
     ,"timed_coin_message_2": "有限的时间。在它们再次关闭前快跑，否则最糟的情况是被压碎..."
+    ,"crushed_message": "被粉碎了！",
+    "evilrobo1": "嗯？那里有人吗？",
+    "evilrobo2": "嘿！快离开这里！",
+    "evilrobo3": "他去哪儿了？？？？"
   }
   ,"in_game_ice":{
   "temp": "温度: {current_temp}"

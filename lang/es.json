@@ -6,7 +6,8 @@
       "settings": "Ajustes",
       "profile": "Perfil",
       "quit": "Salir",
-      "language": "Cambiar idioma"
+      "language": "Cambiar idioma",
+      "new": "¡Actualización disponible!"
     }
   ,"language_select": {
     "back": "Volver"
@@ -79,6 +80,7 @@
     "xp_rew": "{XP} XP"
   }
   ,"levels": {
+    "worlds": "Seleccionar mundo",
   "level_display": "SELECCIONA UN NIVEL",
   "back": "volver"
   ,"next": "casi"
@@ -138,7 +140,11 @@
   ,"button4_message": "¡Los botones verdes, al activarse, te darán un gran impulso de velocidad!"
   ,"timed_coin_message": "¡Las monedas naranjas tienen tiempo! Abren bloques por un tiempo"
   ,"timed_coin_message_2": "limitado. Corra antes de que se cierren o, en el peor de los casos, lo aplasten..."
-  }
+  ,"crushed_message": "¡Aplastado!",
+  "evilrobo1": "¿Eh? ¿Hay alguien ahí?",
+  "evilrobo2": "¡OYE! ¡Aléjate de aquí!",
+  "evilrobo3": "¿¡A DÓNDE SE FUE!???"
+}
   ,"in_game_ice":{
   "temp": "Temperatura: {current_temp}"
   ,"ice_message": "¡Los bloques de hielo se derriten cuando te paras sobre ellos! ¡Pero también te enfrían!",

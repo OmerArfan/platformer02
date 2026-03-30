@@ -79,6 +79,7 @@
     "xp_rew": "{XP} XP"
   }
   ,"levels": {
+  "worlds": "Select World",
   "level_display": "SELECT A LEVEL",
   "back": "Back"
   ,"next": "Next"
@@ -137,6 +138,10 @@
   ,"button4_message": "Green buttons, upon activation, will give you a massive speed boost!"
   ,"timed_coin_message": "Orange coins are timed! They open blocks for a limited"
   ,"timed_coin_message_2": "time. Run before they close again, or at worst, crush you..."
+  ,"crushed_message": "Crushed!",
+  "evilrobo1": "Huh? Is there anyone there?",
+  "evilrobo2": "HEY! Get away from here!",
+  "evilrobo3": "WHERE DID HE GO????"
 }
   ,"in_game_ice":{
     "temp": "Temperature: {current_temp}",

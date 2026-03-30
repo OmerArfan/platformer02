@@ -6,7 +6,8 @@
     "achievements": "実績",
     "profile": "プロフィール",
     "quit": "終了",
-    "language": "言語を変更"
+    "language": "言語を変更",
+    "new": "アップデートがあります！"
   },
   "language_select": {
     "back": "戻る"
@@ -78,6 +79,7 @@
     "back": "戻る"
   },
   "levels": {
+    "worlds": "ワールド選択",
     "level_display": "レベルを選択",
     "back": "戻る",
     "next": "次へ"
@@ -137,6 +139,10 @@
     "button4_message": "緑のボタンを押すとスピードが大幅アップ！"
     ,"timed_coin_message": "オレンジコインは時間制限あり！一定時間ブロックを"
     ,"timed_coin_message_2": "開きます。再び閉じて押しつぶされる前に走り抜けましょう..."
+    ,"crushed_message": "ぺしゃんこ！",
+    "evilrobo1": "ん？誰かいるのか？",
+    "evilrobo2": "おい！ここから失せろ！",
+    "evilrobo3": "どこへ行ったんだ！？"
   },
   "in_game_ice": {
     "temp": "温度: {current_temp}",

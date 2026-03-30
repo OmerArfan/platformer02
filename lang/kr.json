@@ -6,7 +6,8 @@
     "achievements": "성과",
     "profile": "프로필",
     "quit": "종료",
-    "language": "언어 변경"
+    "language": "언어 변경",
+    "new": "업데이트 가능!"
   },
   "language_select": {
     "back": "뒤로"
@@ -79,6 +80,7 @@
     "back": "뒤로"
   },
   "levels": {
+    "worlds": "월드 선택",
     "level_display": "레벨 선택",
     "back": "뒤로",
     "next": "다음"
@@ -138,6 +140,10 @@
     "button4_message": "초록색 버튼을 누르면 엄청난 속도 부스트가 주어집니다!"
     ,"timed_coin_message": "오렌지 코인은 시간 제한이 있습니다! 짧은 시간 동안 블록을"
     ,"timed_coin_message_2": "엽니다. 다시 닫혀서 깔리기 전에 서둘러 뛰세요..."
+    ,"crushed_message": "박살났다!",
+    "evilrobo1": "응? 거기 누구 있어?",
+    "evilrobo2": "야! 여기서 당장 꺼져!",
+    "evilrobo3": "어디로 간 거야????"
   },
   "in_game_ice": {
     "temp": "온도: {current_temp}",

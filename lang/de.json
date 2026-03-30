@@ -6,7 +6,8 @@
       "settings": "Einstellungen",
       "profile": "Profil",
       "quit": "aufhören",
-      "language": "Sprache ändern"
+      "language": "Sprache ändern",
+      "new": "Update verfügbar!"
     }
     ,"language_select": {
       "back": "Zurück"
@@ -79,6 +80,7 @@
     "xp_rew": "{XP} EP"
   }
   ,"levels": {
+  "worlds": "Welt auswählen",
   "level_display": "WÄHLE EINEN LEVEL",
   "back": "Zurück"
   ,"next": "Nächste"
@@ -138,7 +140,11 @@
   ,"button4_message": "Grüne Tasten geben bei Aktivierung einen massiven Geschwindigkeitsschub!"
   ,"timed_coin_message": "Orangefarbene Münzen sind zeitlich begrenzt! Sie öffnen Blöcke für eine"
   ,"timed_coin_message_2": "begrenzte Zeit. Lauf, bevor sie sich wieder schließen oder dich zerquetschen..."
-  }
+  ,"crushed_message": "Zermalmt!",
+  "evilrobo1": "Hä? Ist da jemand?",
+  "evilrobo2": "HEY! Verschwinde von hier!",
+  "evilrobo3": "WO IST ER HINGEGANGEN????"  
+}
   ,"in_game_ice":{
   "temp": "Temperatur: {current_temp}",
   "ice_message": "Eisblöcke schmelzen, wenn du auf ihnen stehst! Aber sie kühlen dich auch ab!",

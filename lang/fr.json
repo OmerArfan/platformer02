@@ -6,7 +6,8 @@
       "settings": "Paramètres",
       "profile": "Profil",
       "quit": "Quitter",
-      "language": "Changer de langue"
+      "language": "Changer de langue",
+      "new": "Mise à jour disponible !"
     }
     ,"language_select": {
       "back": "Retour"
@@ -79,6 +80,7 @@
     "xp_rew": "{XP} XP"
   },
   "levels": {
+  "worlds": "Sélectionner le monde",
   "level_display": "CHOISIR UN NIVEAU",
   "back": "retour"
   ,"next": "prochain"
@@ -138,6 +140,10 @@
   ,"button4_message": "Les boutons verts, une fois activés, vous donneront un énorme coup de pouce de vitesse !"
   ,"timed_coin_message": "Les pièces oranges sont chronométrées ! Elles ouvrent des blocs pour un temps"
   ,"timed_coin_message_2": "limité. Courez avant qu'ils ne se referment, ou pire, vous écrasent..."
+  ,"crushed_message": "Écrasé !",
+  "evilrobo1": "Hein ? Il y a quelqu'un ?",
+  "evilrobo2": "HÉ ! Allez-vous-en d'ici !",
+  "evilrobo3": "OÙ EST-IL PASSÉ ????"
 }
 ,"in_game_ice":{
 "temp": "Température: {current_temp}"
@@ -145,6 +151,5 @@
 "freeze_message": "Mais pense à te réchauffer un peu, ne meurs pas de froid !",
 "overheat_message1": "Souviens-toi aussi de surveiller ta température, et si",
 "overheat_message2": "tu surchauffes trop, tiens-toi sur un bloc de glace à proximité !"
-
 }
 }

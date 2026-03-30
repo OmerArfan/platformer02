@@ -6,7 +6,8 @@
     "achievements": "Prestasi",
     "profile": "Profil",
     "quit": "Keluar",
-    "language": "Ganti Bahasa"
+    "language": "Ganti Bahasa",
+    "new": "Pembaruan Tersedia!"
   },
   "language_select": {
     "back": "Kembali"
@@ -79,6 +80,7 @@
     "xp_rew": "{XP} XP"
   },
   "levels": {
+    "worlds": "Pilih Dunia",
     "level_display": "PILIH LEVEL",
     "back": "Kembali",
     "next": "Berikutnya"
@@ -138,6 +140,10 @@
     "button4_message": "Tombol hijau akan memberikan dorongan kecepatan besar!"
     ,"timed_coin_message": "Koin oranye terbatas waktu! Mereka membuka balok untuk waktu"
     ,"timed_coin_message_2": "terbatas. Lari sebelum mereka tertutup lagi, atau paling buruk, menghancurkanmu..."
+    ,"crushed_message": "Hancur!",
+    "evilrobo1": "Hah? Apa ada orang di sana?",
+    "evilrobo2": "HEI! Pergi dari sini!",
+    "evilrobo3": "KE MANA DIA PERGI????"
   },
   "in_game_ice": {
     "temp": "Suhu: {current_temp}",

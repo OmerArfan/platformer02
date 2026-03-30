@@ -6,7 +6,8 @@
     "achievements": "إنجازات",
     "profile": "ملف شخصي",
     "quit": "خروج",
-    "language": "تغيير اللغة"
+    "language": "تغيير اللغة",
+    "new": "تحديث متوفر!"
   },
   "language_select": {
     "back": "رجوع"
@@ -61,6 +62,7 @@
     "back": "رجوع"
   },
   "levels": {
+    "worlds": "اختر العالم",
     "level_display": "اختر المرحلة",
     "back": "رجوع",
     "next": "التالي"
@@ -138,6 +140,10 @@
     "button4_message": "الزر الأخضر يعطيك سرعة هائلة!",
     "timed_coin_message": "العملات البرتقالية مؤقتة! إنها تفتح الكتل لفترة"
     ,"timed_coin_message_2": "محدودة. اركض قبل أن تغلق مرة أخرى، أو للأسوأ، تسحقك..."
+    ,"crushed_message": "سُحق!",
+    "evilrobo1": "ها؟ هل هناك أحد؟",
+    "evilrobo2": "مهلاً! ابتعد من هنا!",
+    "evilrobo3": "أين ذهب؟؟؟؟"
   },
   "in_game_ice": {
     "temp": "الحرارة: {current_temp}",
