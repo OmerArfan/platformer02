@@ -10,8 +10,8 @@ import state
 import levels
 
 # GAME VERSION
-manage_data.version = "1.3.8"
-manage_data.kernel = "0.1.4.3"
+manage_data.version = "1.3.8.1"
+manage_data.kernel = "0.1.4.4"
 
 # Initialize pygame
 pygame.init()
@@ -141,12 +141,12 @@ while running:
                 state.set_page(screen, "quit_confirm", manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
 
             # Handle login screen events
-            elif manage_data.current_page == "login_screen" and event.type == pygame.KEYDOWN:
-                acc_sys.handle_login_events(screen, transition, events, manage_data.manifest, manage_data.lang_code, manage_data.is_mute, manage_data.sounds, manage_data.progress, state.set_page)
+            elif manage_data.current_page == "login_screen":
+                acc_sys.handle_login_events(screen, transition, events, manage_data.manifest, manage_data.lang_code, manage_data.is_mute, manage_data.sounds, manage_data.progress)
                 break  # Stop processing other events for this frame
 
-            elif manage_data.current_page == "registration_screen" and event.type == pygame.KEYDOWN:
-                acc_sys.handle_registration_events(screen, transition, events, manage_data.manifest, manage_data.lang_code, manage_data.is_mute, manage_data.sounds, manage_data.progress, state.set_page, manage_data.ACCOUNTS_FILE)
+            elif manage_data.current_page == "registration_screen":
+                acc_sys.handle_registration_events(screen, transition, events, manage_data.manifest, manage_data.lang_code, manage_data.is_mute, manage_data.sounds, manage_data.progress, manage_data.ACCOUNTS_FILE)
                 break  # Stop processing other events for this frame
 
             elif event.type == pygame.MOUSEBUTTONDOWN:

@@ -3082,25 +3082,25 @@ def create_lvl9_screen(screen, transition):
         player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
         on_ground = False
 
-        for block in moving_block:
-            if player_rect.colliderect(block):
-                # Falling onto a block
-                if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
-                    player_y = block.y - img_height
-                    velocity_y = 0
-                    on_ground = True
+        if player_rect.colliderect(moving_block):
+            block = moving_block
+            # Falling onto a block
+            if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
+                player_y = block.y - img_height
+                velocity_y = 0
+                on_ground = True
 
-                # Hitting the bottom of a block
-                elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
-                    player_y = block.y + block.height
-                    velocity_y = 0
+            # Hitting the bottom of a block
+            elif velocity_y < 0 and player_y >= block.y + block.height - velocity_y:
+                player_y = block.y + block.height
+                velocity_y = 0
 
-                # Horizontal collision (left or right side of the block)
-                elif player_x + img_width > block.x and player_x < block.x + block.width:
-                    if player_x < block.x:  # Colliding with the left side of the block
-                        player_x = block.x - img_width
-                    elif player_x + img_width > block.x + block.width:  # Colliding with the right side
-                        player_x = block.x + block.width
+            # Horizontal collision (left or right side of the block)
+            elif player_x + img_width > block.x and player_x < block.x + block.width:
+                if player_x < block.x:  # Colliding with the left side of the block
+                    player_x = block.x - img_width
+                elif player_x + img_width > block.x + block.width:  # Colliding with the right side
+                    player_x = block.x + block.width
 
         for block in walls:
             if player_rect.colliderect(block):
@@ -3123,7 +3123,7 @@ def create_lvl9_screen(screen, transition):
             velocity_y = 0
             deathcount += 1
 
-                # Moving blocks
+        # Moving blocks
         moving_block.x += moving_speed * moving_direction1
         if moving_block.x < moving_limit_left1 or moving_block.x > moving_limit_right1:
             moving_direction1 *= -1
@@ -3191,6 +3191,7 @@ def create_lvl9_screen(screen, transition):
             player_x, player_y = spawn_x, spawn_y
             death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
+            key_block_pairs[0]["collected"] = False
             deathcount += 1
             if not manage_data.is_mute: manage_data.sounds['death'].play()
             velocity_y = 0
@@ -3204,6 +3205,7 @@ def create_lvl9_screen(screen, transition):
             death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
+            key_block_pairs[0]["collected"] = False
             if not manage_data.is_mute: manage_data.sounds['death'].play()
             velocity_y = 0
             weak_grav = False 
@@ -3227,6 +3229,7 @@ def create_lvl9_screen(screen, transition):
                 manage_data.sounds['death'].play()
             velocity_y = 0
             deathcount += 1
+            key_block_pairs[0]["collected"] = False
             weak_grav = False 
             strong_grav = False
 
@@ -3240,6 +3243,7 @@ def create_lvl9_screen(screen, transition):
                     manage_data.sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1 
+                key_block_pairs[0]["collected"] = False
                 weak_grav = False 
                 strong_grav = False
 

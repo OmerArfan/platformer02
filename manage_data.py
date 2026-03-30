@@ -260,7 +260,7 @@ def load_progress():
                 print(f"Cloud is ahead! ({cloud_xp} XP). Updating local save...")
                 data = cloud_data
                 # Update the physical file so we don't have to fetch again next time
-                save_progress(data) 
+                save_progress(data, manifest) 
             else:
                 print(f"Local save is the latest version ({local_xp} XP).")
 
@@ -532,6 +532,25 @@ def fetch_cloud_data_by_id(target_id):
         print(f"Silent Sync Error: {e}")
         
     return None
+
+def get_all_cloud_ids():
+    """Fetch all player IDs from the cloud vault to check for collisions."""
+    CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQNm-8l1C38UGFt-lJT3ft5DARYZcjMwsWfVYGrtAqDy0bR8MQFcLJSRFqYYX7mbra_P2cWl1-i0WYW/pub?gid=1459647032&single=true&output=csv"
+    cloud_ids = set()
+    
+    try:
+        response = requests.get(CSV_URL, timeout=10)
+        if response.status_code == 200:
+            f = StringIO(response.text)
+            reader = csv.DictReader(f)
+            for row in reader:
+                player_id = row.get('ID')
+                if player_id and player_id.strip():  # Only add non-empty IDs
+                    cloud_ids.add(player_id.strip())
+    except Exception as e:
+        print(f"Error fetching cloud IDs: {e}")
+    
+    return cloud_ids
 
 def xp():
     global progress

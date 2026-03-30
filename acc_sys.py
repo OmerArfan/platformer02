@@ -9,8 +9,8 @@ import menu_ui
 import threading
 import random
 
-# Initalizing Player ID
-HEX = "0123456789ABCDEF"
+import state
+
 
 # Global state for login/registration pages (persistent across frames)
 login_state = {
@@ -20,6 +20,9 @@ login_state = {
     "status_msg": "",
     "status_color": (180, 180, 180)
 }
+
+# Initalizing Player ID
+HEX = "0123456789ABCDEF"
 
 def generate_player_id():
     roll = random.random() * 100  # 0.0 → 100.0
@@ -57,7 +60,7 @@ def draw_login_screen(screen):
     screen.blit(manage_data.bgs['plain'], (0, 0))
     
     # Header
-    id_title_text = settings.get("login_header", "LOGIN")
+    id_title_text = settings.get("login_header", "Login")
     id_title = menu_ui.render_text(id_title_text, True, (255, 255, 255))
     screen.blit(id_title, (manage_data.SCREEN_WIDTH // 2 - id_title.get_width() // 2, 80))
 
@@ -97,8 +100,8 @@ def draw_login_screen(screen):
     submit_surf = menu_ui.render_text(submit_txt, True, (0, 255, 0))
     screen.blit(submit_surf, (manage_data.SCREEN_WIDTH // 2 - submit_surf.get_width() // 2, 520))
 
-def handle_login_events(screen, transition, events, manifest, lang_code, is_mute, sounds, progress, set_page):
-    """Handle events for login screen (called from main loop)"""
+def handle_login_events(screen, transition, events, manifest, lang_code, is_mute, sounds, progress):
+    # Handle events for login screen (called from main loop
     settings = manage_data.load_language(lang_code, manifest).get('settings', {})
     
     for event in events:
@@ -107,7 +110,7 @@ def handle_login_events(screen, transition, events, manifest, lang_code, is_mute
                 login_state["input_mode"] = "PASS" if login_state["input_mode"] == "USER" else "USER"
             
             elif event.key == pygame.K_ESCAPE:
-                set_page(screen, "Account", lang_code, manifest, progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+                state.handle_action("back", transition, "login_screen")
                 reset_login_state()
                 return False  # Signal to go back
 
@@ -122,12 +125,12 @@ def handle_login_events(screen, transition, events, manifest, lang_code, is_mute
                     if isinstance(result, dict):
                         # Login successful
                         manage_data.progress.update(result)
-                        manage_data.save_progress(manage_data.progress)
+                        manage_data.save_progress(manage_data.progress, manifest)
                         if not is_mute: manage_data.sounds['notify'].play()
                         #login_success_text = settings.get("login_success", "Login Successful!")
                         # You'll want to set a notification in platformer.py
                         reset_login_state()
-                        set_page(screen, "main_menu", lang_code, manifest, progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+                        state.handle_action("done", transition, "login_screen")
                         return True  # Signal successful login
                     
                     elif result == "CONN_ERROR":
@@ -139,6 +142,11 @@ def handle_login_events(screen, transition, events, manifest, lang_code, is_mute
                     elif result == "WRONG_AUTH":
                         if not is_mute: manage_data.sounds['death'].play()
                         login_state["status_msg"] = settings.get("wrong_pass", "Incorrect Password.")
+                        login_state["status_color"] = (255, 50, 50)
+                    
+                    elif result == "NOT_FOUND":
+                        if not is_mute: manage_data.sounds['death'].play()
+                        login_state["status_msg"] = settings.get("acc_not_found", "Account does not exist.")
                         login_state["status_color"] = (255, 50, 50)
                 else:
                     if not is_mute: manage_data.sounds['death'].play()
@@ -165,7 +173,7 @@ def draw_registration_screen(screen):
     screen.blit(manage_data.bgs['plain'], (0, 0))
     
     # Header
-    id_title_text = settings.get("register_header", "CREATE ACCOUNT")
+    id_title_text = settings.get("new_acc", "New Account")
     id_title = menu_ui.render_text(id_title_text, True, (255, 255, 255))
     screen.blit(id_title, (manage_data.SCREEN_WIDTH // 2 - id_title.get_width() // 2, 80))
 
@@ -204,12 +212,11 @@ def draw_registration_screen(screen):
     p_surf = menu_ui.render_text(f"{p_text}: {stars}", True, p_color)
     screen.blit(p_surf, (manage_data.SCREEN_WIDTH // 2 - p_surf.get_width() // 2, 450))
     
-    # Create Account button
-    create_txt = settings.get("create_account", "Press ENTER to Create Account")
-    create_surf = menu_ui.render_text(create_txt, True, (0, 255, 0))
-    screen.blit(create_surf, (manage_data.SCREEN_WIDTH // 2 - create_surf.get_width() // 2, 540))
+    submit_txt = settings.get("submit_prompt", "Press ENTER to Login")
+    submit_surf = menu_ui.render_text(submit_txt, True, (0, 255, 0))
+    screen.blit(submit_surf, (manage_data.SCREEN_WIDTH // 2 - submit_surf.get_width() // 2, 520))
 
-def handle_registration_events(screen, transition, events, manifest, lang_code, is_mute, sounds, progress, set_page, ACCOUNTS_FILE):
+def handle_registration_events(screen, transition, events, manifest, lang_code, is_mute, sounds, progress, ACCOUNTS_FILE):
     settings = manage_data.load_language(lang_code, manifest).get('settings', {})
     
     for event in events:
@@ -219,7 +226,7 @@ def handle_registration_events(screen, transition, events, manifest, lang_code, 
             
             elif event.key == pygame.K_ESCAPE:
                 reset_login_state()
-                set_page(screen, "Account", lang_code, manifest, progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+                state.handle_action("back", transition, "registration_screen")
                 return False  # Signal to go back
 
             elif event.key == pygame.K_RETURN:
@@ -255,7 +262,7 @@ def handle_registration_events(screen, transition, events, manifest, lang_code, 
                     progress["player"]["Username"] = login_state["username"]
                     progress["player"]["Pass"] = hash_password(login_state["password"])
 
-                    manage_data.save_progress(progress)
+                    manage_data.save_progress(progress, manifest)
                     threading.Thread(target=manage_data.sync_vault_to_cloud, args=(progress, manifest), daemon=True).start()
                     
                     if not is_mute: sounds['notify'].play()
@@ -263,7 +270,7 @@ def handle_registration_events(screen, transition, events, manifest, lang_code, 
                     login_state["status_color"] = (0, 255, 0)
                     
                     reset_login_state()
-                    set_page(screen, "main_menu", lang_code, manifest, progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+                    state.handle_action("done", transition, "registration_screen")
                     return True  # Signal successful registration
                 else:
                     if not is_mute: sounds['death'].play()
@@ -336,7 +343,7 @@ def create_account_selector():
         current_y += SPACING_Y
 
     # 3. "Login" and "New Account" Buttons at the bottom
-    login_txt = settings.get("login_button", "Login")
+    login_txt = settings.get("login_header", "Login")
     login_txt_rendered = menu_ui.render_text(login_txt, True, (0, 200, 255)) # Blue color
     login_rect = login_txt_rendered.get_rect(center=((manage_data.SCREEN_WIDTH // 2) - 400, manage_data.SCREEN_HEIGHT - 50))
     menu_ui.buttons.append((login_txt_rendered, login_rect, "login", False))

@@ -311,6 +311,20 @@ def handle_action(key, transition, current_page):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "main_menu"
+    elif current_page == "login_screen" or current_page == "registration_screen":
+        if key == "back":
+            if not is_transitioning:
+                transition.start("Account")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "Account"
+        if key == "done":
+            if not is_transitioning:
+                # After handling the login/registration logic, we want to go back to the Account page to show the updated state (logged in or new account created)
+                transition.start("main_menu")  # Start transition to main menu, but we'll actually set it to Account after the transition finishes
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "main_menu"
 
 # Central page switcher
 def set_page(screen, page, lang_code, manifest, progress, Achievements, bgs, disks, version, is_mute, is_mute_amb, transition):

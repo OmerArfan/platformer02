@@ -289,7 +289,7 @@ def create_main_menu_buttons(screen, lang_code, manifest, progress):
     global current_lang, buttons
     current_lang = manage_data.load_language(lang_code, manifest).get('main_menu', {})
     buttons.clear()
-    button_texts = ["start", "achievements", "character_select", "settings", "quit"]
+    button_texts = ["start", "achievements", "character_select", "settings", "profile", "quit"]
 
     # Center buttons vertically and horizontally
     button_spacing = 72 
