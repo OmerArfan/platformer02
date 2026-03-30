@@ -192,7 +192,9 @@ def draw_profile(screen):
     global current_lang, buttons
     buttons.clear()
     screen.blit(manage_data.bgs['plain'], (0, 0))
+    gold_medals, diamond_medals, total_stars = 0, 0, 0
     current_lang = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('main_menu', {})
+    settings = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('settings', {})
     profile_text = current_lang.get("profile", "Profile")
     rendered_profile = render_text(profile_text, True, (255, 255, 255))
     screen.blit(rendered_profile, (manage_data.SCREEN_WIDTH // 2 - rendered_profile.get_width() // 2, 50))
@@ -213,7 +215,17 @@ def draw_profile(screen):
         badge = manage_data.assets['max_badge']
         bar = 250
 
-    player_text = render_text(f"Username: {manage_data.progress['player']['Username']}", True, (255, 255, 255))
+    for i in range(1, 13):
+        if manage_data.progress["lvls"]['medals'][f"lvl{i}"] == "Gold" or manage_data.progress["lvls"]['medals'][f"lvl{i}"] == "Diamond":
+            gold_medals += 1
+            if manage_data.progress["lvls"]['medals'][f"lvl{i}"] == "Diamond":
+                diamond_medals += 1
+        score = manage_data.progress["lvls"]['score'][f"lvl{i}"]
+        level_star = level_logic.get_stars(i, score)
+        total_stars += level_star
+
+    player_txt = settings.get("username_label", "Player")
+    player_text = render_text(f"{player_txt}: {manage_data.progress['player']['Username']}", True, (255, 255, 255))
     player_pos = (manage_data.SCREEN_WIDTH // 2 - (player_text.get_width() // 2), 100)
 
     ID_text = render_text(f"ID: {manage_data.progress['player']['ID']}", True, (255, 255, 255))
@@ -226,6 +238,13 @@ def draw_profile(screen):
     xp_center_x = XP_pos[0] + (XP_text.get_width() / 2)
     badge_x = xp_center_x - (manage_data.assets['badge'].get_width() // 2)
     badge_pos = (badge_x, 200)
+
+    screen.blit(manage_data.medals['Gold'], (manage_data.SCREEN_WIDTH // 2 - 350, 340))
+    screen.blit(manage_data.medals['Diamond'], (manage_data.SCREEN_WIDTH // 2 - 50, 340))
+    screen.blit(manage_data.assets['star_normal'], (manage_data.SCREEN_WIDTH // 2 + 250, 315))
+    screen.blit(manage_data.fonts['mega'].render(f"{gold_medals}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 - 280, 335))
+    screen.blit(manage_data.fonts['mega'].render(f"{diamond_medals}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 + 20, 335))
+    screen.blit(manage_data.fonts['mega'].render(f"{total_stars}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 + 340, 335))
 
     screen.blit(badge, badge_pos)
     screen.blit(XP_text, XP_pos)
@@ -241,8 +260,6 @@ def draw_profile(screen):
     buttons.append((rendered_back, back_rect, "back", False))
     
 def draw_main_menu(screen, event, ui_states):
-    # ui_states = {'logo_hover': bool, 'logo_click': bool, 'last_hovered': str, 'new_news': bool}
-    
     # 1. Draw static backgrounds/logo
     screen.blit(manage_data.ui['logo'], ((manage_data.SCREEN_WIDTH // 2 - manage_data.ui['logo'].get_width() // 2), -20))
     screen.blit(manage_data.bgs['lilrobopeek'], ((manage_data.SCREEN_WIDTH - manage_data.bgs['lilrobopeek'].get_width()), (manage_data.SCREEN_HEIGHT - manage_data.bgs['lilrobopeek'].get_height())))
@@ -356,7 +373,7 @@ def create_language_buttons(screen, lang_code, manifest, progress):
 def worlds(screen, lang_code, manifest, progress, bgs, disks):
     global current_lang, buttons
     buttons.clear()
-    current_lang = manage_data.load_language(lang_code, manifest).get('language_select', {})
+    current_lang = manage_data.load_language(lang_code, manifest).get('levels', {})
     screen.blit(bgs['plain'], (0, 0))
 
     # 1. Define Positions
@@ -377,6 +394,9 @@ def worlds(screen, lang_code, manifest, progress, bgs, disks):
     buttons.append((disks['greenpack'], green_rect, "levels", False))
     buttons.append((disks['mechpack'], mech_rect, "mech_levels", False))
 
+    world_text = current_lang.get("worlds", "Select World")        
+    rendered_world_txt = render_text(world_text, True, (255, 255, 255))
+
     # --- Back Button Logic ---
     back_text = current_lang.get("back", "Back")        
     rendered_back = render_text(back_text, True, (255, 255, 255))
@@ -385,6 +405,7 @@ def worlds(screen, lang_code, manifest, progress, bgs, disks):
     back_rect.center = (manage_data.SCREEN_WIDTH // 2 , manage_data.SCREEN_HEIGHT - 200)
 
     text_rect = rendered_back.get_rect(center=back_rect.center)
+    screen.blit(rendered_world_txt, (manage_data.SCREEN_WIDTH // 2 - rendered_world_txt.get_width() // 2, 50))
     screen.blit(rendered_back, text_rect)
 
     # Add the back button
@@ -493,9 +514,10 @@ def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, b
     world_type = 'green' if current_page == "levels" else 'mech'
     screen.blit(manage_data.bgs[world_type], (0, 0))
     disk_img = manage_data.disks[world_type]
-    
+    current_lang = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('levels', {})
+
     # 2. Header
-    title = render_text(current_lang.get("level_display", "Select"), True, (255, 255, 255))
+    title = render_text(current_lang.get("level_display", "Select Level"), True, (255, 255, 255))
     screen.blit(title, title.get_rect(center=(manage_data.SCREEN_WIDTH // 2, 50)))
 
     # 3. The Unified Loop
@@ -767,6 +789,7 @@ def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg, t
         if unlock_flag:
             selected_character = char_key
             manage_data.progress["pref"]["character"] = selected_character
+            manage_data.selected_character = selected_character
             manage_data.save_progress(manage_data.progress, manage_data.manifest)
             if not manage_data.is_mute:
                 manage_data.sounds['click'].play()

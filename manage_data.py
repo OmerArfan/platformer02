@@ -337,10 +337,10 @@ def update_local_manifest(data):
     global er, error_code, is_mute, manifest
     
     # Store the current last_news_count before reloading
-    previous_news_count = manifest.get("other", {}).get("last_news_count", 0) if manifest else 0
+    previous_news_count = manifest.get("other", {}).get("last_news_count", 7) if manifest else 7
     
     # 1. Load existing manifest
-    manifest = {"last_used": "", "users": {}, "pref": {"language": "en", "sfx": True, "ambience": True}, "other": {"last_news_count": 0}}
+    manifest = {"last_used": "", "users": {}, "pref": {"language": "en", "sfx": True, "ambience": True}, "other": {"last_news_count": 7}}
     if os.path.exists(ACCOUNTS_FILE):
         try:
             with open(ACCOUNTS_FILE, "r") as f:
@@ -377,7 +377,7 @@ def update_local_manifest(data):
     }
 
     if "other" not in manifest:
-        manifest["other"] = {"last_news_count": 0}
+        manifest["other"] = {"last_news_count": 7}
     
     # Preserve the last_news_count that was set in-memory (don't overwrite with stale disk value)
     manifest["other"]["last_news_count"] = previous_news_count
@@ -724,7 +724,9 @@ def check_for_new_gamenews(return_count):
             online_count = response.text.count('<a href="gamenews')
             
             # Get the count from our manifest
-            local_count = manifest.get("other", {}).get("last_news_count", 0)
+            local_count = manifest.get("other", {}).get("last_news_count", 7)
+            if local_count < 7:
+                local_count = 7  # Default to 7 if not set, since we started counting from 7
             
             # If online has more, we have new news!
             if online_count > local_count:

@@ -10,8 +10,8 @@ import state
 import levels
 
 # GAME VERSION
-manage_data.version = "1.3.8.1"
-manage_data.kernel = "0.1.4.4"
+manage_data.version = "1.3.9"
+manage_data.kernel = "0.1.5"
 
 # Initialize pygame
 pygame.init()
@@ -24,7 +24,7 @@ if sys.platform.startswith('linux'):
     os.environ['SDL_VIDEODRIVER'] = 'x11'
 
 pygame.display.set_caption("Roboquix")
-MIN_WIDTH, MIN_HEIGHT = 1250, 750
+MIN_WIDTH, MIN_HEIGHT = 1150, 800
 
 # First of all, LOAD THE DAMN BGGG
 bg = pygame.image.load(manage_data.resource_path("bgs/PlainBackground.png")).convert()
@@ -217,6 +217,10 @@ while running:
             
         elif manage_data.current_page == "Audio":
             menu_ui.audio_settings_menu(screen, manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.bgs, manage_data.is_mute, manage_data.is_mute_amb)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)
+
+        elif manage_data.current_page == "worlds":
+            menu_ui.worlds(screen, manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.bgs, manage_data.disks)
             button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)
 
         elif manage_data.current_page == "Account":

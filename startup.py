@@ -151,7 +151,8 @@ def init_assets():
             pygame.image.load(manage_data.resource_path("oimgs/ig/star.png")).convert_alpha(),
             (150, 140)
         ),
-        'star_small': None,  # Will be set below
+        'star_small': None,
+        'star_normal': None, # set below  
         'exit': pygame.transform.scale(
             pygame.image.load(manage_data.resource_path("oimgs/portal/exit.png")).convert_alpha(),
             (140, 180)
@@ -170,18 +171,18 @@ def init_assets():
         ),
         'badge': pygame.transform.scale(
             pygame.image.load(manage_data.resource_path("oimgs/ig/badge.png")).convert_alpha(),
-            (70, 70)
+            (80, 80)
         ),
         'max_badge': pygame.transform.scale(
             pygame.image.load(manage_data.resource_path("oimgs/ig/max-badge.png")).convert_alpha(),
-            (70, 70)
+            (80, 80)
         ),
         'saw': pygame.image.load(manage_data.resource_path("oimgs/ig/saw.png")).convert_alpha(),
         'cpoint_inact': pygame.image.load(manage_data.resource_path("oimgs/checkpoints/yellow_flag.png")).convert_alpha(),
         'cpoint_act': pygame.image.load(manage_data.resource_path("oimgs/checkpoints/green_flag.png")).convert_alpha(),
-    }
+    }    
     assets['star_small'] = pygame.transform.scale(assets['star'], (20, 17))
-    
+    assets['star_normal'] = pygame.transform.scale(assets['star'], (100, 93))
     return assets
 
 def init_robos():

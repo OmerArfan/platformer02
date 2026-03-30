@@ -3331,7 +3331,6 @@ def create_lvl10_screen(screen, transition):
     deathcount = 0
     was_moving = False
     lights_off = True
-    saw_angle = 0
 
     # Draw flag
     flag = pygame.Rect(3100, 370, 100, 125)  # x, y, width, height
@@ -3580,6 +3579,8 @@ def create_lvl10_screen(screen, transition):
             death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
+            lights_off = True
+            strong_grav = False # Reset gravity status
             if not manage_data.is_mute: manage_data.sounds['death'].play()
             velocity_y = 0
 
@@ -3590,6 +3591,8 @@ def create_lvl10_screen(screen, transition):
             death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
+            lights_off = True
+            strong_grav = False # Reset gravity status
             if not manage_data.is_mute: manage_data.sounds['death'].play()
             velocity_y = 0
         
@@ -3600,6 +3603,8 @@ def create_lvl10_screen(screen, transition):
             death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
+            lights_off = True
+            strong_grav = False # Reset gravity status
             if not manage_data.is_mute: manage_data.sounds['death'].play()
             velocity_y = 0
 
@@ -3615,6 +3620,8 @@ def create_lvl10_screen(screen, transition):
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
+            lights_off = True
+            strong_grav = False # Reset gravity status
 
         player_x, player_y, velocity_y, on_ground, player_rect = level_logic.block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground)
         
@@ -3626,6 +3633,8 @@ def create_lvl10_screen(screen, transition):
                     manage_data.sounds['hit'].play()
                 velocity_y = 0
                 deathcount += 1 
+                lights_off = True
+                strong_grav = False # Reset gravity status
 
 
         pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
@@ -3994,6 +4003,9 @@ def create_lvl11_screen(screen, transition):
             player_x, player_y = spawn_x, spawn_y
             death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
+            lights_off = True
+            stamina = False
+            evilrobo_phase = 0
             deathcount += 1
             if not manage_data.is_mute: manage_data.sounds['death'].play()
             velocity_y = 0
@@ -4005,6 +4017,9 @@ def create_lvl11_screen(screen, transition):
             death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
+            lights_off = True
+            stamina = False
+            evilrobo_phase = 0
             if not manage_data.is_mute: manage_data.sounds['death'].play()
             velocity_y = 0
 
@@ -4014,6 +4029,9 @@ def create_lvl11_screen(screen, transition):
             death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
             wait_time = pygame.time.get_ticks()
             deathcount += 1
+            lights_off = True
+            stamina = False
+            evilrobo_phase = 0
             if not manage_data.is_mute: manage_data.sounds['death'].play()
             velocity_y = 0
 
@@ -4029,6 +4047,9 @@ def create_lvl11_screen(screen, transition):
             player_x, player_y = spawn_x, spawn_y
             velocity_y = 0
             deathcount += 1
+            lights_off = True
+            stamina = False
+            evilrobo_phase = 0
 
         for block in moving_block:
             pygame.draw.rect(screen, (128, 0, 128), (block['x'] - camera_x, block['y'] - camera_y, block['width'], block['height']))
@@ -4062,6 +4083,9 @@ def create_lvl11_screen(screen, transition):
                 manage_data.sounds['death'].play()
             velocity_y = 0
             deathcount += 1
+            lights_off = True
+            stamina = False
+            evilrobo_phase = 0
 
         player_x, player_y, velocity_y, on_ground, player_rect = level_logic.block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground)
         
@@ -4072,54 +4096,37 @@ def create_lvl11_screen(screen, transition):
                 if not manage_data.is_mute:    
                     manage_data.sounds['hit'].play()
                 velocity_y = 0
-                deathcount += 1 
+                deathcount += 1
+                lights_off = True
+                stamina = False
+                evilrobo_phase = 0 
 
-        for x, y, r, color in speedsters:
-            # Draw the button as a circle
-            if not stamina:
-                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
-
-        for speedster in speedsters:
-            speedster_x, speedster_y, speedster_radius, _ = speedster
-
-        # Find the closest point on the player's rectangle to the button's center
-            closest_x = max(player_rect.left, min(speedster_x, player_rect.right))
-            closest_y = max(player_rect.top, min(speedster_y, player_rect.bottom))
-
-            # Calculate the distance between the closest point and the button's center
-            dx = closest_x - speedster_x
-            dy = closest_y - speedster_y
-            distance = (dx**2 + dy**2)**0.5
-
-            # If distance is less than radius, stronger gravity activated
-            if distance < speedster_radius and not stamina:
-                if not manage_data.is_mute:
-                    manage_data.sounds['button'].play()
-                strong_grav = False
-                stamina = True
-                weak_grav = False
+        if level_logic.handle_speedsters(screen, speedsters, player_rect, camera_x, camera_y, stamina):
+            stamina = True
 
         level_logic.draw_portal(screen, manage_data.assets['mech_exit'], exit_portal, camera_x, camera_y)
         # Player Image
         screen.blit(player_img, (int(player_x - camera_x), int(player_y - camera_y)))
 
         # Boss Trigger Area
-
-        if player_x > suspicious_x and player_y < -300 and lights_off:
+        if lights_off or evilrobo_phase > 0:
+         if player_x > suspicious_x and player_y < -300:
             screen.blit(evilrobo_mascot, ((epos_x - camera_x), (epos_y - camera_y)))
 
             if evilrobo_phase == 0 and player_x < trigger_x:
-                sus_message = menu_ui.render_text("Huh? Is there anyone there?", True, (255, 20, 12))
+                evilrobo_txt1 = in_game.get("evilrobo1", "Huh? Is there anyone there?")
+                sus_message = menu_ui.render_text(evilrobo_txt1, True, (255, 20, 12))
                 screen.blit(sus_message, (4800 - camera_x, -450 - camera_y))
             else:
                 if evilrobo_phase < 1:
                     evilrobo_phase = 1  # Prevents repeating
 
-        if evilrobo_phase == 1 and player_y < -300 and lights_off:
-            holup_message = menu_ui.render_text("HEY! Get away from here!", True, (185, 0, 0))
+         if evilrobo_phase == 1 and player_y < -300 and lights_off:
+            evilrobo_txt2 = in_game.get("evilrobo2", "HEY! Get away from here!")
+            holup_message = menu_ui.render_text(evilrobo_txt2, True, (185, 0, 0))
             screen.blit(holup_message, (4800 - camera_x, -450 - camera_y))
             
-        if evilrobo_phase == 1 and lights_off:
+         if evilrobo_phase == 1 and lights_off:
             screen.blit(evilrobo_mascot, (int(epos_x - camera_x), int(epos_y - camera_y)))
             if epos_x > player_x + 10:
                 epos_x -= 20
@@ -4129,20 +4136,21 @@ def create_lvl11_screen(screen, transition):
             else:
                 epos_x = player_x
 
-        if evilrobo_phase == 2:
+         if epos_x < 2150 and evilrobo_phase < 2:
+            evilrobo_phase = 2
+
+         if evilrobo_phase == 2:
             screen.blit(evilrobo_mascot, (int(epos_x - camera_x), int(epos_y - camera_y)))
             if player_y > -300:
-                confused_text = menu_ui.render_text("WHERE DID HE GO????", True, (82, 0, 0))
+                evilrobo_txt3 = in_game.get("evilrobo3", "WHERE DID HE GO????")
+                confused_text = menu_ui.render_text(evilrobo_txt3, True, (82, 0, 0))
                 screen.blit(confused_text, ((epos_x - camera_x), (epos_y - camera_y - 40)))
                 if not unlock:
                     unlock = True
                     unlock_time = pygame.time.get_ticks()
             epos_x -= 12
 
-        if epos_x < 2150:
-            evilrobo_phase = 2
-
-        if unlock and unlock_time is not None:
+         if unlock and unlock_time is not None:
             manage_data.Achievements.evilchase()
             unlock_time = None
 
@@ -4177,7 +4185,8 @@ def create_lvl11_screen(screen, transition):
 
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
         
-        player_x, player_y, velocity_y, on_ground, player_rect, lights_off = level_logic.handle_light_blocks(screen, lights, on_ground, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, lights_off, manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT, manage_data.is_mute, manage_data.sounds['button'])
+        if evilrobo_phase == 0 and lights_off:
+            player_x, player_y, velocity_y, on_ground, player_rect, lights_off = level_logic.handle_light_blocks(screen, lights, on_ground, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, lights_off, manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT, manage_data.is_mute, manage_data.sounds['button'])
 
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed

@@ -534,6 +534,31 @@ def handling_gravity_strongers(screen, gravity_strongers, player_rect, camera_x,
                 return True
         return False
 
+def handle_speedsters(screen, speedsters, player_rect, camera_x, camera_y, stamina):
+        for x, y, r, color in speedsters:
+            # Draw the button as a circle
+            if not stamina:
+                pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
+
+        for speedster in speedsters:
+            speedster_x, speedster_y, speedster_radius, _ = speedster
+
+        # Find the closest point on the player's rectangle to the button's center
+            closest_x = max(player_rect.left, min(speedster_x, player_rect.right))
+            closest_y = max(player_rect.top, min(speedster_y, player_rect.bottom))
+
+            # Calculate the distance between the closest point and the button's center
+            dx = closest_x - speedster_x
+            dy = closest_y - speedster_y
+            distance = (dx**2 + dy**2)**0.5
+
+            # If distance is less than radius, stronger gravity activated
+            if distance < speedster_radius and not stamina:
+                if not manage_data.is_mute:
+                    manage_data.sounds['button'].play()
+                return True
+        return False
+
 def handle_light_blocks(screen, lights, on_ground, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, lights_off, SCREEN_WIDTH, SCREEN_HEIGHT, is_mute, button_sound):
   
   for lights in lights:    
