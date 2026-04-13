@@ -10,14 +10,14 @@ import state
 import levels
 
 # GAME VERSION
-manage_data.version = "1.3.9"
+manage_data.version = "1.3.9.3"
 manage_data.kernel = "0.1.5"
 
 # Initialize pygame
 pygame.init()
 
 # Initializing screen resolution
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((1600, 900), pygame.FULLSCREEN)
 manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT = screen.get_size()
 
 if sys.platform.startswith('linux'):
