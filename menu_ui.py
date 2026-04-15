@@ -10,38 +10,55 @@ import manage_data
 import math
 import state
 import random
+import re
+
+from text_sprite import TextSprite
+
+# Pre-compile the regex outside the function so it only happens once!
+RE_LANG = re.compile(r'([\u0590-\u06FF]|[\u4e00-\u9fff]|[\u3040-\u30FF]|[\uAC00-\uD7A3])')
+
+manage_data.text_cache = {}
+
+# Global sprite group for UI text
+ui_text_sprites = pygame.sprite.Group()
 
 def render_text(text, Boolean, color):
-    # 1. PICK THE FONT (Your existing Unicode Logic)
-    font_to_use = manage_data.fonts['def'] # Default
+    # 1. FASTER FONT PICKING
+    # We check if there's any non-default char in one go
+    match = RE_LANG.search(text)
+    font_key = 'def'
     display_text = text
+    cache_key = (text, color)
+    
+    if cache_key in manage_data.text_cache:
+        return manage_data.text_cache[cache_key]
 
-    if any('\u0590' <= c <= '\u06FF' for c in text):  # Urdu/Arabic range
-        reshaped = arabic_reshaper.reshape(text)
-        display_text = get_display(reshaped)
-        font_to_use = manage_data.fonts['ar']
-    elif any('\u4e00' <= c <= '\u9fff' for c in text):  # Chinese
-        font_to_use = manage_data.fonts['ch']
-    elif any('\u3040' <= c <= '\u30FF' for c in text): # Japanese
-        font_to_use = manage_data.fonts['jp']   
-    elif any('\uAC00' <= c <= '\uD7A3' for c in text):  # Korean
-        font_to_use = manage_data.fonts['kr']
+    if match:
+        char = match.group(0)
+        if '\u0590' <= char <= '\u06FF':
+            display_text = get_display(arabic_reshaper.reshape(text))
+            font_key = 'ar'
+        elif '\u4e00' <= char <= '\u9fff': font_key = 'ch'
+        elif '\u3040' <= char <= '\u30FF': font_key = 'jp'
+        elif '\uAC00' <= char <= '\uD7A3': font_key = 'kr'
 
-    # 2. RENDER THE SHADOW (For Readability on Green/Mech BGs)
-    shadow_color = (0, 0, 0)
-    shadow_surf = font_to_use.render(display_text, True, shadow_color)
+    font_to_use = manage_data.fonts[font_key]
+
+    # 2. THE FASTEST RENDER (Native Outline)
+    # We avoid creating a 'combined_surf' manually.
+    thickness = 1
     
-    # 3. RENDER MAIN TEXT
-    main_surf = font_to_use.render(display_text, True, color)
+    font_to_use.outline = thickness
+    # This surface is automatically sized correctly by pygame-ce
+    surf = font_to_use.render(display_text, True, (0, 0, 0)) 
     
-    # 4. COMBINE INTO ONE SURFACE
-    w = max(1, main_surf.get_width() + 2)
-    h = max(1, main_surf.get_height() + 1)
-    combined_surf = pygame.Surface((w, h), pygame.SRCALPHA)
-    combined_surf.blit(shadow_surf, (1, 1)) # The offset shadow
-    combined_surf.blit(main_surf, (0, 0))   # The original text
+    font_to_use.outline = 0
+    main_text = font_to_use.render(display_text, True, color)
     
-    return combined_surf
+    # Blit directly onto the 'surf' we already have
+    surf.blit(main_text, (thickness, thickness))
+    
+    return surf
 
 def draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovered_last_frame):
     for rendered, rect, key, is_locked in buttons:
@@ -129,60 +146,87 @@ def draw_syncing_status(screen):
         screen.blit(syncing_text, (text_x, text_y))
         draw_loading_orb(screen, text_x, text_y, sync_finish_time)
 
+reblit_txt = True
+last_lang = None  # Track language changes
+
 def create_achieve_screen(screen, lang_code, manifest, progress):
-    global current_lang
+    global current_lang, ui_text_sprites, reblit_txt, last_lang
     buttons.clear()
+    
+    screen.blit(manage_data.bgs['plain'], (0, 0))  # Draw background
+    
+    # Detect language change
+    if lang_code != last_lang:
+        reblit_txt = True
+        last_lang = lang_code
+    
     current_lang = manage_data.load_language(lang_code, manifest)
     ach_data = current_lang.get("achieve", {}) 
     header_data = current_lang.get("main_menu", {})
     back_data = current_lang.get("language_select", {})
 
-    # 1. Render Main Header
+    # 1. Render Main Header (as TextSprite)
     ach_txt = header_data.get("achievements", "Achievements")
-    ach_header = render_text(ach_txt, True, (255, 255, 255))
-    screen.blit(ach_header, (manage_data.SCREEN_WIDTH // 2 - ach_header.get_width() // 2, 50))
-
-    ach_list = [
-        "zen_os",
-        "zen_os_desc",
-        "speedy_starter", 
-        "speedy_starter_desc",
-        "over_9k",
-        "over_9k_desc",
-        "chase_escape",
-        "chase_escape_desc",
-        "golden", 
-        "golden_desc"
-    ]
-
-    y_offset = 120 
+    header = TextSprite(ach_txt, 
+                       x=manage_data.SCREEN_WIDTH // 2, 
+                       y=50, 
+                       color=(255, 255, 255),
+                       center_x=True)
     
-    count = 0
+    if reblit_txt:
+        ui_text_sprites.empty()  # Clear previous sprites
+        ui_text_sprites.add(header)
 
-    for title_key in ach_list:
-        # We try to get from ach_data first, then fallback to current_lang directly
-        title_str = ach_data.get(title_key, "?")
+        ach_list = [
+            "zen_os", 
+            "zen_os_desc",
+            "speedy_starter", 
+            "speedy_starter_desc",
+            "over_9k",
+            "over_9k_desc",
+            "chase_escape", 
+            "chase_escape_desc",
+            "golden", 
+            "golden_desc"
+        ]
 
-        # Render Title
-        if title_key[-5:] != "_desc":
-         if progress["achieved"][title_key]:
-           color = (0, 204, 0)
-         else:
-           color = (255, 255, 0)
+        y_offset = 120 
+        count = 0
 
-        title_surf = render_text(title_str, True, color)
-        if lang_code == "ar" or lang_code == "pk":
-            x_pos = manage_data.SCREEN_WIDTH - 100 - title_surf.get_width()
-        else:
-            x_pos = 100
-        screen.blit(title_surf, (x_pos, y_offset))
+        for title_key in ach_list:
+            title_str = ach_data.get(title_key, "?")
 
-        count += 1
-        if count % 2 == 0:
-           y_offset += 52
-        else:
-           y_offset += 25
+            # Render Title (as TextSprite)
+            if title_key[-5:] != "_desc":
+                if progress["achieved"][title_key]:
+                    color = (0, 204, 0)
+                else:
+                    color = (255, 255, 0)
+            
+            # Create sprite first with a temporary position
+            title = TextSprite(title_str, x=100, y=y_offset, color=color)
+            
+            # Now adjust position based on language
+            if lang_code == "ar" or lang_code == "pk":
+                # For RTL languages, subtract the width from right edge
+                x_pos = manage_data.SCREEN_WIDTH - title.get_width() - 100
+                title.set_position(x_pos, y_offset)
+            
+            ui_text_sprites.add(title)
 
+            count += 1
+            if count % 2 == 0:
+                y_offset += 52
+            else:
+                y_offset += 25
+    
+        reblit_txt = False
+
+    # Draw all text sprites
+    ui_text_sprites.update()
+    ui_text_sprites.draw(screen)
+    
+    # Back button (still using old button system for now)
     back_text = back_data.get("back", "Back")
     rendered_back = render_text(back_text, True, (255, 255, 255))
     back_rect = rendered_back.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 100))
