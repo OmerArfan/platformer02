@@ -266,6 +266,7 @@ def create_lvl2_screen(screen, transition):
     player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(manage_data.selected_character)
     new_hs = False
 
+    menu_ui.buttons.clear()
     screen.blit(manage_data.bgs['green'], (0, 0))
     in_game = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('in_game', {})
 
@@ -567,6 +568,7 @@ def create_lvl3_screen(screen, transition):
     death_text = None
     start_time = time.time()
 
+    menu_ui.buttons.clear()
     in_game = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('in_game', {})
 
     # Camera settings
@@ -2405,6 +2407,8 @@ def create_lvl7_screen(screen, transition):
                 if not manage_data.is_mute:
                     manage_data.sounds['warp'].play()
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
+                # Update player_rect immediately after teleport to prevent collision handlers from using old position
+                player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
         
         level_logic.draw_saws(screen, saws, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache)
 
@@ -2751,6 +2755,8 @@ def create_lvl8_screen(screen, transition):
                 if not manage_data.is_mute:
                     manage_data.sounds['warp'].play()
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
+                # Update player_rect immediately after teleport to prevent collision handlers from using old position
+                player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
 
         if level_logic.handle_moving_saws(screen, moving_saws, player_rect, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache):
             # Death logic (same as above)
@@ -2826,10 +2832,10 @@ def create_lvl8_screen(screen, transition):
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
 
         # Adjust the camera's Y position when the player moves up
-        if player_y <= 200:
-            camera_y = player_y - 200
+        if player_y <= 440:
+            camera_y = player_y - 440
         else:
-            camera_y = 0  # Keep the camera fixed when the player is below the threshold
+            camera_y = 0 # Keep the camera fixed when the player is below the threshold
 
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
@@ -4184,9 +4190,6 @@ def create_lvl11_screen(screen, transition):
         screen.blit(rendered_button4_text, (-320 - camera_x, 300 - camera_y))
 
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
-        
-        if evilrobo_phase == 0 and lights_off:
-            player_x, player_y, velocity_y, on_ground, player_rect, lights_off = level_logic.handle_light_blocks(screen, lights, on_ground, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, lights_off, manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT, manage_data.is_mute, manage_data.sounds['button'])
 
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
