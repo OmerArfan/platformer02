@@ -344,12 +344,12 @@ def create_account_selector():
 
     # 3. "Login" and "New Account" Buttons at the bottom
     login_txt = settings.get("login_header", "Login")
-    login_txt_rendered = menu_ui.render_text(login_txt, True, (0, 200, 255)) # Blue color
+    login_txt_rendered = menu_ui.render_text(login_txt, True, (255, 255, 255)) # Blue color
     login_rect = login_txt_rendered.get_rect(center=((manage_data.SCREEN_WIDTH // 2) - 400, manage_data.SCREEN_HEIGHT - 50))
     menu_ui.buttons.append((login_txt_rendered, login_rect, "login", False))
     
     new_txt = settings.get("new_acc", "New Account")
-    new_txt_rendered = menu_ui.render_text(new_txt, True, (0, 255, 200)) # Green color  
+    new_txt_rendered = menu_ui.render_text(new_txt, True, (255, 255, 255)) # Green color  
     new_rect = new_txt_rendered.get_rect(center=((manage_data.SCREEN_WIDTH // 2) + 400, manage_data.SCREEN_HEIGHT - 50))
     menu_ui.buttons.append((new_txt_rendered, new_rect, "new_account", False))
 

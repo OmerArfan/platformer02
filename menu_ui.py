@@ -75,18 +75,24 @@ def render_text(text, Boolean, color):
 def draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovered_last_frame):
     for rendered, rect, key, is_locked in buttons:
         if rect.collidepoint(mouse_pos):
-            button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-            button_surface.fill((8, 81, 179, 255))
-            screen.blit(button_surface, rect.inflate(20, 10).topleft)
-            pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
+            button_suface(screen, rect)
             button_hovered_last_frame = hover_effect(screen, rect, hover_sound, is_mute, button_hovered_last_frame)
         else:
-            button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-            button_surface.fill((8, 81, 179, 255))
-            screen.blit(button_surface, rect.inflate(20, 10).topleft)
-            pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
+            button_suface(screen, rect)
         screen.blit(rendered, rect)
     return button_hovered_last_frame
+
+def button_suface(screen, rect):
+    if manage_data.now.day == 29 and manage_data.now.month == 4:
+        button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+        button_surface.fill((175, 0, 202, 255))
+        screen.blit(button_surface, rect.inflate(20, 10).topleft)
+        pygame.draw.rect(screen, (255, 0, 252), rect.inflate(30, 15), 6)
+    else:
+        button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+        button_surface.fill((8, 81, 179, 255))
+        screen.blit(button_surface, rect.inflate(20, 10).topleft)
+        pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
 
 def hover_effect(screen, rect, hover_sound, is_mute, button_hovered_last_frame):
     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
@@ -245,7 +251,7 @@ def draw_profile(screen):
     global current_lang, buttons
     buttons.clear()
     screen.blit(manage_data.bgs['plain'], (0, 0))
-    gold_medals, diamond_medals, total_stars = 0, 0, 0
+    gold_medals, diamond_medals, total_stars, ulock_ach, total_ach = 0, 0, 0, 0, 0
     current_lang = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('main_menu', {})
     settings = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('settings', {})
     profile_text = current_lang.get("profile", "Profile")
@@ -277,6 +283,11 @@ def draw_profile(screen):
         level_star = level_logic.get_stars(i, score)
         total_stars += level_star
 
+    for ach in manage_data.progress['achieved']:
+        if ach:
+            ulock_ach += 1
+        total_ach += 1
+
     player_txt = settings.get("username_label", "Player")
     player_text = render_text(f"{player_txt}: {manage_data.progress['player']['Username']}", True, (255, 255, 255))
     player_pos = (manage_data.SCREEN_WIDTH // 2 - (player_text.get_width() // 2), 100)
@@ -292,20 +303,25 @@ def draw_profile(screen):
     badge_x = xp_center_x - (manage_data.assets['badge'].get_width() // 2)
     badge_pos = (badge_x, 200)
 
-    screen.blit(manage_data.medals['Gold'], (manage_data.SCREEN_WIDTH // 2 - 350, 340))
-    screen.blit(manage_data.medals['Diamond'], (manage_data.SCREEN_WIDTH // 2 - 50, 340))
-    screen.blit(manage_data.assets['star_normal'], (manage_data.SCREEN_WIDTH // 2 + 250, 315))
-    screen.blit(manage_data.fonts['mega'].render(f"{gold_medals}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 - 280, 335))
-    screen.blit(manage_data.fonts['mega'].render(f"{diamond_medals}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 + 20, 335))
-    screen.blit(manage_data.fonts['mega'].render(f"{total_stars}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 + 340, 335))
+    ach_txt = current_lang.get("main_menu", {}).get("achievements", "Achievements")
+    ach_text = render_text(f"{ach_txt}: {ulock_ach}/{total_ach}", True, (255, 255, 255))
+    ach_pos = (manage_data.SCREEN_WIDTH // 2 - (ach_text.get_width() // 2), 310)
+
+    screen.blit(manage_data.medals['Gold'], (manage_data.SCREEN_WIDTH // 2 - 350, 370))
+    screen.blit(manage_data.medals['Diamond'], (manage_data.SCREEN_WIDTH // 2 - 50, 370))
+    screen.blit(manage_data.assets['star_normal'], (manage_data.SCREEN_WIDTH // 2 + 250, 345))
+    screen.blit(manage_data.fonts['mega'].render(f"{gold_medals}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 - 280, 365))
+    screen.blit(manage_data.fonts['mega'].render(f"{diamond_medals}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 + 20, 365))
+    screen.blit(manage_data.fonts['mega'].render(f"{total_stars}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 + 340, 365))
 
     screen.blit(badge, badge_pos)
     screen.blit(XP_text, XP_pos)
     screen.blit(XP_text2, XP_pos2)
     screen.blit(ID_text, ID_pos)
     screen.blit(player_text, player_pos)
-    pygame.draw.rect(screen, color, (XP_pos2[0] + 10, 240, bar, 25))
-    pygame.draw.rect(screen, color, (XP_pos2[0] + 10, 240, 250, 25), 2)
+    screen.blit(ach_text, ach_pos)
+    pygame.draw.rect(screen, color, (XP_pos2[0] + 5, 240, bar, 25))
+    pygame.draw.rect(screen, color, (XP_pos2[0] + 5, 240, 250, 25), 2)
 
     back_text = back_data.get("back", "Back")
     rendered_back = render_text(back_text, True, (255, 255, 255))
@@ -781,10 +797,7 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
         clock.tick(60)
 
 def draw_character_select(screen, mouse_pos, events, transition, rect, key):
-         locked_sound_played = False
          mouse_pos = pygame.mouse.get_pos()
-
-         messages = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {})  # Fetch localized messages
          header_txt = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('main_menu', {})
          char_sel = header_txt.get("character_select", "Character Select")
          char_text = render_text(char_sel, True, (255, 255, 255))
@@ -794,7 +807,8 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
             'robot': True,
             'evilrobot': manage_data.progress["char"].get("evilrobo", False),
             'greenrobot': manage_data.progress["char"].get("greenrobo", False),
-            'ironrobot': manage_data.progress["char"].get("ironrobo", False)
+            'ironrobot': manage_data.progress["char"].get("ironrobo", False),
+            'cakebot': manage_data.progress["char"].get("cakebot", False)
          }
          
          selected_character = manage_data.progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
@@ -803,12 +817,14 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
          screen.blit(manage_data.robos['evilrobot'] if manage_data.unlocked_robos['evilrobot'] else manage_data.robos['locked'], manage_data.robo_rects['evilrobot'])
          screen.blit(manage_data.robos['greenrobot'] if manage_data.unlocked_robos['greenrobot'] else manage_data.robos['locked'], manage_data.robo_rects['greenrobot'])
          screen.blit(manage_data.robos['ironrobot'] if manage_data.unlocked_robos['ironrobot'] else manage_data.robos['locked'], manage_data.robo_rects['ironrobot'])
+         screen.blit(manage_data.robos['cakebot'] if manage_data.unlocked_robos['cakebot'] else manage_data.robos['locked'], manage_data.robo_rects['cakebot'])
          # Draw a highlight border around the selected character
          highlight_colors = {
           "robot": (63, 72, 204),
           "evilrobot": (128, 0, 128),
           "greenrobot": (25, 195, 21),
           "ironrobot": (64, 64, 64),
+          "cakebot": (255, 171, 204)
          }
         
          if selected_character in manage_data.robo_rects:
@@ -831,6 +847,8 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
                 try_select_robo(manage_data.unlocked_robos['greenrobot'], "greenrobot", manage_data.robo_rects['greenrobot'], "greenlocked_message", "Get GOLD rank in all Green World Levels to unlock this robot!", transition)
             elif manage_data.robo_rects['ironrobot'].collidepoint(mouse_pos):
                 try_select_robo(manage_data.unlocked_robos['ironrobot'], "ironrobot", manage_data.robo_rects['ironrobot'], "ironlocked_message", "Unlock the Zenith Of Six achievement to get this character!", transition)
+            elif manage_data.robo_rects['cakebot'].collidepoint(mouse_pos):
+                try_select_robo(manage_data.unlocked_robos['cakebot'], "cakebot", manage_data.robo_rects['cakebot'], "cakelocked_message", "This Robo will be available every April 29!", transition)
             elif rect.collidepoint(mouse_pos):
                 state.handle_action(key, transition, manage_data.current_page)
 

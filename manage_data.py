@@ -53,7 +53,8 @@ default_progress = {
     "char": { 
         "evilrobo": False, 
         "greenrobo": False,
-        "ironrobo": False
+        "ironrobo": False,
+        "cakebot": False
     },
     "achieved": { 
         "speedy_starter": False,
@@ -125,6 +126,11 @@ def char_assets(selected_character):
         blink_img = pygame.image.load(resource_path(f"char/ironrobot/blinkironrobo.png")).convert_alpha()
         moving_img_l = pygame.image.load(resource_path(f"char/ironrobot/ironrobomoveL.png")).convert_alpha() # Resize to fit the game
         moving_img = pygame.image.load(resource_path(f"char/ironrobot/ironrobomove.png")).convert_alpha() # Resize to fit the game
+    elif selected_character == "cakebot":
+        player_img = pygame.image.load(resource_path(f"char/cakebot/cakebot.png")).convert_alpha()
+        blink_img = pygame.image.load(resource_path(f"char/cakebot/blinkcakebot.png")).convert_alpha()
+        moving_img_l = pygame.image.load(resource_path(f"char/cakebot/movecakebotL.png")).convert_alpha() # Resize to fit the game
+        moving_img = pygame.image.load(resource_path(f"char/cakebot/movecakebot.png")).convert_alpha() # Resize to fit the game
     img_width, img_height = player_img.get_size()
     return player_img, blink_img, moving_img, moving_img_l, img_width, img_height
 
@@ -150,6 +156,7 @@ def update_locked_levels(progress, manifest):
     save_progress(progress, manifest)
 
 def load_language(lang_code, manifest):
+    global now
     try:
         # Wrap the path in resource_path()
         path = resource_path(f"lang/{lang_code}.json")
@@ -266,6 +273,10 @@ def load_progress():
                 print(f"Local save is the latest version ({local_xp} XP).")
 
     selected_character = data["pref"].get("character", default_progress["pref"]["character"])
+    
+    if now.day == 29 and now.month == 4:
+        data['char']['cakebot'] = True
+        
     return data
 
 # Save progress to file
@@ -727,8 +738,8 @@ def check_for_new_gamenews(return_count):
             
             # Get the count from our manifest
             local_count = manifest.get("other", {}).get("last_news_count", 7)
-            if local_count < 7:
-                local_count = 7  # Default to 7 if not set, since we started counting from 7
+            if local_count < 8:
+                local_count = 8  # Default to 7 if not set, since we started counting from last update
             
             # If online has more, we have new news!
             if online_count > local_count:

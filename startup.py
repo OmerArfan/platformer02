@@ -2,13 +2,16 @@ import pygame
 import manage_data
 import os
 import json
+from datetime import datetime
+
+manage_data.now = datetime.now()
 
 # Path to sound folder
 SOUND_FOLDER = manage_data.resource_path("audio")
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0469"
-manage_data.kernel = "0.1.5.0012"
+manage_data.version = "1.3.9.0470"
+manage_data.kernel = "0.1.6.0013"
 
 manage_data.power = pygame.image.load(manage_data.resource_path("oimgs/logos/power.png"))
 
@@ -64,13 +67,20 @@ def init_ui_images(SCREEN_WIDTH, SCREEN_HEIGHT):
 
 def init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT):
     # Backgrounds Dictionary
+    # Check for events
+    if manage_data.now.day == 29 and manage_data.now.month == 4:
+        peek_path = "bgs/anipeek.png"
+        plain_path = "bgs/AniBackground.png"
+    else:
+        peek_path = "bgs/lilrobopeek.png"
+        plain_path = "bgs/PlainBackground.png"
     backgrounds = {
         'lilrobopeek': pygame.transform.scale(
-            pygame.image.load(manage_data.resource_path("bgs/lilrobopeek.png")).convert_alpha(),
+            pygame.image.load(manage_data.resource_path(peek_path)).convert_alpha(),
             (390, 360)
         ),
         'plain': pygame.transform.scale(
-            pygame.image.load(manage_data.resource_path("bgs/PlainBackground.png")).convert(),
+            pygame.image.load(manage_data.resource_path(plain_path)).convert(),
             (SCREEN_WIDTH, SCREEN_HEIGHT)
         ),
         'green': pygame.transform.scale(
@@ -198,7 +208,7 @@ def init_robos():
         'evilrobot': pygame.image.load(manage_data.resource_path("char/evilrobot/evilrobot.png")).convert_alpha(),
         'greenrobot': pygame.image.load(manage_data.resource_path("char/greenrobot/greenrobot.png")).convert_alpha(),
         'ironrobot': pygame.image.load(manage_data.resource_path("char/ironrobot/ironrobo.png")).convert_alpha(),
-        'icerobot': pygame.image.load(manage_data.resource_path("char/icerobot/icerobot.png")).convert_alpha(),
+        'cakebot': pygame.image.load(manage_data.resource_path("char/cakebot/cakebot.png")).convert_alpha(),
         'greenrobot_moving': pygame.image.load(manage_data.resource_path("char/greenrobot/movegreenrobot.png")).convert_alpha(),
         'locked': pygame.image.load(manage_data.resource_path("char/lockedrobot.png")).convert_alpha(),
     }

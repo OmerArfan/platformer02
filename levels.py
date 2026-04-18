@@ -38,15 +38,15 @@ def create_lvl1_screen(screen, transition):
     was_moving = False
 
     blocks = [
-        pygame.Rect(600, 450, 200, 50),
-        pygame.Rect(1000, 400, 200, 50),
-        pygame.Rect(1700, 300, 200, 50),
-        pygame.Rect(2100, 300, 200, 50),
-        pygame.Rect(2500, 250, 500, 50),
-        pygame.Rect(1850, 400, 320, 50),
+        pygame.FRect(600, 450, 200, 50),
+        pygame.FRect(1000, 400, 200, 50),
+        pygame.FRect(1700, 300, 200, 50),
+        pygame.FRect(2100, 300, 200, 50),
+        pygame.FRect(2500, 250, 500, 50),
+        pygame.FRect(1850, 400, 320, 50),
     ]
 
-    moving_block = pygame.Rect(1300, 300, 100, 20)
+    moving_block = pygame.FRect(1300, 300, 100, 20)
     moving_direction1 = 1
     moving_speed = 2
     moving_limit_left1 = 1300
@@ -59,7 +59,7 @@ def create_lvl1_screen(screen, transition):
         [(2650, 250), (2700, 200), (2750, 250)],
     ]
 
-    exit_portal = pygame.Rect(2780, 60, 140, 180)
+    exit_portal = pygame.FRect(2780, 60, 140, 180)
     clock = pygame.time.Clock()
 
     # Render the texts
@@ -140,7 +140,7 @@ def create_lvl1_screen(screen, transition):
             moving_direction1 *= -1
 
         # Collisions and Ground Detection
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
         on_ground = False
 
         if player_y > 1100:
@@ -289,32 +289,32 @@ def create_lvl2_screen(screen, transition):
     was_moving = False
 
     # Draw flag
-    flag = pygame.Rect(2150, 650, 80, 50)  # x, y, width, height
+    flag = pygame.FRect(2150, 650, 80, 50)  # x, y, width, height
     checkpoint_reached = False
     flag_1_x, flag_1_y = 2150, 650
 
     blocks = [
-        pygame.Rect(100, 650, 1000, 50),
-        pygame.Rect(500, 500, 200, 50),
-        pygame.Rect(1900, 200, 200, 50),
-        pygame.Rect(2080, 750, 620, 50),        
-        pygame.Rect(2150, 530, 300, 50),
-        pygame.Rect(2340, 50, 110, 500),
-        pygame.Rect(2900, 450, 400, 50),
-        pygame.Rect(3300, 650, 260, 50),
-        pygame.Rect(3800, 650, 220, 50),
-        pygame.Rect(4260, 650, 220, 50),
-        pygame.Rect(3300, 200, 1300, 50),
+        pygame.FRect(100, 650, 1000, 50),
+        pygame.FRect(500, 500, 200, 50),
+        pygame.FRect(1900, 200, 200, 50),
+        pygame.FRect(2080, 750, 620, 50),        
+        pygame.FRect(2150, 530, 300, 50),
+        pygame.FRect(2340, 50, 110, 500),
+        pygame.FRect(2900, 450, 400, 50),
+        pygame.FRect(3300, 650, 260, 50),
+        pygame.FRect(3800, 650, 220, 50),
+        pygame.FRect(4260, 650, 220, 50),
+        pygame.FRect(3300, 200, 1300, 50),
     ]
 
     jump_blocks = [
-        pygame.Rect(1000, 550, 100, 100), # Jump blocks to help the character go up and then fall down
-        pygame.Rect(2730, 751, 100, 100),
-        pygame.Rect(3600, 645, 160, 100),
-        pygame.Rect(4060, 645, 160, 100),
+        pygame.FRect(1000, 550, 100, 100), # Jump blocks to help the character go up and then fall down
+        pygame.FRect(2730, 751, 100, 100),
+        pygame.FRect(3600, 645, 160, 100),
+        pygame.FRect(4060, 645, 160, 100),
     ]
 
-    moving_block = pygame.Rect(1500, 300, 100, 20)
+    moving_block = pygame.FRect(1500, 300, 100, 20)
     moving_direction1 = 1
     moving_speed = 2
     moving_limit_left1 = 1300
@@ -344,7 +344,7 @@ def create_lvl2_screen(screen, transition):
         [(4500, 250), (4550, 300), (4600, 250)],        
         ]
 
-    exit_portal = pygame.Rect(4330, 460, 140, 180)
+    exit_portal = pygame.FRect(4330, 460, 140, 180)
     clock = pygame.time.Clock()
     
     # Render the texts
@@ -430,7 +430,7 @@ def create_lvl2_screen(screen, transition):
 
 
         # Collisions and Ground Detection
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
         on_ground = False
 
         if player_y > 1100:
@@ -587,9 +587,9 @@ def create_lvl3_screen(screen, transition):
     was_moving = False
 
     # Draw flag
-    flag = pygame.Rect(200, 200, 100, 125)  # x, y, width, height
+    flag = pygame.FRect(200, 200, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(2080, -260, 100, 125)  # x, y, width, height
+    flag2 = pygame.FRect(2080, -260, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
     flag_1_x, flag_1_y = 200, 200
     flag_2_x, flag_2_y = 2080, -260
@@ -597,7 +597,7 @@ def create_lvl3_screen(screen, transition):
     key_block_pairs = [
         {
             "key": (250, 175, 30, (255, 255, 0)),
-            "block": pygame.Rect(2550, 250, 200, 200),
+            "block": pygame.FRect(2550, 250, 200, 200),
             "collected": False
         },
     ]
@@ -614,18 +614,18 @@ def create_lvl3_screen(screen, transition):
     ]
 
     blocks=[
-        pygame.Rect(-1500, 906, 900, 100),
-        pygame.Rect(100, 750, 2000, 900),
-        pygame.Rect(100, 300, 2000, 50),
-        pygame.Rect(100, -150, 2200, 50),
-        pygame.Rect(-900, -360, 1000, 9000),
-        pygame.Rect(1220, -425, 360, 50),
+        pygame.FRect(-1500, 906, 900, 100),
+        pygame.FRect(100, 750, 2000, 900),
+        pygame.FRect(100, 300, 2000, 50),
+        pygame.FRect(100, -150, 2200, 50),
+        pygame.FRect(-900, -360, 1000, 9000),
+        pygame.FRect(1220, -425, 360, 50),
     ]
 
     jump_blocks = [
-        pygame.Rect(950, 700, 100, 50), # Jump blocks to help the character go up and then fall down
-        pygame.Rect(2300, 751, 100, 100),
-        pygame.Rect(2600, 285, 120, 100),
+        pygame.FRect(950, 700, 100, 50), # Jump blocks to help the character go up and then fall down
+        pygame.FRect(2300, 751, 100, 100),
+        pygame.FRect(2600, 285, 120, 100),
     ]
 
     spikes = [
@@ -634,7 +634,7 @@ def create_lvl3_screen(screen, transition):
     [(2000, 750), (2050, 700), (2100, 750)],
     ]
 
-    exit_portal = pygame.Rect(430, -350, 140, 180)
+    exit_portal = pygame.FRect(430, -350, 140, 180)
     clock = pygame.time.Clock()
 
     saw_text = in_game.get("saws_message", "Saws are also dangerous!")
@@ -737,7 +737,7 @@ def create_lvl3_screen(screen, transition):
         # Moving blocks
 
         # Collisions and Ground Detection
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
         on_ground = False
 
         if player_y > 1100:
@@ -909,9 +909,9 @@ def create_lvl4_screen(screen, transition):
     saw_angle = 0
 
     # Draw flag
-    flag = pygame.Rect(1500, 550, 100, 125)  # x, y, width, height
+    flag = pygame.FRect(1500, 550, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(3200, 120, 100, 125)  # x, y, width, height
+    flag2 = pygame.FRect(3200, 120, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
     flag_1_x, flag_1_y = 1500, 550
     flag_2_x, flag_2_y = 3200, 120
@@ -919,21 +919,21 @@ def create_lvl4_screen(screen, transition):
     key_block_pairs = [
         {
             "key": (3820, -130, 30, (255, 255, 0)),
-            "block": pygame.Rect(2800, 30, 200, 200),
+            "block": pygame.FRect(2800, 30, 200, 200),
             "collected": False
         },
     ]
 
     moving_blocks = [
         {
-        'rect': pygame.Rect(4050, 450, 100, 20),
+        'rect': pygame.FRect(4050, 450, 100, 20),
         'axis': 'x',  # 'x' for horizontal, 'y' for vertical
         'speed': 2,
         'min': 4050,
         'max': 4350
         },
         {
-        'rect': pygame.Rect(4850, 450, 100, 20),
+        'rect': pygame.FRect(4850, 450, 100, 20),
         'axis': 'x',
         'speed': 2,
         'min': 4550,
@@ -942,19 +942,19 @@ def create_lvl4_screen(screen, transition):
     ]
 
     lasers = [
-        pygame.Rect(3000, -50, 1000, 15),
+        pygame.FRect(3000, -50, 1000, 15),
     ]
 
     blocks = [
-        pygame.Rect(200, 650, 650, 100),
-        pygame.Rect(1100, 510, 100, 100),
-        pygame.Rect(1450, 650, 650, 100),
-        pygame.Rect(2300, 230, 1000, 1800),
-        pygame.Rect(2800, 400, 1200, 1600),
-        pygame.Rect(2800, -370, 200, 400),
-        pygame.Rect(3100, -300, 450, 100),
-        pygame.Rect(3700, -100, 200, 100),
-        pygame.Rect(4000, -370, 200, 400),
+        pygame.FRect(200, 650, 650, 100),
+        pygame.FRect(1100, 510, 100, 100),
+        pygame.FRect(1450, 650, 650, 100),
+        pygame.FRect(2300, 230, 1000, 1800),
+        pygame.FRect(2800, 400, 1200, 1600),
+        pygame.FRect(2800, -370, 200, 400),
+        pygame.FRect(3100, -300, 450, 100),
+        pygame.FRect(3700, -100, 200, 100),
+        pygame.FRect(4000, -370, 200, 400),
     ]
 
     moving_saws = [ 
@@ -979,8 +979,8 @@ def create_lvl4_screen(screen, transition):
 
 
     jump_blocks = [
-        pygame.Rect(2200, 751, 100, 100),
-        pygame.Rect(2400, 130, 120, 100),
+        pygame.FRect(2200, 751, 100, 100),
+        pygame.FRect(2400, 130, 120, 100),
         
     ]
 
@@ -990,7 +990,7 @@ def create_lvl4_screen(screen, transition):
     [(3800, 400), (3850, 350), (3900, 400)],
     [(3900, 400), (3950, 350), (4000, 400)],
     ]
-    exit_portal = pygame.Rect(4870, 265, 140, 180)
+    exit_portal = pygame.FRect(4870, 265, 140, 180)
     clock = pygame.time.Clock()
 
     # Drawing
@@ -1092,7 +1092,7 @@ def create_lvl4_screen(screen, transition):
         player_y += velocity_y
 
         # Collisions and Ground Detection
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
         on_ground = False
 
         for block in moving_blocks:
@@ -1136,7 +1136,7 @@ def create_lvl4_screen(screen, transition):
             deathcount += 1
             key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
 
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
             checkpoint_reached = True
@@ -1353,9 +1353,9 @@ def create_lvl5_screen(screen, transition):
     saw_angle = 0
 
     # Draw flag
-    flag = pygame.Rect(2100, -150, 100, 125)  # x, y, width, height
+    flag = pygame.FRect(2100, -150, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(3450, -450, 100, 125)  # x, y, width, height
+    flag2 = pygame.FRect(3450, -450, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
     flag_1_x, flag_1_y = 2100, -150
     flag_2_x, flag_2_y = 3450, -450
@@ -1363,37 +1363,37 @@ def create_lvl5_screen(screen, transition):
     key_block_pairs = [
         {
             "key": (4250, -900, 30, (255, 255, 0)),
-            "block": pygame.Rect(1300, -250, 200, 250),
+            "block": pygame.FRect(1300, -250, 200, 250),
             "collected": False
         },
     ]
 
     walls = [        
-        pygame.Rect(2700, -310, 50, 91),
-        pygame.Rect(2880, -310, 50, 140)
+        pygame.FRect(2700, -310, 50, 91),
+        pygame.FRect(2880, -310, 50, 140)
         ]
 
     blocks = [
-        pygame.Rect(-50, 650, 860, 100),
-        pygame.Rect(920, 510, 100, 100),
-        pygame.Rect(1450, 650, 650, 100),
-        pygame.Rect(1500, -50, 700, 50),
-        pygame.Rect(1700, -350, 1050, 50),
-        pygame.Rect(1500, -250, 50, 200),
-        pygame.Rect(2700, -220, 200, 50),
-        pygame.Rect(2880, -350, 700, 50),
-        pygame.Rect(3900, -350, 100, 30),
-        pygame.Rect(3900, -50, 100, 30),
-        pygame.Rect(3900, -650, 100, 30),
-        pygame.Rect(4200, -150, 100, 30),
-        pygame.Rect(4200, -750, 100, 30),
-        pygame.Rect(4200, -450, 100, 30),
-        pygame.Rect(4500, -50, 100, 30),
-        pygame.Rect(4500, -350, 100, 30),
-        pygame.Rect(4500, -650, 100, 30),
-        pygame.Rect(4800, -150, 100, 30),
-        pygame.Rect(4800, -750, 100, 30),
-        pygame.Rect(4800, -450, 100, 30),        
+        pygame.FRect(-50, 650, 860, 100),
+        pygame.FRect(920, 510, 100, 100),
+        pygame.FRect(1450, 650, 650, 100),
+        pygame.FRect(1500, -50, 700, 50),
+        pygame.FRect(1700, -350, 1050, 50),
+        pygame.FRect(1500, -250, 50, 200),
+        pygame.FRect(2700, -220, 200, 50),
+        pygame.FRect(2880, -350, 700, 50),
+        pygame.FRect(3900, -350, 100, 30),
+        pygame.FRect(3900, -50, 100, 30),
+        pygame.FRect(3900, -650, 100, 30),
+        pygame.FRect(4200, -150, 100, 30),
+        pygame.FRect(4200, -750, 100, 30),
+        pygame.FRect(4200, -450, 100, 30),
+        pygame.FRect(4500, -50, 100, 30),
+        pygame.FRect(4500, -350, 100, 30),
+        pygame.FRect(4500, -650, 100, 30),
+        pygame.FRect(4800, -150, 100, 30),
+        pygame.FRect(4800, -750, 100, 30),
+        pygame.FRect(4800, -450, 100, 30),        
     ]
     
     moving_saws = [ 
@@ -1417,8 +1417,8 @@ def create_lvl5_screen(screen, transition):
 
 
     jump_blocks = [
-        pygame.Rect(2200, 751, 100, 100),
-        pygame.Rect(2570, 400, 100, 100),
+        pygame.FRect(2200, 751, 100, 100),
+        pygame.FRect(2570, 400, 100, 100),
     ]
 
     spikes = [
@@ -1444,7 +1444,7 @@ def create_lvl5_screen(screen, transition):
         [(4800, -120), (4850, -70), (4900, -120)],
     ]
 
-    exit_portal = pygame.Rect(1360, 20, 140, 180)
+    exit_portal = pygame.FRect(1360, 20, 140, 180)
     clock = pygame.time.Clock()
 
     
@@ -1532,7 +1532,7 @@ def create_lvl5_screen(screen, transition):
         player_y += velocity_y
 
         # Collisions and Ground Detection
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
         on_ground = False
 
         for block in walls:
@@ -1555,7 +1555,7 @@ def create_lvl5_screen(screen, transition):
             key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
         # Saw collision detection
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
 
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
             checkpoint_reached = True
@@ -1755,9 +1755,9 @@ def create_lvl6_screen(screen, transition):
     saw_angle = 0
 
     # Draw flag
-    flag = pygame.Rect(2400, 380, 100, 125)  # x, y, width, height
+    flag = pygame.FRect(2400, 380, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(3200, 410, 100, 125)  # x, y, width, height
+    flag2 = pygame.FRect(3200, 410, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
     flag_1_x, flag_1_y = 2400, 380
     flag_2_x, flag_2_y = 3200, 410
@@ -1765,26 +1765,26 @@ def create_lvl6_screen(screen, transition):
     key_block_pairs = [
         {
             "key": (5800, 50, 30, (255, 255, 0)),
-            "block": pygame.Rect(2950, 10, 200, 170),
+            "block": pygame.FRect(2950, 10, 200, 170),
             "collected": False
         },
     ]
 
     lasers = [
-        pygame.Rect(5870, 180, 15, 350),
+        pygame.FRect(5870, 180, 15, 350),
     ]
 
     blocks = [
-        pygame.Rect(-200, 700, 1200, 100),
-        pygame.Rect(800, 400, 100, 100),
-        pygame.Rect(1400, 400, 100, 100),
-        pygame.Rect(1700, 400, 100, 100),
-        pygame.Rect(2000, 400, 100, 100),
-        pygame.Rect(2300, 500, 450, 50),
-        pygame.Rect(2900, 10, 50, 570),
-        pygame.Rect(3150, 10, 50, 170),
-        pygame.Rect(2950, 530, 2950, 50),
-        pygame.Rect(3200, 130, 2700, 50)
+        pygame.FRect(-200, 700, 1200, 100),
+        pygame.FRect(800, 400, 100, 100),
+        pygame.FRect(1400, 400, 100, 100),
+        pygame.FRect(1700, 400, 100, 100),
+        pygame.FRect(2000, 400, 100, 100),
+        pygame.FRect(2300, 500, 450, 50),
+        pygame.FRect(2900, 10, 50, 570),
+        pygame.FRect(3150, 10, 50, 170),
+        pygame.FRect(2950, 530, 2950, 50),
+        pygame.FRect(3200, 130, 2700, 50)
     ]
 
 
@@ -1809,9 +1809,9 @@ def create_lvl6_screen(screen, transition):
     ]
 
     jump_blocks = [
-        pygame.Rect(1000, 600, 100, 50),
-        pygame.Rect(400, 650, 100, 50),
-        pygame.Rect(2650, 400, 100, 100),
+        pygame.FRect(1000, 600, 100, 50),
+        pygame.FRect(400, 650, 100, 50),
+        pygame.FRect(2650, 400, 100, 100),
     ]
 
     spikes = [
@@ -1826,7 +1826,7 @@ def create_lvl6_screen(screen, transition):
     [(4400, 530), (4445, 480), (4490, 530)],
     ]
 
-    exit_portal = pygame.Rect(5630, 340, 140, 180)
+    exit_portal = pygame.FRect(5630, 340, 140, 180)
     clock = pygame.time.Clock()
 
 
@@ -1925,7 +1925,7 @@ def create_lvl6_screen(screen, transition):
         player_y += velocity_y
 
         # Collisions and Ground Detection
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
         on_ground = False
 
         if player_y > 1100:
@@ -1939,7 +1939,7 @@ def create_lvl6_screen(screen, transition):
             key_block_pairs[0]["collected"] = False  # Reset the collected status for the key
 
         # Saw collision detection
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
 
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
             checkpoint_reached = True
@@ -2165,21 +2165,21 @@ def create_lvl7_screen(screen, transition):
     saw_angle = 0
 
     # Draw flag
-    flag = pygame.Rect(2600, 300, 100, 125)  # x, y, width, height
+    flag = pygame.FRect(2600, 300, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(240, -1360, 100, 125)  # x, y, width, height
+    flag2 = pygame.FRect(240, -1360, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
     flag_1_x, flag_1_y = 2600, 300
     flag_2_x, flag_2_y = 240, -1360
 
     blocks = [
-        pygame.Rect(0, 400, 3000, 50),
-        pygame.Rect(3200, 500, 500, 50),
-        pygame.Rect(3900, 500, 500, 50),
-        pygame.Rect(4600, 500, 700, 50),
-        pygame.Rect(100, -1250, 300, 50),
-        pygame.Rect(600, -1000, 700, 50),
-        pygame.Rect(1450, -1125, 650, 50)
+        pygame.FRect(0, 400, 3000, 50),
+        pygame.FRect(3200, 500, 500, 50),
+        pygame.FRect(3900, 500, 500, 50),
+        pygame.FRect(4600, 500, 700, 50),
+        pygame.FRect(100, -1250, 300, 50),
+        pygame.FRect(600, -1000, 700, 50),
+        pygame.FRect(1450, -1125, 650, 50)
     ]
     
     moving_saws = [ 
@@ -2213,13 +2213,13 @@ def create_lvl7_screen(screen, transition):
     [(4100, 500), (4150, 450), (4200, 500)],
     ]
 
-    exit_portal = pygame.Rect(1960, -1320, 140, 180)
+    exit_portal = pygame.FRect(1960, -1320, 140, 180)
     clock = pygame.time.Clock()
 
     teleporters = [
         {
-            "entry": pygame.Rect(5150, 300, 140, 180),
-            "exit": pygame.Rect(100, -1400, 50, 50),
+            "entry": pygame.FRect(5150, 300, 140, 180),
+            "exit": pygame.FRect(100, -1400, 50, 50),
             "color": (0, 196, 255)
         }
     ]
@@ -2300,7 +2300,7 @@ def create_lvl7_screen(screen, transition):
         player_y += velocity_y
 
         # Collisions and Ground Detection
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
         on_ground = False
 
         if player_y > 1100:
@@ -2313,7 +2313,7 @@ def create_lvl7_screen(screen, transition):
             deathcount += 1
 
         # Checkpoint Logic
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
 
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
             checkpoint_reached = True
@@ -2408,7 +2408,7 @@ def create_lvl7_screen(screen, transition):
                     manage_data.sounds['warp'].play()
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
                 # Update player_rect immediately after teleport to prevent collision handlers from using old position
-                player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+                player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
         
         level_logic.draw_saws(screen, saws, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache)
 
@@ -2517,28 +2517,28 @@ def create_lvl8_screen(screen, transition):
     saw_angle = 0
 
     # Draw flag
-    flag = pygame.Rect(8700, -320, 100, 125)  # x, y, width, height
+    flag = pygame.FRect(8700, -320, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(10000, -320, 100, 125)  # x, y, width, height
+    flag2 = pygame.FRect(10000, -320, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
     flag_1_x, flag_1_y = 8700, -320
     flag_2_x, flag_2_y = 10000, -320
 
     blocks = [
-        pygame.Rect(0, 400, 100, 100),
-        pygame.Rect(460, 650, 540, 50),
-        pygame.Rect(1200, 200, 1050, 50),
-        pygame.Rect(8200, -200, 6000, 400),
-        pygame.Rect(9000, -750, 50, 600),
-        pygame.Rect(9600, -750, 50, 600),
-        pygame.Rect(10000, -1650, 2000, 500),
-        pygame.Rect(10000, -1650, 100, 1220),
-        pygame.Rect(10750, -360, 600, 170),
+        pygame.FRect(0, 400, 100, 100),
+        pygame.FRect(460, 650, 540, 50),
+        pygame.FRect(1200, 200, 1050, 50),
+        pygame.FRect(8200, -200, 6000, 400),
+        pygame.FRect(9000, -750, 50, 600),
+        pygame.FRect(9600, -750, 50, 600),
+        pygame.FRect(10000, -1650, 2000, 500),
+        pygame.FRect(10000, -1650, 100, 1220),
+        pygame.FRect(10750, -360, 600, 170),
     ]
     
     jump_blocks = [
-        pygame.Rect(1100, 600, 100, 100),
-        pygame.Rect(11000, -460, 100, 100),
+        pygame.FRect(1100, 600, 100, 100),
+        pygame.FRect(11000, -460, 100, 100),
     ]
 
     moving_saws = [
@@ -2576,7 +2576,7 @@ def create_lvl8_screen(screen, transition):
     [(11300, -1150), (11350, -1100), (11400, -1150)],
     ]
 
-    exit_portal = pygame.Rect(10980, -1050, 140, 180)
+    exit_portal = pygame.FRect(10980, -1050, 140, 180)
     clock = pygame.time.Clock()
 
     gravity_weakers = [
@@ -2585,8 +2585,8 @@ def create_lvl8_screen(screen, transition):
 
     teleporters = [
         {
-            "entry": pygame.Rect(2090, 0, 140, 180),
-            "exit": pygame.Rect(8300, -400, 100, 100),
+            "entry": pygame.FRect(2090, 0, 140, 180),
+            "exit": pygame.FRect(8300, -400, 100, 100),
             "color": (0, 196, 255)
         }
     ]
@@ -2676,7 +2676,7 @@ def create_lvl8_screen(screen, transition):
         player_y += velocity_y
 
         # Collisions and Ground Detection
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
         on_ground = False
 
         if player_y > 1100:
@@ -2690,7 +2690,7 @@ def create_lvl8_screen(screen, transition):
             deathcount += 1
 
         # Checkpoint Logic
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
 
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
             checkpoint_reached = True
@@ -2756,7 +2756,7 @@ def create_lvl8_screen(screen, transition):
                     manage_data.sounds['warp'].play()
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
                 # Update player_rect immediately after teleport to prevent collision handlers from using old position
-                player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+                player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
 
         if level_logic.handle_moving_saws(screen, moving_saws, player_rect, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache):
             # Death logic (same as above)
@@ -2861,7 +2861,7 @@ def create_lvl8_screen(screen, transition):
         pygame.display.update()   
 
 def create_lvl9_screen(screen, transition):
-    global player_img, font, complete_levels, current_time, medal, deathcount, score
+    global player_img, current_time, medal, deathcount, score
     global new_hs, hs, stars
 
     player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(manage_data.selected_character)
@@ -2898,9 +2898,9 @@ def create_lvl9_screen(screen, transition):
     saw_angle = 0
 
     # Draw flag
-    flag = pygame.Rect(2350, 300, 100, 125)  # x, y, width, height
+    flag = pygame.FRect(2350, 300, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(5600, 550, 100, 125)  # x, y, width, height
+    flag2 = pygame.FRect(5600, 550, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
     flag_1_x, flag_1_y = 2350, 300
     flag_2_x, flag_2_y = 5600, 550
@@ -2908,33 +2908,33 @@ def create_lvl9_screen(screen, transition):
     key_block_pairs = [
         {
             "key": (3700, 550, 30, (255, 255, 0)),
-            "block": pygame.Rect(3200, 0, 400, 200),
+            "block": pygame.FRect(3200, 0, 400, 200),
             "collected": False
         },
     ]
 
     blocks = [
-        pygame.Rect(0, 100, 1000, 50),
-        pygame.Rect(500, 60, 500, 80),
-        pygame.Rect(0, -300, 1000, 100),
-        pygame.Rect(1600, 600, 300, 100),
-        pygame.Rect(2050, 500, 100, 100),
-        pygame.Rect(2300, 400, 600, 100),
-        pygame.Rect(2800, -300, 100, 500),
-        pygame.Rect(3200, 200, 100, 530),
-        pygame.Rect(2900, -600, 1100, 100),
-        pygame.Rect(3500, 200, 2030, 100),
-        pygame.Rect(3550, 650, 2280, 100)
+        pygame.FRect(0, 100, 1000, 50),
+        pygame.FRect(500, 60, 500, 80),
+        pygame.FRect(0, -300, 1000, 100),
+        pygame.FRect(1600, 600, 300, 100),
+        pygame.FRect(2050, 500, 100, 100),
+        pygame.FRect(2300, 400, 600, 100),
+        pygame.FRect(2800, -300, 100, 500),
+        pygame.FRect(3200, 200, 100, 530),
+        pygame.FRect(2900, -600, 1100, 100),
+        pygame.FRect(3500, 200, 2030, 100),
+        pygame.FRect(3550, 650, 2280, 100)
     ]
 
     walls = [
-        pygame.Rect(3500, 220, 100, 830)
+        pygame.FRect(3500, 220, 100, 830)
     ]
 
     jump_blocks = [
-        pygame.Rect(1250, 600, 100, 100),
-        pygame.Rect(2970, 420, 100, 100),
-        pygame.Rect(5730, 550, 100, 100),
+        pygame.FRect(1250, 600, 100, 100),
+        pygame.FRect(2970, 420, 100, 100),
+        pygame.FRect(5730, 550, 100, 100),
     ]
 
     moving_saws = [ 
@@ -2993,7 +2993,7 @@ def create_lvl9_screen(screen, transition):
     [(4350, 300), (4400, 350), (4450, 300)],
     ]
 
-    exit_portal = pygame.Rect(3325, 420, 140, 180)
+    exit_portal = pygame.FRect(3325, 420, 140, 180)
     clock = pygame.time.Clock()
 
     gravity_strongers = [
@@ -3004,7 +3004,7 @@ def create_lvl9_screen(screen, transition):
         (2550, 350, 30, (0, 102, 204)),
     ]
 
-    moving_block = pygame.Rect(4450, 30, 100, 20)
+    moving_block = pygame.FRect(4450, 30, 100, 20)
     moving_direction1 = 1
     moving_speed = 5
     moving_limit_left1 = 4050
@@ -3028,6 +3028,19 @@ def create_lvl9_screen(screen, transition):
     menu_ui.draw_notifs(screen)
     menu_ui.draw_syncing_status(screen)
 
+    # Initialize and draw the reset and quit text
+    reset_text = in_game.get("reset_message", "Press R to reset")
+    rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
+
+    quit_text = in_game.get("quit_message", "Press Q to quit")
+    rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
+
+    clarify2_text = in_game.get("clarify_message2", "They also affect your jumps on jump blocks!")
+    rendered_clarify2_txt = menu_ui.render_text(clarify2_text, True, (204, 102, 204))
+    
+    button2_text = in_game.get("button2_message", "Lavender menu_ui.buttons, upon activation, will make you jump lower!")
+    rendered_button2_txt = menu_ui.render_text(button2_text, True, (204, 102, 204))
+    
     if not transition.active:
        while running:
         clock.tick(60)
@@ -3085,7 +3098,7 @@ def create_lvl9_screen(screen, transition):
         player_y += velocity_y
 
         # Collisions and Ground Detection
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
         on_ground = False
 
         if player_rect.colliderect(moving_block):
@@ -3135,7 +3148,7 @@ def create_lvl9_screen(screen, transition):
             moving_direction1 *= -1
 
         # Checkpoint Logic
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
 
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
             checkpoint_reached = True
@@ -3264,11 +3277,8 @@ def create_lvl9_screen(screen, transition):
         level_logic.draw_portal(screen, manage_data.assets['mech_exit'], exit_portal, camera_x, camera_y)
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
 
-        button2_text = in_game.get("button2_message", "Lavender menu_ui.buttons, upon activation, will make you jump lower!")
-        screen.blit(menu_ui.render_text(button2_text, True, (204, 102, 204)), (100 - camera_x, 100 - camera_y))
-
-        clarify2_text = in_game.get("clarify_message2", "They also affect your jumps on jump blocks!")
-        screen.blit(menu_ui.render_text(clarify2_text, True, (204, 102, 204)), (1000 - camera_x, 450 - camera_y))
+        screen.blit(rendered_button2_txt, (100 - camera_x, 100 - camera_y))
+        screen.blit(rendered_clarify2_txt, (1000 - camera_x, 450 - camera_y))
 
         # Camera logic
         camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
@@ -3284,13 +3294,6 @@ def create_lvl9_screen(screen, transition):
 
         timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
         timer_text = menu_ui.render_text(timer_txt, True, (255, 255, 255))  # white color
-
-        # Initialize and draw the reset and quit text
-        reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
-
-        quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
 
         level_logic.draw_level_ui(screen, manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
         
@@ -3339,30 +3342,30 @@ def create_lvl10_screen(screen, transition):
     lights_off = True
 
     # Draw flag
-    flag = pygame.Rect(3100, 370, 100, 125)  # x, y, width, height
+    flag = pygame.FRect(3100, 370, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(5000, 370, 100, 125)  # x, y, width, height
+    flag2 = pygame.FRect(5000, 370, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
     flag_1_x, flag_1_y = 3100, 370
     flag_2_x, flag_2_y = 5000, 370
 
     blocks = [
-        pygame.Rect(-100, 500, 1200, 50),
-        pygame.Rect(1300, 400, 200, 50),
-        pygame.Rect(1625, 500, 200, 50),
-        pygame.Rect(1920, 400, 100, 100),
-        pygame.Rect(3000, 480, 300, 50),
-        pygame.Rect(3500, 480, 100, 300),
-        pygame.Rect(3800, 260, 100, 520),
-        pygame.Rect(4100, 40, 100, 740),
-        pygame.Rect(4400, 260, 100, 520),
-        pygame.Rect(4700, 480, 100, 300),
-        pygame.Rect(4950, 480, 1200, 100)
+        pygame.FRect(-100, 500, 1200, 50),
+        pygame.FRect(1300, 400, 200, 50),
+        pygame.FRect(1625, 500, 200, 50),
+        pygame.FRect(1920, 400, 100, 100),
+        pygame.FRect(3000, 480, 300, 50),
+        pygame.FRect(3500, 480, 100, 300),
+        pygame.FRect(3800, 260, 100, 520),
+        pygame.FRect(4100, 40, 100, 740),
+        pygame.FRect(4400, 260, 100, 520),
+        pygame.FRect(4700, 480, 100, 300),
+        pygame.FRect(4950, 480, 1200, 100)
     ]
 
     jump_blocks = [
-        pygame.Rect(11000, 600, 100, 100),
-        pygame.Rect(14000, 600, 100, 100),
+        pygame.FRect(11000, 600, 100, 100),
+        pygame.FRect(14000, 600, 100, 100),
     ]
 
     moving_saws = [ 
@@ -3390,19 +3393,19 @@ def create_lvl10_screen(screen, transition):
 
     lights = [
         {
-            "button": pygame.Rect(400, 380, 50, 50),
-            "block": pygame.Rect(1300, 0, 200, 400),
+            "button": pygame.FRect(400, 380, 50, 50),
+            "block": pygame.FRect(1300, 0, 200, 400),
         }
     ]
 
-    exit_portal = pygame.Rect(5960, 280, 140, 180)
+    exit_portal = pygame.FRect(5960, 280, 140, 180)
     clock = pygame.time.Clock()
 
     gravity_strongers = [
         (5050, 420, 30, (204, 102, 204)),
     ]
 
-    moving_block = pygame.Rect(2200, 300, 100, 20)
+    moving_block = pygame.FRect(2200, 300, 100, 20)
     moving_direction1 = 1
     moving_speed = 5
     moving_limit_left1 = 2200
@@ -3484,7 +3487,7 @@ def create_lvl10_screen(screen, transition):
         player_y += velocity_y
 
         # Collisions and Ground Detection
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
         on_ground = False
 
         for block in blocks + [moving_block]:
@@ -3524,7 +3527,7 @@ def create_lvl10_screen(screen, transition):
             moving_direction1 *= -1
 
         # Checkpoint Logic
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
 
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
             checkpoint_reached = True
@@ -3746,31 +3749,31 @@ def create_lvl11_screen(screen, transition):
     unlock_time = None
 
     # Draw flag
-    flag = pygame.Rect(1400, 420, 100, 125)  # x, y, width, height
+    flag = pygame.FRect(1400, 420, 100, 125)  # x, y, width, height
     checkpoint_reached = False
-    flag2 = pygame.Rect(5600, 330, 100, 125)  # x, y, width, height
+    flag2 = pygame.FRect(5600, 330, 100, 125)  # x, y, width, height
     checkpoint_reached2 = False
     flag_1_x, flag_1_y = 1400, 420
     flag_2_x, flag_2_y = 5600, 330
 
     blocks = [
-        pygame.Rect(-600, 525, 2850, 50),
-        pygame.Rect(1065, 200, 70, 375),
-        pygame.Rect(1625, -200, 100, 590),
-        pygame.Rect(1625, 50, 150, 50),
-        pygame.Rect(2200, 400, 150, 50),
-        pygame.Rect(2250, -300, 600, 2200),
-        pygame.Rect(2300, 200, 3000, 100),
-        pygame.Rect(3100, -300, 2600, 100),
-        pygame.Rect(3050, -500, 120, 300),
-        pygame.Rect(5180, 250, 120, 300),
-        pygame.Rect(5250, 450, 1500, 100),
-        pygame.Rect(5600, -1400, 520, 1700),
+        pygame.FRect(-600, 525, 2850, 50),
+        pygame.FRect(1065, 200, 70, 375),
+        pygame.FRect(1625, -200, 100, 590),
+        pygame.FRect(1625, 50, 150, 50),
+        pygame.FRect(2200, 400, 150, 50),
+        pygame.FRect(2250, -300, 600, 2200),
+        pygame.FRect(2300, 200, 3000, 100),
+        pygame.FRect(3100, -300, 2600, 100),
+        pygame.FRect(3050, -500, 120, 300),
+        pygame.FRect(5180, 250, 120, 300),
+        pygame.FRect(5250, 450, 1500, 100),
+        pygame.FRect(5600, -1400, 520, 1700),
     ]
 
     jump_blocks = [
-        pygame.Rect(630, 425, 100, 100),
-        pygame.Rect(14000, 600, 100, 100),
+        pygame.FRect(630, 425, 100, 100),
+        pygame.FRect(14000, 600, 100, 100),
     ]
 
     moving_saws = [ 
@@ -3811,12 +3814,12 @@ def create_lvl11_screen(screen, transition):
 
     lights = [
         {
-        "button": pygame.Rect(2350, -425, 50, 50),
-        "block": pygame.Rect(3050, -200, 120, 400)
+        "button": pygame.FRect(2350, -425, 50, 50),
+        "block": pygame.FRect(3050, -200, 120, 400)
         }
     ]
 
-    exit_portal = pygame.Rect(6600, 250, 140, 180)
+    exit_portal = pygame.FRect(6600, 250, 140, 180)
     clock = pygame.time.Clock()
 
     speedsters = [
@@ -3910,11 +3913,11 @@ def create_lvl11_screen(screen, transition):
         player_y += velocity_y
 
         # Collisions and Ground Detection
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
         on_ground = False
 
         for block in moving_block:
-            rect = pygame.Rect(block['x'], block['y'], block['width'], block['height'])
+            rect = pygame.FRect(block['x'], block['y'], block['width'], block['height'])
             if player_rect.colliderect(rect):
                 # Falling onto a block
                 if velocity_y > 0 and player_y + img_height - velocity_y <= rect.y:
@@ -3948,7 +3951,7 @@ def create_lvl11_screen(screen, transition):
             if block['x'] < block['left_limit'] or block['x'] > block['right_limit']:
                 block['direction'] *= -1
 
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
 
         # Checkpoint logic
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
@@ -4063,9 +4066,9 @@ def create_lvl11_screen(screen, transition):
         for block in moving_block:
             pygame.draw.rect(screen, (128, 0, 128), ((block['x'] - camera_x), (block['y'] - camera_y), block['width'], block['height']))
             if block['width'] < 100:
-                laser_rect = pygame.Rect(block['x'], block['y'] + block['height'] +10, block['width'], 5)  # 5 px tall death zone
+                laser_rect = pygame.FRect(block['x'], block['y'] + block['height'] +10, block['width'], 5)  # 5 px tall death zone
             else:
-                laser_rect = pygame.Rect(block['x'] + 4, block['y'] + block['height'] + 5, block['width'] - 8 , 5)  # 5 px tall death zone
+                laser_rect = pygame.FRect(block['x'] + 4, block['y'] + block['height'] + 5, block['width'] - 8 , 5)  # 5 px tall death zone
             if player_rect.colliderect(laser_rect) and not on_ground and player_x != block['x']:  # Only if jumping upward
                 player_x, player_y = spawn_x, spawn_y  # Reset player position
                 death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
@@ -4160,7 +4163,7 @@ def create_lvl11_screen(screen, transition):
             manage_data.Achievements.evilchase()
             unlock_time = None
 
-        evilrobo_rect = pygame.Rect(int(epos_x), int(epos_y), evilrobo_mascot.get_width(), evilrobo_mascot.get_height())
+        evilrobo_rect = pygame.FRect(int(epos_x), int(epos_y), evilrobo_mascot.get_width(), evilrobo_mascot.get_height())
         
         if player_rect.colliderect(evilrobo_rect) and lights_off:
             evilrobo_phase = 0
@@ -4267,7 +4270,7 @@ def create_lvl12_screen(screen, transition):
     was_moving = False
 
     # Draw flag
-    flag = pygame.Rect(3900, 200, 100, 125)  # x, y, width, height
+    flag = pygame.FRect(3900, 200, 100, 125)  # x, y, width, height
     checkpoint_reached = False
     flag_1_x, flag_1_y = 3900, 200
 
@@ -4282,14 +4285,14 @@ def create_lvl12_screen(screen, transition):
     key_block_pairs_timed = [
         {
             "key": (300, 100, 30, (255, 119, 0)),
-            "block": pygame.Rect(1900, 0, 100, 200),
+            "block": pygame.FRect(1900, 0, 100, 200),
             "collected": False,
             "duration": 5000,  # Duration for which the block is active
             "locked_time": None
         },
         {
             "key": (4000, 250, 30, (255, 119, 0)),
-            "block": pygame.Rect(4150, 400, 50, 250),
+            "block": pygame.FRect(4150, 400, 50, 250),
             "collected": False,
             "duration": 3500,  # Duration for which the block is active
             "locked_time": None
@@ -4297,21 +4300,21 @@ def create_lvl12_screen(screen, transition):
     ]
 
     blocks = [
-        pygame.Rect(0, 200, 2000, 100),
-        pygame.Rect(1900, -1000, 100, 1000),
-        pygame.Rect(3200, -50, 800, 100),
-        pygame.Rect(3600, 300, 500, 100),
-        pygame.Rect(4100, -700, 101, 1100),
-        pygame.Rect(3450, 650, 1000, 100),
-        pygame.Rect(3350, 0, 100, 750),
-        pygame.Rect(2300, 200, 150, 100),
-        pygame.Rect(2600, 20, 200, 100),
-        pygame.Rect(4500, 750, 600, 200),
+        pygame.FRect(0, 200, 2000, 100),
+        pygame.FRect(1900, -1000, 100, 1000),
+        pygame.FRect(3200, -50, 800, 100),
+        pygame.FRect(3600, 300, 500, 100),
+        pygame.FRect(4100, -700, 101, 1100),
+        pygame.FRect(3450, 650, 1000, 100),
+        pygame.FRect(3350, 0, 100, 750),
+        pygame.FRect(2300, 200, 150, 100),
+        pygame.FRect(2600, 20, 200, 100),
+        pygame.FRect(4500, 750, 600, 200),
     ]
 
     jump_blocks = [
-        pygame.Rect(3000, 250, 100, 100),
-        pygame.Rect(4300, 550, 100, 100),
+        pygame.FRect(3000, 250, 100, 100),
+        pygame.FRect(4300, 550, 100, 100),
     ]
 
     moving_saws = [ 
@@ -4335,7 +4338,7 @@ def create_lvl12_screen(screen, transition):
     [(3900, 650), (3950, 600), (4000, 650)]
     ]
 
-    exit_portal = pygame.Rect(4080, -910, 140, 180)
+    exit_portal = pygame.FRect(4080, -910, 140, 180)
     clock = pygame.time.Clock()
 
     menu_ui.draw_notifs(screen)
@@ -4418,10 +4421,10 @@ def create_lvl12_screen(screen, transition):
         player_y += velocity_y
 
         # Collisions and Ground Detection
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
         on_ground = False
 
-        player_rect = pygame.Rect(player_x, player_y, img_width, img_height)
+        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
 
         # Checkpoint logic
         if player_rect.colliderect(flag) and not checkpoint_reached:
@@ -4521,7 +4524,6 @@ def create_lvl12_screen(screen, transition):
         level_logic.draw_portal(screen, manage_data.assets['mech_exit'], exit_portal, camera_x, camera_y)
 
         screen.blit(rendered_timed_text, (0 - camera_x, -80 - camera_y))
-        
         screen.blit(rendered_timed_text_2, (-20 - camera_x, -30 - camera_y))
         
         if level_logic.handling_gravity_strongers(screen, gravity_strongers, player_rect, camera_x, camera_y, strong_grav):

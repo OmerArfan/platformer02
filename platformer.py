@@ -66,10 +66,11 @@ current_lang = manage_data.change_language(manage_data.lang_code, manage_data.ma
 
 # Get rects and position them
 manage_data.robo_rects = {
-    'robot': manage_data.robos['robot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 300, manage_data.SCREEN_HEIGHT // 2 - 50)),
-    'evilrobot': manage_data.robos['evilrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 150, manage_data.SCREEN_HEIGHT // 2 - 50)),
-    'greenrobot': manage_data.robos['greenrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT // 2 - 50)),
-    'ironrobot': manage_data.robos['ironrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 150, manage_data.SCREEN_HEIGHT // 2 - 50))
+    'robot': manage_data.robos['robot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 350, manage_data.SCREEN_HEIGHT // 2 - 50)),
+    'evilrobot': manage_data.robos['evilrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 200, manage_data.SCREEN_HEIGHT // 2 - 50)),
+    'greenrobot': manage_data.robos['greenrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, manage_data.SCREEN_HEIGHT // 2 - 50)),
+    'ironrobot': manage_data.robos['ironrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 100, manage_data.SCREEN_HEIGHT // 2 - 50)),
+    'cakebot': manage_data.robos['cakebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 250, manage_data.SCREEN_HEIGHT // 2 - 50))
 }
 
 # Start with main menu
