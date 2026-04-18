@@ -59,6 +59,7 @@
     "lavalocked_message": "此机器人即将推出！",
     "greenlocked_message": "获得“黄金成就”以解锁此机器人！",
     "ironlocked_message": "获得“六之巅峰”成就以解锁此机器人！",
+    "cakelocked_message": "该机器人将于每年4月29日开放！",
     "back": "返回"
   }
   ,"achieve": {

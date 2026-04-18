@@ -18,7 +18,8 @@
     ,"lavalocked_message": "This robot is coming soon!"
     ,"greenlocked_message": "Unlock the Golden Achievement to unlock this robot!"
     ,"ironlocked_message": "Unlock the Zenith of Six Achievement to unlock this robot!",
-    "back": "Back"
+    "cakelocked_message": "This Robo will be available every April 29!"
+    ,"back": "Back"
   }
   ,"settings": {
     "About": "About",

@@ -77,6 +77,7 @@
     "lavalocked_message": "이 로봇은 곧 출시됩니다!",
     "greenlocked_message": "이 로봇을 잠금 해제하려면 '황금 업적'을 달성하세요!",
     "ironlocked_message": "이 로봇을 잠금 해제하려면 '여섯의 정점' 업적을 달성하세요!",
+    "cakelocked_message": "이 로보는 매년 4월 29일에 사용할 수 있습니다!",
     "back": "뒤로"
   },
   "levels": {

@@ -59,6 +59,7 @@
     "lavalocked_message": "Dieser Roboter ist demnächst verfügbar!",
     "greenlocked_message": "Schalte den „Goldenen Erfolg“ frei, um diesen Roboter freizuschalten!",
     "ironlocked_message": "Schalte den Erfolg „Zenit der Sechs“ frei, um diesen Roboter freizuschalten!",
+    "cakelocked_message": "Dieser Robo wird an jedem 29. April verfügbar sein!",
     "back": "Zurück"
   }
   ,"achieve": {
