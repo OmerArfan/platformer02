@@ -4,13 +4,13 @@
 
 2) Install Python: Use Python 3.11+ from [their website](https://www.python.org/downloads/).
 
-3) Install Dependencies: Open your terminal/CMD and run: `` pip install pygame==2.6.1 arabic-reshaper python-bidi ``
+3) Install Dependencies: Open your terminal/CMD and run: `` pip install pygame-ce==2.5.7 arabic-reshaper python-bidi ``
 
 4) Get the Code: Download [Source ZIP](https://github.com/OmerArfan/platformer02/archive/refs/heads/main.zip) and extract it.
 
 5) Open in VSCode: > Go to File > Open Folder.
 
-6) Select the folder you just extracted (the one containing platformer.py).
+6) Select the folder you just extracted (likely named platformer02-main).
 
 7) Run the Game: Open platformer.py from the left sidebar and press F5 or the Play button.
 

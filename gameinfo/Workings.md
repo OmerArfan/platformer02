@@ -1,10 +1,11 @@
-## This file contains info as of Version 1.3.9.2 and might be outdated.
+## This file contains info as of Version 1.3.9 (Build 468) and might be outdated.
 
 In Roboquix, these are all the things you can do:
-- Start the game and select from 2 worlds, 6 levels each!
-- View your achievements. (green for unlocked, yellow for locked)
-- Select your Character.
-- Check your stats from your Profile.
+- Start the game and select from 2 worlds, 6 levels each
+- View your achievements (green for unlocked, yellow for locked)
+- Select your Character
+- Check your best stats in Profile
+
 - In Settings:
   - Mute/Unmute Audio and Ambience.
   - Create a new or add an existing account.

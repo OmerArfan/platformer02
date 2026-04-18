@@ -10,54 +10,89 @@ import manage_data
 import math
 import state
 import random
+import re
+
+from text_sprite import TextSprite
+
+# Pre-compile the regex outside the function so it only happens once!
+RE_LANG = re.compile(r'([\u0590-\u06FF]|[\u4e00-\u9fff]|[\u3040-\u30FF]|[\uAC00-\uD7A3])')
+
+manage_data.text_cache = {}
+buttons = []
+
+# To handle notifications
+notification_time = None
+notif = False
+er = False
+
+# Related to online saving
+save_count = 0
+is_syncing = False      
+sync_status = ""
+sync_finish_time = None
+
+# Global sprite group for UI text
+ui_text_sprites = pygame.sprite.Group()
 
 def render_text(text, Boolean, color):
-    # 1. PICK THE FONT (Your existing Unicode Logic)
-    font_to_use = manage_data.fonts['def'] # Default
+    # 1. FASTER FONT PICKING
+    # We check if there's any non-default char in one go
+    match = RE_LANG.search(text)
+    font_key = 'def'
     display_text = text
+    cache_key = (text, color)
+    
+    if cache_key in manage_data.text_cache:
+        return manage_data.text_cache[cache_key]
 
-    if any('\u0590' <= c <= '\u06FF' for c in text):  # Urdu/Arabic range
-        reshaped = arabic_reshaper.reshape(text)
-        display_text = get_display(reshaped)
-        font_to_use = manage_data.fonts['ar']
-    elif any('\u4e00' <= c <= '\u9fff' for c in text):  # Chinese
-        font_to_use = manage_data.fonts['ch']
-    elif any('\u3040' <= c <= '\u30FF' for c in text): # Japanese
-        font_to_use = manage_data.fonts['jp']   
-    elif any('\uAC00' <= c <= '\uD7A3' for c in text):  # Korean
-        font_to_use = manage_data.fonts['kr']
+    if match:
+        char = match.group(0)
+        if '\u0590' <= char <= '\u06FF':
+            display_text = get_display(arabic_reshaper.reshape(text))
+            font_key = 'ar'
+        elif '\u4e00' <= char <= '\u9fff': font_key = 'ch'
+        elif '\u3040' <= char <= '\u30FF': font_key = 'jp'
+        elif '\uAC00' <= char <= '\uD7A3': font_key = 'kr'
 
-    # 2. RENDER THE SHADOW (For Readability on Green/Mech BGs)
-    shadow_color = (0, 0, 0)
-    shadow_surf = font_to_use.render(display_text, True, shadow_color)
+    font_to_use = manage_data.fonts[font_key]
+
+    # 2. THE FASTEST RENDER (Native Outline)
+    # We avoid creating a 'combined_surf' manually.
+    thickness = 1
     
-    # 3. RENDER MAIN TEXT
-    main_surf = font_to_use.render(display_text, True, color)
+    font_to_use.outline = thickness
+    # This surface is automatically sized correctly by pygame-ce
+    surf = font_to_use.render(display_text, True, (0, 0, 0)) 
     
-    # 4. COMBINE INTO ONE SURFACE
-    w = max(1, main_surf.get_width() + 2)
-    h = max(1, main_surf.get_height() + 1)
-    combined_surf = pygame.Surface((w, h), pygame.SRCALPHA)
-    combined_surf.blit(shadow_surf, (1, 1)) # The offset shadow
-    combined_surf.blit(main_surf, (0, 0))   # The original text
+    font_to_use.outline = 0
+    main_text = font_to_use.render(display_text, True, color)
     
-    return combined_surf
+    # Blit directly onto the 'surf' we already have
+    surf.blit(main_text, (thickness, thickness))
+    
+    return surf
 
 def draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovered_last_frame):
     for rendered, rect, key, is_locked in buttons:
         if rect.collidepoint(mouse_pos):
-            button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-            button_surface.fill((8, 81, 179, 255))
-            screen.blit(button_surface, rect.inflate(20, 10).topleft)
-            pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
+            button_suface(screen, rect)
             button_hovered_last_frame = hover_effect(screen, rect, hover_sound, is_mute, button_hovered_last_frame)
         else:
-            button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
-            button_surface.fill((8, 81, 179, 255))
-            screen.blit(button_surface, rect.inflate(20, 10).topleft)
-            pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
+            button_suface(screen, rect)
         screen.blit(rendered, rect)
     return button_hovered_last_frame
+
+def button_suface(screen, rect):
+    if manage_data.now.day == 29 and manage_data.now.month == 4:
+        button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+        button_surface.fill((175, 0, 202, 255))
+        screen.blit(button_surface, rect.inflate(20, 10).topleft)
+        pygame.draw.rect(screen, (255, 0, 252), rect.inflate(30, 15), 6)
+    else:
+        button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
+        button_surface.fill((8, 81, 179, 255))
+        screen.blit(button_surface, rect.inflate(20, 10).topleft)
+        pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
 
 def hover_effect(screen, rect, hover_sound, is_mute, button_hovered_last_frame):
     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
@@ -85,13 +120,10 @@ def draw_notifs(screen):
 
 buttons = []
 
-def draw_loading_bar(screen, bg, stage_name, percent):
-    screen.blit(bg, (0, 0))
-    complete = None
-    text = manage_data.fonts['def'].render(f"{stage_name}", True, (255, 255, 255))
+def draw_loading_bar(screen, stage_name, percent):
+    text = render_text(f"{stage_name} ({percent}%)", True, (255, 255, 255))
     text_rect = text.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 60))
     screen.blit(text, text_rect)
-    draw_loading_orb(screen, text_rect.x, text_rect.y, complete)
     pygame.draw.rect(screen, (0, 0, 255), (0, manage_data.SCREEN_HEIGHT - 10, (manage_data.SCREEN_WIDTH / 100)*percent, 10))
     pygame.display.flip()
 
@@ -129,60 +161,87 @@ def draw_syncing_status(screen):
         screen.blit(syncing_text, (text_x, text_y))
         draw_loading_orb(screen, text_x, text_y, sync_finish_time)
 
+reblit_txt = True
+last_lang = None  # Track language changes
+
 def create_achieve_screen(screen, lang_code, manifest, progress):
-    global current_lang
+    global current_lang, ui_text_sprites, reblit_txt, last_lang
     buttons.clear()
+    
+    screen.blit(manage_data.bgs['plain'], (0, 0))  # Draw background
+    
+    # Detect language change
+    if lang_code != last_lang:
+        reblit_txt = True
+        last_lang = lang_code
+    
     current_lang = manage_data.load_language(lang_code, manifest)
     ach_data = current_lang.get("achieve", {}) 
     header_data = current_lang.get("main_menu", {})
     back_data = current_lang.get("language_select", {})
 
-    # 1. Render Main Header
+    # 1. Render Main Header (as TextSprite)
     ach_txt = header_data.get("achievements", "Achievements")
-    ach_header = render_text(ach_txt, True, (255, 255, 255))
-    screen.blit(ach_header, (manage_data.SCREEN_WIDTH // 2 - ach_header.get_width() // 2, 50))
-
-    ach_list = [
-        "zen_os",
-        "zen_os_desc",
-        "speedy_starter", 
-        "speedy_starter_desc",
-        "over_9k",
-        "over_9k_desc",
-        "chase_escape",
-        "chase_escape_desc",
-        "golden", 
-        "golden_desc"
-    ]
-
-    y_offset = 120 
+    header = TextSprite(ach_txt, 
+                       x=manage_data.SCREEN_WIDTH // 2, 
+                       y=50, 
+                       color=(255, 255, 255),
+                       center_x=True)
     
-    count = 0
+    if reblit_txt:
+        ui_text_sprites.empty()  # Clear previous sprites
+        ui_text_sprites.add(header)
 
-    for title_key in ach_list:
-        # We try to get from ach_data first, then fallback to current_lang directly
-        title_str = ach_data.get(title_key, "?")
+        ach_list = [
+            "zen_os", 
+            "zen_os_desc",
+            "speedy_starter", 
+            "speedy_starter_desc",
+            "over_9k",
+            "over_9k_desc",
+            "chase_escape", 
+            "chase_escape_desc",
+            "golden", 
+            "golden_desc"
+        ]
 
-        # Render Title
-        if title_key[-5:] != "_desc":
-         if progress["achieved"][title_key]:
-           color = (0, 204, 0)
-         else:
-           color = (255, 255, 0)
+        y_offset = 120 
+        count = 0
 
-        title_surf = render_text(title_str, True, color)
-        if lang_code == "ar" or lang_code == "pk":
-            x_pos = manage_data.SCREEN_WIDTH - 100 - title_surf.get_width()
-        else:
-            x_pos = 100
-        screen.blit(title_surf, (x_pos, y_offset))
+        for title_key in ach_list:
+            title_str = ach_data.get(title_key, "?")
 
-        count += 1
-        if count % 2 == 0:
-           y_offset += 52
-        else:
-           y_offset += 25
+            # Render Title (as TextSprite)
+            if title_key[-5:] != "_desc":
+                if progress["achieved"][title_key]:
+                    color = (0, 204, 0)
+                else:
+                    color = (255, 255, 0)
+            
+            # Create sprite first with a temporary position
+            title = TextSprite(title_str, x=100, y=y_offset, color=color)
+            
+            # Now adjust position based on language
+            if lang_code == "ar" or lang_code == "pk":
+                # For RTL languages, subtract the width from right edge
+                x_pos = manage_data.SCREEN_WIDTH - title.get_width() - 100
+                title.set_position(x_pos, y_offset)
+            
+            ui_text_sprites.add(title)
 
+            count += 1
+            if count % 2 == 0:
+                y_offset += 52
+            else:
+                y_offset += 25
+    
+        reblit_txt = False
+
+    # Draw all text sprites
+    ui_text_sprites.update()
+    ui_text_sprites.draw(screen)
+    
+    # Back button (still using old button system for now)
     back_text = back_data.get("back", "Back")
     rendered_back = render_text(back_text, True, (255, 255, 255))
     back_rect = rendered_back.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 100))
@@ -192,7 +251,7 @@ def draw_profile(screen):
     global current_lang, buttons
     buttons.clear()
     screen.blit(manage_data.bgs['plain'], (0, 0))
-    gold_medals, diamond_medals, total_stars = 0, 0, 0
+    gold_medals, diamond_medals, total_stars, ulock_ach, total_ach = 0, 0, 0, 0, 0
     current_lang = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('main_menu', {})
     settings = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('settings', {})
     profile_text = current_lang.get("profile", "Profile")
@@ -224,6 +283,11 @@ def draw_profile(screen):
         level_star = level_logic.get_stars(i, score)
         total_stars += level_star
 
+    for ach in manage_data.progress['achieved']:
+        if ach:
+            ulock_ach += 1
+        total_ach += 1
+
     player_txt = settings.get("username_label", "Player")
     player_text = render_text(f"{player_txt}: {manage_data.progress['player']['Username']}", True, (255, 255, 255))
     player_pos = (manage_data.SCREEN_WIDTH // 2 - (player_text.get_width() // 2), 100)
@@ -239,20 +303,25 @@ def draw_profile(screen):
     badge_x = xp_center_x - (manage_data.assets['badge'].get_width() // 2)
     badge_pos = (badge_x, 200)
 
-    screen.blit(manage_data.medals['Gold'], (manage_data.SCREEN_WIDTH // 2 - 350, 340))
-    screen.blit(manage_data.medals['Diamond'], (manage_data.SCREEN_WIDTH // 2 - 50, 340))
-    screen.blit(manage_data.assets['star_normal'], (manage_data.SCREEN_WIDTH // 2 + 250, 315))
-    screen.blit(manage_data.fonts['mega'].render(f"{gold_medals}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 - 280, 335))
-    screen.blit(manage_data.fonts['mega'].render(f"{diamond_medals}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 + 20, 335))
-    screen.blit(manage_data.fonts['mega'].render(f"{total_stars}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 + 340, 335))
+    ach_txt = current_lang.get("main_menu", {}).get("achievements", "Achievements")
+    ach_text = render_text(f"{ach_txt}: {ulock_ach}/{total_ach}", True, (255, 255, 255))
+    ach_pos = (manage_data.SCREEN_WIDTH // 2 - (ach_text.get_width() // 2), 310)
+
+    screen.blit(manage_data.medals['Gold'], (manage_data.SCREEN_WIDTH // 2 - 350, 370))
+    screen.blit(manage_data.medals['Diamond'], (manage_data.SCREEN_WIDTH // 2 - 50, 370))
+    screen.blit(manage_data.assets['star_normal'], (manage_data.SCREEN_WIDTH // 2 + 250, 345))
+    screen.blit(manage_data.fonts['mega'].render(f"{gold_medals}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 - 280, 365))
+    screen.blit(manage_data.fonts['mega'].render(f"{diamond_medals}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 + 20, 365))
+    screen.blit(manage_data.fonts['mega'].render(f"{total_stars}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 + 340, 365))
 
     screen.blit(badge, badge_pos)
     screen.blit(XP_text, XP_pos)
     screen.blit(XP_text2, XP_pos2)
     screen.blit(ID_text, ID_pos)
     screen.blit(player_text, player_pos)
-    pygame.draw.rect(screen, color, (XP_pos2[0] + 10, 240, bar, 25))
-    pygame.draw.rect(screen, color, (XP_pos2[0] + 10, 240, 250, 25), 2)
+    screen.blit(ach_text, ach_pos)
+    pygame.draw.rect(screen, color, (XP_pos2[0] + 5, 240, bar, 25))
+    pygame.draw.rect(screen, color, (XP_pos2[0] + 5, 240, 250, 25), 2)
 
     back_text = back_data.get("back", "Back")
     rendered_back = render_text(back_text, True, (255, 255, 255))
@@ -728,10 +797,7 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
         clock.tick(60)
 
 def draw_character_select(screen, mouse_pos, events, transition, rect, key):
-         locked_sound_played = False
          mouse_pos = pygame.mouse.get_pos()
-
-         messages = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {})  # Fetch localized messages
          header_txt = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('main_menu', {})
          char_sel = header_txt.get("character_select", "Character Select")
          char_text = render_text(char_sel, True, (255, 255, 255))
@@ -741,7 +807,8 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
             'robot': True,
             'evilrobot': manage_data.progress["char"].get("evilrobo", False),
             'greenrobot': manage_data.progress["char"].get("greenrobo", False),
-            'ironrobot': manage_data.progress["char"].get("ironrobo", False)
+            'ironrobot': manage_data.progress["char"].get("ironrobo", False),
+            'cakebot': manage_data.progress["char"].get("cakebot", False)
          }
          
          selected_character = manage_data.progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
@@ -750,12 +817,14 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
          screen.blit(manage_data.robos['evilrobot'] if manage_data.unlocked_robos['evilrobot'] else manage_data.robos['locked'], manage_data.robo_rects['evilrobot'])
          screen.blit(manage_data.robos['greenrobot'] if manage_data.unlocked_robos['greenrobot'] else manage_data.robos['locked'], manage_data.robo_rects['greenrobot'])
          screen.blit(manage_data.robos['ironrobot'] if manage_data.unlocked_robos['ironrobot'] else manage_data.robos['locked'], manage_data.robo_rects['ironrobot'])
+         screen.blit(manage_data.robos['cakebot'] if manage_data.unlocked_robos['cakebot'] else manage_data.robos['locked'], manage_data.robo_rects['cakebot'])
          # Draw a highlight border around the selected character
          highlight_colors = {
           "robot": (63, 72, 204),
           "evilrobot": (128, 0, 128),
           "greenrobot": (25, 195, 21),
           "ironrobot": (64, 64, 64),
+          "cakebot": (255, 171, 204)
          }
         
          if selected_character in manage_data.robo_rects:
@@ -778,6 +847,8 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
                 try_select_robo(manage_data.unlocked_robos['greenrobot'], "greenrobot", manage_data.robo_rects['greenrobot'], "greenlocked_message", "Get GOLD rank in all Green World Levels to unlock this robot!", transition)
             elif manage_data.robo_rects['ironrobot'].collidepoint(mouse_pos):
                 try_select_robo(manage_data.unlocked_robos['ironrobot'], "ironrobot", manage_data.robo_rects['ironrobot'], "ironlocked_message", "Unlock the Zenith Of Six achievement to get this character!", transition)
+            elif manage_data.robo_rects['cakebot'].collidepoint(mouse_pos):
+                try_select_robo(manage_data.unlocked_robos['cakebot'], "cakebot", manage_data.robo_rects['cakebot'], "cakelocked_message", "This Robo will be available every April 29!", transition)
             elif rect.collidepoint(mouse_pos):
                 state.handle_action(key, transition, manage_data.current_page)
 
@@ -997,7 +1068,7 @@ def new_txt():
     new_txt = render_text(current_lang.get("new", "Update Available!"), True, (225, 212, 31))
     return new_txt
 
-# Inside menu_ui.py (or similar)
+# Inside py (or similar)
 def show_resolution_limit(screen):
     countdown = 5
     clock = pygame.time.Clock()
@@ -1022,7 +1093,7 @@ def show_resolution_limit(screen):
         # Fetch localized messages
         messages = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {})
         
-        # Render texts using your existing menu_ui.render_text logic
+        # Render texts using your existing render_text logic
         texts = [
             (messages.get("deny_message", "Access denied!"), (255, 100, 100), -280),
             (messages.get("error_message", "Your screen resolution is too small!"), (255, 255, 255), -40),

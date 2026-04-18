@@ -149,9 +149,9 @@ def block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width
 def handle_bottom_collisions(blocks, player_rect, velocity_y):
     for block in blocks:
             if block.width <= 100:
-                laser_rect = pygame.Rect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
+                laser_rect = pygame.FRect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
             else:
-                laser_rect = pygame.Rect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
+                laser_rect = pygame.FRect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             
             if player_rect.colliderect(laser_rect) and velocity_y < 0:  # Only if jumping upward
                 return True
@@ -235,7 +235,7 @@ def handle_key_blocks(screen, open_sound, key_block_pairs, is_mute, on_ground, p
 
             # Check collision if not yet collected
             if not pair["collected"]:
-                key_rect = pygame.Rect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
+                key_rect = pygame.FRect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
             if player_rect.colliderect(key_rect):
                 if not pair["collected"] and not is_mute:
                     open_sound.play()
@@ -255,7 +255,7 @@ def handle_key_blocks_timed(screen, key_block_pairs_timed, player_rect, player_x
             key_x, key_y, key_r, key_color = pair["key"]
             block = pair["block"]
 
-            key_rect = pygame.Rect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
+            key_rect = pygame.FRect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
 
             if player_rect.colliderect(key_rect):
                 if not pair["collected"]:

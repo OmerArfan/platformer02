@@ -1,9 +1,9 @@
 # roboquix
-## This file contains information as of Version 1.3.0.2, so it may become outdated over time.
+## This file contains information as of Version 1.3.9 (Build 468), so it may become outdated over time.
 ### Check the current version in the [platformer.py](https://github.com/OmerArfan/platformer02/blob/main/platformer.py) file.
 
 ## About the game!
-Roboquix is a simple game where you move Lil Robo by using the arrow keys or WASD, towards the end portal. But in the process, you have to dodge obstacles, collect coins to open locked blocks, adjust to challenging mechanics, and more!
+Roboquix is a simple game where you move Lil Robo by using the arrow keys or WAD, towards the end portal. But in the process, you have to dodge obstacles, collect coins to open locked blocks, adjust to challenging mechanics, and more!
 If you complete a level quickly, you’ll be rewarded with a medal, which helps increase your score, especially if you avoid dying while dodging obstacles.
 
 ## Where can I play this game?

@@ -1,7 +1,19 @@
-import pygame
 import os
 import sys
+import platform
+# In case someone actually tries using older Windows versions (Very unlikely, but still)
+if platform.system() == "Windows":
+    if sys.getwindowsversion().major < 10:
+        import ctypes
+        ctypes.windll.user32.MessageBoxW(
+            0, 
+            "Roboquix requires at least Windows 10 or above to function!", 
+            "Unsupported Operating System!", 
+            0x10
+        )
+        sys.exit()
 
+import pygame
 import menu_ui
 import manage_data
 import startup
@@ -9,15 +21,10 @@ import acc_sys
 import state
 import levels
 
-# GAME VERSION
-manage_data.version = "1.3.9.2"
-manage_data.kernel = "0.1.5"
-
 # Initialize pygame
 pygame.init()
-
 # Initializing screen resolution
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((1600, 900), pygame.FULLSCREEN)
 manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT = screen.get_size()
 
 if sys.platform.startswith('linux'):
@@ -26,30 +33,24 @@ if sys.platform.startswith('linux'):
 pygame.display.set_caption("Roboquix")
 MIN_WIDTH, MIN_HEIGHT = 1150, 800
 
-# First of all, LOAD THE DAMN BGGG
-bg = pygame.image.load(manage_data.resource_path("bgs/PlainBackground.png")).convert()
-bg = pygame.transform.scale(bg, (manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT))
-
 # Load and set window icon
 icon = pygame.image.load(manage_data.resource_path("oimgs/icons/icon.png")).convert_alpha()
 pygame.display.set_icon(icon)
-
 pygame.mouse.set_visible(False)  # Hide the system cursor
 
 running = False
-
 loader = startup.load_game_generator(manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT)
 loading = True
 
 while loading:
+    screen.fill((0,119,171))
+    screen.blit(manage_data.power, (manage_data.SCREEN_WIDTH // 2 - manage_data.power.get_width() // 2, 150))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit(); sys.exit()
-
     try:
         stage, ps = next(loader)
-        menu_ui.draw_loading_bar(screen, bg, stage, ps)
-        
+        menu_ui.draw_loading_bar(screen, stage, ps) 
     except StopIteration:
         new_news_available = manage_data.check_for_new_gamenews(False)
         if manage_data.is_mute_amb:
@@ -57,54 +58,23 @@ while loading:
         else:
             pygame.mixer.music.set_volume(0.1)
             pygame.mixer.music.play(-1)
-            
         loading = False
 running = True
 
 transition = state.TransitionManager(screen, manage_data.bgs['trans_left'], manage_data.bgs['trans_right'])
 current_lang = manage_data.change_language(manage_data.lang_code, manage_data.manifest, manage_data.progress)
-menu_ui.buttons = []
-manage_data.saw_cache = {}
 
-#def load_level(level_id):
-#    global manage_data.current_page, buttons
-   # Show "Loading..." text
-#    screen.fill((30, 30, 30))
-#    messages = manage_data.change_language(manage_data.lang_code, manage_data.manifest, manage_data.progress).get('messages', {})  # Reload messages with the current language
-#    loading_text = messages.get("loading", "Loading...")
-#    rendered_loading = menu_ui.render_text(loading_text, True, (255, 255, 255))
-#    loading_rect = rendered_loading.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT // 2))  # Center dynamically
-#    screen.blit(rendered_loading, loading_rect)
-#    pygame.display.flip()
- #   # Short delay to let the user see the loading screen
-  #  pygame.time.delay(800)  # 800 milliseconds
-   # buttons.clear()
-
-# To handle notifications
-menu_ui.notification_time = None
-menu_ui.notif = False
-menu_ui.er = False
-
-# Related to online saving
-menu_ui.save_count = 0
-menu_ui.is_syncing = False      
-menu_ui.sync_status = ""
-menu_ui.sync_finish_time = None
-
-#Initialize default character
-manage_data.selected_character = manage_data.progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
 # Get rects and position them
 manage_data.robo_rects = {
-    'robot': manage_data.robos['robot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 300, manage_data.SCREEN_HEIGHT // 2 - 50)),
-    'evilrobot': manage_data.robos['evilrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 150, manage_data.SCREEN_HEIGHT // 2 - 50)),
-    'greenrobot': manage_data.robos['greenrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT // 2 - 50)),
-    'ironrobot': manage_data.robos['ironrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 150, manage_data.SCREEN_HEIGHT // 2 - 50))
+    'robot': manage_data.robos['robot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 350, manage_data.SCREEN_HEIGHT // 2 - 50)),
+    'evilrobot': manage_data.robos['evilrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 200, manage_data.SCREEN_HEIGHT // 2 - 50)),
+    'greenrobot': manage_data.robos['greenrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, manage_data.SCREEN_HEIGHT // 2 - 50)),
+    'ironrobot': manage_data.robos['ironrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 100, manage_data.SCREEN_HEIGHT // 2 - 50)),
+    'cakebot': manage_data.robos['cakebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 250, manage_data.SCREEN_HEIGHT // 2 - 50))
 }
 
 # Start with main menu
 state.set_page(screen, 'main_menu', manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
-manage_data.update_locked_levels(manage_data.progress, manage_data.manifest) # Update locked levels every frame!
-
 # Global variables(only needed before main loop)!
 button_hovered_last_frame = False
 last_hovered_key = None
@@ -116,7 +86,6 @@ if not manage_data.is_mute and manage_data.SCREEN_WIDTH > MIN_WIDTH and manage_d
 
 while running:
     messages = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {})
-    # Clear screen!
     screen.blit(manage_data.bgs['plain'], (0, 0))
     mouse_pos = pygame.mouse.get_pos()
 

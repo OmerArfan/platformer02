@@ -52,6 +52,8 @@ class TransitionManager:
                 self.hold_time = pygame.time.get_ticks()
 
         elif self.phase == 1:
+            manage_data.saw_cache.clear()
+            manage_data.text_cache.clear()
             manage_data.current_page = self.target_page  # Hold phase
             if pygame.time.get_ticks() - self.hold_time >= self.hold_duration:
                 # Change language if pending

@@ -56,6 +56,7 @@
     "lavalocked_message": "Bu robot yakında geliyor!",
     "greenlocked_message": "Bu robotun kilidini açmak için 'Altın Başarım' kazan!",
     "ironlocked_message": "Bu robotun kilidini açmak için 'Altının Zirvesi' başarımını kazan!",
+    "cakelocked_message": "Bu Robo her 29 Nisan'da mevcut olacak!",
     "back": "Geri"
   }
   ,"achieve": {
