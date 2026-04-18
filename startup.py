@@ -6,6 +6,12 @@ import json
 # Path to sound folder
 SOUND_FOLDER = manage_data.resource_path("audio")
 
+# Initializing Game and Engine Version
+manage_data.version = "1.3.9.0469"
+manage_data.kernel = "0.1.5.0012"
+
+manage_data.power = pygame.image.load(manage_data.resource_path("oimgs/logos/power.png"))
+
 def init_sounds():
   sound = {
     'click': pygame.mixer.Sound(os.path.join(SOUND_FOLDER, "click.wav")),

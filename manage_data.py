@@ -101,6 +101,7 @@ with open(resource_path("data/thresholds.json"), "r", encoding="utf-8") as f:
     score_thresholds = thresholds_data["score_thresholds"]
 
 fonts = {}
+saw_cache = {}
 
 def char_assets(selected_character):
     # Load player image
@@ -184,7 +185,7 @@ def change_language(lang, manifest, progress):
     return current_lang
 
 def load_progress():
-    global SAVE_FILE
+    global SAVE_FILE, selected_character
     
     data = copy.deepcopy(default_progress) 
 
@@ -264,6 +265,7 @@ def load_progress():
             else:
                 print(f"Local save is the latest version ({local_xp} XP).")
 
+    selected_character = data["pref"].get("character", default_progress["pref"]["character"])
     return data
 
 # Save progress to file

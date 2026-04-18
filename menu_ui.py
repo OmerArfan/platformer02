@@ -18,6 +18,18 @@ from text_sprite import TextSprite
 RE_LANG = re.compile(r'([\u0590-\u06FF]|[\u4e00-\u9fff]|[\u3040-\u30FF]|[\uAC00-\uD7A3])')
 
 manage_data.text_cache = {}
+buttons = []
+
+# To handle notifications
+notification_time = None
+notif = False
+er = False
+
+# Related to online saving
+save_count = 0
+is_syncing = False      
+sync_status = ""
+sync_finish_time = None
 
 # Global sprite group for UI text
 ui_text_sprites = pygame.sprite.Group()
@@ -102,13 +114,10 @@ def draw_notifs(screen):
 
 buttons = []
 
-def draw_loading_bar(screen, bg, stage_name, percent):
-    screen.blit(bg, (0, 0))
-    complete = None
-    text = manage_data.fonts['def'].render(f"{stage_name}", True, (255, 255, 255))
+def draw_loading_bar(screen, stage_name, percent):
+    text = render_text(f"{stage_name} ({percent}%)", True, (255, 255, 255))
     text_rect = text.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 60))
     screen.blit(text, text_rect)
-    draw_loading_orb(screen, text_rect.x, text_rect.y, complete)
     pygame.draw.rect(screen, (0, 0, 255), (0, manage_data.SCREEN_HEIGHT - 10, (manage_data.SCREEN_WIDTH / 100)*percent, 10))
     pygame.display.flip()
 
@@ -1041,7 +1050,7 @@ def new_txt():
     new_txt = render_text(current_lang.get("new", "Update Available!"), True, (225, 212, 31))
     return new_txt
 
-# Inside menu_ui.py (or similar)
+# Inside py (or similar)
 def show_resolution_limit(screen):
     countdown = 5
     clock = pygame.time.Clock()
@@ -1066,7 +1075,7 @@ def show_resolution_limit(screen):
         # Fetch localized messages
         messages = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {})
         
-        # Render texts using your existing menu_ui.render_text logic
+        # Render texts using your existing render_text logic
         texts = [
             (messages.get("deny_message", "Access denied!"), (255, 100, 100), -280),
             (messages.get("error_message", "Your screen resolution is too small!"), (255, 255, 255), -40),
