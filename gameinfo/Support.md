@@ -1,6 +1,6 @@
 ## Platform Support
 
-**Current Version:** 1.3.0.3
+**Current Version:** 1.3.9.2
 
 ### Windows
 - **Windows 11:** Fully Supported.
@@ -24,3 +24,4 @@ If you encounter graphical glitches (like screen flickering), crashes, level slo
 3. **Hardware:** CPU and GPU (e.g., Intel i5 Integrated Graphics)
 4. **Logs:** Copy any error text from the terminal/console.
 5. **Screenshot if possible:** If it can be of any use, please do send a screenshot of the glitch.
+6. **Game/Cleobo Version:** Make sure to add both so that I can verify if the bug has been patched in a newer update. (e.g. Version 1.3.9.2, Cleobo 0.1.5)

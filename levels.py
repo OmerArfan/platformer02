@@ -2409,6 +2409,7 @@ def create_lvl7_screen(screen, transition):
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
                 # Update player_rect immediately after teleport to prevent collision handlers from using old position
                 player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
+
         
         level_logic.draw_saws(screen, saws, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache)
 

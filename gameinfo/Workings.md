@@ -5,8 +5,10 @@ In Roboquix, these are all the things you can do:
 - View your achievements (green for unlocked, yellow for locked)
 - Select your Character
 - Check your best stats in Profile
+
 - In Settings:
-  - Create a new or add am existing account
-  - Switch between accounts easily(Be online to sync to your latest profile!)
-  - Change your Language(10+ Languages!)
+  - Mute/Unmute Audio and Ambience.
+  - Create a new or add an existing account.
+  - Switch between accounts easily. (Be online to sync to your latest profile!)
+  - Change your Language. (10+ Languages!)
 - And when you've had enough or just wish to take a break, Quit!
