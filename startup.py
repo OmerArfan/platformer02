@@ -11,7 +11,7 @@ SOUND_FOLDER = manage_data.resource_path("audio")
 
 # Initializing Game and Engine Version
 manage_data.version = "1.3.9.0470"
-manage_data.kernel = "0.1.6.0013"
+manage_data.kernel = "0.1.7.0014"
 
 manage_data.power = pygame.image.load(manage_data.resource_path("oimgs/logos/power.png"))
 
@@ -216,7 +216,6 @@ def init_robos():
     return robos
 
 def init_accs():
-    global lang_code, is_mute, is_mute_amb
     if os.path.exists(manage_data.ACCOUNTS_FILE):
         with open(manage_data.ACCOUNTS_FILE, "r") as f:
             manifest = json.load(f)
@@ -226,9 +225,21 @@ def init_accs():
             is_mute = not global_pref.get("sfx", True) 
             is_mute_amb = not global_pref.get("ambience", True)
     else:
+        # Create default manifest and save it
+        manifest = {"last_used": "", "users": {}, "pref": {"language": "en", "sfx": True, "ambience": True}, "other": {"last_news_count": 7}}
         lang_code = "en"
         is_mute = False
         is_mute_amb = False
+        
+        # Ensure the directory exists and save the default manifest
+        if not os.path.exists(manage_data.APP_DATA_DIR):
+            os.makedirs(manage_data.APP_DATA_DIR)
+        try:
+            with open(manage_data.ACCOUNTS_FILE, "w") as f:
+                json.dump(manifest, f, indent=4)
+        except Exception as e:
+            print(f"Warning: Could not create manifest file: {e}")
+    
     return manifest, lang_code, is_mute, is_mute_amb
 
 def init_fonts():
@@ -257,6 +268,8 @@ def load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT):
     
     yield "Checking for latest save...", 10
     manage_data.progress = manage_data.load_progress()
+    # Ensure new users are registered in the manifest immediately
+    manage_data.update_local_manifest(manage_data.progress)
     
     yield "Loading sounds...", 19
     manage_data.sounds = init_sounds()

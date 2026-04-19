@@ -194,7 +194,8 @@ def change_language(lang, manifest, progress):
 def load_progress():
     global SAVE_FILE, selected_character
     
-    data = copy.deepcopy(default_progress) 
+    data = copy.deepcopy(default_progress)
+    manifest = None  # Initialize to None so it's always defined
 
     # 1. Check manifest for the last used ID
     current_id = ""
@@ -202,7 +203,7 @@ def load_progress():
         try:
             with open(ACCOUNTS_FILE, "r") as f:
                 manifest = json.load(f)
-                current_id = manifest.get("last_used", "")
+                current_id = manifest["pref"].get("last_used", "")
         except: pass
 
     # 2. Determine the path (ID-specific or generic)
@@ -276,6 +277,10 @@ def load_progress():
     
     if now.day == 29 and now.month == 4:
         data['char']['cakebot'] = True
+    
+    # Ensure new players have their save file created immediately
+    if not os.path.exists(SAVE_FILE):
+        save_progress(data, manifest)
         
     return data
 
@@ -353,7 +358,7 @@ def update_local_manifest(data):
     previous_news_count = manifest.get("other", {}).get("last_news_count", 7) if manifest else 7
     
     # 1. Load existing manifest
-    manifest = {"last_used": "", "users": {}, "pref": {"language": "en", "sfx": True, "ambience": True}, "other": {"last_news_count": 7}}
+    manifest = {"last_used": "", "users": {}, "pref": {"language": "en", "sfx": True, "ambience": True}, "other": {"last_news_count": 8}}
     if os.path.exists(ACCOUNTS_FILE):
         try:
             with open(ACCOUNTS_FILE, "r") as f:
@@ -390,7 +395,7 @@ def update_local_manifest(data):
     }
 
     if "other" not in manifest:
-        manifest["other"] = {"last_news_count": 7}
+        manifest["other"] = {"last_news_count": 8}
     
     # Preserve the last_news_count that was set in-memory (don't overwrite with stale disk value)
     manifest["other"]["last_news_count"] = previous_news_count

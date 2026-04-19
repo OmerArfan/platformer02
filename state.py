@@ -219,11 +219,22 @@ def handle_action(key, transition, current_page):
         elif key and key.startswith("load_user_"):
             # Extract ID from the key string
             selected_id = key.replace("load_user_", "")
-            if not is_transitioning:
-                transition.start("main_menu")
-                transition_time = pygame.time.get_ticks()
-                is_transitioning = True
-                pending_page = "main_menu"
+            # Load the selected user's progress
+            user_save_file = os.path.join(manage_data.APP_DATA_DIR, f"{selected_id}.json")
+            if os.path.exists(user_save_file):
+                try:
+                    with open(user_save_file, "r", encoding="utf-8") as f:
+                        manage_data.progress = json.load(f)
+                        manage_data.SAVE_FILE = user_save_file
+                    # Update manifest to mark this user as the last used
+                    manage_data.update_local_manifest(manage_data.progress)
+                    if not is_transitioning:
+                        transition.start("main_menu")
+                        transition_time = pygame.time.get_ticks()
+                        is_transitioning = True
+                        pending_page = "main_menu"
+                except Exception as e:
+                    print(f"Error loading user {selected_id}: {e}")
     elif current_page == 'worlds':
         if key == "back":
             if not is_transitioning:

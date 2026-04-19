@@ -186,7 +186,8 @@ def create_achieve_screen(screen, lang_code, manifest, progress):
                        x=manage_data.SCREEN_WIDTH // 2, 
                        y=50, 
                        color=(255, 255, 255),
-                       center_x=True)
+                       center_x=True
+                       )
     
     if reblit_txt:
         ui_text_sprites.empty()  # Clear previous sprites
@@ -284,7 +285,7 @@ def draw_profile(screen):
         total_stars += level_star
 
     for ach in manage_data.progress['achieved']:
-        if ach:
+        if manage_data.progress["achieved"][ach]:
             ulock_ach += 1
         total_ach += 1
 
