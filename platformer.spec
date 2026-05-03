@@ -5,17 +5,12 @@ block_cipher = None
 
 # List of all active folders
 added_files = [
-    ('audio', 'audio'),
-    ('bgs', 'bgs'),
-    ('char', 'char'),
-    ('data', 'data'),
-    ('fonts', 'fonts'),
-    ('lang', 'lang'),
-    ('oimgs', 'oimgs')
+    ('assets', 'assets'),
+    ('cleobo', 'cleobo'),
 ]
 
 a = Analysis(
-    ['platformer.py', 'level_logic.py', 'menu_ui.py', 'manage_data.py', 'startup.py', "acc_sys.py", "levels.py", "state.py", "text_sprite.py"],
+    ['main.py'],
     pathex=[],
     binaries=[],
     datas=added_files,
