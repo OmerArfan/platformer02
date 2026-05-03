@@ -48,6 +48,6 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     # Logic for OS-specific assets
-    icon='oimgs/icons/robots.ico' if sys.platform == 'win32' else None,
+    icon='assets/icons/robots.ico' if sys.platform == 'win32' else None,
     version='version_info.txt' if sys.platform == 'win32' else None,
 )
