@@ -1,0 +1,156 @@
+{
+  "main_menu": {
+    "start": "Mulai",
+    "character_select": "Pilih Karakter",
+    "settings": "Pengaturan",
+    "achievements": "Prestasi",
+    "profile": "Profil",
+    "quit": "Keluar",
+    "language": "Ganti Bahasa",
+    "new": "Pembaruan Tersedia!"
+  },
+  "language_select": {
+    "back": "Kembali"
+  },
+  "settings": {
+    "About": "Tentang",
+    "site_credit": "Efek suara dari pixabay.com, diedit dengan Audacity",
+    "logo_credit": "Logo dan Latar Belakang dibuat dengan canva.com",
+    "credit_credit": "Dibuat oleh Omer Arfan",
+    "version_credit": "Versi Game: {version}",
+    "thanks": "Terima kasih telah bermain! Kamu luar biasa!",
+    "bugs": "Jika menemukan bug, silakan lapor ke repositori GitHub.",
+    "sorry": "Mohon maaf atas ketidaknyamanan akibat bug.",
+    "support": "Dukungan / Laporkan Bug",
+    "Audio": "Audio",
+    "Sound": "Suara",
+    "Ambience": "Suasana",
+    "Mute": "Bisukan {setting}",
+    "Unmute": "Bunyikan {setting}",
+    "Account": "Akun",
+    "Back": "Kembali",
+    "select": "PILIH PROFIL",
+    "sync_stat1": "Menyinkronkan Vault ke Cloud...",
+    "sync_stat2": "Sinkronisasi gagal!",
+    "sync_stat3": "Berhasil!"
+    ,"register_instr1": "Buat akun baru dengan nama pengguna dan kata sandi.",
+    "register_instr2": "Akun Anda akan disinkronkan ke cloud.",
+    "new_acc": "Akun Baru",
+    "acc_not_found": "Akun tidak ditemukan.",
+    "login_header": "Masuk",
+    "login_instr1": "Masukkan nama pengguna dan kata sandi Anda untuk mengakses akun Anda.",
+    "login_instr2": "Jika akun tidak ada, akun baru akan dibuat untuk Anda.",
+    "login_instr3": "Tekan TAB untuk beralih antara Kata Sandi dan Nama Pengguna. Tekan ESC untuk kembali.",
+    "case_warning": "Nama pengguna dan Kata sandi peka terhadap huruf besar/kecil!"
+    ,"username_label": "Nama Pengguna",
+    "password_label": "Kata Sandi",
+    "submit_prompt": "Tekan ENTER untuk Melanjutkan"
+    ,"checking_vault": "Memeriksa Vault Cloud...",
+    "login_success": "Login Berhasil!",
+    "conn_error": "Kesalahan Koneksi: Vault Cloud tidak dapat dijangkau.",
+    "wrong_pass": "Kata Sandi Salah!",
+    "account_created": "Akun Berhasil Dibuat!",
+    "too_short": "Nama pengguna/Kata sandi terlalu pendek!"
+  },
+  "char_select": {
+    "select": "Pilih Robo-mu!",
+    "evillocked_message": "Buka pencapaian 'Dikejar dan Lolos' untuk membuka robot ini!",
+    "icelocked_message": "Robot ini akan segera hadir!",
+    "lavalocked_message": "Robot ini akan segera hadir!",
+    "greenlocked_message": "Buka 'Pencapaian Emas' untuk membuka robot ini!",
+    "ironlocked_message": "Buka pencapaian 'Puncak dari Enam' untuk membuka robot ini!",
+    "cakelocked_message": "Robo ini akan tersedia setiap tanggal 29 April!",
+    "back": "Kembali"
+  }
+  ,"achieve": {
+    "unlock": "Pencapaian terbuka:",
+    "zen_os": "Puncak dari Enam!",
+    "zen_os_desc": "Selesaikan Level 6 dalam waktu kurang dari 30 detik tanpa mati!",
+    "speedy_starter": "Pemula Cepat!",
+    "speedy_starter_desc": "Selesaikan Level 1 dalam waktu kurang dari 4,5 detik!",
+    "over_9k": "Lebih dari 9000!",
+    "over_9k_desc": "Capai skor 105.000 atau lebih di Level 9!",
+    "chase_escape": "Dikejar dan Lolos!",
+    "chase_escape_desc": "Rahasia...",
+    "golden": "Emas!",
+    "golden_desc": "Dapatkan medali Emas atau lebih tinggi di semua Level Dunia Hijau!",
+    "lv20": "Pengumpul XP!",
+    "lv20_desc": "Capai XP Level 20!",
+    "rew": "Hadiah:",
+    "char_rew": "Robot Baru",
+    "xp_rew": "{XP} XP"
+  },
+  "levels": {
+    "worlds": "Pilih Dunia",
+    "level_display": "PILIH LEVEL",
+    "back": "Kembali",
+    "next": "Berikutnya"
+  },
+  "messages": {
+    "you_are_in": "{level} segera hadir!",
+    "loading": "Memuat...",
+    "confirm_quit": "Yakin ingin keluar?",
+    "yes": "Ya",
+    "no": "Tidak",
+    "deny_message": "Akses ditolak!",
+    "error_message": "Resolusi layar terlalu rendah! Tingkatkan",
+    "error_message2": "resolusi di pengaturan sistem Anda.",
+    "countdown_message": "Menutup dalam {countdown} detik...",
+    "lvl_comp": "Level Selesai!",
+    "hs_m": "Skor Tertinggi: {hs}"
+    ,"new_hs": "Skor Tinggi Baru!"
+    ,"max_level": "LEVEL MAKS!"
+    ,"breakdown": "RINCIAN SKOR",
+    "xp_gained": "XP Didapat: +{gain}",
+    "base_score": "Skor Dasar: {bs}",
+    "medal_score": "Skor Medali: {ms}",
+    "death_score": "Penalti Kematian: {ds}",
+    "time_score": "Penalti Waktu: {ts}",
+    "lowest": "Skor terendah yang mungkin!",
+    "time_reason": "Anda butuh waktu terlalu lama",
+    "time_reason_2": "untuk menyelesaikan level.",
+    "death_reason": "Anda mati terlalu banyak!",
+    "death_reason_2": "",
+    "press_space": "Tekan spasi untuk",
+    "continue_wait": "lanjut atau tunggu {next_left}"
+  },
+  "in_game": {
+    "dead_message": "Kamu mati!",
+    "fall_message": "Jatuh terlalu jauh!",
+    "deaths_no": "Kematian: {deathcount}",
+    "time": "Waktu: {time}dtk",
+    "hit_message": "Pukulan di kepala!",
+    "warning_message": "Awas paku!",
+    "up_message": "Tekan ATAS untuk Melompat!",
+    "stamina_message": "Stamina: ",
+    "exit_message": "Portal Keluar! Datang ke sini untuk menang!",
+    "moving_message": "Tidak semua blok tetap diam...",
+    "mock_message": "Arah yang salah, bro. Nggak ada yang spesial di sini...",
+    "jump_message": "Gunakan blok oranye untuk melompat jauh!",
+    "saws_message": "Gergaji juga berbahaya!",
+    "sawed_message": "Terpotong kecil-kecil!",
+    "key_message": "Ambil koin dan buka blok!",
+    "laser_message": "Kena laser!",
+    "invisible_message": "Gergaji ini tidak akan menyakitimu... mungkin!",
+    "portal_message": "Portal biru ini bisa teleport! Tapi biasanya ke tempat bagus...",
+    "button1_message": "Tombol biru akan membuatmu melompat lebih tinggi!",
+    "button2_message": "Tombol lavender akan membuatmu melompat lebih rendah!",
+    "clarify_message": "Sampai kamu mencapai checkpoint, tentu saja!",
+    "clarify_message2": "Itu juga memengaruhi lompatan pada blok lompat!",
+    "button3_message": "Tombol ungu akan mematikan hampir semua cahaya!",
+    "button4_message": "Tombol hijau akan memberikan dorongan kecepatan besar!"
+    ,"timed_coin_message": "Koin oranye terbatas waktu! Mereka membuka balok untuk waktu"
+    ,"timed_coin_message_2": "terbatas. Lari sebelum mereka tertutup lagi, atau paling buruk, menghancurkanmu..."
+    ,"crushed_message": "Hancur!",
+    "evilrobo1": "Hah? Apa ada orang di sana?",
+    "evilrobo2": "HEI! Pergi dari sini!",
+    "evilrobo3": "KE MANA DIA PERGI????"
+  },
+  "in_game_ice": {
+    "temp": "Suhu: {current_temp}",
+    "ice_message": "Blok es akan mencair saat diinjak! Tapi juga mendinginkanmu!",
+    "freeze_message": "Ingat untuk menghangatkan diri atau kamu bisa membeku sampai mati!",
+    "overheat_message1": "Ingat juga untuk memantau suhu tubuhmu dan jika",
+    "overheat_message2": "terlalu panas, berdirilah di atas blok es terdekat!"
+  }
+}

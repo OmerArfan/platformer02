@@ -1,0 +1,156 @@
+{
+    "main_menu": {
+      "start": "开始",
+      "character_select": "角色选择",
+      "achievements": "成就",
+      "settings": "设置",
+      "profile": "个人资料",
+      "quit": "辞职",
+      "language": "更改语言",
+      "new": "有可用更新！"
+    }
+    ,"language_select": {
+          "back": "返回"
+      },
+  "settings": {
+    "About": "关于",
+    "site_credit": "音效来自 pixabay.com 并使用 Audacity 编辑",
+    "logo_credit": "Logo 和背景由 canva.com 制作",
+    "credit_credit": "作者：Omer Arfan",
+    "version_credit": "游戏版本: {version}",
+    "thanks": "感谢游玩！你太棒了！",
+    "bugs": "如果发现任何 Bug，请在 GitHub 仓库中报告。",
+    "sorry": "对于 Bug 带来的不便我们深表歉意。",
+    "support": "支持 / 报告错误",
+    "Audio": "音频",
+    "Sound": "声音",
+    "Ambience": "环境音",
+    "Mute": "静音 {setting}",
+    "Unmute": "取消静音 {setting}",
+    "Account": "账户",
+    "Back": "返回",
+    "select": "选择存档",
+    "sync_stat1": "正在将保险库同步到云端...",
+    "sync_stat2": "同步失败！",
+    "sync_stat3": "成功！",
+    "register_instr1": "使用用户名和密码创建新账户。",
+    "register_instr2": "您的账户将同步到云端。",
+    "new_acc": "新账户",
+    "acc_not_found": "账户不存在。",
+    "login_header": "登录",
+    "login_instr1": "输入您的用户名和密码以访问您的账户。"
+    ,"login_instr2": "如果帐户不存在，将为您创建一个新帐户。",
+    "login_instr3": "按 TAB 键切换密码和用户名简。按 ESC 返回。",
+    "case_warning": "用户名和密码区分大小写！"
+    ,"username_label": "用户名",
+    "password_label": "密码",
+    "submit_prompt": "按回车键 (ENTER) 继续"
+    ,"checking_vault": "正在检查云端保险库...",
+    "login_success": "登录成功！",
+    "conn_error": "连接错误：无法访问云端保险库。",
+    "wrong_pass": "密码错误！",
+    "account_created": "账号已创建！",
+    "too_short": "用户名/密码过短！"
+  },
+  "char_select": {
+    "select": "选择你的机器人！",
+    "evillocked_message": "获得“追逐与逃脱”成就以解锁此机器人！",
+    "icelocked_message": "此机器人即将推出！",
+    "lavalocked_message": "此机器人即将推出！",
+    "greenlocked_message": "获得“黄金成就”以解锁此机器人！",
+    "ironlocked_message": "获得“六之巅峰”成就以解锁此机器人！",
+    "cakelocked_message": "该机器人将于每年4月29日开放！",
+    "back": "返回"
+  }
+  ,"achieve": {
+   "unlock": "达成成就：",
+    "zen_os": "六之巅峰！",
+    "zen_os_desc": "在 30 秒内完成第 6 关且无死亡！",
+    "speedy_starter": "极速启航！",
+    "speedy_starter_desc": "在 4.5 秒内完成第 1 关！",
+    "over_9k": "战力破九千！",
+    "over_9k_desc": "在第 9 关获得 105,000 分或以上！",
+    "chase_escape": "追逐与逃脱！",
+    "chase_escape_desc": "秘密...",
+    "golden": "黄金成就！",
+    "golden_desc": "在所有绿色世界关卡中获得金牌或更高勋章！",
+    "lv20": "经验收藏家！",
+    "lv20_desc": "等级达到 20 级！",
+    "rew": "奖励：",
+    "char_rew": "新机器人",
+    "xp_rew": "{XP} 经验值"
+  }
+  ,"levels": {
+    "worlds": "选择世界",
+    "level_display": "选择一个级别",
+    "back": "返回"
+    ,"next": "下一个"
+     }
+  ,"messages": {    
+  "you_are_in": "你在{level}"
+  ,"loading": "加载中..."
+  ,"confirm_quit": "你确定要退出吗？",
+  "yes": "是",
+  "no": "否"
+  ,"deny_message": "访问被拒绝!",
+  "error_message": "您的屏幕分辨率太低！请在“系统偏好设置”中提高屏幕分辨率。"
+  ,"error_message2": "   ",
+  "countdown_message": "即将于 {countdown} 秒后关闭……"
+  ,"lvl_comp": "关卡完成"
+  ,"hs_m": "最高分: {hs}"
+  ,"xp_gained": "获得经验值: +{gain}"
+  ,"new_hs": "最高分新纪录"
+  ,"max_level": "最高等级"
+  ,"breakdown": "分数详情",
+  "base_score": "基础分数: {bs}",
+  "medal_score": "奖牌分数: {ms}",
+  "death_score": "死亡惩罚: {ds}",
+  "time_score": "时间惩罚: {ts}",
+  "lowest": "最低分！",
+  "time_reason": "你花了太长时间才",
+  "time_reason_2": "完成这个关卡。",
+  "death_reason": "你死得次数太多了！",
+  "death_reason_2": "",
+  "press_space": "按空格键",
+  "continue_wait": "继续或等待 {next_left}"
+  }
+  ,"in_game": {
+    "dead_message": "你死了！",
+    "fall_message": "掉得太远了！",
+    "deaths_no": "死亡：{deathcount}"
+    ,"time": "时间: {time}秒",
+    "hit_message": "击中头部！"
+    ,"warning_message": "小心尖刺！",
+    "up_message": "按上键跳跃！",
+    "stamina_message": "耐力：",
+    "exit_message": "出口传送门！来这里赢得胜利！",
+    "moving_message": "并非所有方块都保持静止...",
+    "mock_message": "路线错误，这里没什么特别的，我的朋友……"
+    ,"jump_message": "使用橙色方块跳跃！"
+    ,"saws_message": "小心锯子！"
+    ,"sawed_message": "锯成碎片！"
+    ,"key_message": "抓住硬币，打开方块！"
+    ,"laser_message": "激光处理！"
+    ,"invisible_message": "这些锯子不会伤害你……我保证！"  
+    ,"portal_message": "这些蓝色传送门会把你传送出去！不过大部分情况下……都会传送到好地方！"
+    ,"button1_message": "蓝色按钮激活后会让你跳得更高！",
+    "button2_message": "当你激活薰衣草按钮时，你会跳得更低!",
+    "clarify_message": "当然，直到你到达检查点！"
+    ,"clarify_message2": "它们还会影响你在跳跃方块上的跳跃！"
+    ,"button3_message": "紫色按钮激活时会关闭几乎所有灯光！"
+    ,"button4_message": "绿色按钮激活时会给你一个巨大的速度提升！"
+    ,"timed_coin_message": "橙色硬币是计时的！它们会开启方块一段"
+    ,"timed_coin_message_2": "有限的时间。在它们再次关闭前快跑，否则最糟的情况是被压碎..."
+    ,"crushed_message": "被粉碎了！",
+    "evilrobo1": "嗯？那里有人吗？",
+    "evilrobo2": "嘿！快离开这里！",
+    "evilrobo3": "他去哪儿了？？？？"
+  }
+  ,"in_game_ice":{
+  "temp": "温度: {current_temp}"
+  ,"ice_message": "站在冰块上会让它们融化！但它们也能让你降温！",
+  "freeze_message": "记得取点暖，不要被冻死了！",
+  "overheat_message1": "还要记得关注你的体温，如果",
+  "overheat_message2": "你太热了，就站在附近的冰块上降温吧！"
+}
+}
