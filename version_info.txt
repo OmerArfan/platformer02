@@ -21,7 +21,7 @@ VSVersionInfo(
             StringStruct('InternalName', 'Roboquix'),
             StringStruct('OriginalFilename', 'Roboquix.exe'),
             StringStruct('ProductName', 'Roboquix'),
-            StringStruct('ProductVersion', '0.2.0.0015')
+            StringStruct('ProductVersion', '0.2.0.0016')
           ]
         )
       ]
