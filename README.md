@@ -1,6 +1,6 @@
-# roboquix
-## This file contains information as of Version 1.3.9 (Build 468), so it may become outdated over time.
-### Check the current version in the [platformer.py](https://github.com/OmerArfan/platformer02/blob/main/platformer.py) file.
+# Roboquix
+## This file contains information as of Version 1.3.9 (Build 470), so it may become outdated over time.
+### Check the current version in the [startup.py](https://github.com/OmerArfan/platformer02/blob/main/cleobo/startup.py) file.
 
 ## About the game!
 Roboquix is a simple game where you move Lil Robo by using the arrow keys or WAD, towards the end portal. But in the process, you have to dodge obstacles, collect coins to open locked blocks, adjust to challenging mechanics, and more!
@@ -17,3 +17,9 @@ If you’re a developer and want to contribute, feel free to fork the repository
 
 ## Still curious?
 Check out the [Lil Robo Studios Website](https://omerarfan.github.io/lilrobowebsite/) or open up an issue to ask me a question!
+
+## What is Cleobo?
+Cleobo is the engine which the game is powered by! It handles asset loading, data mnagamenet, level logic, state transitions and UI design!*
+#### *As of Version 0.2.0, Build 15
+
+![Cleobo](assets/imgs/logos/power.png)

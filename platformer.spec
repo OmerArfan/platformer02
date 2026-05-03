@@ -5,17 +5,12 @@ block_cipher = None
 
 # List of all active folders
 added_files = [
-    ('audio', 'audio'),
-    ('bgs', 'bgs'),
-    ('char', 'char'),
-    ('data', 'data'),
-    ('fonts', 'fonts'),
-    ('lang', 'lang'),
-    ('oimgs', 'oimgs')
+    ('assets', 'assets'),
+    ('cleobo', 'cleobo'),
 ]
 
 a = Analysis(
-    ['platformer.py', 'level_logic.py', 'menu_ui.py', 'manage_data.py', 'startup.py', "acc_sys.py", "levels.py", "state.py", "text_sprite.py"],
+    ['main.py'],
     pathex=[],
     binaries=[],
     datas=added_files,
@@ -53,6 +48,6 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     # Logic for OS-specific assets
-    icon='oimgs/icons/robots.ico' if sys.platform == 'win32' else None,
+    icon='assets/icons/robots.ico' if sys.platform == 'win32' else None,
     version='version_info.txt' if sys.platform == 'win32' else None,
 )
