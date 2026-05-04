@@ -167,11 +167,19 @@ while running:
             screen.blit(quit_text, quit_text_rect)
             screen.blit(manage_data.robos['ironrobot'], (manage_data.SCREEN_WIDTH // 2 - manage_data.robos['robot'].get_width() // 2, manage_data.SCREEN_HEIGHT // 2 - 200))
             button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)
-
+        
         elif "lvl" in manage_data.current_page:
-            # Dynamically find and call the function in the levels module
-            lvl_func = getattr(levels, f"create_{manage_data.current_page}")
-            lvl_func(screen, transition)
+            # Call level launcher with the appropriate world
+            page_without_screen = manage_data.current_page.replace("_screen", "")
+            
+            if page_without_screen.startswith("mech_lvl"):
+                level_name = page_without_screen
+                world_name = "mech"
+            else:
+                level_name = page_without_screen
+                world_name = "green"
+            
+            levels.level_launcher(level_name, screen, transition, world_name)
         
         elif manage_data.current_page == "levels" or manage_data.current_page == "mech_levels":
             button_hovered_last_frame = menu_ui.draw_level_select(screen, mouse_pos, manage_data.current_page, current_lang, messages, button_hovered_last_frame)
