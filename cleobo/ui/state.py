@@ -10,7 +10,7 @@ import time
 from cleobo.levels import levels
 
 class TransitionManager:
-    def __init__(self, screen, left_image, right_image, speed=40):
+    def __init__(self, screen, left_image, right_image, speed=65):
         self.screen = screen
         self.left_image = left_image
         self.right_image = right_image
@@ -385,8 +385,21 @@ def set_page(screen, page, lang_code, manifest, progress, Achievements, bgs, dis
         menu_ui.create_quit_confirm_buttons(lang_code, manifest)
     elif "lvl" in page:
             current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
-            lvl_func = getattr(levels, f"create_{page}")
-            lvl_func(screen, transition)
+            
+            # Extract world and level from page name
+            # Examples: "lvl1_screen" -> level="lvl1", world="levels" (→"green")
+            #           "mech_lvl1_screen" -> level="mech_lvl1", world="mech_levels" (→"mech")
+            page_without_screen = page.replace("_screen", "")
+            
+            if page_without_screen.startswith("mech_lvl"):
+                level_name = page_without_screen  # "mech_lvl1", "mech_lvl2", etc.
+                world_name = "mech"  # Maps to mech.lua file
+            else:
+                level_name = page_without_screen  # "lvl1", "lvl2", etc.
+                world_name = "green"  # Maps to green.lua file
+            
+            # Call the generic level launcher
+            levels.level_launcher(level_name, screen, transition, world_name)
 
 def muting_sfx():
     manage_data.is_mute = not manage_data.is_mute
