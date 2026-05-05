@@ -101,16 +101,17 @@ def level_launcher(level_name, screen, transition, world_name):
     # Render text messages from data
     text_elements = []
     for text_key, text_data in level_data.get('text', {}).items():
-        if isinstance(text_data, (list, tuple)) and len(text_data) >= 4:
-            lang_key, fallback_text, color = text_data[0], text_data[1], text_data[2]
-            x = text_data[3] if len(text_data) > 3 else text_data.get('x', 0)
-            y = text_data[4] if len(text_data) > 4 else text_data.get('y', 0)
+        if isinstance(text_data, dict):
+            lang_key = text_data['name']
+            fallback_text = text_data['fallback']
+            color = tuple(text_data['color'])
+            x = text_data['x']
+            y = text_data['y']
             
-            # Get text from language file or use fallback
             display_text = in_game.get(lang_key, fallback_text)
-            rendered = menu_ui.render_text(display_text, True, tuple(color))
+            rendered = menu_ui.render_text(display_text, True, color)
             text_elements.append({'rendered': rendered, 'x': x, 'y': y})
-    
+
     # Pre-render fall message
     fall_message = in_game.get("fall_message", "Fell too far!")
     rendered_fall_text = menu_ui.render_text(fall_message, True, (255, 0, 0))
@@ -118,7 +119,6 @@ def level_launcher(level_name, screen, transition, world_name):
     # === MAIN GAME LOOP ===
     if not transition.active:
       while running:
-        print("new version working!")
         clock.tick_busy_loop(60)
         keys = pygame.key.get_pressed()
         
@@ -156,12 +156,6 @@ def level_launcher(level_name, screen, transition, world_name):
             velocity_y += gravity
         player_y += velocity_y
         
-        # === UPDATE MOVING BLOCKS ===
-        for mb in moving_blocks:
-            mb['rect'].x += mb['speed'] * mb['direction']
-            if mb['rect'].x < mb['limit_left'] or mb['rect'].x > mb['limit_right']:
-                mb['direction'] *= -1
-        
         # === COLLISION DETECTION ===
         player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
         on_ground = False
@@ -186,33 +180,22 @@ def level_launcher(level_name, screen, transition, world_name):
             
             # Transition to next level if exists
             next_page = level_data.get('next_page')
-            if next_page:
-                state.handle_action(next_page, transition, manage_data.current_page)
+            state.handle_action(next_page, transition, manage_data.current_page)
             
             running = False
+        
+        # === UPDATE CAMERA (before rendering) ===
+        camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
+        if player_y <= 200:
+            camera_y = player_y - 200
+        else:
+            camera_y = 0
         
         # === RENDER ===
         screen.blit(background, (0, 0))
         
-        # Draw static blocks
-        for block in blocks:
-            pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
-        
-        # Draw moving blocks
-        for mb in moving_blocks:
-            pygame.draw.rect(screen, (128, 0, 128), (mb['rect'].x - camera_x, mb['rect'].y - camera_y, mb['rect'].width, mb['rect'].height))
-        
-        # Draw jump blocks
-        for jb in jump_blocks:
-            pygame.draw.rect(screen, (255, 128, 0), (jb.x - camera_x, jb.y - camera_y, jb.width, jb.height))
-        
         # Draw spikes
         level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
-        
-        # Draw text elements
-        for text_elem in text_elements:
-            screen.blit(text_elem['rendered'], (text_elem['x'] - camera_x, text_elem['y'] - camera_y))
-        
         # Draw portal
         level_logic.draw_portal(screen, manage_data.assets['exit'], exit_portal, camera_x, camera_y)
         
@@ -223,6 +206,12 @@ def level_launcher(level_name, screen, transition, world_name):
             velocity_y, player_rect, on_ground
         )
         
+        player_x, player_y, velocity_y, on_ground, player_rect, moving_blocks = level_logic.handle_moving_blocks(
+            screen, moving_blocks, camera_x, camera_y, 
+            player_x, player_y, img_width, img_height, 
+            velocity_y, player_rect, on_ground
+        )
+
         # Spike collisions
         if level_logic.check_spike_collisions(spikes, player_x, player_y, img_width, img_height):
             player_x, player_y = spawn_x, spawn_y
@@ -233,30 +222,14 @@ def level_launcher(level_name, screen, transition, world_name):
             velocity_y = 0
             deathcount += 1
         
-        # Moving block collisions
-        for mb in moving_blocks:
-            if player_rect.colliderect(mb['rect']):
-                if velocity_y > 0 and player_y + img_height - velocity_y <= mb['rect'].y:
-                    player_y = mb['rect'].y - img_height
-                    velocity_y = 0
-                    on_ground = True
-                elif player_x + img_width > mb['rect'].x and player_x < mb['rect'].x + mb['rect'].width:
-                    if player_x < mb['rect'].x:
-                        player_x = mb['rect'].x - img_width
-                    elif player_x + img_width > mb['rect'].x + mb['rect'].width:
-                        player_x = mb['rect'].x + mb['rect'].width
-        
         # === RENDER PLAYER ===
         level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img, 
                                  screen, keys, player_x, player_y, camera_x, camera_y)
         
-        # === CAMERA LOGIC ===
-        camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
-        if player_y <= 200:
-            camera_y = player_y - 200
-        else:
-            camera_y = 0
-        
+        # Draw text elements
+        for text_elem in text_elements:
+            screen.blit(text_elem['rendered'], (text_elem['x'] - camera_x, text_elem['y'] - camera_y))
+
         # === UI ===
         deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
         deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
@@ -291,258 +264,6 @@ def level_launcher(level_name, screen, transition, world_name):
         menu_ui.draw_syncing_status(screen)
         
         pygame.display.update()
-
-
-def create_lvl1_screen(screen, transition):
-    global player_img, current_time, medal, deathcount
-    global new_hs, ctime
-    global x, y, camera_x, camera_y, player_x, player_y,deathcount, in_game, velocity_y, wait_time,death_text,spawn_x, spawn_y,  player_rect, on_ground
-
-    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(manage_data.selected_character)
-    new_hs = False
-
-    menu_ui.buttons.clear()
-    screen.blit(manage_data.bgs['green'], (0, 0))
-    in_game = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('in_game', {})
-
-    wait_time = None
-    death_text = None
-    start_time = time.time()
-
-    # Camera settings
-    camera_x = 0  
-    camera_y = 0
-    player_x, player_y = 600, 200
-    spawn_x, spawn_y = player_x, player_y
-    running = True
-    gravity = 1
-    jump_strength = 20
-    move_speed = 8
-    on_ground = False
-    velocity_y = 0
-    camera_speed = 0.05
-    deathcount = 0
-    was_moving = False
-
-    blocks = [
-        pygame.FRect(600, 450, 200, 50),
-        pygame.FRect(1000, 400, 200, 50),
-        pygame.FRect(1700, 300, 200, 50),
-        pygame.FRect(2100, 300, 200, 50),
-        pygame.FRect(2500, 250, 500, 50),
-        pygame.FRect(1850, 400, 320, 50),
-    ]
-
-    moving_block = pygame.FRect(1300, 300, 100, 20)
-    moving_direction1 = 1
-    moving_speed = 2
-    moving_limit_left1 = 1300
-    moving_limit_right1 = 1500
-
-    spikes = [
-        [(1850, 400), (1900, 350), (1950, 400)],
-        [(1960, 400), (2010, 350), (2060, 400)],
-        [(2070, 400), (2120, 350), (2170, 400)],
-        [(2650, 250), (2700, 200), (2750, 250)],
-    ]
-
-    exit_portal = pygame.FRect(2780, 60, 140, 180)
-    clock = pygame.time.Clock()
-
-    # Render the texts
-    warning_text = in_game.get("warning_message", "Watch out for spikes!")
-    rendered_warning_text = menu_ui.render_text(warning_text, True, (255, 0, 0))  # Render the warning text
-
-    up_text = in_game.get("up_message", "Press UP to Jump!")
-    rendered_up_text = menu_ui.render_text(up_text, True, (0, 0, 0))  # Render the up text
-
-    exit_text = in_game.get("exit_message", "Exit Portal! Come here to win!")
-    rendered_exit_text = menu_ui.render_text(exit_text, True, (0, 73, 0))  # Render the exit text
-
-    moving_text = in_game.get("moving_message", "Not all blocks stay still...")
-    rendered_moving_text = menu_ui.render_text(moving_text, True, (128, 0, 128))  # Render the moving text
-
-    fall_message = in_game.get("fall_message", "Fell too far!")
-    rendered_fall_text = menu_ui.render_text(fall_message, True, (255, 0, 0))  # Render the fall text
-
-    pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
-
-    level_logic.draw_portal(screen, manage_data.assets['exit'], exit_portal, camera_x, camera_y)
-    
-    screen.blit(rendered_up_text, (700 - camera_x, 200 - camera_y))  # Draws the rendered up text
-    screen.blit(rendered_warning_text, (1900 - camera_x, 150 - camera_y))  # Draws the rendered warning text
-    screen.blit(rendered_moving_text, (1350 - camera_x, 170 - camera_y))  # Draws the rendered moving text
-    screen.blit(rendered_exit_text, (2400 - camera_x, 300 - camera_y))  # Draws the rendered exit text
-
-    for block in blocks:
-            pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
-
-    menu_ui.draw_notifs(screen)
-    menu_ui.draw_syncing_status(screen)
-
-    if not transition.active:
-       while running:
-        clock.tick_busy_loop(60)
-        keys = pygame.key.get_pressed()
-
-        current_time = time.time() - start_time
-        formatted_time = "{:.2f}".format(current_time)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or keys[pygame.K_q]:
-                running = False
-                state.handle_action("quit", transition, manage_data.current_page)
-
-        # Input
-        if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
-            velocity_y = -jump_strength
-            if not manage_data.is_mute:
-                manage_data.sounds['jump'].play()
-        
-
-        # Detect if any movement key is pressed
-        moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
-                  keys[pygame.K_RIGHT] or keys[pygame.K_d])
-
-        if moving:
-            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-                player_x -= move_speed
-            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-                player_x += move_speed
-
-            if on_ground and not was_moving and not manage_data.is_mute:
-                manage_data.sounds['move'].play()
-            was_moving = True
-        else:
-            was_moving = False
-
-        # Gravity and stamina
-        if not on_ground:
-            velocity_y += gravity
-        player_y += velocity_y
-
-        # Moving blocks
-        moving_block.x += moving_speed * moving_direction1
-        if moving_block.x < moving_limit_left1 or moving_block.x > moving_limit_right1:
-            moving_direction1 *= -1
-
-        # Collisions and Ground Detection
-        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
-        on_ground = False
-
-        if player_y > 1100:
-            player_x, player_y = 600, 200
-            death_text = rendered_fall_text
-            wait_time = pygame.time.get_ticks()
-            if not manage_data.is_mute:
-                manage_data.sounds['fall'].play()
-            velocity_y = 0
-            deathcount += 1
-
-        if player_rect.colliderect(exit_portal):
-            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_logic.fin_lvl_logic(current_time, deathcount, medal, 1)
-            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
-            
-            achievements.lvl1speed(current_time)
-            achievements.check_green_gold()
-
-            manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
-            state.handle_action('lvl2_screen', transition, manage_data.current_page)
-            
-            running = False
-            
-
-        screen.blit(manage_data.bgs['green'], (0, 0))
-
-        pygame.draw.rect(screen, (128, 0, 128), (moving_block.x - camera_x, moving_block.y - camera_y, moving_block.width, moving_block.height))
-    
-        player_x, player_y, velocity_y, on_ground, player_rect = level_logic.block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground)
-
-        level_logic.draw_spikes(screen, spikes, camera_x, camera_y)
-
-        if level_logic.check_spike_collisions(spikes, player_x, player_y, img_width, img_height):
-            player_x, player_y = spawn_x, spawn_y
-            death_text = menu_ui.render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
-            wait_time = pygame.time.get_ticks()
-            if not manage_data.is_mute:
-                manage_data.sounds['death'].play()
-            velocity_y = 0
-            deathcount += 1
-
-        if player_rect.colliderect(moving_block):
-                # Falling onto a block
-                if velocity_y > 0 and player_y + img_height - velocity_y <= moving_block.y:
-                    player_y = moving_block.y - img_height
-                    velocity_y = 0
-                    on_ground = True
-
-                # Horizontal collision (left or right side of the block)
-                elif player_x + img_width > moving_block.x and player_x < moving_block.x + moving_block.width:
-                    if player_x < moving_block.x:  # Colliding with the left side of the block
-                        player_x = moving_block.x - img_width
-                    elif player_x + img_width > moving_block.x + moving_block.width:  # Colliding with the right side
-                        player_x = moving_block.x + moving_block.width
-
-        level_logic.draw_portal(screen, manage_data.assets['exit'], exit_portal, camera_x, camera_y)
-
-        level_logic.player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
-
-        # Inside the game loop:
-        screen.blit(rendered_up_text, (700 - camera_x, 200 - camera_y))  # Draws the rendered up text
-        screen.blit(rendered_warning_text, (1900 - camera_x, 150 - camera_y))  # Draws the rendered warning text
-        screen.blit(rendered_moving_text, (1350 - camera_x, 170 - camera_y))  # Draws the rendered moving text
-        screen.blit(rendered_exit_text, (2400 - camera_x, 300 - camera_y))  # Draws the rendered exit text
-
-        # Camera logic
-        camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
-
-        # Adjust the camera's Y position when the player moves up
-        if player_y <= 200:
-            camera_y = player_y - 200
-        else:
-            camera_y = 0  # Keep the camera fixed when the player is below the threshold
-
-        deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
-
-        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = menu_ui.render_text(timer_txt, True, (255, 255, 255))  # white color
-
-        # Initialize and draw the reset and quit text
-        reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
-
-        quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
-
-        level_logic.draw_level_ui(screen, manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
-        
-        medal = level_logic.get_medal(1, current_time)
-        level_logic.draw_medals(screen, medal, deathcount, manage_data.medals, timer_text.get_width(), manage_data.SCREEN_WIDTH)
-
-        if keys[pygame.K_r]:
-        #    resetting()
-         #   if  time.time() - ctime > 3:
-                ctime = None
-                start_time = time.time()
-                current_time = 0
-                spawn_x, spawn_y = 600, 200
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
-                velocity_y = 0
-                deathcount = 0
-          #  else:
-           #     countdown = max(0, 3 - round(time.time() - ctime, 2))
-             #   reset_text = menu_ui.render_text(f"Resetting the level in {countdown:.2f}", True, (255, 0, 0))
-            #    screen.blit(reset_text, (manage_data.SCREEN_WIDTH // 2 - 200 , 300))             
-        #else:
-         #   ctime = None
-
-        level_logic.death_message(screen, death_text, wait_time, duration=2500)
-
-        menu_ui.draw_notifs(screen)
-        menu_ui.draw_syncing_status(screen)
-
-        pygame.display.update()    
 
 def create_lvl2_screen(screen, transition):
     global player_img, complete_levels, wait_time, transition_time, is_transitioning, current_time, medal, deathcount, score

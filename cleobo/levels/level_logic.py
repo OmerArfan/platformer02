@@ -157,6 +157,29 @@ def handle_bottom_collisions(blocks, player_rect, velocity_y):
                 return True
     return False
 
+def handle_moving_blocks(screen, moving_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground):
+        for mb in moving_blocks:
+            pygame.draw.rect(screen, (128, 0, 128), (mb['rect'].x - camera_x, mb['rect'].y - camera_y, mb['rect'].width, mb['rect'].height))
+            mb['rect'].x += mb['speed'] * mb['direction']
+            if mb['rect'].x < mb['limit_left'] or mb['rect'].x > mb['limit_right']:
+                mb['direction'] *= -1
+            
+            if player_rect.colliderect(mb['rect']):
+                # Standing on top of the moving block
+                if velocity_y > 0 and player_y + img_height - velocity_y <= mb['rect'].y:
+                    player_y = mb['rect'].y - img_height
+                    velocity_y = 0
+                    on_ground = True
+                    # Carry the player along with the block's horizontal movement
+                    player_x += mb['speed'] * mb['direction']
+                # Hitting from the side
+                elif player_x + img_width > mb['rect'].x and player_x < mb['rect'].x + mb['rect'].width:
+                    if player_x < mb['rect'].x:
+                        player_x = mb['rect'].x - img_width
+                    elif player_x + img_width > mb['rect'].x + mb['rect'].width:
+                        player_x = mb['rect'].x + mb['rect'].width
+        
+        return player_x, player_y, velocity_y, on_ground, player_rect, moving_blocks
 
 def jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, bounce_sound, strong_grav, weak_grav):
         for jump_block in jump_blocks:
