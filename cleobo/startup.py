@@ -14,7 +14,7 @@ FONTS_FOLDER = manage_data.resource_path("assets/fonts")
 
 # Initializing Game and Engine Version
 manage_data.version = "1.3.9.0472"
-manage_data.kernel = "0.2.0.0018"
+manage_data.kernel = "0.2.0.0019"
 manage_data.power = pygame.image.load(os.path.join(IMAGES_FOLDER, "logos/power.png"))
 
 def verify_asset_exists(path, asset_name):
