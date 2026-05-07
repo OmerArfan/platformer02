@@ -1,6 +1,114 @@
 import pygame
 import math
+import time
 import cleobo.data.manage_data as manage_data
+
+class Player:
+    def __init__(self, x, y, width, height):
+        self.rect = pygame.FRect(x, y, width, height)
+
+        # Spawn data
+        self.spawn_x = 0
+        self.spawn_y = 0
+
+        # Physics
+        self.gravity = 1
+        self.velocity_y = 0
+
+        # Speed settings
+        self.speeds = {
+            "normal": 8,
+            "stamina": 19
+        }
+        self.velocity_x = self.speeds["normal"]
+
+        # Jump Settings (Replaced the dots with underscores)
+        self.grav_strength = {
+            "strong": 15,
+            "normal": 21,
+            "weak": 37
+        }
+        self.jump = self.grav_strength["normal"]
+        
+        # State
+        self.on_ground = False
+        self.moving = False
+        
+        # Camera
+        self.camera_x = 0
+        self.camera_y = 0
+        self.camera_speed = 0.05
+        self.lights_on = True
+
+        # Other
+        self.deathcount = 0
+    
+    def input_update(self, keys):
+        # === JUMPING ===
+        if (keys[pygame.K_UP] or keys[pygame.K_w]) and self.on_ground:
+            self.velocity_y = -self.jump # Using your self.jump from grav_strength
+            if not manage_data.is_mute:
+                manage_data.sounds['jump'].play()
+        
+        # === MOVEMENT ===
+        self.moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or keys[pygame.K_RIGHT] or keys[pygame.K_d])
+        
+        if self.moving:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                self.rect.x -= self.velocity_x
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                self.rect.x += self.velocity_x
+            
+            # Sound logic
+            if self.on_ground and not self.moving and not manage_data.is_mute:
+                manage_data.sounds['move'].play()
+            self.moving = True
+        else:
+            self.moving = False
+        
+        # === PHYSICS ===
+        if not self.on_ground:
+            self.velocity_y += self.gravity
+            
+        self.rect.y += self.velocity_y
+    
+    def camera_update(self):
+    # === UPDATE CAMERA (before rendering) ===
+        self.camera_x += (self.rect.x - self.camera_x - manage_data.SCREEN_WIDTH // 2 + self.rect.width // 2) * self.camera_speed
+        if self.rect.y <= 200:
+            self.camera_y = self.rect.y - 200
+        else:
+            self.camera_y = 0
+    
+    def fall(self, manager, rendered_fall_text):
+    # Fall death
+        if self.rect.y > 1100:
+            self.rect.x, self.rect.y = self.spawn_x, self.spawn_y
+            manager.death_text = rendered_fall_text
+            manager.wait_time = pygame.time.get_ticks()
+            if not manage_data.is_mute:
+                manage_data.sounds['fall'].play()
+            self.velocity_y = 0
+            manager.deathcount += 1
+    
+    def update(self, keys, manager, rendered_fall_text):
+        self.input_update(keys)
+        self.camera_update()
+        self.fall(manager, rendered_fall_text)
+
+class LevelManager:
+    def __init__(self):
+        self.death_count = 0
+        self.medal = "None"
+        self.death_text = None
+        self.wait_time = None
+        self.start_time = time.time()
+        self.current_time = 0
+
+    def reset_stats(self):
+        self.death_count = 0
+        self.start_time = time.time()
+        self.death_text = None
 
 ctime = None # global only for resetting
 def resetting():
