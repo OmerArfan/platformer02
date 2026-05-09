@@ -5,7 +5,7 @@ import pygame
 import arabic_reshaper
 import time
 from bidi.algorithm import get_display
-from cleobo.levels import level_logic
+from cleobo.levels.level_logic import LevelManager
 import cleobo.data.manage_data as manage_data
 import math
 import cleobo.ui.state as state
@@ -62,10 +62,10 @@ def render_text(text, Boolean, color):
     
     font_to_use.outline = thickness
     # This surface is automatically sized correctly by pygame-ce
-    surf = font_to_use.render(display_text, True, (0, 0, 0)) 
+    surf = font_to_use.render(display_text, True, (0, 0, 0), wraplength=1100) 
     
     font_to_use.outline = 0
-    main_text = font_to_use.render(display_text, True, color)
+    main_text = font_to_use.render(display_text, True, color, wraplength=1100)
     
     # Blit directly onto the 'surf' we already have
     surf.blit(main_text, (thickness, thickness))
@@ -283,7 +283,7 @@ def draw_profile(screen):
             if manage_data.progress["lvls"]['medals'][f"lvl{i}"] == "Diamond":
                 diamond_medals += 1
         score = manage_data.progress["lvls"]['score'][f"lvl{i}"]
-        level_star = level_logic.get_stars(i, score)
+        level_star = LevelManager.get_stars(i, score)
         total_stars += level_star
 
     for ach in manage_data.progress['achieved']:
@@ -619,7 +619,7 @@ def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, b
                 if medal != "None":
                     screen.blit(manage_data.medals[medal], (manage_data.SCREEN_WIDTH // 2 - 250, manage_data.SCREEN_HEIGHT - 80))
                 
-                stars = level_logic.get_stars(int(key[3:]), score)
+                stars = LevelManager.get_stars(int(key[3:]), score)
                 for i in range(stars):
                     screen.blit(manage_data.assets['star_small'], (manage_data.SCREEN_WIDTH // 2 + (i-1)*25, manage_data.SCREEN_HEIGHT - 80))
                     
