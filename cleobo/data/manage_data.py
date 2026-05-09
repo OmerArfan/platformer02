@@ -14,7 +14,7 @@ import requests
 from io import StringIO
 import pygame
 import cleobo.data.acc_sys as acc_sys
-from cleobo.levels import level_logic
+from cleobo.levels.level_logic import LevelManager
 import cleobo.data.achievements as achieve
 
 pygame.font.init()
@@ -582,7 +582,7 @@ def xp():
     stars = 0
     for level in range(1, 13):
         score = scores.get(f"lvl{level}", 0)
-        stars += level_logic.get_stars(level, score)
+        stars += LevelManager.get_stars(level, score)
     star_xp = stars * 20  # 50 XP per star
 
     # XP from achievements
