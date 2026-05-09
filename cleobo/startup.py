@@ -5,6 +5,11 @@ import json
 from datetime import datetime
 import traceback
 
+# Initializing Game and Engine Version
+manage_data.version = "1.3.9.0472"
+manage_data.kernel = "0.2.0.0020"
+print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
+
 manage_data.now = datetime.now()
 
 # Path to sound folder
@@ -12,13 +17,10 @@ SOUND_FOLDER = manage_data.resource_path("assets/sound")
 IMAGES_FOLDER = manage_data.resource_path("assets/imgs")
 FONTS_FOLDER = manage_data.resource_path("assets/fonts")
 
-# Initializing Game and Engine Version
-manage_data.version = "1.3.9.0472"
-manage_data.kernel = "0.2.0.0019"
 manage_data.power = pygame.image.load(os.path.join(IMAGES_FOLDER, "logos/power.png"))
 
 def verify_asset_exists(path, asset_name):
-    """Verify asset file exists before loading"""
+    # Verify asset file exists before loading
     if not os.path.exists(path):
         raise FileNotFoundError(f"Missing asset: {asset_name} at {path}")
     return path
