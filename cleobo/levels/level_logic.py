@@ -20,7 +20,8 @@ class Player:
             "normal": 8,
             "stamina": 19
         }
-        self.velocity_x = self.speeds["normal"]
+        self.speed_mode = "normal" # To keep track of the speed mode (For easy switching)
+        self.velocity_x = self.speeds[self.speed_mode]
 
         # Jump Settings (Replaced the dots with underscores)
         self.grav_strength = {
@@ -28,7 +29,8 @@ class Player:
             "normal": 21,
             "weak": 37
         }
-        self.jump = self.grav_strength["normal"]
+        self.jump_mode = "normal" # To keep track of the gravity mode for our convenience in game logic
+        self.jump = self.grav_strength[self.jump_mode]
         
         # State
         self.on_ground = False
@@ -47,6 +49,7 @@ class Player:
         # === JUMPING ===
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and self.on_ground:
             self.velocity_y = -self.jump # Using your self.jump from grav_strength
+            self.on_ground = False
             if not manage_data.is_mute:
                 manage_data.sounds['jump'].play()
         
@@ -66,11 +69,9 @@ class Player:
         else:
             self.moving = False
         
-        # === PHYSICS ===
-        if not self.on_ground:
-            self.velocity_y += self.gravity
-            
+        self.velocity_y += self.gravity
         self.rect.y += self.velocity_y
+        self.on_ground = False
     
     def camera_update(self):
     # === UPDATE CAMERA (before rendering) ===
@@ -89,212 +90,211 @@ class Player:
             if not manage_data.is_mute:
                 manage_data.sounds['fall'].play()
             self.velocity_y = 0
-            manager.deathcount += 1
+            self.deathcount += 1
     
     def update(self, keys, manager, rendered_fall_text):
         self.input_update(keys)
         self.camera_update()
         self.fall(manager, rendered_fall_text)
 
+    def reset_stats(self):
+        self.rect.x, self.rect.y = self.spawn_x, self.spawn_y
+        self.velocity_y = 0
+        self.deathcount = 0
+
 class LevelManager:
     def __init__(self):
-        self.death_count = 0
-        self.medal = "None"
+        self.medal = None
         self.death_text = None
         self.wait_time = None
         self.start_time = time.time()
         self.current_time = 0
 
     def reset_stats(self):
-        self.death_count = 0
         self.start_time = time.time()
         self.death_text = None
 
-ctime = None # global only for resetting
-def resetting():
-    global ctime
-    if ctime is None:
-        ctime = pygame.time.get_ticks()
-
-def score_calc(current_time, deathcount, medal):
-    base_score = 100000 # From where the score is added to/subtracted from
-    token_score = 0
-    time_score = int(current_time * 160)
-    if medal == "Diamond":
-        medal_score = -10000
-    elif medal == "Gold":
-        medal_score = 5000
-    elif medal == "Silver":
-        medal_score = 10000
-    elif medal == "Bronze":
-        medal_score = 15000
-    else:
-        medal_score = 25000
-    death_score = deathcount * 300
-    score = max(500, base_score - medal_score - death_score - time_score + token_score)
-    return score, base_score, medal_score, death_score, time_score
-
-# ALgorithm for logic stuff when level is completed
-def fin_lvl_logic(current_time, deathcount, medal, lvl):
-            print(manage_data.progress["lvls"]["score"][f"lvl{lvl}"])
-            if manage_data.progress["lvls"]["complete_levels"] < lvl:
-                manage_data.progress["lvls"]["complete_levels"] = lvl
-
-            if not manage_data.is_mute:
-                manage_data.sounds['warp'].play()
-
-            if current_time < manage_data.progress["lvls"]["times"][f"lvl{lvl}"] or manage_data.progress["lvls"]["times"][f"lvl{lvl}"] == 0:
-                manage_data.progress["lvls"]["times"][f"lvl{lvl}"] = round(current_time, 2)
-            
-            if manage_data.progress["lvls"]["score"][f"lvl{lvl}"] < 100000:
-                manage_data.progress["lvls"]["medals"][f"lvl{lvl}"] = get_medal(lvl, manage_data.progress["lvls"]["times"][f"lvl{lvl}"])
-            else:
-                manage_data.progress["lvls"]["medals"][f"lvl{lvl}"] = "Diamond"
-
-            medal = get_medal(lvl, current_time)
-
-            if medal == "Gold" and deathcount == 0:
-                medal = "Diamond"
-                manage_data.progress["lvls"]["medals"][f"lvl{lvl}"] = medal
-            score, base_score, medal_score, death_score, time_score = score_calc(current_time, deathcount, medal)
-            if manage_data.progress["lvls"]["score"][f"lvl{lvl}"] < score or manage_data.progress["lvls"]["score"][f"lvl{lvl}"] == 0:
-                manage_data.progress["lvls"]["score"][f"lvl{lvl}"] = score
-                new_hs = True
-                hs = score
-            else:
-                new_hs = False
-                hs = manage_data.progress["lvls"]["score"][f"lvl{lvl}"]
-            print(new_hs)
-
-            manage_data.update_locked_levels(manage_data.progress, manage_data.manifest)
-            stars = get_stars(lvl, score)
-            return score, base_score, medal_score, death_score, time_score, stars, new_hs, hs
-
-# Function to get medal based on time
-def get_medal(level, time_taken):
-    thresholds = next((t for t in manage_data.level_thresholds if t['level'] == level), None)
-    if not thresholds:
-        return "None"
-    if time_taken <= thresholds['gold']:
-        return "Gold"
-    elif time_taken <= thresholds['silver']:
-        return "Silver"
-    elif time_taken <= thresholds['bronze']:
-        return "Bronze"
-    else:
-        return "None"
-
-def get_stars(level, score):
-    thresholds = next((t for t in manage_data.score_thresholds if t['level'] == level), None)
-    if not thresholds:
-        return 0
-    if score >= thresholds['3']:
-        return 3
-    elif score >= thresholds['2']:
-        return 2
-    elif score >= thresholds['1']:
-        return 1
-    else:
-        return 0
-
-def draw_level_ui(screen, SCREEN_WIDTH, SCREEN_HEIGHT, deaths_text, reset_text, quit_text, timer_text):
-    screen.blit(deaths_text, (20, 20))
-    screen.blit(timer_text, (SCREEN_WIDTH - timer_text.get_width() - 10, 20))
-    screen.blit(reset_text, (10, SCREEN_HEIGHT - 54))
-    screen.blit(quit_text, (SCREEN_WIDTH - 203, SCREEN_HEIGHT - 54))
-
-def draw_medals(screen, medal_type, deathcount, images, timer_width, SCREEN_WIDTH):
-    # The logic tweak you just thought of:
-    if medal_type == "Gold" and deathcount == 0:
-        medal_type = "Diamond"
-    img = images.get(medal_type)
-    if img:
-        screen.blit(img, (SCREEN_WIDTH - timer_width - 110, 20))
-
-def player_image(current_time, moving_img, moving_img_l, player_img, blink_img, screen, keys, player_x, player_y, camera_x, camera_y):
-    if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
-            screen.blit(moving_img, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-    elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
-            screen.blit(moving_img_l, (player_x - camera_x, player_y - camera_y))  # Draw the moving block image
-    else:
-        screen.blit(player_img, (player_x - camera_x, player_y - camera_y))
-        if current_time % 4 < 0.25:
-            screen.blit(blink_img, (player_x - camera_x, player_y - camera_y))
-
-def draw_portal(screen, img, portal, camera_x, camera_y):
-    bobbing_offset = math.sin(pygame.time.get_ticks() * 0.005) * 5
-    screen.blit(img, (portal.x - camera_x, portal.y + bobbing_offset - camera_y))
-
-def death_message(screen, death_text, wait_time, duration=2500):
-    if wait_time is not None:
-        if pygame.time.get_ticks() - wait_time < duration:
-            screen.blit(death_text, (20, 50))
-            return wait_time # Keep the timer running
+    def score_calc(self, player):
+        base_score = 100000 # From where the score is added to/subtracted from
+        token_score = 0
+        time_score = int(self.current_time * 160)
+        if self.medal == "Diamond":
+            medal_score = -10000
+        elif self.medal == "Gold":
+            medal_score = 5000
+        elif self.medal == "Silver":
+            medal_score = 10000
+        elif self.medal == "Bronze":
+            medal_score = 15000
         else:
-            return None # Reset the timer
-    return None
+            medal_score = 25000
+        death_score = player.deathcount * 300
+        score = max(500, base_score - medal_score - death_score - time_score + token_score)
+        return score, base_score, medal_score, death_score, time_score
 
-def block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground):
+    # ALgorithm for logic stuff when level is completed
+    def fin_lvl_logic(self, lvl, player):
+        print(manage_data.progress["lvls"]["score"][f"lvl{lvl}"])
+        if manage_data.progress["lvls"]["complete_levels"] < lvl:
+            manage_data.progress["lvls"]["complete_levels"] = lvl
 
-    for block in blocks:
-            pygame.draw.rect(screen, (0, 0, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
-            if player_rect.colliderect(block):
-                # Falling onto a block
-                if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
-                    player_y = block.y - img_height
-                    velocity_y = 0
-                    on_ground = True
-                
-                # Horizontal collision (left or right side of the block)
-                elif player_x + img_width > block.x and player_x < block.x + block.width:
-                    if player_x < block.x:  # Colliding with the left side of the block
-                        player_x = block.x - img_width
-                    elif player_x + img_width > block.x + block.width:  # Colliding with the right side
-                        player_x = block.x + block.width
+        if not manage_data.is_mute:
+            manage_data.sounds['warp'].play()
+
+        if self.current_time < manage_data.progress["lvls"]["times"][f"lvl{lvl}"] or manage_data.progress["lvls"]["times"][f"lvl{lvl}"] == 0:
+            manage_data.progress["lvls"]["times"][f"lvl{lvl}"] = round(self.current_time, 2)
+        
+        if manage_data.progress["lvls"]["score"][f"lvl{lvl}"] < 100000:
+            manage_data.progress["lvls"]["medals"][f"lvl{lvl}"] = self.get_medal(lvl, manage_data.progress["lvls"]["times"][f"lvl{lvl}"])
+        else:
+            manage_data.progress["lvls"]["medals"][f"lvl{lvl}"] = "Diamond"
+
+        medal = self.get_medal(lvl, self.current_time)
+
+        if medal == "Gold" and player.deathcount == 0:
+            medal = "Diamond"
+            manage_data.progress["lvls"]["medals"][f"lvl{lvl}"] = medal
+
+        score, base_score, medal_score, death_score, time_score = self.score_calc(player)
+        
+        if manage_data.progress["lvls"]["score"][f"lvl{lvl}"] < score or manage_data.progress["lvls"]["score"][f"lvl{lvl}"] == 0:
+            manage_data.progress["lvls"]["score"][f"lvl{lvl}"] = score
+            new_hs = True
+            hs = score
+        else:
+            new_hs = False
+            hs = manage_data.progress["lvls"]["score"][f"lvl{lvl}"]
+
+        manage_data.update_locked_levels(manage_data.progress, manage_data.manifest)
+        stars = self.get_stars(lvl, score)
+        return score, base_score, medal_score, death_score, time_score, stars, new_hs, hs
+
+    def draw_level_ui(self, screen, deaths_text, reset_text, quit_text, timer_text):
+        screen.blit(deaths_text, (20, 20))
+        screen.blit(timer_text, (manage_data.SCREEN_WIDTH - timer_text.get_width() - 10, 20))
+        screen.blit(reset_text, (10, manage_data.SCREEN_HEIGHT - 54))
+        screen.blit(quit_text, (manage_data.SCREEN_WIDTH - quit_text.get_width() - 10, manage_data.SCREEN_HEIGHT - 54))
+
+    def draw_medals(self, screen, player, timer_width):
+        if self.medal == "Gold" and player.deathcount == 0:
+            self.medal = "Diamond"
+        if self.medal != None:
+            img = manage_data.medals[self.medal]
+            screen.blit(img, (manage_data.SCREEN_WIDTH - timer_width - 110, 20))
     
-    return player_x, player_y, velocity_y, on_ground, player_rect
+    def death_message(self, screen, duration=2500):
+        if self.wait_time is not None:
+            if pygame.time.get_ticks() - self.wait_time < duration:
+                screen.blit(self.death_text, (20, 50))
+            else:
+                self.wait_time = None
 
-def handle_bottom_collisions(blocks, player_rect, velocity_y):
+    # Function to get medal based on time
+    @staticmethod
+    def get_medal(level, time_taken):
+        thresholds = next((t for t in manage_data.level_thresholds if t['level'] == level), None)
+        if not thresholds:
+            return "None"
+        if time_taken <= thresholds['gold']:
+            return "Gold"
+        elif time_taken <= thresholds['silver']:
+            return "Silver"
+        elif time_taken <= thresholds['bronze']:
+            return "Bronze"
+        else:
+            return "None"
+
+    @staticmethod
+    def get_stars(level, score):
+        thresholds = next((t for t in manage_data.score_thresholds if t['level'] == level), None)
+        if not thresholds:
+            return 0
+        if score >= thresholds['3']:
+            return 3
+        elif score >= thresholds['2']:
+            return 2
+        elif score >= thresholds['1']:
+            return 1
+        else:
+            return 0
+
+    def update(self, screen, player, deaths_text, reset_text, quit_text, timer_text): # Any ideas?
+        self.draw_medals(screen, player, timer_text.get_width())
+        self.draw_level_ui(screen, deaths_text, reset_text, quit_text, timer_text)
+        self.death_message(screen)
+
+def player_image(manager, moving_img, moving_img_l, player_img, blink_img, screen, keys, player):
+    if (keys[pygame.K_RIGHT]) or (keys[pygame.K_d]):
+            screen.blit(moving_img, (player.rect.x - player.camera_x, player.rect.y - player.camera_y))  # Draw the moving block image
+    elif (keys[pygame.K_LEFT]) or (keys[pygame.K_a]):
+            screen.blit(moving_img_l, (player.rect.x - player.camera_x, player.rect.y - player.camera_y))  # Draw the moving block image
+    else:
+        screen.blit(player_img, (player.rect.x - player.camera_x, player.rect.y - player.camera_y))
+        if manager.current_time % 4 < 0.25:
+            screen.blit(blink_img, (player.rect.x - player.camera_x, player.rect.y - player.camera_y))
+
+def draw_portal(screen, img, portal, player):
+    bobbing_offset = math.sin(pygame.time.get_ticks() * 0.005) * 5
+    screen.blit(img, (portal.x - player.camera_x, portal.y + bobbing_offset - player.camera_y))
+
+def block_func(screen, blocks, player):
+    for block in blocks:
+            pygame.draw.rect(screen, (0, 0, 0), (block.x - player.camera_x, block.y - player.camera_y, block.width, block.height))
+            if player.rect.colliderect(block):
+                # Falling onto a block
+                if player.velocity_y > 0 and player.rect.y + player.rect.height - player.velocity_y <= block.y:
+                    player.rect.y = block.y - player.rect.height
+                    player.velocity_y = 0
+                    player.on_ground = True
+                # Horizontal collision (left or right side of the block)
+                elif player.rect.x + player.rect.width > block.x and player.rect.x < block.x + block.width:
+                    if player.rect.x < block.x:  # Colliding with the left side of the block
+                        player.rect.x = block.x - player.rect.width
+                    elif player.rect.x + player.rect.width > block.x + block.width:  # Colliding with the right side
+                        player.rect.x = block.x + block.width
+    return player
+
+def handle_bottom_collisions(blocks, player):
     for block in blocks:
             if block.width <= 100:
                 laser_rect = pygame.FRect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
             else:
                 laser_rect = pygame.FRect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
             
-            if player_rect.colliderect(laser_rect) and velocity_y < 0:  # Only if jumping upward
+            if player.rect.colliderect(laser_rect) and player.velocity_y < 0:  # Only if jumping upward
                 return True
     return False
 
-def handle_moving_blocks(screen, moving_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground):
+def handle_moving_blocks(screen, moving_blocks, player):
         for mb in moving_blocks:
-            pygame.draw.rect(screen, (128, 0, 128), (mb['rect'].x - camera_x, mb['rect'].y - camera_y, mb['rect'].width, mb['rect'].height))
+            pygame.draw.rect(screen, (128, 0, 128), (mb['rect'].x - player.camera_x, mb['rect'].y - player.camera_y, mb['rect'].width, mb['rect'].height))
             mb['rect'].x += mb['speed'] * mb['direction']
             if mb['rect'].x < mb['limit_left'] or mb['rect'].x > mb['limit_right']:
                 mb['direction'] *= -1
             
-            if player_rect.colliderect(mb['rect']):
+            if player.rect.colliderect(mb['rect']):
                 # Standing on top of the moving block
-                if velocity_y > 0 and player_y + img_height - velocity_y <= mb['rect'].y:
-                    player_y = mb['rect'].y - img_height
-                    velocity_y = 0
-                    on_ground = True
+                if player.velocity_y > 0 and player.rect.y + player.rect.height - player.velocity_y <= mb['rect'].y:
+                    player.rect.y = mb['rect'].y - player.rect.height
+                    player.velocity_y = 0
+                    player.on_ground = True
                     # Carry the player along with the block's horizontal movement
-                    player_x += mb['speed'] * mb['direction']
+                    player.rect.x += mb['speed'] * mb['direction']
                 # Hitting from the side
-                elif player_x + img_width > mb['rect'].x and player_x < mb['rect'].x + mb['rect'].width:
-                    if player_x < mb['rect'].x:
-                        player_x = mb['rect'].x - img_width
-                    elif player_x + img_width > mb['rect'].x + mb['rect'].width:
-                        player_x = mb['rect'].x + mb['rect'].width
+                elif player.rect.x + player.rect.width > mb['rect'].x and player.rect.x < mb['rect'].x + mb['rect'].width:
+                    if player.rect.x < mb['rect'].x:
+                        player.rect.x = mb['rect'].x - player.rect.width
+                    elif player.rect.x + player.rect.width > mb['rect'].x + mb['rect'].width:
+                        player.rect.x = mb['rect'].x + mb['rect'].width
         
-        return player_x, player_y, velocity_y, on_ground, player_rect, moving_blocks
+        return player, moving_blocks
 
-def jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, is_mute, bounce_sound, strong_grav, weak_grav):
+def jump_block_func(screen, jump_blocks, player):
         for jump_block in jump_blocks:
-            pygame.draw.rect(screen, (255, 128, 0), (jump_block.x - camera_x, jump_block.y - camera_y, jump_block.width, jump_block.height))
+            pygame.draw.rect(screen, (255, 128, 0), (jump_block.x - player.camera_x, jump_block.y - player.camera_y, jump_block.width, jump_block.height))
 
-            adj_x = jump_block.x + 5 - camera_x
-            adj_y = jump_block.y + 5 - camera_y # Changed to +5 to keep it inside the top of the block
+            adj_x = jump_block.x + 5 - player.camera_x
+            adj_y = jump_block.y + 5 - player.camera_y # Changed to +5 to keep it inside the top of the block
             adj_w = jump_block.width - 10
             adj_h = jump_block.height - 10
 
@@ -309,32 +309,32 @@ def jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y,
             pygame.draw.polygon(screen, (255, 190, 81), points)
             
         for jump_block in jump_blocks:
-            if player_rect.colliderect(jump_block):
+            if player.rect.colliderect(jump_block):
                 # Falling onto a jump block
-                if velocity_y > 0 and player_y + img_height - velocity_y <= jump_block.y:
-                    player_y = jump_block.y - img_height
-                    if strong_grav:
+                if velocity_y > 0 and player_y + player.rect.height - velocity_y <= jump_block.y:
+                    player_y = jump_block.y - player.rect.height
+                    if player.jump_mode == "strong":
                         velocity_y = -21
-                    elif weak_grav:
+                    elif player.jump_mode == "weak":
                         velocity_y = -54
                     else:
                         velocity_y = -33  # Apply upward velocity for the jump
-                    if not is_mute:
-                        bounce_sound.play()
+                    if not manage_data.is_mute:
+                        manage_data.sounds["bounce"].play()
 
                 # Hitting the bottom of a jump block
-                elif velocity_y < 0 and player_y >= jump_block.y + jump_block.height - velocity_y:
-                    player_y = jump_block.y + jump_block.height
-                    velocity_y = 0
+                elif player.velocity_y < 0 and player.rect.y >= jump_block.y + jump_block.height - player.velocity_y:
+                    player.rect.y = jump_block.y + jump_block.height
+                    player.velocity_y = 0
 
                 # Horizontal collision (left or right side of the jump block)
-                elif player_x + img_width > jump_block.x and player_x < jump_block.x + jump_block.width:
-                    if player_x < jump_block.x:  # Colliding with the left side of the jump block
-                        player_x = jump_block.x - img_width
-                    elif player_x + img_width > jump_block.x + jump_block.width:  # Colliding with the right side
-                        player_x = jump_block.x + jump_block.width
+                elif player.rect.x + player.rect.width > jump_block.x and player.rect.x < jump_block.x + jump_block.width:
+                    if player.rect.x < jump_block.x:  # Colliding with the left side of the jump block
+                        player.rect.x = jump_block.x - player.rect.width
+                    elif player.rect.x + player.rect.width > jump_block.x + jump_block.width:  # Colliding with the right side
+                        player.rect.x = jump_block.x + jump_block.width
         
-        return player_x, player_y, velocity_y
+        return player
 
 def handle_key_blocks(screen, open_sound, key_block_pairs, is_mute, on_ground, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y):
     # player_pos would be [x, y, on_ground]
@@ -436,22 +436,47 @@ def point_in_triangle(px, py, a, b, c):
     b3 = sign((px, py), c, a) < 0.0
     return b1 == b2 == b3
 
-def check_spike_collisions(spikes, p_x, p_y, p_w, p_h):
-    # Define collision points relative to the passed-in coordinates
+def check_spike_collisions(spikes, player):
+    # Quick Rect check
+    potential_spikes = []
+    for spike in spikes:
+        # We can use min/max on the tuples directly
+        xs = [p[0] for p in spike]
+        ys = [p[1] for p in spike]
+        
+        s_left = min(xs)
+        s_top = min(ys)
+        s_width = max(xs) - s_left
+        s_height = max(ys) - s_top
+        
+        # Check if player rect touches the spike's bounding box
+        if player.rect.colliderect(pygame.Rect(s_left, s_top, s_width, s_height)):
+            potential_spikes.append(spike)
+
+    # If no spikes are nearby, stop here!
+    if not potential_spikes:
+        return False
+
+    # Precise point checking
     points = [
-        (p_x + p_w // 2, p_y + p_h), (p_x + 5, p_y + p_h), (p_x + p_w - 5, p_y + p_h), # Bottom
-        (p_x + p_w // 2, p_y), (p_x + 5, p_y), (p_x + p_w - 5, p_y) # Top
+        (player.rect.centerx, player.rect.bottom), 
+        (player.rect.left + 5, player.rect.bottom), 
+        (player.rect.right - 5, player.rect.bottom),
+        (player.rect.centerx, player.rect.top), 
+        (player.rect.left + 5, player.rect.top), 
+        (player.rect.right - 5, player.rect.top)
     ]
 
-    for spike in spikes:
+    for spike in potential_spikes:
+        # Flatten the tuples for point_in_triangle function
         for pt in points:
-            if point_in_triangle(pt[0], pt[1], *spike):
+            if point_in_triangle(pt[0], pt[1], spike[0], spike[1], spike[2]):
                 return True 
     return False
 
-def draw_spikes(screen, spikes, camera_x, camera_y):
+def draw_spikes(screen, spikes, player):
     for spike in spikes:
-        pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
+        pygame.draw.polygon(screen, (255, 0, 0), [(x - player.camera_x, y - player.camera_y) for x, y in spike])
 
 def draw_saws(screen, saws, saw_img, camera_x, camera_y, saw_cache):
     # Calculate angle once for all saws to sync them
