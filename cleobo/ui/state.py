@@ -244,16 +244,16 @@ def handle_action(key, transition, current_page):
                 pending_page = "main_menu"
         elif key == "levels":
             if not is_transitioning:
-                transition.start("levels")
+                transition.start("green")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-                pending_page = "levels"
+                pending_page = "green"
         elif key == "mech_levels":
             if not is_transitioning:
-                transition.start("mech_levels")
+                transition.start("mech")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-                pending_page = "mech_levels"
+                pending_page = "mech"
     elif current_page == 'language_select':
         if key == "back":
             if not is_transitioning:
@@ -268,7 +268,7 @@ def handle_action(key, transition, current_page):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "main_menu"
-    elif current_page == 'levels' or current_page == 'mech_levels':
+    elif current_page == 'green' or current_page == 'mech':
         if key is None:  # Ignore clicks on locked levels
             return
         elif key == "back":
@@ -279,10 +279,10 @@ def handle_action(key, transition, current_page):
                 pending_page = "worlds"
         else:  # Trigger a level's screen
             if not is_transitioning:
-                transition.start(f"{key}_screen")
+                transition.start(f"{current_page}_{key}")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-                pending_page = f"{key}_screen"
+                pending_page = f"{current_page}_{key}"
     elif "lvl" in current_page:
         if key == "quit":
             if not is_transitioning:
@@ -292,7 +292,7 @@ def handle_action(key, transition, current_page):
                 pending_page = "worlds"
         else:
             # This is for the in-level pause menu, so we don't want to trigger if they click on locked levels in the background
-            if key and key.startswith("lvl") and not is_transitioning:
+            if key and "lvl" in key and not is_transitioning:
                 transition.start(key)
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
@@ -372,11 +372,11 @@ def set_page(screen, page, lang_code, manifest, progress, Achievements, bgs, dis
         acc_sys.reset_login_state()
     elif page == "registration_screen":
         acc_sys.reset_login_state()
-    elif page == 'levels':
+    elif page == 'green':
         current_lang = manage_data.load_language(lang_code, manifest).get('levels', {})
         menu_ui.green_world_buttons(screen, lang_code, manifest, progress, bgs, disks)
         manage_data.change_ambience("green")
-    elif page == 'mech_levels':
+    elif page == 'mech':
         current_lang = manage_data.load_language(lang_code, manifest).get('levels', {})
         menu_ui.mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks)
         manage_data.change_ambience("mech")
@@ -384,22 +384,11 @@ def set_page(screen, page, lang_code, manifest, progress, Achievements, bgs, dis
         current_lang = manage_data.load_language(lang_code, manifest).get('messages', {})
         menu_ui.create_quit_confirm_buttons(lang_code, manifest)
     elif "lvl" in page:
-            current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
-            
-            # Extract world and level from page name
-            # Examples: "lvl1_screen" -> level="lvl1", world="levels" (→"green")
-            #           "mech_lvl1_screen" -> level="mech_lvl1", world="mech_levels" (→"mech")
-            page_without_screen = page.replace("_screen", "")
-            
-            if page_without_screen.startswith("mech_lvl"):
-                level_name = page_without_screen  # "mech_lvl1", "mech_lvl2", etc.
-                world_name = "mech"  # Maps to mech.lua file
-            else:
-                level_name = page_without_screen  # "lvl1", "lvl2", etc.
-                world_name = "green"  # Maps to green.lua file
-            
-            # Call the generic level launcher
-            levels.level_launcher(level_name, screen, transition, world_name)
+        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
+        # Extract world and level from page name
+        world_name, level_name = page.split("_", 1)
+        # Call the generic level launcher
+        levels.level_launcher(level_name, screen, transition, world_name)
 
 def muting_sfx():
     manage_data.is_mute = not manage_data.is_mute

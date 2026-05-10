@@ -83,7 +83,7 @@ def draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovere
     return button_hovered_last_frame
 
 def button_suface(screen, rect):
-    if manage_data.now.day == 29 and manage_data.now.month == 4:
+    if (manage_data.now.day >= 29 and manage_data.now.month == 4) or (manage_data.now.day <= 13 and manage_data.now.month == 5):
         button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
         button_surface.fill((175, 0, 202, 255))
         screen.blit(button_surface, rect.inflate(20, 10).topleft)
@@ -543,7 +543,7 @@ def mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
     global text_rect, level_key
 
     level_options = ["lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
-    level_no = ["7", "8", "9", "10", "11", "12"]
+    level_no = ["1", "2", "3", "4", "5", "6"]
     buttons_per_row = 3
     spacing_x = 160
     spacing_y = 160
@@ -583,7 +583,7 @@ def mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
 
 def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, button_hovered_last_frame):
     # 1. Dynamic Setup
-    world_type = 'green' if current_page == "levels" else 'mech'
+    world_type = current_page
     screen.blit(manage_data.bgs[world_type], (0, 0))
     disk_img = manage_data.disks[world_type]
     current_lang = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('levels', {})
