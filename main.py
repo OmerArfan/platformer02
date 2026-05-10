@@ -64,17 +64,9 @@ running = True
 transition = state.TransitionManager(screen, manage_data.bgs['trans_left'], manage_data.bgs['trans_right'])
 current_lang = manage_data.change_language(manage_data.lang_code, manage_data.manifest, manage_data.progress)
 
-# Get rects and position them
-manage_data.robo_rects = {
-    'robot': manage_data.robos['robot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 350, manage_data.SCREEN_HEIGHT // 2 - 50)),
-    'evilrobot': manage_data.robos['evilrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 200, manage_data.SCREEN_HEIGHT // 2 - 50)),
-    'greenrobot': manage_data.robos['greenrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, manage_data.SCREEN_HEIGHT // 2 - 50)),
-    'ironrobot': manage_data.robos['ironrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 100, manage_data.SCREEN_HEIGHT // 2 - 50)),
-    'cakebot': manage_data.robos['cakebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 250, manage_data.SCREEN_HEIGHT // 2 - 50))
-}
-
 # Start with main menu
 state.set_page(screen, 'main_menu', manage_data.lang_code, manage_data.manifest, manage_data.progress, achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+
 # Global variables(only needed before main loop)!
 button_hovered_last_frame = False
 last_hovered_key = None
@@ -119,7 +111,7 @@ while running:
                 break  # Stop processing other events for this frame
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if manage_data.current_page == "Account" and manage_data.current_page not in ["levels", "mech_levels", "worlds", "login_screen", "registration_screen"]:
+                if manage_data.current_page == "Account" and manage_data.current_page not in ["green", "mech", "worlds", "login_screen", "registration_screen"]:
                     for _, rect, key, is_locked in menu_ui.buttons:
                         if rect.collidepoint(event.pos):
                             if key is not None and not manage_data.is_mute:
@@ -169,19 +161,13 @@ while running:
             button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)
         
         elif "lvl" in manage_data.current_page:
-            # Call level launcher with the appropriate world
-            page_without_screen = manage_data.current_page.replace("_screen", "")
+            # Extract world and level from page name
+            world_name, level_name = manage_data.current_page.split("_", 1)
             
-            if page_without_screen.startswith("mech_lvl"):
-                level_name = page_without_screen
-                world_name = "mech"
-            else:
-                level_name = page_without_screen
-                world_name = "green"
-            
+            # Call the generic level launcher
             levels.level_launcher(level_name, screen, transition, world_name)
         
-        elif manage_data.current_page == "levels" or manage_data.current_page == "mech_levels":
+        elif manage_data.current_page == "green" or manage_data.current_page == "mech":
             button_hovered_last_frame = menu_ui.draw_level_select(screen, mouse_pos, manage_data.current_page, current_lang, messages, button_hovered_last_frame)
 
         elif manage_data.current_page == "settings":
