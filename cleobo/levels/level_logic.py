@@ -298,27 +298,26 @@ def jump_block_func(screen, jump_blocks, player):
             adj_w = jump_block.width - 10
             adj_h = jump_block.height - 10
 
-            # 3. Define the three points of the triangle
+            #  Define the three points of the triangle
             points = [
                 (adj_x + adj_w / 2, adj_y),          # Top Tip (Middle)
                 (adj_x, adj_y + adj_h),              # Bottom Left
                 (adj_x + adj_w, adj_y + adj_h)       # Bottom Right
             ]
 
-            # 4. Draw the triangle
+            # Draw the triangle
             pygame.draw.polygon(screen, (255, 190, 81), points)
             
-        for jump_block in jump_blocks:
             if player.rect.colliderect(jump_block):
                 # Falling onto a jump block
-                if velocity_y > 0 and player_y + player.rect.height - velocity_y <= jump_block.y:
-                    player_y = jump_block.y - player.rect.height
+                if player.velocity_y > 0 and player.rect.y + player.rect.height - player.velocity_y < jump_block.y + 5:
+                    player.rect.bottom = jump_block.y
                     if player.jump_mode == "strong":
-                        velocity_y = -21
+                        player.velocity_y = -21
                     elif player.jump_mode == "weak":
-                        velocity_y = -54
+                        player.velocity_y = -54
                     else:
-                        velocity_y = -33  # Apply upward velocity for the jump
+                        player.velocity_y = -33  # Apply upward velocity for the jump
                     if not manage_data.is_mute:
                         manage_data.sounds["bounce"].play()
 
@@ -478,32 +477,37 @@ def draw_spikes(screen, spikes, player):
     for spike in spikes:
         pygame.draw.polygon(screen, (255, 0, 0), [(x - player.camera_x, y - player.camera_y) for x, y in spike])
 
-def draw_saws(screen, saws, saw_img, camera_x, camera_y, saw_cache):
-    # Calculate angle once for all saws to sync them
+def pre_render_saws(saw_img, saws):
+    if not saws:
+        return
+    # Extract ONLY the unique radii from your saw tuples
+    unique_radii = set(s[2] for s in saws)
+    for r in unique_radii:
+        if (r, 0) in manage_data.saw_cache:
+            continue  # Skip if already cached
+        size = int(r * 2.5)
+        scaled = pygame.transform.scale(saw_img, (size, size))
+        for angle in range(0, 360, 5):
+            manage_data.saw_cache[(r, angle)] = pygame.transform.rotate(scaled, angle)
+
+# 3. THE DRAW (Run this INSIDE the loop)
+def draw_saws(screen, saws, player):
     angle = (pygame.time.get_ticks() // 3) % 360
     angle_key = (angle // 5) * 5
     
-    for x, y, r, color in saws:
-        # Rotation & Cache Logic
+    for x, y, r in saws:
         cache_key = (r, angle_key)
-        if cache_key not in saw_cache:
-            size = int(r * 2.2)
-            scaled = pygame.transform.scale(saw_img, (size, size))
-            saw_cache[cache_key] = pygame.transform.rotate(scaled, angle_key)
-        
-        rotated_img = saw_cache[cache_key]
-        curr_w, curr_h = rotated_img.get_size()
-        
-        # Centering and Blitting
-        draw_x = (x - camera_x) - (curr_w / 2)
-        draw_y = (y - camera_y) - (curr_h / 2)
-        screen.blit(rotated_img, (draw_x, draw_y))
+        # Use the pre-rendered image
+        if cache_key in manage_data.saw_cache:
+            rotated_img = manage_data.saw_cache[cache_key]
+            rect = rotated_img.get_rect(center=(x - player.camera_x, y - player.camera_y))
+            screen.blit(rotated_img, rect)
 
-def check_saw_collisions(player_rect, saws):
-    for x, y, r, color in saws:
+def check_saw_collisions(player, saws):
+    for x, y, r in saws:
         # Circle-to-AABB collision math
-        closest_x = max(player_rect.left, min(x, player_rect.right))
-        closest_y = max(player_rect.top, min(y, player_rect.bottom))
+        closest_x = max(player.rect.left, min(x, player.rect.right))
+        closest_y = max(player.rect.top, min(y, player.rect.bottom))
         dx = closest_x - x
         dy = closest_y - y
         if (dx**2 + dy**2) < r**2:

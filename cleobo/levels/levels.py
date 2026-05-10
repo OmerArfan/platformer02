@@ -63,7 +63,9 @@ def level_launcher(level_name, screen, transition, world_name):
     
     # Jump blocks (orange blocks)
     jump_blocks = [pygame.FRect(jb['x'], jb['y'], jb['w'], jb['h']) for jb in level_data.get('jump_blocks', [])]
-    
+    saws = [(saw['x'], saw['y'], saw['radius']) for saw in level_data.get('saws', [])]
+    level_logic.pre_render_saws(manage_data.assets['saw'], saws)
+
     # Flags/Checkpoints
     flags = level_data.get('flags', [])
     if not isinstance(flags, list):
@@ -112,8 +114,6 @@ def level_launcher(level_name, screen, transition, world_name):
                 running = False
                 state.handle_action("quit", transition, manage_data.current_page)
         
-        player.update(keys, manager, rendered_fall_text)
-        
         # Check exit portal collision
         if player.rect.colliderect(exit_portal):
             level_num = int(level_name.replace('lvl', ''))
@@ -135,13 +135,24 @@ def level_launcher(level_name, screen, transition, world_name):
         level_logic.draw_spikes(screen, spikes, player)
         # Draw portal
         level_logic.draw_portal(screen, manage_data.assets['exit'], exit_portal, player)
-        
+
+        level_logic.draw_saws(screen, saws, player)
         # === PHYSICS: BLOCK COLLISIONS ===
         player = level_logic.block_func(screen, blocks, player)
         
         player, moving_blocks = level_logic.handle_moving_blocks(screen, moving_blocks, player)
 
         player = level_logic.jump_block_func(screen, jump_blocks, player)
+
+        # 2. Check for saw deaths
+        if level_logic.check_saw_collisions(player, saws):
+            player.rect.x, player.rect.y = player.spawn_x, player.spawn_y
+            manager.death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            manager.wait_time = pygame.time.get_ticks()
+            if not manage_data.is_mute:
+                manage_data.sounds['death'].play()
+            player.velocity_y = 0
+            player.deathcount += 1
 
         # Spike collisions
         if level_logic.check_spike_collisions(spikes, player):
@@ -181,6 +192,7 @@ def level_launcher(level_name, screen, transition, world_name):
         menu_ui.draw_notifs(screen)
         menu_ui.draw_syncing_status(screen)
         
+        player.update(keys, manager, rendered_fall_text)
         pygame.display.update()
 
 # IMPORTANT!
