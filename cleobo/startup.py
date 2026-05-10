@@ -7,7 +7,7 @@ import traceback
 
 # Initializing Game and Engine Version
 manage_data.version = "1.3.9.0472"
-manage_data.kernel = "0.2.0.0020"
+manage_data.kernel = "0.2.0.0021"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
@@ -101,7 +101,7 @@ def init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT):
     # Backgrounds Dictionary
     try:
         # Check for events
-        if manage_data.now.day == 29 and manage_data.now.month == 4:
+        if (manage_data.now.day >= 29 and manage_data.now.month == 4) or (manage_data.now.day <= 13 and manage_data.now.month == 5):
             peek_path = "bgs/anipeek.png"
             plain_path = "bgs/AniBackground.png"
         else:
@@ -326,6 +326,14 @@ def load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT):
     
     yield "Calibrating Robots...", 92
     manage_data.robos = init_robos()
+    # Get rects and position them for character select screen
+    manage_data.robo_rects = {
+        'robot': manage_data.robos['robot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 350, manage_data.SCREEN_HEIGHT // 2 - 50)),
+        'evilrobot': manage_data.robos['evilrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 200, manage_data.SCREEN_HEIGHT // 2 - 50)),
+        'greenrobot': manage_data.robos['greenrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, manage_data.SCREEN_HEIGHT // 2 - 50)),
+        'ironrobot': manage_data.robos['ironrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 100, manage_data.SCREEN_HEIGHT // 2 - 50)),
+        'cakebot': manage_data.robos['cakebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 250, manage_data.SCREEN_HEIGHT // 2 - 50))
+    }
     
     yield "Systems Ready!", 100
     verify_initialization(manage_data)
