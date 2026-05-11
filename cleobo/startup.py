@@ -6,8 +6,8 @@ from datetime import datetime
 import traceback
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0472"
-manage_data.kernel = "0.2.0.0021"
+manage_data.version = "1.3.9.0473"
+manage_data.kernel = "0.2.0.0022"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
@@ -114,6 +114,7 @@ def init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT):
             'plain': (plain_path, (SCREEN_WIDTH, SCREEN_HEIGHT), False),
             'green': ("bgs/GreenBackground.png", (SCREEN_WIDTH, SCREEN_HEIGHT), False),
             'mech': ("bgs/MechBackground.png", (SCREEN_WIDTH, SCREEN_HEIGHT), False),
+            'desert': ("bgs/DesertBackground.png", (SCREEN_WIDTH, SCREEN_HEIGHT), False),
             'trans_left': ("bgs/trans_left.png", ((SCREEN_WIDTH // 2 + 20), SCREEN_HEIGHT), False),
             'trans_right': ("bgs/trans_right.png", ((SCREEN_WIDTH // 2 + 20), SCREEN_HEIGHT), False),
             'end': ("bgs/EndScreen.png", (SCREEN_WIDTH, SCREEN_HEIGHT), True),
@@ -160,6 +161,7 @@ def init_disks():
         disk_files = {
             'green': ("disks/greendisk.png", (100, 100)),
             'mech': ("disks/mechdisk.png", (100, 100)),
+            'desert': ("disks/desertdisk.png", (100, 100)),
             'greenpack': ("disks/greenpack.png", (220, 220)),
             'mechpack': ("disks/mechpack.png", (220, 220)),
             'locked': ("disks/lockeddisk.png", (100, 100)),
@@ -200,7 +202,7 @@ def init_other_assets():
             img = pygame.image.load(full_path).convert_alpha()
             assets[name] = pygame.transform.scale(img, size) if size else img
         
-        assets['star_small'] = pygame.transform.scale(assets['star'], (20, 17))
+        assets['star_small'] = pygame.transform.scale(assets['star'], (30, 26))
         assets['star_normal'] = pygame.transform.scale(assets['star'], (100, 93))
         return assets
     except Exception as e:
