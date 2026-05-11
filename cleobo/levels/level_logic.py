@@ -268,6 +268,39 @@ def handle_bottom_collisions(blocks, player):
 def handle_moving_blocks(screen, moving_blocks, player):
         for mb in moving_blocks:
             pygame.draw.rect(screen, (128, 0, 128), (mb['rect'].x - player.camera_x, mb['rect'].y - player.camera_y, mb['rect'].width, mb['rect'].height))
+            
+            # Setup dimensions
+            adj_x = mb['rect'].x + 5 - player.camera_x
+            adj_y = mb['rect'].y + 5 - player.camera_y
+            adj_w = (mb['rect'].width - 10) // 2  # Keep them side-by-side
+            adj_h = mb['rect'].height - 10
+
+            # Define colors
+            bright = (224, 113, 224)
+            dark = (180, 93, 180) # Darker shade for inactive direction
+
+            # Define Left Triangle Points
+            left_tri_points = [
+                (adj_x + adj_w - 5, adj_y),               # Top Right of left half
+                (adj_x + adj_w - 5, adj_y + adj_h),       # Bottom Right of left half
+                (adj_x, adj_y + adj_h / 2)            # Left Tip
+            ]
+
+            # Define Right Triangle Points (Pointing Right)
+            right_tri_points = [
+                (adj_x + adj_w + 5, adj_y),               # Top Left of right half
+                (adj_x + adj_w + 5, adj_y + adj_h),       # Bottom Left of right half
+                (adj_x + (adj_w * 2), adj_y + adj_h / 2) # Right Tip
+            ]
+
+            # Draw them based on direction
+            if mb['direction'] == 1: # Right is active
+                pygame.draw.polygon(screen, dark, left_tri_points)
+                pygame.draw.polygon(screen, bright, right_tri_points)
+            else: # Left is active
+                pygame.draw.polygon(screen, bright, left_tri_points)
+                pygame.draw.polygon(screen, dark, right_tri_points)
+                        
             mb['rect'].x += mb['speed'] * mb['direction']
             if mb['rect'].x < mb['limit_left'] or mb['rect'].x > mb['limit_right']:
                 mb['direction'] *= -1
@@ -382,48 +415,48 @@ def handle_key_blocks(screen, open_sound, key_block_pairs, is_mute, on_ground, p
 
 def handle_key_blocks_timed(screen, key_block_pairs_timed, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y, on_ground):
     for pair in key_block_pairs_timed:
-            key_x, key_y, key_r, key_color = pair["key"]
-            block = pair["block"]
+        key_x, key_y, key_r, key_color = pair["key"]
+        block = pair["block"]
 
-            key_rect = pygame.FRect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
+        key_rect = pygame.FRect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
 
-            if player_rect.colliderect(key_rect):
-                if not pair["collected"]:
-                    pair["locked_time"] = pygame.time.get_ticks()
-                    pair["collected"] = True
-                    if not manage_data.is_mute:
-                        manage_data.sounds['open'].play()
-
-            # Draw key and block only if not collected
+        if player_rect.colliderect(key_rect):
             if not pair["collected"]:
-                pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
-                pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
+                pair["locked_time"] = pygame.time.get_ticks()
+                pair["collected"] = True
+                if not manage_data.is_mute:
+                    manage_data.sounds['open'].play()
 
-            # Reset after duration
-            if pair.get("locked_time") is not None:
-                if pair["collected"] and (pygame.time.get_ticks() - pair["locked_time"]) > pair["duration"]:
-                    pair["collected"] = False
-                    pair["locked_time"] = None  # Reset timer
-                    # Check if player is inside block when it reappears
-            
-                    if player_rect.colliderect(pair["block"]):
-                        return True, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y, on_ground
+        # Draw key and block only if not collected
+        if not pair["collected"]:
+            pygame.draw.circle(screen, key_color, (int(key_x - camera_x), int(key_y - camera_y)), key_r)
+            pygame.draw.rect(screen, (102, 51, 0), (block.x - camera_x, block.y - camera_y, block.width, block.height))
 
-            if not pair["collected"]:  # Only active locked blocks
-                block = pair["block"]
-                if player_rect.colliderect(block):
-            # Falling onto a block
-                    if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
-                        player_y = block.y - img_height
-                        velocity_y = 0
-                        on_ground = True
+        # Reset after duration
+        if pair.get("locked_time") is not None:
+            if pair["collected"] and (pygame.time.get_ticks() - pair["locked_time"]) > pair["duration"]:
+                pair["collected"] = False
+                pair["locked_time"] = None  # Reset timer
+                # Check if player is inside block when it reappears
+        
+                if player_rect.colliderect(pair["block"]):
+                    return True, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y, on_ground
 
-            # Horizontal collisions
-                    elif player_x + img_width > block.x and player_x < block.x + block.width:
-                        if player_x < block.x:
-                            player_x = block.x - img_width
-                        elif player_x + img_width > block.x + block.width:
-                            player_x = block.x + block.width
+        if not pair["collected"]:  # Only active locked blocks
+            block = pair["block"]
+            if player_rect.colliderect(block):
+        # Falling onto a block
+                if velocity_y > 0 and player_y + img_height - velocity_y <= block.y:
+                    player_y = block.y - img_height
+                    velocity_y = 0
+                    on_ground = True
+
+        # Horizontal collisions
+                elif player_x + img_width > block.x and player_x < block.x + block.width:
+                    if player_x < block.x:
+                        player_x = block.x - img_width
+                    elif player_x + img_width > block.x + block.width:
+                        player_x = block.x + block.width
 
     return False, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y, on_ground
 

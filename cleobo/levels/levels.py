@@ -27,6 +27,7 @@ def level_launcher(level_name, screen, transition, world_name):
     # Load level-specific assets
     player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(manage_data.selected_character)
     background = manage_data.bgs.get(world_name)
+    screen.blit(background, (0, 0))
     
     # Clear UI
     menu_ui.buttons.clear()
