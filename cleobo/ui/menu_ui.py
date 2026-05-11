@@ -34,18 +34,20 @@ sync_finish_time = None
 # Global sprite group for UI text
 ui_text_sprites = pygame.sprite.Group()
 
-def render_text(text, Boolean, color):
+def render_text(text, Boolean, color, bigfont=False):
     # 1. FASTER FONT PICKING
     # We check if there's any non-default char in one go
     match = RE_LANG.search(text)
     font_key = 'def'
     display_text = text
-    cache_key = (text, color)
+    cache_key = (text, color, bigfont)
     
     if cache_key in manage_data.text_cache:
         return manage_data.text_cache[cache_key]
 
-    if match:
+    if bigfont:
+        font_key = 'mega'
+    elif match:
         char = match.group(0)
         if '\u0590' <= char <= '\u06FF':
             display_text = get_display(arabic_reshaper.reshape(text))
@@ -62,10 +64,10 @@ def render_text(text, Boolean, color):
     
     font_to_use.outline = thickness
     # This surface is automatically sized correctly by pygame-ce
-    surf = font_to_use.render(display_text, True, (0, 0, 0), wraplength=1100) 
+    surf = font_to_use.render(display_text, True, (0, 0, 0)) 
     
     font_to_use.outline = 0
-    main_text = font_to_use.render(display_text, True, color, wraplength=1100)
+    main_text = font_to_use.render(display_text, True, color)
     
     # Blit directly onto the 'surf' we already have
     surf.blit(main_text, (thickness, thickness))
@@ -298,7 +300,7 @@ def draw_profile(screen):
     ID_text = render_text(f"ID: {manage_data.progress['player']['ID']}", True, (255, 255, 255))
     ID_pos = (manage_data.SCREEN_WIDTH // 2 - (ID_text.get_width() // 2), 150)
 
-    XP_text = manage_data.fonts['mega'].render(f"{level}", True, color)
+    XP_text = render_text(f"{level}", True, color, bigfont=True)
     XP_pos2 = (manage_data.SCREEN_WIDTH // 2 - (XP_text2.get_width() + 10), 205)
     XP_pos = (manage_data.SCREEN_WIDTH // 2 - (XP_text.get_width() + XP_text2.get_width() + 30), 200)
 
@@ -313,9 +315,9 @@ def draw_profile(screen):
     screen.blit(manage_data.medals['Gold'], (manage_data.SCREEN_WIDTH // 2 - 350, 370))
     screen.blit(manage_data.medals['Diamond'], (manage_data.SCREEN_WIDTH // 2 - 50, 370))
     screen.blit(manage_data.assets['star_normal'], (manage_data.SCREEN_WIDTH // 2 + 250, 345))
-    screen.blit(manage_data.fonts['mega'].render(f"{gold_medals}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 - 280, 365))
-    screen.blit(manage_data.fonts['mega'].render(f"{diamond_medals}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 + 20, 365))
-    screen.blit(manage_data.fonts['mega'].render(f"{total_stars}", True, (255, 255, 255)), (manage_data.SCREEN_WIDTH // 2 + 340, 365))
+    screen.blit(render_text(f"{gold_medals}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 - 280, 365))
+    screen.blit(render_text(f"{diamond_medals}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 + 20, 365))
+    screen.blit(render_text(f"{total_stars}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 + 340, 365))
 
     screen.blit(badge, badge_pos)
     screen.blit(XP_text, XP_pos)
@@ -507,7 +509,7 @@ def green_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
         y = start_y + row * spacing_y
 
         is_locked = level in progress["lvls"]["locked_levels"]
-        text_surface = manage_data.fonts['mega'].render(level_no[i], True, (255, 255, 255))
+        text_surface = render_text(level_no[i], True, (255, 255, 255), bigfont=True)
         disk_rect = disks['green'].get_rect(center=(x, y))
         buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
 
@@ -542,7 +544,7 @@ def mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
     # Store the rendered text and its position for later drawing
     global text_rect, level_key
 
-    level_options = ["lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
+    level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6"]
     level_no = ["1", "2", "3", "4", "5", "6"]
     buttons_per_row = 3
     spacing_x = 160
@@ -559,7 +561,7 @@ def mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
         y = start_y + row * spacing_y
 
         is_locked = level in progress["lvls"]["locked_levels"]
-        text_surface = manage_data.fonts['mega'].render(level_no[i], True, (255, 255, 255))
+        text_surface = render_text(level_no[i], True, (255, 255, 255), bigfont=True)
         disk_rect = disks['mech'].get_rect(center=(x, y))
         buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
 
@@ -621,7 +623,7 @@ def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, b
                 
                 stars = LevelManager.get_stars(int(key[3:]), score)
                 for i in range(stars):
-                    screen.blit(manage_data.assets['star_small'], (manage_data.SCREEN_WIDTH // 2 + (i-1)*25, manage_data.SCREEN_HEIGHT - 80))
+                    screen.blit(manage_data.assets['star_small'], (manage_data.SCREEN_WIDTH // 2 + (i-1)*35, manage_data.SCREEN_HEIGHT - 80))
                     
     return button_hovered_last_frame
 
@@ -719,7 +721,7 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
         if display_score > score:
             display_score = score
         
-        score_text = manage_data.fonts['mega'].render(str(display_score), True, (255, 255, 255))
+        score_text = render_text(str(display_score), True, (255, 255, 255), bigfont=True)
         screen.blit(score_text, (manage_data.SCREEN_WIDTH // 2 - score_text.get_width() // 2, 300 - score_text.get_height() // 2))
 
         # Check for XP gained
