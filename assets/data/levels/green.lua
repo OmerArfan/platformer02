@@ -13,7 +13,7 @@ local lvl1 = {
 	    {x = 1850, y = 400, w = 320, h = 50},
 	},
     moving_block = {
-        {x = 1300, y = 300, w = 100, h = 20, direction = 1, speed = 2, limit_x = 1300, limit_y = 1500},
+        {x = 1300, y = 300, w = 100, h = 50, axis = "x", direction = 1, speed = 2, limit_x = 1300, limit_y = 1500},
     },
     spikes = {
 	    {{1850, 400}, {1900, 350}, {1950, 400}},
@@ -57,7 +57,7 @@ local lvl2 = {
 	    {x = 4060, y = 650, w = 160, h = 100},
 	},
 	moving_block = {
-	    {x = 1500, y = 300, w = 100, h = 20, direction = 1, speed = 2, limit_x = 1300, limit_y = 1700},
+	    {x = 1500, y = 300, w = 100, h = 50, axis = "x", direction = 1, speed = 2, limit_x = 1300, limit_y = 1700},
 	},
 	spikes = {
 	    {{350, 650}, {400, 600}, {450, 650}},
@@ -169,9 +169,9 @@ local lvl4 = {
 	    {{3800, 400}, {3850, 350}, {3900, 400}},
 	    {{3900, 400}, {3950, 350}, {4000, 400}},
 	},
-	moving_blocks = {
-	    {x = 4050, y = 450, w = 100, h = 20, axis = "x", speed = 2, min = 4050, max = 4350},
-	    {x = 4850, y = 450, w = 100, h = 20, axis = "x", speed = 2, min = 4550, max = 4850},
+	moving_block = {
+	    {x = 4050, y = 450, w = 100, h = 50, axis = "x", direction = 1, speed = 2, min = 4050, max = 4350},
+	    {x = 4550, y = 450, w = 100, h = 50, axis = "x", direction = 1, speed = 3, min = 4550, max = 4850},
 	},
 	lasers = {
 	    {x = 3000, y = -50, w = 1000, h = 15},
