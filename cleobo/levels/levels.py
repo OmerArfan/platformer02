@@ -99,16 +99,19 @@ def level_launcher(level_name, screen, transition, world_name):
         
     quit_text = in_game.get("quit_message", "Press Q to quit")
     quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))
-    
+
     # === MAIN GAME LOOP ===
     if not transition.active:
       while running:
+
         clock.tick_busy_loop(60)
         keys = pygame.key.get_pressed()
         
         manager.current_time = time.time() - manager.start_time
         formatted_time = "{:.2f}".format(manager.current_time)
         
+        player.update(keys, manager, rendered_fall_text)
+
         # === EVENT HANDLING ===
         for event in pygame.event.get():
             if event.type == pygame.QUIT or keys[pygame.K_q]:
@@ -192,8 +195,6 @@ def level_launcher(level_name, screen, transition, world_name):
         
         menu_ui.draw_notifs(screen)
         menu_ui.draw_syncing_status(screen)
-        
-        player.update(keys, manager, rendered_fall_text)
         pygame.display.update()
 
 # IMPORTANT!

@@ -74,12 +74,18 @@ class Player:
         self.on_ground = False
     
     def camera_update(self):
-    # === UPDATE CAMERA (before rendering) ===
-        self.camera_x += (self.rect.x - self.camera_x - manage_data.SCREEN_WIDTH // 2 + self.rect.width // 2) * self.camera_speed
-        if self.rect.y <= 200:
-            self.camera_y = self.rect.y - 200
+        # Smooth Horizontal Camera
+        target_x = self.rect.x - manage_data.SCREEN_WIDTH // 2 + self.rect.width // 2
+        self.camera_x += (target_x - self.camera_x) * self.camera_speed
+
+        # Smooth Vertical Camera
+        if self.rect.y <= 200: # Threshold where moving by y-axis starts
+            target_y = self.rect.y - 200 
         else:
-            self.camera_y = 0
+            target_y = 0
+        
+        # Use interpolation for Y as well to stop the jitter
+        self.camera_y += (target_y - self.camera_y) * self.camera_speed
     
     def fall(self, manager, rendered_fall_text):
     # Fall death
@@ -113,6 +119,7 @@ class LevelManager:
     def reset_stats(self):
         self.start_time = time.time()
         self.death_text = None
+        self.wait_time = None
 
     def score_calc(self, player):
         base_score = 100000 # From where the score is added to/subtracted from
