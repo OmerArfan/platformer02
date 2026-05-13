@@ -184,6 +184,8 @@ def handle_action(key, transition, current_page):
                 pending_page = "settings"
         if key == "Support":
             webbrowser.open("https://github.com/OmerArfan/platformer02/blob/main/gameinfo/Support.md")
+        if key == "License":
+            webbrowser.open("https://www.gnu.org/licenses/gpl-3.0.html")
     elif current_page == "Audio":
         if key == "Back":
             if not is_transitioning:

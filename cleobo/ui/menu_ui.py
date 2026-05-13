@@ -942,48 +942,59 @@ def about_menu(screen, lang_code, manifest, bgs, version):
 
     title = settings_lang.get("About", "About")
     title_rendered = render_text(title, True, (255, 255, 255))
-    screen.blit(title_rendered, (manage_data.SCREEN_WIDTH // 2 - title_rendered.get_width() // 2, 100))
+    screen.blit(title_rendered, (manage_data.SCREEN_WIDTH // 2 - title_rendered.get_width() // 2, 50))
 
     site = settings_lang.get("site_credit", "Sound effects used from pixabay.com and edited using Audacity")
     site_text = render_text(site, True, (255, 255, 255))
-    site_pos = ((manage_data.SCREEN_WIDTH // 2 - site_text.get_width() // 2), 200)
+    site_pos = ((manage_data.SCREEN_WIDTH // 2 - site_text.get_width() // 2), 150)
 
     logo = settings_lang.get("logo_credit", "Logo and Backgrounds made with canva.com")
     logo_text = render_text(logo, True, (255, 255, 255))
-    logo_pos = ((manage_data.SCREEN_WIDTH // 2- logo_text.get_width() // 2), 240)
+    logo_pos = ((manage_data.SCREEN_WIDTH // 2- logo_text.get_width() // 2), 190)
 
     credit = settings_lang.get("credit_credit", "Made by Omer Arfan")
     credit_text = render_text(credit, True, (255, 255, 255))
-    credit_pos = ((manage_data.SCREEN_WIDTH // 2 - credit_text.get_width() // 2), 280)
+    credit_pos = ((manage_data.SCREEN_WIDTH // 2 - credit_text.get_width() // 2), 230)
 
     ver = settings_lang.get("version_credit", "Game Version: {version}").format(version=manage_data.version)
     ver_text = render_text(ver, True, (255, 255, 255))
-    ver_pos = ((manage_data.SCREEN_WIDTH // 2 - ver_text.get_width() // 2), 320)
+    ver_pos = ((manage_data.SCREEN_WIDTH // 2 - ver_text.get_width() // 2), 270)
 
     ker = settings_lang.get("kernel_credit", "Cleobo Version: {kernel}").format(kernel=manage_data.kernel)
     ker_text = render_text(ker, True, (255, 255, 255))
-    ker_pos = ((manage_data.SCREEN_WIDTH // 2 - ker_text.get_width() // 2), 360)
+    ker_pos = ((manage_data.SCREEN_WIDTH // 2 - ker_text.get_width() // 2), 310)
+
+    # License rendering
+    lic = settings_lang.get("license_credit", "Licensed under GNU GPL v3.0")
+    lic_text = render_text(lic, True, (255, 255, 255))
+    lic_pos = ((manage_data.SCREEN_WIDTH // 2 - lic_text.get_width() // 2), 350)
 
     thx = settings_lang.get("thanks", "Thank you for playing! You are amazing!")
     thx_text = render_text(thx, True, (0, 255, 0))
-    thx_pos = ((manage_data.SCREEN_WIDTH // 2 - thx_text.get_width() // 2), 440)
+    thx_pos = ((manage_data.SCREEN_WIDTH // 2 - thx_text.get_width() // 2), 430)
 
     bugs = settings_lang.get("bugs", "If you find any bugs, please report them on the GitHub repository.")
     bugs_text = render_text(bugs, True, (242, 123, 32))
-    bugs_pos = ((manage_data.SCREEN_WIDTH // 2 - bugs_text.get_width() // 2), 480)
+    bugs_pos = ((manage_data.SCREEN_WIDTH // 2 - bugs_text.get_width() // 2), 470)
 
     sorry = settings_lang.get("sorry", "Sorry for any inconvenience caused by bugs.")
     sorry_text = render_text(sorry, True, (242, 123, 32))
-    sorry_pos = ((manage_data.SCREEN_WIDTH // 2 - sorry_text.get_width() // 2), 520)
+    sorry_pos = ((manage_data.SCREEN_WIDTH // 2 - sorry_text.get_width() // 2), 510)
 
     screen.blit(logo_text, logo_pos)
     screen.blit(site_text, site_pos)
     screen.blit(credit_text, credit_pos)
     screen.blit(ver_text, ver_pos)
     screen.blit(ker_text, ker_pos)
+    screen.blit(lic_text, lic_pos)
     screen.blit(thx_text, thx_pos)
     screen.blit(bugs_text, bugs_pos)
     screen.blit(sorry_text, sorry_pos)
+
+    license_btn_text = settings_lang.get("view_license", "View License")
+    license_btn_rendered = render_text(license_btn_text, True, (255, 255, 255))
+    license_btn_rect = license_btn_rendered.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 194))
+    buttons.append((license_btn_rendered, license_btn_rect, "License", False))
 
     support_text = settings_lang.get("support", "Support / Report Bugs")
     support_rendered = render_text(support_text, True, (255, 255, 255))
