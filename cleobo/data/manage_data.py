@@ -5,7 +5,6 @@ import shutil
 import time
 import threading
 import sys
-import cleobo.ui.menu_ui as menu_ui
 from datetime import datetime, date
 import csv
 import hashlib
@@ -13,9 +12,6 @@ import threading
 import requests
 from io import StringIO
 import pygame
-import cleobo.data.acc_sys as acc_sys
-from cleobo.levels.level_logic import LevelManager
-import cleobo.data.achievements as achieve
 
 pygame.font.init()
 
@@ -105,37 +101,6 @@ with open(resource_path("assets/data/thresholds.json"), "r", encoding="utf-8") a
 fonts = {}
 saw_cache = {}
 
-def char_assets(selected_character):
-    # Load player image
-    CHAR_PATH = resource_path("assets/imgs/char")
-    if selected_character == "robot": 
-        player_img = pygame.image.load(os.path.join(CHAR_PATH, "robot/robot.png")).convert_alpha()
-        blink_img = pygame.image.load(os.path.join(CHAR_PATH, "robot/blinkrobot.png")).convert_alpha()
-        moving_img_l = pygame.image.load(os.path.join(CHAR_PATH, "robot/smilerobotL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(os.path.join(CHAR_PATH, "robot/smilerobot.png")).convert_alpha() # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(os.path.join(CHAR_PATH, "evilrobot/evilrobot.png")).convert_alpha()
-        blink_img = pygame.image.load(os.path.join(CHAR_PATH, "evilrobot/blinkevilrobot.png")).convert_alpha()
-        moving_img_l = pygame.image.load(os.path.join(CHAR_PATH, "evilrobot/movevilrobotL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(os.path.join(CHAR_PATH, "evilrobot/movevilrobot.png")).convert_alpha() # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(os.path.join(CHAR_PATH, "greenrobot/greenrobot.png")).convert_alpha()
-        blink_img = pygame.image.load(os.path.join(CHAR_PATH, "greenrobot/blinkgreenrobot.png")).convert_alpha()
-        moving_img_l = pygame.image.load(os.path.join(CHAR_PATH, "greenrobot/movegreenrobotL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(os.path.join(CHAR_PATH, "greenrobot/movegreenrobot.png")).convert_alpha() # Resize to fit the game
-    elif selected_character == "ironrobot":
-        player_img = pygame.image.load(os.path.join(CHAR_PATH, "ironrobot/ironrobo.png")).convert_alpha()
-        blink_img = pygame.image.load(os.path.join(CHAR_PATH, "ironrobot/blinkironrobo.png")).convert_alpha()
-        moving_img_l = pygame.image.load(os.path.join(CHAR_PATH, "ironrobot/ironrobomoveL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(os.path.join(CHAR_PATH, "ironrobot/ironrobomove.png")).convert_alpha() # Resize to fit the game
-    elif selected_character == "cakebot":
-        player_img = pygame.image.load(os.path.join(CHAR_PATH, "cakebot/cakebot.png")).convert_alpha()
-        blink_img = pygame.image.load(os.path.join(CHAR_PATH, "cakebot/blinkcakebot.png")).convert_alpha()
-        moving_img_l = pygame.image.load(os.path.join(CHAR_PATH, "cakebot/movecakebotL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(os.path.join(CHAR_PATH, "cakebot/movecakebot.png")).convert_alpha() # Resize to fit the game
-    img_width, img_height = player_img.get_size()
-    return player_img, blink_img, moving_img, moving_img_l, img_width, img_height
-
 def change_ambience(new_file):
   if not is_mute_amb:
     pygame.mixer.music.load(resource_path(f"assets/sound/amb/{new_file}.ogg"))
@@ -192,6 +157,8 @@ def change_language(lang, manifest, progress):
     else:
         font = fonts['def']
     return current_lang
+
+import cleobo.data.acc_sys as acc_sys
 
 def load_progress():
     global SAVE_FILE, selected_character
@@ -285,6 +252,8 @@ def load_progress():
         save_progress(data, manifest)
         
     return data
+
+import cleobo.ui.menu_ui as menu_ui
 
 # Save progress to file
 def save_progress(data, manifest):
@@ -572,7 +541,11 @@ def get_all_cloud_ids():
     
     return cloud_ids
 
+import cleobo.data.achievements as achieve
+
 def xp():
+    from cleobo.levels.logic.entities import LevelManager
+
     global progress
     # XP from scores
     scores = progress["lvls"]["score"]
