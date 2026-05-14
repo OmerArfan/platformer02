@@ -1,6 +1,11 @@
 import pygame
 from cleobo.data import manage_data
 
+"""
+The purpose of this levels submodule is to store different types of blocks in one file.
+If you do have an idea for a new block, do make sure to add it here without any hesitation, and hopefully, I will be able to check it out and test it.
+"""
+
 def block_func(screen, blocks, player):
     for block in blocks:
             pygame.draw.rect(screen, (0, 0, 0), (block.x - player.camera_x, block.y - player.camera_y, block.width, block.height))

@@ -4,6 +4,12 @@ import cleobo.data.manage_data as manage_data
 from cleobo.data.manage_data import resource_path
 from os.path import join
 
+"""
+The purpose of this levels submodule is to store all the different entities the game needs to function.
+The purpose of the Player and PlayerSprite class is to store all the physics, functions, configurations and behaviour of the player when a button is pressed or a specific event may happen.
+The purpose of the LevelManager class, meanwhile, is to handle the interface of the Level UI.
+"""
+
 class Player:
     def __init__(self, x, y):
         self.sprite = PlayerSprites()
@@ -164,7 +170,6 @@ class PlayerSprites:
         jump_img = blink_img
         return player_img, blink_img, moving_img, moving_img_l, jump_img, img_width, img_height
 
-
 class LevelManager:
     def __init__(self):
         self.medal = None
@@ -282,7 +287,7 @@ class LevelManager:
         else:
             return 0
 
-    def update(self, screen, player, deaths_text, reset_text, quit_text, timer_text):
+    def update(self, screen, player, deaths_text, reset_text, quit_text, timer_text): # Any ideas?
         self.draw_medals(screen, player, timer_text.get_width())
         self.draw_level_ui(screen, deaths_text, reset_text, quit_text, timer_text)
         self.death_message(screen)
