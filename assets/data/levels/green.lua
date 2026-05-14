@@ -115,24 +115,25 @@ local lvl3 = {
 	    {{2000, 750}, {2050, 700}, {2100, 750}},
 	},
 	saws = {
-	    {x = 620,  y = 750,  radius = 80,  },
-	    {x = 1700, y = 335,  radius = 100, },
-	    {x = 1200, y = 335,  radius = 100, },
-	    {x = 800,  y = 335,  radius = 100, },
-	    {x = 1850, y = -170, radius = 80,  },
-	    {x = 1550, y = -400, radius = 80,  },
-	    {x = 1250, y = -400, radius = 80,  },
-	    {x = 950,  y = -170, radius = 80,  },
+	    {x = 620,  y = 750,  radius = 80, type = 'static' },
+	    {x = 1700, y = 335,  radius = 100, type = 'static' },
+	    {x = 1200, y = 335,  radius = 100, type = 'static' },
+	    {x = 800,  y = 335,  radius = 100, type = 'static' },
+	    {x = 1850, y = -170, radius = 80, type = 'static' },
+	    {x = 1550, y = -400, radius = 80, type = 'static' },
+	    {x = 1250, y = -400, radius = 80, type = 'static' },
+	    {x = 950,  y = -170, radius = 80, type = 'static' },
 	},
 	flags = {
 	    {x = 200,  y = 200,   w = 100, h = 125, save_x = 200,  save_y = 200},
 	    {x = 2080, y = -260,  w = 100, h = 125, save_x = 2080, save_y = -260},
 	},
-	keys = {
-	    {x = 250, y = 175, radius = 30, color = {255, 255, 0}},
-	},
-	key_blocks = {
-	    {x = 2550, y = 250, w = 200, h = 200},
+	key_block_pairs = {
+		{
+	    key = {x = 250, y = 175, radius = 30, color = {255, 255, 0}},
+		block = {x = 2550, y = 250, w = 200, h = 200},
+		collected = false
+		},
 	},
 	text = {
 	    saws = {name = "saws_message", fallback = "Saws are also dangerous!", color = {255, 0, 0}, x = 550, y = 600},
@@ -177,31 +178,28 @@ local lvl4 = {
 	    {x = 3000, y = -50, w = 1000, h = 15},
 	},
 	saws = {
-	    {x = 650,  y = 630, radius = 80},
-	    {x = 2520, y = 230, radius = 90},
-	    {x = 3320, y = 400, radius = 100},
-	    {x = 4950, y = 150, radius = 100},
-	    {x = 4950, y = 550, radius = 100},
-	    {x = 4500, y = 425, radius = 60},
-	},
-	moving_saws = {
-	    {radius = 100, speed = 5, cx = 3800, cy = -300, max = -50, min = -700},
-	},
-	rotating_saws = {
-	    {radius = 40, orbit_radius = 230, angle = 0,   speed = 2, block = 1},
-	    {radius = 40, orbit_radius = 230, angle = 90,  speed = 2, block = 1},
-	    {radius = 40, orbit_radius = 230, angle = 180, speed = 2, block = 1},
-	    {radius = 40, orbit_radius = 230, angle = 270, speed = 2, block = 1},
+	    {x = 650,  y = 630, radius = 80, type = 'static'},
+	    {x = 2520, y = 230, radius = 90, type = 'static'},
+	    {x = 3320, y = 400, radius = 100, type = 'static'},
+	    {x = 4950, y = 150, radius = 100, type = 'static'},
+	    {x = 4950, y = 550, radius = 100, type = 'static'},
+	    {x = 4500, y = 425, radius = 60, type = 'static'},
+	    {radius = 40, orbit_radius = 230, angle = 0,   speed = 2, block = 1, type = 'rotating'},
+	    {radius = 40, orbit_radius = 230, angle = 90,  speed = 2, block = 1, type = 'rotating'},
+	    {radius = 40, orbit_radius = 230, angle = 180, speed = 2, block = 1, type = 'rotating'},
+	    {radius = 40, orbit_radius = 230, angle = 270, speed = 2, block = 1, type = 'rotating'},	
+	    {radius = 100, speed = 5, x = 3800, y = -300, max = -50, min = -700, type = 'moving_y'},
 	},
 	flags = {
 	    {x = 1500, y = 550, w = 100, h = 125, save_x = 1500, save_y = 550},
 	    {x = 3200, y = 120, w = 100, h = 125, save_x = 3200, save_y = 120},
 	},
-	keys = {
-	    {x = 3820, y = -130, radius = 30, color = {255, 255, 0}},
-	},
-	key_blocks = {
-	    {x = 2800, y = 30, w = 200, h = 200},
+	key_block_pairs = {
+		{
+		key = {x = 3820, y = -130, radius = 30, color = {255, 255, 0}},
+	    block = {x = 2800, y = 30, w = 200, h = 200},
+		collected = false
+		},
 	},
 	exit = {x = 4870, y = 265, w = 140, h = 180},
 	next_page = "green_lvl5",
@@ -266,29 +264,24 @@ local lvl5 = {
 	    {{4800, -120}, {4850, -70}, {4900, -120}},
 	},
 	saws = {
-	    {x = 500,  y = 630,  radius = 80},
-	    {x = 2000, y = -360, radius = 80},
-	    {x = 2400, y = -360, radius = 80},
-	},
-	moving_saws = {
-	    {radius = 100, speed = 6, cx = 1250, cy = 200, max = 700, min = 200},
-	},
-	moving_saws_x = {
-	    {radius = 100, speed = 8, cx = 2400, cy = -500, max = 3300, min = 2400},
-	},
-	rotating_saws = {
-	    {radius = 40, orbit_radius = 230, angle = 0,   speed = 2, block = 1},
-	    {radius = 40, orbit_radius = 230, angle = 180, speed = 2, block = 1},
+	    {x = 500,  y = 630,  radius = 80, type = 'static'},
+	    {x = 2000, y = -360, radius = 80, type = 'static'},
+	    {x = 2400, y = -360, radius = 80, type = 'static'},
+		{radius = 40, orbit_radius = 230, angle = 0,   speed = 2, block = 1, type = 'rotating'},
+	    {radius = 40, orbit_radius = 230, angle = 180, speed = 2, block = 1, type = 'rotating'},
+		{radius = 100, speed = 6, x = 1250, y = 200, max = 700, min = 200, type = 'moving_y'},
+	    {radius = 100, speed = 8, x = 2400, y = -500, max = 3300, min = 2400, type = 'moving_x'},
 	},
 	flags = {
 	    {x = 2100, y = -150, w = 100, h = 125, save_x = 2100, save_y = -150},
 	    {x = 3450, y = -450, w = 100, h = 125, save_x = 3450, save_y = -450},
 	},
-	keys = {
-	    {x = 4250, y = -900, radius = 30, color = {255, 255, 0}},
-	},
-	key_blocks = {
-	    {x = 1300, y = -250, w = 200, h = 250},
+	key_block_pairs = {
+		{
+	    key = {x = 4250, y = -900, radius = 30, color = {255, 255, 0}},
+	    block = {x = 1300, y = -250, w = 200, h = 250},
+		collected = false
+		},
 	},
 	exit = {x = 1360, y = 20, w = 140, h = 180},
 	next_page = "green_lvl6",
@@ -329,19 +322,13 @@ local lvl6 = {
 	    {{4400, 530}, {4445, 480}, {4490, 530}},
 	},
 	saws = {
-	    {x = 5000, y = 550, radius = 100},
-	    {x = 5400, y = 550, radius = 100},
-	},
-	moving_saws = {
-	    {radius = 100, speed = 20, cx = 3800, cy = -400, max = 600, min = -400},
-	},
-	moving_saws_x = {
-	    {radius = 100, speed = 16, cx = 4900, cy = 165, max = 5800, min = 4900},
-	},
-	rotating_saws = {
-	    {radius = 40, orbit_radius = 230, angle = 0,   speed = 2, block = 1},
-	    {radius = 40, orbit_radius = 230, angle = 120, speed = 2, block = 1},
-	    {radius = 40, orbit_radius = 230, angle = 240, speed = 2, block = 1},
+	    {x = 5000, y = 550, radius = 100, type = 'static'},
+	    {x = 5400, y = 550, radius = 100, type = 'static'},
+		{radius = 100, speed = 20, x = 3800, y = -400, max = 600, min = -400, type = 'moving_y'},	
+	    {radius = 100, speed = 16, x = 4900, y = 165, max = 5800, min = 4900, type = 'moving_x'},
+	    {radius = 40, orbit_radius = 230, angle = 0,   speed = 2, block = 1, type = 'rotating'},
+	    {radius = 40, orbit_radius = 230, angle = 120, speed = 2, block = 1, type = 'rotating'},
+	    {radius = 40, orbit_radius = 230, angle = 240, speed = 2, block = 1, type = 'rotating'},
 	},
 	lasers = {
 	    {x = 5870, y = 180, w = 15, h = 350},
@@ -350,11 +337,12 @@ local lvl6 = {
 	    {x = 2400, y = 380, w = 100, h = 125, save_x = 2400, save_y = 380},
 	    {x = 3200, y = 410, w = 100, h = 125, save_x = 3200, save_y = 410},
 	},
-	keys = {
-	    {x = 5800, y = 50, radius = 30, color = {255, 255, 0}},
-	},
-	key_blocks = {
-	    {x = 2950, y = 10, w = 200, h = 170},
+	key_block_pairs = {
+		{
+		key = {x = 5800, y = 50, radius = 30, color = {255, 255, 0}},
+	    block = {x = 2950, y = 10, w = 200, h = 170},
+		collected = false
+		},
 	},
 	exit = {x = 5630, y = 340, w = 140, h = 180},
 	next_page = "quit",
