@@ -6,26 +6,43 @@ The purpose of this levels submodule is to store the mechanics altering features
 It is pretty much just buttons for now, as you need to activate them by touching them so that you can do things you normally cannot do!
 """
 
+def handle_buttons(screen, buttons, player, active_state):
+    for x, y, r, color in buttons:
+        # Draw only if the state isn't already active
+        if not active_state:
+            pygame.draw.circle(screen, color, (int(x - player.camera_x), int(y - player.camera_y)), int(r))
+
+            # Circle-to-AABB Collision Math
+            closest_x = max(player.rect.left, min(x, player.rect.right))
+            closest_y = max(player.rect.top, min(y, player.rect.bottom))
+            distance = ((closest_x - x)**2 + (closest_y - y)**2)**0.5
+
+            if distance < r:
+                if not manage_data.is_mute:
+                    manage_data.sounds['button'].play()
+                return True
+    return active_state
+
 def handling_gravity_weakers(screen, gravity_weakers, player_rect, camera_x, camera_y, weak_grav):
         for x, y, r, color in gravity_weakers:
             # Draw the button as a circle
             if not weak_grav:
                 pygame.draw.circle(screen, color, (int(x - camera_x), int(y - camera_y)), int(r))
 
-        for gravity_weaker in gravity_weakers:
-            gravity_weaker_x, gravity_weaker_y, gravity_weaker_radius, _ = gravity_weaker
+        for gravity_stronger in gravity_weakers:
+            gravity_stronger_x, gravity_stronger_y, gravity_stronger_radius, _ = gravity_stronger
 
         # Find the closest point on the player's rectangle to the button's center
-            closest_x = max(player_rect.left, min(gravity_weaker_x, player_rect.right))
-            closest_y = max(player_rect.top, min(gravity_weaker_y, player_rect.bottom))
+            closest_x = max(player_rect.left, min(gravity_stronger_x, player_rect.right))
+            closest_y = max(player_rect.top, min(gravity_stronger_y, player_rect.bottom))
 
             # Calculate the distance between the closest point and the button's center
-            dx = closest_x - gravity_weaker_x
-            dy = closest_y - gravity_weaker_y
+            dx = closest_x - gravity_stronger_x
+            dy = closest_y - gravity_stronger_y
             distance = (dx**2 + dy**2)**0.5
 
-            # If distance is less than radius, weaker gravity activated
-            if distance < gravity_weaker_radius and not weak_grav:
+            # If distance is less than radius, stronger gravity activated
+            if distance < gravity_stronger_radius and not weak_grav:
                 if not manage_data.is_mute:
                     manage_data.sounds['button'].play()
                 return True

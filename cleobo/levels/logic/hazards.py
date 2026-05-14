@@ -61,166 +61,72 @@ def draw_spikes(screen, spikes, player):
 def pre_render_saws(saw_img, saws):
     if not saws:
         return
-    # Extract ONLY the unique radii from your saw tuples
-    unique_radii = set(s[2] for s in saws)
+    # Extract unique radii (handle both dict key names 'radius' or 'r')
+    unique_radii = (s['radius'] for s in saws)
     for r in unique_radii:
         if (r, 0) in manage_data.saw_cache:
-            continue  # Skip if already cached
+            continue
         size = int(r * 2.5)
         scaled = pygame.transform.scale(saw_img, (size, size))
         for angle in range(0, 360, 5):
             manage_data.saw_cache[(r, angle)] = pygame.transform.rotate(scaled, angle)
-
-# 3. THE DRAW (Run this INSIDE the loop)
-def draw_saws(screen, saws, player):
+            
+def handle_all_saws(screen, saws, player, blocks):
     angle = (pygame.time.get_ticks() // 3) % 360
     angle_key = (angle // 5) * 5
-    
-    for x, y, r in saws:
-        cache_key = (r, angle_key)
-        # Use the pre-rendered image
-        if cache_key in manage_data.saw_cache:
-            rotated_img = manage_data.saw_cache[cache_key]
-            rect = rotated_img.get_rect(center=(x - player.camera_x, y - player.camera_y))
-            screen.blit(rotated_img, rect)
+    collision = False
 
-def check_saw_collisions(player, saws):
-    for x, y, r in saws:
-        # Circle-to-AABB collision math
-        closest_x = max(player.rect.left, min(x, player.rect.right))
-        closest_y = max(player.rect.top, min(y, player.rect.bottom))
-        dx = closest_x - x
-        dy = closest_y - y
-        if (dx**2 + dy**2) < r**2:
+    for saw in saws:
+        saw_type = saw.get('type', 'static')
+
+        # --- 1. UPDATE POSITION ---
+        if saw_type == "'rotating'":
+            saw['angle'] = (saw['angle'] + saw.get('speed', 2)) % 360
+            rad = math.radians(saw['angle'])
+            orbit_center = blocks[saw['block']].center
+            saw['x'] = orbit_center[0] + saw['orbit_radius'] * math.cos(rad)
+            saw['y'] = orbit_center[1] + saw['orbit_radius'] * math.sin(rad)
+            
+        elif saw_type == "'moving_y'":
+            saw['y'] += saw['speed']
+            if saw['y'] > saw['max'] or saw['y'] < saw['min']:
+                saw['speed'] *= -1
+                
+        elif saw_type == "'moving_x'":
+            saw['x'] += saw['speed']
+            if saw['x'] > saw['max'] or saw['x'] < saw['min']:
+                saw['speed'] *= -1
+                
+        elif saw_type == "'rushing'":
+            saw['x'] += saw['speed']
+            if saw['x'] > saw['max']:
+                saw['x'] = saw['min']
+
+        r = saw.get('radius') or saw.get('r')
+        cache_key = (r, angle_key)
+
+        if cache_key in manage_data.saw_cache:
+            img = manage_data.saw_cache[cache_key]
+            
+            curr_x = saw.get('x')
+            curr_y = saw.get('y')
+            
+            if curr_x is not None and curr_y is not None:
+                pos = (curr_x - player.camera_x, curr_y - player.camera_y) 
+                rect = img.get_rect(center=pos)
+                screen.blit(img, rect)
+
+                closest_x = max(player.rect.left, min(curr_x, player.rect.right))
+                closest_y = max(player.rect.top, min(curr_y, player.rect.bottom))
+                if ((closest_x - curr_x)**2 + (closest_y - curr_y)**2) < r**2:
+                    collision = True
+
+    return collision
+
+def handle_lasers(screen, lasers, player):
+    for laser in lasers:
+        pygame.draw.rect(screen, (255, 0, 0), (int(laser.x - player.camera_x), int(laser.y - player.camera_y), laser.width, laser.height))
+        # Check if the player collides with the laser
+        if player.rect.colliderect(laser):
             return True
     return False
-
-def handle_rotating_saws(screen, rotating_saws, blocks, player_rect, saw_img, camera_x, camera_y, saw_cache):
-    """Updates, draws, and checks collisions for saws that orbit blocks."""
-    collision = False
-    
-    # NEW: Calculate the spinning angle for the "classic" saw look
-    spin_angle = (pygame.time.get_ticks() // 3) % 360
-    angle_key = (spin_angle // 5) * 5
-
-    for saw in rotating_saws:
-        # 1. Update Position (Orbit)
-        saw['angle'] = (saw['angle'] + saw['speed']) % 360
-        rad = math.radians(saw['angle'])
-        orbit_center_x, orbit_center_y = blocks[saw['block']].centerx, blocks[saw['block']].centery
-        saw_x = orbit_center_x + saw['orbit_radius'] * math.cos(rad)
-        saw_y = orbit_center_y + saw['orbit_radius'] * math.sin(rad)
-
-        # 2. Draw with Cache (Optimization)
-        cache_key = (saw['r'], angle_key)
-        if cache_key not in saw_cache:
-            size = int(saw['r'] * 2.5)
-            scaled = pygame.transform.scale(saw_img, (size, size))
-            saw_cache[cache_key] = pygame.transform.rotate(scaled, angle_key)
-        
-        rotated_saw = saw_cache[cache_key]
-        rect = rotated_saw.get_rect(center=(int(saw_x - camera_x), int(saw_y - camera_y)))
-        screen.blit(rotated_saw, rect)
-
-        # 3. Collision Math
-        closest_x = max(player_rect.left, min(saw_x, player_rect.right))
-        closest_y = max(player_rect.top, min(saw_y, player_rect.bottom))
-        if ((closest_x - saw_x)**2 + (closest_y - saw_y)**2)**0.5 < saw['r']:
-            collision = True
-            
-    return collision
-
-def handle_moving_saws(screen, moving_saws, player_rect, saw_img, camera_x, camera_y, saw_cache):
-    """Updates, draws, and checks collisions for saws that bounce up and down."""
-    collision = False
-    
-    # NEW: Spin logic
-    spin_angle = (pygame.time.get_ticks() // 3) % 360
-    angle_key = (spin_angle // 5) * 5
-
-    for saw in moving_saws:
-        # 1. Update Position (Bounce)
-        saw['cy'] += saw['speed']
-        if saw['cy'] > saw['max'] or saw['cy'] < saw['min']:
-            saw['speed'] = -saw['speed']
-
-        # 2. Draw with Cache
-        cache_key = (saw['r'], angle_key)
-        if cache_key not in saw_cache:
-            size = int(saw['r'] * 2.5)
-            scaled = pygame.transform.scale(saw_img, (size, size))
-            saw_cache[cache_key] = pygame.transform.rotate(scaled, angle_key)
-            
-        rotated_saw = saw_cache[cache_key]
-        rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
-        screen.blit(rotated_saw, rect)
-
-        # 3. Collision Math
-        closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
-        closest_y = max(player_rect.top, min(saw['cy'], player_rect.bottom))
-        if ((closest_x - saw['cx'])**2 + (closest_y - saw['cy'])**2)**0.5 < saw['r']:
-            collision = True
-            
-    return collision
-
-def handle_moving_saws_x(screen, moving_saws_x, player_rect, saw_img, camera_x, camera_y, saw_cache):
-    collision = False
-    
-    spin_angle = (pygame.time.get_ticks() // 3) % 360
-    angle_key = (spin_angle // 5) * 5
-
-    for saw in moving_saws_x:
-        # 1. Update Position (Bounce)
-        saw['cx'] += saw['speed']
-        if saw['cx'] > saw['max'] or saw['cx'] < saw['min']:
-            saw['speed'] = -saw['speed']
-
-        # 2. Draw with Cache
-        cache_key = (saw['r'], angle_key)
-        if cache_key not in saw_cache:
-            size = int(saw['r'] * 2.5)
-            scaled = pygame.transform.scale(saw_img, (size, size))
-            saw_cache[cache_key] = pygame.transform.rotate(scaled, angle_key)
-            
-        rotated_saw = saw_cache[cache_key]
-        rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
-        screen.blit(rotated_saw, rect)
-
-        # 3. Collision Math
-        closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
-        closest_y = max(player_rect.top, min(saw['cy'], player_rect.bottom))
-        if ((closest_x - saw['cx'])**2 + (closest_y - saw['cy'])**2)**0.5 < saw['r']:
-            collision = True
-            
-    return collision
-
-def handle_rushing_saws(screen, rushing_saws, player_rect, saw_img, camera_x, camera_y, saw_cache):
-    collision = False
-    
-    spin_angle = (pygame.time.get_ticks() // 3) % 360
-    angle_key = (spin_angle // 5) * 5
-
-    for saw in rushing_saws:
-        # 1. Update Position (Bounce)
-        saw['cx'] += saw['speed']
-        if saw['cx'] > saw['max']:
-            saw['cx'] = saw['min']
-
-        # 2. Draw with Cache
-        cache_key = (saw['r'], angle_key)
-        if cache_key not in saw_cache:
-            size = int(saw['r'] * 2.5)
-            scaled = pygame.transform.scale(saw_img, (size, size))
-            saw_cache[cache_key] = pygame.transform.rotate(scaled, angle_key)
-            
-        rotated_saw = saw_cache[cache_key]
-        rect = rotated_saw.get_rect(center=(int(saw['cx'] - camera_x), int(saw['cy'] - camera_y)))
-        screen.blit(rotated_saw, rect)
-
-        # 3. Collision Math
-        closest_x = max(player_rect.left, min(saw['cx'], player_rect.right))
-        closest_y = max(player_rect.top, min(saw['cy'], player_rect.bottom))
-        if ((closest_x - saw['cx'])**2 + (closest_y - saw['cy'])**2)**0.5 < saw['r']:
-            collision = True
-            
-    return collision

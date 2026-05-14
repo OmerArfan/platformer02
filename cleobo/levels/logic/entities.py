@@ -7,7 +7,7 @@ from os.path import join
 """
 The purpose of this levels submodule is to store all the different entities the game needs to function.
 The purpose of the Player and PlayerSprite class is to store all the physics, functions, configurations and behaviour of the player when a button is pressed or a specific event may happen.
-The purpose of the LevelManager class, meanwhile, is to handle the interface of the Level UI.
+The purpose of the LevelManager class, meanwhile, is to handle the interface and important variables of the Level UI.
 """
 
 class Player:
@@ -99,17 +99,20 @@ class Player:
     def fall(self, manager, rendered_fall_text):
     # Fall death
         if self.rect.y > 1100:
-            self.rect.x, self.rect.y = self.spawn_x, self.spawn_y
+            self.die()
             manager.death_text = rendered_fall_text
             manager.wait_time = pygame.time.get_ticks()
             if not manage_data.is_mute:
                 manage_data.sounds['fall'].play()
-            self.velocity_y = 0
-            self.deathcount += 1
+            
     
-    def update(self, screen, keys, manager, rendered_fall_text):
+    def die(self):
+        self.rect.x, self.rect.y = self.spawn_x, self.spawn_y
+        self.velocity_y = 0
+        self.deathcount += 1
+
+    def update(self, keys, manager, rendered_fall_text):
         self.input_update(keys)
-        self.sprite.draw(screen, self, keys, manager)
         self.camera_update()
         self.fall(manager, rendered_fall_text)
 
@@ -120,24 +123,24 @@ class Player:
 
 class PlayerSprites:
     def __init__(self):
-        self.default, self.move_r, self.move_l, self.blink, self.jump, self.width, self.height = self.char_assets()
+        self.default, self.blink, self.move_r, self.move_l, self.jump, self.width, self.height = self.char_assets()
 
     def draw(self, screen, player, keys, manager):
         # Calculate draw position once
         draw_pos = (player.rect.x - player.camera_x, player.rect.y - player.camera_y)
 
+        #if not player.on_ground:
+        #    screen.blit(self.jump, draw_pos)
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             screen.blit(self.move_r, draw_pos)
         elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
             screen.blit(self.move_l, draw_pos)
-        elif keys[pygame.K_UP] or keys[pygame.K_w]:
-            screen.blit(self.blink, draw_pos)
         else:
             screen.blit(self.default, draw_pos)
             if manager.current_time % 4 < 0.25:
                 screen.blit(self.blink, draw_pos)
     
-    def char_assets():
+    def char_assets(self):
         # Load player image
         CHAR_PATH = resource_path("assets/imgs/char")
         char = manage_data.selected_character
