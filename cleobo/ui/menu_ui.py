@@ -5,12 +5,12 @@ import pygame
 import arabic_reshaper
 import time
 from bidi.algorithm import get_display
-from cleobo.levels.level_logic import LevelManager
 import cleobo.data.manage_data as manage_data
 import math
 import cleobo.ui.state as state
 import random
 import re
+from cleobo.levels.logic.entities import LevelManager
 
 from cleobo.ui.text_sprite import TextSprite
 
