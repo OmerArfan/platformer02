@@ -1,6 +1,5 @@
 import pygame
 import cleobo.ui.menu_ui as menu_ui
-import random
 import time
 from cleobo.data import manage_data, achievements
 from cleobo.levels.logic import hazards, entities, env, mech, blockmgr
@@ -138,12 +137,24 @@ def level_launcher(level_name, screen, transition, world_name):
         # Check exit portal collision
         if player.rect.colliderect(exit_portal):
             level_num = int(level_name.replace('lvl', ''))
-            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = manager.fin_lvl_logic(level_num, player)
+            subsection = '1'
+            
+            # ✅ Added world_name and subsection parameters
+            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = manager.fin_lvl_logic(
+                level_num, 
+                player, 
+                world_name=world_name,
+                subsection=subsection
+            )
+            
+            # ✅ Get medal from updated progress
+            level_data_updated = manage_data.progress["lvls"][world_name][subsection][f"lvl{level_num}"]
+            medal = level_data_updated.get('medal', 'None')
+            
             menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
             
             manage_data.save_progress(manage_data.progress, manage_data.manifest)
             
-            # Transition to next level if exists
             next_page = level_data.get('next_page')
             state.handle_action(next_page, transition, manage_data.current_page)
             
@@ -205,8 +216,8 @@ def level_launcher(level_name, screen, transition, world_name):
         
         manager.update(screen, player, deaths_text, reset_text, quit_text, timer_text)
         
-        medal = manager.get_medal(int(level_name.replace('lvl', '')), manager.current_time)
-        
+        manager.medal = manager.get_medal(int(level_name.replace('lvl', '')), manager.current_time)
+
         # Reset level
         if keys[pygame.K_r]:
             manager.reset_stats()
