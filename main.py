@@ -158,7 +158,7 @@ while running:
             quit_text, quit_text_rect = menu_ui.create_quit_confirm_buttons(manage_data.lang_code, manage_data.manifest)
             screen.blit(quit_text, quit_text_rect)
             screen.blit(manage_data.robos['ironrobot'], (manage_data.SCREEN_WIDTH // 2 - manage_data.robos['robot'].get_width() // 2, manage_data.SCREEN_HEIGHT // 2 - 200))
-            button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)
         
         elif "lvl" in manage_data.current_page:
             # Extract world and level from page name
@@ -172,19 +172,19 @@ while running:
 
         elif manage_data.current_page == "settings":
             menu_ui.settings_menu(screen, manage_data.lang_code, manage_data.manifest, manage_data.bgs)
-            button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)
 
         elif manage_data.current_page == "About":   
             menu_ui.about_menu(screen, manage_data.lang_code, manage_data.manifest, manage_data.bgs, manage_data.version)
-            button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)
-            
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)            
+        
         elif manage_data.current_page == "Audio":
             menu_ui.audio_settings_menu(screen, manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.bgs, manage_data.is_mute, manage_data.is_mute_amb)
-            button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)
 
         elif manage_data.current_page == "worlds":
             menu_ui.worlds(screen, manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.bgs, manage_data.disks)
-            button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)
 
         elif manage_data.current_page == "Account":
             screen.blit(manage_data.bgs['plain'], (0, 0))
@@ -195,7 +195,7 @@ while running:
             screen.blit(title, (manage_data.SCREEN_WIDTH // 2 - title.get_width() // 2, 80))
             
             acc_sys.create_account_selector()
-            button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)
 
         elif manage_data.current_page == "login_screen":
             acc_sys.draw_login_screen(screen)
@@ -204,7 +204,7 @@ while running:
             acc_sys.draw_registration_screen(screen)
     
         else:
-            button_hovered_last_frame = menu_ui.draw_buttons(screen, menu_ui.buttons, manage_data.sounds['hover'], manage_data.is_mute, mouse_pos, button_hovered_last_frame)
+            button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)
         
         menu_ui.draw_notifs(screen)
         menu_ui.draw_syncing_status(screen)
