@@ -74,11 +74,11 @@ def render_text(text, Boolean, color, bigfont=False):
     
     return surf
 
-def draw_buttons(screen, buttons, hover_sound, is_mute, mouse_pos, button_hovered_last_frame):
+def draw_buttons(screen, mouse_pos, button_hovered_last_frame):
     for rendered, rect, key, is_locked in buttons:
         if rect.collidepoint(mouse_pos):
             button_suface(screen, rect)
-            button_hovered_last_frame = hover_effect(screen, rect, hover_sound, is_mute, button_hovered_last_frame)
+            button_hovered_last_frame = hover_effect(screen, rect, button_hovered_last_frame)
         else:
             button_suface(screen, rect)
         screen.blit(rendered, rect)
@@ -96,13 +96,13 @@ def button_suface(screen, rect):
         screen.blit(button_surface, rect.inflate(20, 10).topleft)
         pygame.draw.rect(screen, (0, 163, 255), rect.inflate(30, 15), 6)
 
-def hover_effect(screen, rect, hover_sound, is_mute, button_hovered_last_frame):
+def hover_effect(screen, rect, button_hovered_last_frame):
     button_surface = pygame.Surface(rect.inflate(20, 10).size, pygame.SRCALPHA)
     button_surface.fill((200, 200, 250, 100))  # RGBA: 100 is alpha (transparency)
     screen.blit(button_surface, rect.inflate(20, 10).topleft)                    
     hovered = rect.collidepoint(pygame.mouse.get_pos())
-    if hovered and not button_hovered_last_frame and not is_mute:
-        hover_sound.play()
+    if hovered and not button_hovered_last_frame and not manage_data.is_mute:
+        manage_data.sounds['hover'].play()
     button_hovered_last_frame = hovered
     return button_hovered_last_frame
 
@@ -475,7 +475,7 @@ def worlds(screen, lang_code, manifest, progress, bgs, disks):
     back_text = current_lang.get("back", "Back")        
     rendered_back = render_text(back_text, True, (255, 255, 255))
 
-    back_rect = pygame.Rect(0, 0, rendered_back.get_width(), rendered_back.get_height())
+    back_rect = pygame.FRect(0, 0, rendered_back.get_width(), rendered_back.get_height())
     back_rect.center = (manage_data.SCREEN_WIDTH // 2 , manage_data.SCREEN_HEIGHT - 200)
 
     text_rect = rendered_back.get_rect(center=back_rect.center)
@@ -502,13 +502,15 @@ def green_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
     start_x = (manage_data.SCREEN_WIDTH - grid_width) // 2
     start_y = ((manage_data.SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2)) + 50
 
+    subsection = '1'
+
     for i, level in enumerate(level_options):
         col = i % buttons_per_row
         row = i // buttons_per_row
         x = start_x + col * spacing_x
         y = start_y + row * spacing_y
 
-        is_locked = level in progress["lvls"]["locked_levels"]
+        is_locked = progress["lvls"]["green"][subsection][level]['locked']
         text_surface = render_text(level_no[i], True, (255, 255, 255), bigfont=True)
         disk_rect = disks['green'].get_rect(center=(x, y))
         buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
@@ -518,7 +520,7 @@ def green_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
     rendered_back = render_text(back_text, True, (255, 255, 255))
 
     # Create a fixed 100x100 hitbox centered at the right location
-    back_rect = pygame.Rect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 100, 100)
+    back_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 100, 100)
     back_rect.center = (manage_data.SCREEN_WIDTH // 2 , manage_data.SCREEN_HEIGHT - 200)
 
     # Then during draw phase: center the text inside that fixed rect
@@ -531,7 +533,7 @@ def green_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
     next_text = current_lang.get("next", "next")
     rendered_next = render_text(next_text, True, (255, 255, 255))
 
-    next_rect = pygame.Rect(0, 0, 100, 100)
+    next_rect = pygame.FRect(0, 0, 100, 100)
     next_rect.center = (manage_data.SCREEN_WIDTH - 90, manage_data.SCREEN_HEIGHT // 2)
 
     text_rect = rendered_next.get_rect(center=next_rect.center)
@@ -560,7 +562,7 @@ def mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
         x = start_x + col * spacing_x
         y = start_y + row * spacing_y
 
-        is_locked = level in progress["lvls"]["locked_levels"]
+        is_locked = progress["lvls"]["mech"]["1"][level]['locked']
         text_surface = render_text(level_no[i], True, (255, 255, 255), bigfont=True)
         disk_rect = disks['mech'].get_rect(center=(x, y))
         buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
@@ -570,7 +572,7 @@ def mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
     rendered_back = render_text(back_text, True, (255, 255, 255))
 
     # Create a fixed 100x100 hitbox centered at the right location
-    back_rect = pygame.Rect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 100, 100)
+    back_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 100, 100)
     back_rect.center = (manage_data.SCREEN_WIDTH // 2 , manage_data.SCREEN_HEIGHT - 200)
 
     # Then during draw phase: center the text inside that fixed rect
@@ -605,19 +607,19 @@ def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, b
 
         if is_hovered:
             # Hover logic
-            button_hovered_last_frame = hover_effect(screen, rect, manage_data.sounds['hover'], manage_data.is_mute, button_hovered_last_frame)
+            button_hovered_last_frame = hover_effect(screen, rect, button_hovered_last_frame)
             
             # Metadata (Score/Stars) - Only for level buttons
             if key is not None:
               if key.startswith("lvl") and not is_locked:
-                score = manage_data.progress["lvls"]['score'][key]
+                score = manage_data.progress["lvls"][world_type]["1"][key]['score']
                 
                 # Highscore
                 hs_txt = render_text(messages.get("hs_m", "HS: {hs}").format(hs=score), True, (255, 255, 0))
                 screen.blit(hs_txt, (manage_data.SCREEN_WIDTH//2 - hs_txt.get_width()//2, manage_data.SCREEN_HEIGHT - 50))
                 
                 # Medals & Stars
-                medal = manage_data.progress["lvls"]['medals'][key]
+                medal = manage_data.progress["lvls"][world_type]["1"][key]['medal']
                 if medal != "None":
                     screen.blit(manage_data.medals[medal], (manage_data.SCREEN_WIDTH // 2 - 250, manage_data.SCREEN_HEIGHT - 80))
                 
