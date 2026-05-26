@@ -97,10 +97,11 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
-with open(resource_path("assets/data/thresholds.json"), "r", encoding="utf-8") as f:
-    thresholds_data = json.load(f)
-    level_thresholds = thresholds_data["level_thresholds"]
-    score_thresholds = thresholds_data["score_thresholds"]
+def thresholds(world, thr):
+    with open(resource_path(f"assets/data/thresholds/{world}.json"), "r", encoding="utf-8") as f:
+        thresh_data = json.load(f)
+        print(thresh_data)
+        return thresh_data[thr]
 
 fonts = {}
 saw_cache = {}
@@ -692,10 +693,13 @@ def xp():
 
     # XP from stars
     stars = 0
-    for level_num in sorted(level_scores.keys()):
+    for world in default_progress['lvls']:
+     if world != "ship": # As it does not exist yet
+      for level in world:
+        level_num = int(level_key.replace('lvl', ''))
         score = level_scores.get(level_num, 0)
-        stars += LevelManager.get_stars(level_num, score)
-    star_xp = stars * 20  # 20 XP per star
+        stars += LevelManager.get_stars(level_num, world, score)
+     star_xp = stars * 20  # 20 XP per star
 
     # XP from achievements
     achievements = progress["achieved"]  # your achievements dict
