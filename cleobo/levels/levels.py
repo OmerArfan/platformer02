@@ -216,7 +216,7 @@ def level_launcher(level_name, screen, transition, world_name):
         
         manager.update(screen, player, deaths_text, reset_text, quit_text, timer_text)
         
-        manager.medal = manager.get_medal(int(level_name.replace('lvl', '')), manager.current_time)
+        manager.medal = manager.get_medal(int(level_name.replace('lvl', '')), world_name, manager.current_time)
 
         # Reset level
         if keys[pygame.K_r]:
