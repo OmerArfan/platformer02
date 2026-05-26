@@ -105,7 +105,6 @@ class Player:
             if not manage_data.is_mute:
                 manage_data.sounds['fall'].play()
             
-    
     def die(self):
         self.rect.x, self.rect.y = self.spawn_x, self.spawn_y
         self.velocity_y = 0
@@ -205,40 +204,62 @@ class LevelManager:
         return score, base_score, medal_score, death_score, time_score
 
     # ALgorithm for logic stuff when level is completed
-    def fin_lvl_logic(self, lvl, player):
-        print(manage_data.progress["lvls"]["score"][f"lvl{lvl}"])
-        if manage_data.progress["lvls"]["complete_levels"] < lvl:
-            manage_data.progress["lvls"]["complete_levels"] = lvl
-
+    def fin_lvl_logic(self, level_num, player, world_name, subsection='1'):
+        level_key = f"lvl{level_num}"
+        
+        # Get current level data
+        level_data = manage_data.progress["lvls"][world_name][subsection][level_key]
+        
+        # Play completion sound
         if not manage_data.is_mute:
             manage_data.sounds['warp'].play()
 
-        if self.current_time < manage_data.progress["lvls"]["times"][f"lvl{lvl}"] or manage_data.progress["lvls"]["times"][f"lvl{lvl}"] == 0:
-            manage_data.progress["lvls"]["times"][f"lvl{lvl}"] = round(self.current_time, 2)
+        # Update time 
+        current_best = level_data.get('time', 0)
+        if self.current_time < current_best or current_best == 0:
+            level_data['time'] = round(self.current_time, 2)
         
-        if manage_data.progress["lvls"]["score"][f"lvl{lvl}"] < 100000:
-            manage_data.progress["lvls"]["medals"][f"lvl{lvl}"] = self.get_medal(lvl, manage_data.progress["lvls"]["times"][f"lvl{lvl}"])
-        else:
-            manage_data.progress["lvls"]["medals"][f"lvl{lvl}"] = "Diamond"
-
-        medal = self.get_medal(lvl, self.current_time)
-
+        # Calculate medal based on time
+        medal = self.get_medal(level_num, world_name, self.current_time)
+        
+        # Diamond medal if Gold with 0 deaths
         if medal == "Gold" and player.deathcount == 0:
             medal = "Diamond"
-            manage_data.progress["lvls"]["medals"][f"lvl{lvl}"] = medal
-
+        
+        # Update stored medal if new medal is better
+        stored_medal = level_data.get('medal', 'None')
+        medal_hierarchy = {'Diamond': 4, 'Gold': 3, 'Silver': 2, 'Bronze': 1, 'None': 0}
+        if medal_hierarchy.get(medal, 0) > medal_hierarchy.get(stored_medal, 0):
+            level_data['medal'] = medal
+        else:
+            medal = stored_medal
+        
+        # Calculate score
         score, base_score, medal_score, death_score, time_score = self.score_calc(player)
         
-        if manage_data.progress["lvls"]["score"][f"lvl{lvl}"] < score or manage_data.progress["lvls"]["score"][f"lvl{lvl}"] == 0:
-            manage_data.progress["lvls"]["score"][f"lvl{lvl}"] = score
+        # Update score if new personal best 
+        stored_score = level_data.get('score', 0)
+        new_hs = False
+        if score > stored_score:
+            level_data['score'] = score
             new_hs = True
             hs = score
         else:
-            new_hs = False
-            hs = manage_data.progress["lvls"]["score"][f"lvl{lvl}"]
-
+            hs = stored_score
+        
+        next_lvl_num = level_num + 1
+        next_level = f"lvl{next_lvl_num}"
+        world_sub = manage_data.progress['lvls'][world_name][subsection]
+        if next_level in world_sub:
+            # Mark as unlocked since it's been played 
+            next_level_data = manage_data.progress["lvls"][world_name][subsection][next_level]
+            next_level_data['locked'] = False
+        
+        # Trigger unlock system 
         manage_data.update_locked_levels(manage_data.progress, manage_data.manifest)
-        stars = self.get_stars(lvl, score)
+        
+        # Calculate stars
+        stars = self.get_stars(level_num, world_name, score)
         return score, base_score, medal_score, death_score, time_score, stars, new_hs, hs
 
     def draw_level_ui(self, screen, deaths_text, reset_text, quit_text, timer_text):
@@ -263,8 +284,9 @@ class LevelManager:
 
     # Function to get medal based on time
     @staticmethod
-    def get_medal(level, time_taken):
-        thresholds = next((t for t in manage_data.level_thresholds if t['level'] == level), None)
+    def get_medal(level, world, time_taken):
+        thresh = manage_data.thresholds(world, "medal")
+        thresholds = next((t for t in thresh if t['level'] == level), None)
         if not thresholds:
             return "None"
         if time_taken <= thresholds['gold']:
@@ -274,11 +296,14 @@ class LevelManager:
         elif time_taken <= thresholds['bronze']:
             return "Bronze"
         else:
-            return "None"
+            return None
 
     @staticmethod
-    def get_stars(level, score):
-        thresholds = next((t for t in manage_data.score_thresholds if t['level'] == level), None)
+    def get_stars(level, world, score):
+        print(world)
+        thresh = manage_data.thresholds(world, "star")
+        print(thresh)
+        thresholds = next((t for t in thresh if t['level'] == level), None)
         if not thresholds:
             return 0
         if score >= thresholds['3']:
