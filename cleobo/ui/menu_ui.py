@@ -623,7 +623,7 @@ def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, b
                 if medal != "None":
                     screen.blit(manage_data.medals[medal], (manage_data.SCREEN_WIDTH // 2 - 250, manage_data.SCREEN_HEIGHT - 80))
                 
-                stars = LevelManager.get_stars(int(key[3:]), score)
+                stars = LevelManager.get_stars(int(key[3:]), world_type, score)
                 for i in range(stars):
                     screen.blit(manage_data.assets['star_small'], (manage_data.SCREEN_WIDTH // 2 + (i-1)*35, manage_data.SCREEN_HEIGHT - 80))
                     
