@@ -6,8 +6,8 @@ from datetime import datetime
 import traceback
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0474"
-manage_data.kernel = "0.3.0.0028"
+manage_data.version = "1.3.9.0475"
+manage_data.kernel = "0.4.0.0029"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
@@ -215,20 +215,18 @@ def init_robos():
     try:
         robos = {}
         robo_files = {
-            'robot': "char/robot/robot.png",
+            'robot': "char/robot/idle.png",
             'evilrobot': "char/evilrobot/evilrobot.png",
-            'greenrobot': "char/greenrobot/greenrobot.png",
-            'ironrobot': "char/ironrobot/ironrobo.png",
+            'greenrobot': "char/greenrobot/idle.png",
+            'ironrobot': "char/ironrobot/idle.png",
             'cakebot': "char/cakebot/cakebot.png",
-            'greenrobot_moving': "char/greenrobot/movegreenrobot.png",
-            'locked': "char/lockedrobot.png",
         }
         
         for name, file_path in robo_files.items():
             full_path = manage_data.resource_path(os.path.join(IMAGES_FOLDER, file_path))
             verify_asset_exists(full_path, f"{name}")
             robos[name] = pygame.image.load(full_path).convert_alpha()
-        
+
         return robos
     except Exception as e:
         print(f"ERROR loading robots: {e}")
