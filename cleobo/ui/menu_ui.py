@@ -820,11 +820,18 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
          
          selected_character = manage_data.progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
          
-         screen.blit(manage_data.robos['robot'], manage_data.robo_rects['robot'])     
-         screen.blit(manage_data.robos['evilrobot'] if manage_data.unlocked_robos['evilrobot'] else manage_data.robos['locked'], manage_data.robo_rects['evilrobot'])
-         screen.blit(manage_data.robos['greenrobot'] if manage_data.unlocked_robos['greenrobot'] else manage_data.robos['locked'], manage_data.robo_rects['greenrobot'])
-         screen.blit(manage_data.robos['ironrobot'] if manage_data.unlocked_robos['ironrobot'] else manage_data.robos['locked'], manage_data.robo_rects['ironrobot'])
-         screen.blit(manage_data.robos['cakebot'] if manage_data.unlocked_robos['cakebot'] else manage_data.robos['locked'], manage_data.robo_rects['cakebot'])
+         LOCKED_FILTER = pygame.Surface((100, 100))
+         LOCKED_FILTER.fill((40, 40, 40)) # A dark grey color
+         LOCKED_FILTER.set_alpha(210)     # Adjust this to change how "locked" it looks      
+
+         for robo_name in ['robot', 'evilrobot', 'greenrobot', 'ironrobot', 'cakebot']:
+            rect = manage_data.robo_rects[robo_name]  
+            if manage_data.unlocked_robos[robo_name]:
+                screen.blit(manage_data.robos[robo_name], rect)
+            else:
+                screen.blit(manage_data.robos[robo_name], rect)
+                screen.blit(LOCKED_FILTER, rect)
+         
          # Draw a highlight border around the selected character
          highlight_colors = {
           "robot": (63, 72, 204),
