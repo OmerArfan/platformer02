@@ -1,5 +1,6 @@
 import pygame
 import time
+from PIL import Image
 import cleobo.data.manage_data as manage_data
 from cleobo.data.manage_data import resource_path
 from os.path import join
@@ -122,17 +123,106 @@ class Player:
 
 class PlayerSprites:
     def __init__(self):
-        self.default, self.blink, self.move_r, self.move_l, self.jump, self.width, self.height = self.char_assets()
+        self.default, self.blink, self.move_r, self.move_l, self.jump, self.width, self.height, self.move_r_start_frames, self.move_r_end_frames , self.move_l_start_frames, self.move_l_end_frames = self.char_assets()
+        
+        # Animation tracking
+        self.move_r_was_pressed = False
+        self.move_l_was_pressed = False
+        self.animation_start_time = None
+        self.current_animation = None  # 'start', 'end', or None
+        self.animation_direction = None  # 'left' or 'right'
+        self.frame_duration = 50  # milliseconds per frame
+        self.animation_complete = False
+
+    def load_gif_frames(self, gif_path):
+        """Load all frames from a gif file"""
+        frames = []
+        try:
+            gif = Image.open(gif_path)
+            for frame_idx in range(gif.n_frames):
+                gif.seek(frame_idx)
+                frame_image = gif.convert("RGBA")
+                frame_data = pygame.image.fromstring(
+                    frame_image.tobytes(),
+                    frame_image.size,
+                    frame_image.mode
+                ).convert_alpha()
+                frames.append(frame_data)
+        except Exception as e:
+            print(f"Error loading gif {gif_path}: {e}")
+        return frames
+
+    def get_animation_frame(self):
+        """Get current frame based on elapsed time since animation started"""
+        if self.animation_start_time is None or self.current_animation is None:
+            return None
+        
+        elapsed = pygame.time.get_ticks() - self.animation_start_time
+        frame_index = elapsed // self.frame_duration
+        
+        if self.current_animation == 'start':
+            frames = self.move_r_start_frames if self.animation_direction == 'right' else self.move_l_start_frames
+            if frame_index >= len(frames):
+                self.animation_complete = True
+                return frames[-1]  # Return last frame
+            return frames[frame_index]
+        
+        elif self.current_animation == 'end':
+            frames = self.move_r_end_frames if self.animation_direction == 'right' else self.move_l_end_frames
+            if frame_index >= len(frames):
+                self.animation_complete = True
+                return frames[-1]  # Return last frame
+            return frames[frame_index]
+        
+        return None
 
     def draw(self, screen, player, keys, manager):
-        # Calculate draw position once
         draw_pos = (player.rect.x - player.camera_x, player.rect.y - player.camera_y)
+        
+        # Check if right/D key is currently pressed
+        is_pressing_right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
+        is_pressing_left = keys[pygame.K_LEFT] or keys[pygame.K_a]
+        
+        # Detect transition from not pressed to pressed
+        if is_pressing_right and not self.move_r_was_pressed:
+            self.current_animation = 'start'
+            self.animation_direction = 'right'
+            self.animation_start_time = pygame.time.get_ticks()
+            self.animation_complete = False
+        
+        # Detect transition from pressed to not pressed
+        if not is_pressing_right and self.move_r_was_pressed:
+            self.current_animation = 'end'
+            self.animation_direction = 'right'
+            self.animation_start_time = pygame.time.get_ticks()
+            self.animation_complete = False
 
-        #if not player.on_ground:
-        #    screen.blit(self.jump, draw_pos)
-        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+        # Detect transition from not pressed to pressed
+        if is_pressing_left and not self.move_l_was_pressed:
+            self.current_animation = 'start'
+            self.animation_direction = 'left'
+            self.animation_start_time = pygame.time.get_ticks()
+            self.animation_complete = False
+        
+        # Detect transition from pressed to not pressed
+        if not is_pressing_left and self.move_l_was_pressed:
+            self.current_animation = 'end'
+            self.animation_direction = 'left'
+            self.animation_start_time = pygame.time.get_ticks()
+            self.animation_complete = False
+        
+        self.move_r_was_pressed = is_pressing_right
+        self.move_l_was_pressed = is_pressing_left
+        
+        # Draw based on animation state
+        frame = self.get_animation_frame()
+        
+        if frame is not None:
+            # Animation is playing or completed
+            screen.blit(frame, draw_pos)
+        elif is_pressing_right:
             screen.blit(self.move_r, draw_pos)
-        elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
+        elif is_pressing_left:
             screen.blit(self.move_l, draw_pos)
         else:
             screen.blit(self.default, draw_pos)
@@ -143,26 +233,19 @@ class PlayerSprites:
         # Load player image
         CHAR_PATH = resource_path("assets/imgs/char")
         char = manage_data.selected_character
-        if char == "robot": 
-            player_img = pygame.image.load(join(CHAR_PATH, "robot/robot.png")).convert_alpha()
-            blink_img = pygame.image.load(join(CHAR_PATH, "robot/blinkrobot.png")).convert_alpha()
-            moving_img_l = pygame.image.load(join(CHAR_PATH, "robot/smilerobotL.png")).convert_alpha() # Resize to fit the game
-            moving_img = pygame.image.load(join(CHAR_PATH, "robot/smilerobot.png")).convert_alpha() # Resize to fit the game
-        elif char == "evilrobot":
+        player_img = pygame.image.load(join(CHAR_PATH, f"{char}/idle.png")).convert_alpha()
+        blink_img = pygame.image.load(join(CHAR_PATH, f"{char}/blink.png")).convert_alpha()
+        moving_img_l = pygame.image.load(join(CHAR_PATH, f"{char}/move_l.png")).convert_alpha() # Resize to fit the game
+        moving_img = pygame.image.load(join(CHAR_PATH, f"{char}/move_r.png")).convert_alpha() # Resize to fit the game
+        moving_gif_start_frames = self.load_gif_frames(join(CHAR_PATH, f"{char}/move_r_start.gif"))
+        moving_gif_end_frames = self.load_gif_frames(join(CHAR_PATH, f"{char}/move_r_end.gif"))
+        moving_gif_l_start_frames = self.load_gif_frames(join(CHAR_PATH, f"{char}/move_l_start.gif"))
+        moving_gif_l_end_frames = self.load_gif_frames(join(CHAR_PATH, f"{char}/move_l_end.gif"))
+        if char == "evilrobot":
             player_img = pygame.image.load(join(CHAR_PATH, "evilrobot/evilrobot.png")).convert_alpha()
             blink_img = pygame.image.load(join(CHAR_PATH, "evilrobot/blinkevilrobot.png")).convert_alpha()
             moving_img_l = pygame.image.load(join(CHAR_PATH, "evilrobot/movevilrobotL.png")).convert_alpha() # Resize to fit the game
             moving_img = pygame.image.load(join(CHAR_PATH, "evilrobot/movevilrobot.png")).convert_alpha() # Resize to fit the game
-        elif char == "greenrobot":
-            player_img = pygame.image.load(join(CHAR_PATH, "greenrobot/greenrobot.png")).convert_alpha()
-            blink_img = pygame.image.load(join(CHAR_PATH, "greenrobot/blinkgreenrobot.png")).convert_alpha()
-            moving_img_l = pygame.image.load(join(CHAR_PATH, "greenrobot/movegreenrobotL.png")).convert_alpha() # Resize to fit the game
-            moving_img = pygame.image.load(join(CHAR_PATH, "greenrobot/movegreenrobot.png")).convert_alpha() # Resize to fit the game
-        elif char == "ironrobot":
-            player_img = pygame.image.load(join(CHAR_PATH, "ironrobot/ironrobo.png")).convert_alpha()
-            blink_img = pygame.image.load(join(CHAR_PATH, "ironrobot/blinkironrobo.png")).convert_alpha()
-            moving_img_l = pygame.image.load(join(CHAR_PATH, "ironrobot/ironrobomoveL.png")).convert_alpha() # Resize to fit the game
-            moving_img = pygame.image.load(join(CHAR_PATH, "ironrobot/ironrobomove.png")).convert_alpha() # Resize to fit the game
         elif char == "cakebot":
             player_img = pygame.image.load(join(CHAR_PATH, "cakebot/cakebot.png")).convert_alpha()
             blink_img = pygame.image.load(join(CHAR_PATH, "cakebot/blinkcakebot.png")).convert_alpha()
@@ -170,7 +253,7 @@ class PlayerSprites:
             moving_img = pygame.image.load(join(CHAR_PATH, "cakebot/movecakebot.png")).convert_alpha() # Resize to fit the game
         img_width, img_height = player_img.get_size()
         jump_img = blink_img
-        return player_img, blink_img, moving_img, moving_img_l, jump_img, img_width, img_height
+        return player_img, blink_img, moving_img, moving_img_l, jump_img, img_width, img_height, moving_gif_start_frames, moving_gif_end_frames, moving_gif_l_start_frames, moving_gif_l_end_frames
 
 class LevelManager:
     def __init__(self):
