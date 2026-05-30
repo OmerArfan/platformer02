@@ -123,7 +123,7 @@
     "up_message": "ジャンプするには上キーを押そう！",
     "stamina_message": "スタミナ: ",
     "exit_message": "出口ポータル！ここに来て勝利しよう！",
-    "moving_message": "すべてのブロックが止まっているとは限らない…",
+    "moving_message": "すべてのブロックが止まっているとは限らない...",
     "mock_message": "間違った道だよ。特に何もない…",
     "jump_message": "オレンジブロックで遠くまでジャンプしよう！",
     "saws_message": "ノコギリも危険だよ！",
