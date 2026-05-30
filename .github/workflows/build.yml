@@ -22,22 +22,30 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Dependencies
+      - name: Install System Dependencies (Linux Only)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-mixer-2.0-0 libsdl2-ttf-2.0-0
+
+      - name: Install Python Dependencies
         run: |
           python -m venv venv
-          source venv/bin/activate
+          # Use different activation paths for Windows vs Linux
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            source venv/Scripts/activate
+          else
+            source venv/bin/activate
+          fi
           python -m pip install --upgrade pip
           pip install pygame-ce==2.5.7 pyinstaller arabic-reshaper python-bidi requests Pillow
-          if [ "$RUNNER_OS" == "Linux" ]; then
-            sudo apt-get update
-            # Only install the absolute necessary runtime libraries if possible
-            sudo apt-get install -y libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-mixer-2.0-0 libsdl2-ttf-2.0-0
-          fi
+        shell: bash
 
       - name: Build with PyInstaller
         run: |
           source venv/bin/activate
           pyinstaller platformer.spec
+          
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
