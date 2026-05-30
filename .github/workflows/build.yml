@@ -29,6 +29,7 @@ jobs:
           sudo apt-get install -y libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-mixer-2.0-0 libsdl2-ttf-2.0-0
 
       - name: Install Python Dependencies
+        shell: bash
         run: |
           python -m venv venv
           # Use different activation paths for Windows vs Linux
@@ -39,11 +40,15 @@ jobs:
           fi
           python -m pip install --upgrade pip
           pip install pygame-ce==2.5.7 pyinstaller arabic-reshaper python-bidi requests Pillow
-        shell: bash
 
       - name: Build with PyInstaller
+        shell: bash
         run: |
-          source venv/bin/activate
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            source venv/Scripts/activate
+          else
+            source venv/bin/activate
+          fi
           pyinstaller platformer.spec
           
       - name: Upload Artifacts
