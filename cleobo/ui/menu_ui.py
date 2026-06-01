@@ -58,7 +58,6 @@ def render_text(text, Boolean, color, bigfont=False):
 
     font_to_use = manage_data.fonts[font_key]
 
-    # 2. THE FASTEST RENDER (Native Outline)
     # We avoid creating a 'combined_surf' manually.
     thickness = 1
     
@@ -444,27 +443,60 @@ def create_language_buttons(screen, lang_code, manifest, progress):
     back_rect = rendered_back.get_rect(center=(manage_data.SCREEN_WIDTH // 2, y + spacing_y + 40))
     buttons.append((rendered_back, back_rect, "back", False))
 
+def draw_world_stats(screen, world_name, world_key, world_rect):
+    """Helper function to render world name, medals, and stars on a world button."""
+    # Calculate medals and stars
+    medals = 0
+    stars = 0
+    
+    num_levels = 6 
+    for i in range(1, num_levels + 1):
+        medal = manage_data.progress["lvls"][world_key]["1"][f"lvl{i}"]["medal"]
+        if medal == "Gold" or medal == "Diamond":
+            medals += 1
+        
+        score = manage_data.progress["lvls"][world_key]["1"][f"lvl{i}"]["score"]
+        stars += LevelManager.get_stars(i, world_key, score)
+
+    # Render text
+    title = render_text(world_name, True, (255, 255, 255))
+    medals_text = render_text(f"{medals}", True, (255, 255, 0), bigfont=True)
+    stars_text = render_text(f"{stars}", True, (255, 255, 255), bigfont=True)
+
+    # Position text
+    title_pos = (world_rect.centerx - title.get_width() // 2, world_rect.centery - 180)
+    medals_pos = (world_rect.centerx - medals_text.get_width() // 2 - 35, world_rect.centery + 150)
+    gold_medal_img_pos = (world_rect.centerx - medals_text.get_width() // 2 - 130, world_rect.centery + 155)
+    diam_medal_img_pos = (world_rect.centerx - medals_text.get_width() // 2 - 110, world_rect.centery + 155)
+    star_img_pos = (world_rect.centerx - stars_text.get_width() // 2 + 5, world_rect.centery + 140)
+    stars_pos = (world_rect.centerx - stars_text.get_width() // 2 + 105, world_rect.centery + 150)
+
+    # Draw everything
+    screen.blit(title, title_pos)
+    screen.blit(manage_data.medals['Gold'], gold_medal_img_pos)
+    screen.blit(manage_data.medals['Diamond'], diam_medal_img_pos)
+    screen.blit(manage_data.assets['star_normal'], star_img_pos)
+    screen.blit(medals_text, medals_pos)
+    screen.blit(stars_text, stars_pos)
+
 def worlds(screen, lang_code, manifest, progress, bgs, disks):
     global current_lang, buttons
     buttons.clear()
     current_lang = manage_data.load_language(lang_code, manifest).get('levels', {})
-    screen.blit(bgs['plain'], (0, 0))
 
-    # 1. Define Positions
-    # We define the center points so the image and the button hitbox align perfectly
-    green_center = (manage_data.SCREEN_WIDTH // 2 - 250, manage_data.SCREEN_HEIGHT // 2)
-    mech_center = (manage_data.SCREEN_WIDTH // 2 + 250, manage_data.SCREEN_HEIGHT // 2)
-
-    # 2. Draw the Disks
-    # Use the rect to blit so the image is centered on our coordinates
+    green_center = (manage_data.SCREEN_WIDTH // 2 - 250, manage_data.SCREEN_HEIGHT // 2 - 70)
+    mech_center = (manage_data.SCREEN_WIDTH // 2 + 250, manage_data.SCREEN_HEIGHT // 2 - 70)
+    
     mech_rect = disks['mechpack'].get_rect(center=mech_center)
     green_rect = disks['greenpack'].get_rect(center=green_center)
-    
+
     screen.blit(disks['mechpack'], mech_rect)
     screen.blit(disks['greenpack'], green_rect)
 
-    # 3. Add Disks to the Button List
-    # Format: (surface/image, rect, action_key, is_locked)
+    # Draw stats for both worlds
+    draw_world_stats(screen, "Green", "green", green_rect)
+    draw_world_stats(screen, "Mech", "mech", mech_rect)
+
     buttons.append((disks['greenpack'], green_rect, "levels", False))
     buttons.append((disks['mechpack'], mech_rect, "mech_levels", False))
 
@@ -495,8 +527,8 @@ def green_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
     level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6"]
     level_no = ["1", "2", "3", "4", "5", "6"]
     buttons_per_row = 3
-    spacing_x = 160
-    spacing_y = 160
+    spacing_x = 180
+    spacing_y = 180
 
     grid_width = (buttons_per_row - 1) * spacing_x
     start_x = (manage_data.SCREEN_WIDTH - grid_width) // 2
@@ -520,7 +552,7 @@ def green_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
     rendered_back = render_text(back_text, True, (255, 255, 255))
 
     # Create a fixed 100x100 hitbox centered at the right location
-    back_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 100, 100)
+    back_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
     back_rect.center = (manage_data.SCREEN_WIDTH // 2 , manage_data.SCREEN_HEIGHT - 200)
 
     # Then during draw phase: center the text inside that fixed rect
@@ -529,15 +561,6 @@ def green_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
 
     # Add the button
     buttons.append((rendered_back, back_rect, "back", False))
-
-    next_text = current_lang.get("next", "next")
-    rendered_next = render_text(next_text, True, (255, 255, 255))
-
-    next_rect = pygame.FRect(0, 0, 100, 100)
-    next_rect.center = (manage_data.SCREEN_WIDTH - 90, manage_data.SCREEN_HEIGHT // 2)
-
-    text_rect = rendered_next.get_rect(center=next_rect.center)
-    screen.blit(rendered_next, text_rect)
 
 def mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
     global current_lang, buttons
@@ -549,8 +572,8 @@ def mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
     level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6"]
     level_no = ["1", "2", "3", "4", "5", "6"]
     buttons_per_row = 3
-    spacing_x = 160
-    spacing_y = 160
+    spacing_x = 180
+    spacing_y = 180
 
     grid_width = (buttons_per_row - 1) * spacing_x
     start_x = (manage_data.SCREEN_WIDTH - grid_width) // 2
@@ -572,7 +595,7 @@ def mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
     rendered_back = render_text(back_text, True, (255, 255, 255))
 
     # Create a fixed 100x100 hitbox centered at the right location
-    back_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 100, 100)
+    back_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
     back_rect.center = (manage_data.SCREEN_WIDTH // 2 , manage_data.SCREEN_HEIGHT - 200)
 
     # Then during draw phase: center the text inside that fixed rect
@@ -581,9 +604,6 @@ def mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
 
     # Add the button
     buttons.append((rendered_back, back_rect, "back", False))
-
-    next_text = current_lang.get("next", "next")
-    rendered_next = render_text(next_text, True, (255, 255, 255))
 
 def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, button_hovered_last_frame):
     # 1. Dynamic Setup
