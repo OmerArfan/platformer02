@@ -109,7 +109,7 @@ saw_cache = {}
 def change_ambience(new_file):
   if not is_mute_amb:
     pygame.mixer.music.load(resource_path(f"assets/sound/amb/{new_file}.ogg"))
-    pygame.mixer.music.set_volume(1.5)  # Adjust as needed
+    pygame.mixer.music.set_volume(1)  # Adjust as needed
     pygame.mixer.music.play(-1)
 
 def get_ordered_levels(progress):
