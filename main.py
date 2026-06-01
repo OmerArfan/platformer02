@@ -56,7 +56,7 @@ while loading:
         if manage_data.is_mute_amb:
             pygame.mixer.music.stop()
         else:
-            pygame.mixer.music.set_volume(0.1)
+            pygame.mixer.music.set_volume(1)
             pygame.mixer.music.play(-1)
         loading = False
 running = True
