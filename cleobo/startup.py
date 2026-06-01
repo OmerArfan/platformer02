@@ -6,8 +6,8 @@ from datetime import datetime
 import traceback
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0479"
-manage_data.kernel = "0.4.0.0029"
+manage_data.version = "1.3.9.0481"
+manage_data.kernel = "0.4.0.0030"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
@@ -159,12 +159,12 @@ def init_disks():
     try:
         disks = {}
         disk_files = {
-            'green': ("disks/greendisk.png", (100, 100)),
-            'mech': ("disks/mechdisk.png", (100, 100)),
-            'desert': ("disks/desertdisk.png", (100, 100)),
-            'greenpack': ("disks/greenpack.png", (220, 220)),
-            'mechpack': ("disks/mechpack.png", (220, 220)),
-            'locked': ("disks/lockeddisk.png", (100, 100)),
+            'green': ("disks/greendisk.png", (110, 110)),
+            'mech': ("disks/mechdisk.png", (110, 110)),
+            'desert': ("disks/desertdisk.png", (110, 110)),
+            'greenpack': ("disks/greenpack.png", (260, 260)),
+            'mechpack': ("disks/mechpack.png", (260, 260)),
+            'locked': ("disks/lockeddisk.png", (110, 110)),
         }
         
         for name, (file_path, size) in disk_files.items():
