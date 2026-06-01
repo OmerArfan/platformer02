@@ -116,9 +116,9 @@ local lvl3 = {
 	},
 	saws = {
 	    {x = 620,  y = 750,  radius = 80, type = 'static' },
-	    {x = 1700, y = 335,  radius = 100, type = 'static' },
-	    {x = 1200, y = 335,  radius = 100, type = 'static' },
-	    {x = 800,  y = 335,  radius = 100, type = 'static' },
+	    {x = 1700, y = 335,  radius = 95, type = 'static' },
+	    {x = 1200, y = 335,  radius = 95, type = 'static' },
+	    {x = 800,  y = 335,  radius = 95, type = 'static' },
 	    {x = 1850, y = -170, radius = 80, type = 'static' },
 	    {x = 1550, y = -400, radius = 80, type = 'static' },
 	    {x = 1250, y = -400, radius = 80, type = 'static' },
@@ -322,8 +322,8 @@ local lvl6 = {
 	    {{4400, 530}, {4445, 480}, {4490, 530}},
 	},
 	saws = {
-	    {x = 5000, y = 550, radius = 100, type = 'static'},
-	    {x = 5400, y = 550, radius = 100, type = 'static'},
+	    {x = 5000, y = 550, radius = 95, type = 'static'},
+	    {x = 5400, y = 550, radius = 95, type = 'static'},
 		{radius = 100, speed = 20, x = 3800, y = -400, max = 600, min = -400, type = 'moving_y'},	
 	    {radius = 100, speed = 16, x = 4900, y = 165, max = 5800, min = 4900, type = 'moving_x'},
 	    {radius = 40, orbit_radius = 230, angle = 0,   speed = 2, block = 1, type = 'rotating'},
