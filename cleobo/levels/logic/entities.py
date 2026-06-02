@@ -241,16 +241,6 @@ class PlayerSprites:
         moving_gif_end_frames = self.load_gif_frames(join(CHAR_PATH, f"{char}/move_r_end.gif"))
         moving_gif_l_start_frames = self.load_gif_frames(join(CHAR_PATH, f"{char}/move_l_start.gif"))
         moving_gif_l_end_frames = self.load_gif_frames(join(CHAR_PATH, f"{char}/move_l_end.gif"))
-        if char == "evilrobot":
-            player_img = pygame.image.load(join(CHAR_PATH, "evilrobot/evilrobot.png")).convert_alpha()
-            blink_img = pygame.image.load(join(CHAR_PATH, "evilrobot/blinkevilrobot.png")).convert_alpha()
-            moving_img_l = pygame.image.load(join(CHAR_PATH, "evilrobot/movevilrobotL.png")).convert_alpha() # Resize to fit the game
-            moving_img = pygame.image.load(join(CHAR_PATH, "evilrobot/movevilrobot.png")).convert_alpha() # Resize to fit the game
-        elif char == "cakebot":
-            player_img = pygame.image.load(join(CHAR_PATH, "cakebot/cakebot.png")).convert_alpha()
-            blink_img = pygame.image.load(join(CHAR_PATH, "cakebot/blinkcakebot.png")).convert_alpha()
-            moving_img_l = pygame.image.load(join(CHAR_PATH, "cakebot/movecakebotL.png")).convert_alpha() # Resize to fit the game
-            moving_img = pygame.image.load(join(CHAR_PATH, "cakebot/movecakebot.png")).convert_alpha() # Resize to fit the game
         img_width, img_height = player_img.get_size()
         jump_img = blink_img
         return player_img, blink_img, moving_img, moving_img_l, jump_img, img_width, img_height, moving_gif_start_frames, moving_gif_end_frames, moving_gif_l_start_frames, moving_gif_l_end_frames
