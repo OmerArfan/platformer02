@@ -6,8 +6,8 @@ from datetime import datetime
 import traceback
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0481"
-manage_data.kernel = "0.4.0.0030"
+manage_data.version = "1.3.9.0482"
+manage_data.kernel = "0.4.1.0031"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
@@ -216,10 +216,10 @@ def init_robos():
         robos = {}
         robo_files = {
             'robot': "char/robot/idle.png",
-            'evilrobot': "char/evilrobot/evilrobot.png",
+            'evilrobot': "char/evilrobot/idle.png",
             'greenrobot': "char/greenrobot/idle.png",
             'ironrobot': "char/ironrobot/idle.png",
-            'cakebot': "char/cakebot/cakebot.png",
+            'cakebot': "char/cakebot/idle.png",
         }
         
         for name, file_path in robo_files.items():
@@ -302,7 +302,7 @@ def verify_initialization(manage_data):
             if key not in asset_dict:
                 raise RuntimeError(f"Missing {asset_group}: {key}")
     
-    print("✓ All assets verified successfully!")
+    print("All assets verified successfully!")
 
 def load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT):
     manage_data.fonts = init_fonts()
