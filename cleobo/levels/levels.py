@@ -169,7 +169,7 @@ def level_launcher(level_name, screen, transition, world_name):
         # Draw spikes
         hazards.draw_spikes(screen, spikes, player)
         # Draw portal
-        env.draw_portal(screen, manage_data.assets['exit'], exit_portal, player)
+        env.draw_portal(screen, manage_data.assets[f'{world_name}_exit'], exit_portal, player)
 
         # 2. Check for saw deaths
         if hazards.handle_all_saws(screen, saws, player, blocks):
@@ -236,185 +236,8 @@ def level_launcher(level_name, screen, transition, world_name):
 # ANYTHING BELOW THIS IS OLD, LEGACY CODE WHICH WILL GET PHASED OUT AS TIME GOES ON.
 
 def create_lvl7_screen(screen, transition):
-    global player_img, font, complete_levels, current_time, medal, deathcount, score
-    start_time = time.time()
-    global new_hs, hs, stars
-
-    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(manage_data.selected_character)
-    new_hs = False
-    menu_ui.buttons.clear()
-    screen.blit(manage_data.bgs['mech'], (0, 0))
-
-    wait_time = None
-    death_text = None
-    in_game = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('in_game', {})
-
-    # Camera settings
-    camera_x = 300
-    camera_y = 0
-    spawn_x, spawn_y = 100, 200
-    player_x, player_y = spawn_x, spawn_y
-    running = True
-    gravity = 1
-    jump_strength = 21
-    move_speed = 8
-    on_ground = False
-    velocity_y = 0
-    camera_speed = 0.5
-    deathcount = 0
-    was_moving = False
-    saw_angle = 0
-
-    # Draw flag
-    flag = pygame.FRect(2600, 300, 100, 125)  # x, y, width, height
-    checkpoint_reached = False
-    flag2 = pygame.FRect(240, -1360, 100, 125)  # x, y, width, height
-    checkpoint_reached2 = False
-    flag_1_x, flag_1_y = 2600, 300
-    flag_2_x, flag_2_y = 240, -1360
-
-    blocks = [
-        pygame.FRect(0, 400, 3000, 50),
-        pygame.FRect(3200, 500, 500, 50),
-        pygame.FRect(3900, 500, 500, 50),
-        pygame.FRect(4600, 500, 700, 50),
-        pygame.FRect(100, -1250, 300, 50),
-        pygame.FRect(600, -1000, 700, 50),
-        pygame.FRect(1450, -1125, 650, 50)
-    ]
-    
-    moving_saws = [ 
-        {'r': 100, 'speed': 9, 'cx': 3800, 'cy': 200, 'max': 700, 'min': 200},
-        {'r': 100, 'speed': 9, 'cx': 4500, 'cy': 600, 'max': 700, 'min': 200},
-    ]
-
-    moving_saws_x = [
-        {'r': 100, 'speed':11, 'cx': 700, 'cy': -975, 'max': 1200, 'min': 700},
-        {'r': 100, 'speed': 7, 'cx': 1550, 'cy': -1100, 'max': 2000, 'min': 1550}
-    ]
-
-    saws = [
-        (5000, 550, 100, (255, 0, 0)),
-    ]
-
-    rotating_saws = [
-        {'r': 40, 'orbit_radius': 230, 'angle': 0, 'speed': 3, 'block': 0},
-        {'r': 40, 'orbit_radius': 230, 'angle': 120, 'speed': 3, 'block': 0},
-        {'r': 40, 'orbit_radius': 230, 'angle': 240, 'speed': 3, 'block': 0},
-        {'r': 60, 'orbit_radius': 500, 'angle': 60, 'speed': 2, 'block': 0},
-        {'r': 60, 'orbit_radius': 500, 'angle': 180, 'speed': 2, 'block': 0},
-        {'r': 60, 'orbit_radius': 500, 'angle': 300, 'speed': 2, 'block': 0},
-        {'r': 80, 'orbit_radius': 900, 'angle': 0, 'speed': 1, 'block': 0},
-        {'r': 80, 'orbit_radius': 900, 'angle': 120, 'speed': 1, 'block': 0},
-        {'r': 80, 'orbit_radius': 900, 'angle': 240, 'speed': 1, 'block': 0},
-    ]
-
-    spikes = [
-    [(3400, 500), (3450, 450), (3500, 500)],
-    [(4100, 500), (4150, 450), (4200, 500)],
-    ]
-
-    exit_portal = pygame.FRect(1960, -1320, 140, 180)
-    clock = pygame.time.Clock()
-
-    teleporters = [
-        {
-            "entry": pygame.FRect(5150, 300, 140, 180),
-            "exit": pygame.FRect(100, -1400, 50, 50),
-            "color": (0, 196, 255)
-        }
-    ]
-
-    screen.blit(manage_data.assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
-    screen.blit(manage_data.assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
-
-    for x, y, r, color in saws:
-            angle = (pygame.time.get_ticks() // 3) % 360
-            saw_ig_img = manage_data.assets['saw']
-            curr_w, curr_h = saw_ig_img.get_size()
-            center_x = x - camera_x
-            center_y = y - camera_y
-            draw_x = center_x - (curr_w / 2)
-            draw_y = center_y - (curr_h / 2)
-            screen.blit(saw_ig_img, (draw_x, draw_y))
-
-    for block in blocks:
-        pygame.draw.rect(screen, (0, 0, 0), (int(block.x - camera_x), int(block.y - camera_y), block.width, block.height))
-
-    for spike in spikes:
-        pygame.draw.polygon(screen, (255, 0, 0), [(x - camera_x, y - camera_y) for x, y in spike])
-
-    level_draw_portal(screen, manage_data.assets['mech_exit'], exit_portal, camera_x, camera_y)
-    
-    portal_text = menu_ui.render_text(in_game.get("portal_message", "These blue portals teleport you! But to good places... mostly!"), True, (0, 102, 204))
-
-    menu_ui.draw_notifs(screen)
-    menu_ui.draw_syncing_status(screen)
     if not transition.active:
-       while running:
-        clock.tick(60)
-        keys = pygame.key.get_pressed()
-
-        current_time = time.time() - start_time
-        formatted_time = "{:.2f}".format(current_time)
-
-        if keys[pygame.K_r]:
-            start_time = time.time()
-            checkpoint_reached = False  # Reset checkpoint status
-            checkpoint_reached2 = False  # Reset checkpoint status
-            spawn_x, spawn_y = 100, 200
-            player_x, player_y = spawn_x, spawn_y  # Reset player position
-            velocity_y = 0
-            deathcount = 0
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or keys[pygame.K_q]:
-                running = False
-                state.handle_action("quit", transition, manage_data.current_page)
-
-        # Input
-        if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
-            velocity_y = -jump_strength
-            if not manage_data.is_mute:
-                manage_data.sounds['jump'].play()
-
-        # Detect if any movement key is pressed
-        moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
-                  keys[pygame.K_RIGHT] or keys[pygame.K_d])
-
-        if moving:
-            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-                player_x -= move_speed
-            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-                player_x += move_speed
-
-            if on_ground and not was_moving and not manage_data.is_mute:
-                manage_data.sounds['move'].play()
-            was_moving = True
-        else:
-            was_moving = False
-
-
-        # Gravity and stamina
-        if not on_ground:
-            velocity_y += gravity
-        player_y += velocity_y
-
-        # Collisions and Ground Detection
-        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
-        on_ground = False
-
-        if player_y > 1100:
-            death_text = menu_ui.render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
-            wait_time = pygame.time.get_ticks()
-            if not manage_data.is_mute:
-                manage_data.sounds['fall'].play()
-            player_x, player_y = spawn_x, spawn_y  # Reset player position
-            velocity_y = 0
-            deathcount += 1
-
-        # Checkpoint Logic
-        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
+        ### --- LEGACY CODE; OLD CHECKPOINTS LOGIC (SAVED FOR FUTURE REFERENCE) ---
 
         if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
             checkpoint_reached = True
@@ -431,16 +254,6 @@ def create_lvl7_screen(screen, transition):
             if not manage_data.is_mute:
                 manage_data.sounds['checkpoint'].play()
 
-        # Exit portal
-        if player_rect.colliderect(exit_portal):
-            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_fin_lvl_logic(current_time, deathcount, medal, 7)
-            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
-
-            manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
-            
-            state.handle_action('lvl8_screen', transition, manage_data.current_page)
-            running = False
-
         # Draw flag
         if checkpoint_reached:
             pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
@@ -452,9 +265,6 @@ def create_lvl7_screen(screen, transition):
         else:
             pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
 
-        # Drawing
-        screen.blit(manage_data.bgs['mech'], (0, 0))
-
         if checkpoint_reached:
             screen.blit(manage_data.assets['cpoint_act'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
         else:
@@ -463,38 +273,8 @@ def create_lvl7_screen(screen, transition):
             screen.blit(manage_data.assets['cpoint_act'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
         else:
             screen.blit(manage_data.assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
-        
-        # Draw key only if not collected
- 
-# Saw collision detection and drawing
-        if level_handle_rotating_saws(screen, rotating_saws, blocks, player_rect, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache):
-            # Death logic
-            player_x, player_y = spawn_x, spawn_y
-            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
-            wait_time = pygame.time.get_ticks()
-            deathcount += 1
-            if not manage_data.is_mute: manage_data.sounds['death'].play()
-            velocity_y = 0
 
-        # Handle Moving Saws
-        if level_handle_moving_saws(screen, moving_saws, player_rect, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache):
-            # Death logic (same as above)
-            player_x, player_y = spawn_x, spawn_y
-            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
-            wait_time = pygame.time.get_ticks()
-            deathcount += 1
-            if not manage_data.is_mute: manage_data.sounds['death'].play()
-            velocity_y = 0
-        
-        # Handle Moving Saws
-        if level_handle_moving_saws_x(screen, moving_saws_x, player_rect, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache):
-            # Death logic (same as above)
-            player_x, player_y = spawn_x, spawn_y
-            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
-            wait_time = pygame.time.get_ticks()
-            deathcount += 1
-            if not manage_data.is_mute: manage_data.sounds['death'].play()
-            velocity_y = 0
+        ### --- TELEPORTER LEGACY CODE FOR FUTURE REFERENCE ---
 
         for teleporter in teleporters:
             # Draw the entry rectangle
@@ -509,78 +289,7 @@ def create_lvl7_screen(screen, transition):
                     manage_data.sounds['warp'].play()
                 player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
                 # Update player_rect immediately after teleport to prevent collision handlers from using old position
-                player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
-        
-        level_draw_saws(screen, saws, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache)
-
-        # 2. Check for saw deaths
-        if level_check_saw_collisions(player_rect, saws):
-            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
-            wait_time = pygame.time.get_ticks()
-            if not manage_data.is_mute:
-                manage_data.sounds['death'].play()
-            player_x, player_y = spawn_x, spawn_y
-            velocity_y = 0
-            deathcount += 1
-
-        level_draw_spikes(screen, spikes, camera_x, camera_y)
-
-        if level_check_spike_collisions(spikes, player_x, player_y, img_width, img_height):
-            player_x, player_y = spawn_x, spawn_y
-            death_text = menu_ui.render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
-            wait_time = pygame.time.get_ticks()
-            if not manage_data.is_mute:
-                manage_data.sounds['death'].play()
-            velocity_y = 0
-            deathcount += 1
-
-        player_x, player_y, velocity_y, on_ground, player_rect = level_block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground)
-        
-        if level_handle_bottom_collisions(blocks, player_rect, velocity_y):  # Only if jumping upward
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
-                wait_time = pygame.time.get_ticks()
-                if not manage_data.is_mute:    
-                    manage_data.sounds['hit'].play()
-                velocity_y = 0
-                deathcount += 1 
-
-        level_draw_portal(screen, manage_data.assets['mech_exit'], exit_portal, camera_x, camera_y)
-        level_player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)          
-
-        screen.blit(portal_text, (4400 - camera_x, 300 - camera_y))
-
-        # Camera logic
-        camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
-
-        # Adjust the camera's Y position when the player moves up
-        if player_y <= 200:
-            camera_y = player_y - 200
-        else:
-            camera_y = 0  # Keep the camera fixed when the player is below the threshold
-
-        deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
-
-        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = menu_ui.render_text(timer_txt, True, (255, 255, 255))  # white color
-
-        # Initialize and draw the reset and quit text
-        reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
-
-        quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
-
-        level_draw_level_ui(screen, manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
-        
-        medal = level_get_medal(7, current_time)
-        level_draw_medals(screen, medal, deathcount, manage_data.medals, timer_text.get_width(), manage_data.SCREEN_WIDTH)
-
-        level_death_message(screen, death_text, wait_time, duration=2500)
-        menu_ui.draw_notifs(screen)
-        menu_ui.draw_syncing_status(screen)
-        pygame.display.update()   
+                player_rect = pygame.FRect(player_x, player_y, img_width, img_height)  
 
 def create_lvl8_screen(screen, transition):
     global player_img, font, complete_levels, current_time, medal, deathcount, score
