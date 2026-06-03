@@ -121,11 +121,12 @@ def level_launcher(level_name, screen, transition, world_name):
     # === MAIN GAME LOOP ===
     if not transition.active:
       while running:
-
-        clock.tick_busy_loop(60)
+        
         keys = pygame.key.get_pressed()
         
-        manager.current_time = time.time() - manager.start_time
+        real_dt = clock.tick_busy_loop(60) / 1000.0
+        manager.current_time += real_dt
+
         formatted_time = "{:.2f}".format(manager.current_time)
 
         # === EVENT HANDLING ===
