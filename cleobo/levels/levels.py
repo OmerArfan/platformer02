@@ -94,6 +94,14 @@ def level_launcher(level_name, screen, transition, world_name):
     exit_data = level_data['exit']
     exit_portal = pygame.FRect(exit_data['x'], exit_data['y'], exit_data['w'], exit_data['h'])
     
+    # Teleporters
+    teleporters = []
+    for tp in level_data.get('teleporters', []):
+        teleporters.append({
+            'entry': pygame.FRect(int(tp['entry_x']), int(tp['entry_y']), int(tp['entry_w']), int(tp['entry_h'])),
+            'exit': pygame.FRect(int(tp['exit_x']), int(tp['exit_y']), int(tp['exit_w']), int(tp['exit_h']))
+        })
+
     # Render text messages from data
     text_elements = []
     for text_key, text_data in level_data.get('text', {}).items():
@@ -196,6 +204,7 @@ def level_launcher(level_name, screen, transition, world_name):
 
         player = blockmgr.handle_key_blocks(screen, key_block_pairs, player)
 
+        player = env.handle_teleports(screen, teleporters, player)   
         # Spike collisions
         if hazards.check_spike_collisions(spikes, player):
             player.die()
@@ -235,62 +244,7 @@ def level_launcher(level_name, screen, transition, world_name):
 
 # IMPORTANT!
 # ANYTHING BELOW THIS IS OLD, LEGACY CODE WHICH WILL GET PHASED OUT AS TIME GOES ON.
-
-def create_lvl7_screen(screen, transition):
-    if not transition.active:
-        ### --- LEGACY CODE; OLD CHECKPOINTS LOGIC (SAVED FOR FUTURE REFERENCE) ---
-
-        if player_rect.colliderect(flag) and not checkpoint_reached and not checkpoint_reached2:
-            checkpoint_reached = True
-            spawn_x, spawn_y = 2600, 250  # Store checkpoint position
-            if not manage_data.is_mute:
-                manage_data.sounds['checkpoint'].play()
-            pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
-        if player_rect.colliderect(flag2) and not checkpoint_reached2 and checkpoint_reached:
-            checkpoint_reached = False
-            checkpoint_reached2 = True
-            pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
-            pygame.draw.rect(screen, (71, 71, 71), flag.move(-camera_x, -camera_y))  # Gray rectangle representing the flag
-            spawn_x, spawn_y = 150, -1500  # Checkpoint position
-            if not manage_data.is_mute:
-                manage_data.sounds['checkpoint'].play()
-
-        # Draw flag
-        if checkpoint_reached:
-            pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
-        else:
-            pygame.draw.rect(screen, (255, 215, 0), flag.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
-
-        if checkpoint_reached2:
-            pygame.draw.rect(screen, (0, 105, 0), flag2.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
-        else:
-            pygame.draw.rect(screen, (255, 215, 0), flag2.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
-
-        if checkpoint_reached:
-            screen.blit(manage_data.assets['cpoint_act'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
-        else:
-            screen.blit(manage_data.assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
-        if checkpoint_reached2:
-            screen.blit(manage_data.assets['cpoint_act'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
-        else:
-            screen.blit(manage_data.assets['cpoint_inact'], ((flag_2_x - camera_x), (flag_2_y - camera_y)))
-
-        ### --- TELEPORTER LEGACY CODE FOR FUTURE REFERENCE ---
-
-        for teleporter in teleporters:
-            # Draw the entry rectangle
-            level_draw_portal(screen, manage_data.assets['teleport'], teleporter["entry"], camera_x, camera_y)
-            # Draw the exit rectangle
-            level_draw_portal(screen, manage_data.assets['teleport_exit'], teleporter["exit"], camera_x, camera_y)
-
-           # Check if the player collides with the entry rectangle
-            if player_rect.colliderect(teleporter["entry"]):
-                # Teleport the player to the exit rectangle
-                if not manage_data.is_mute:
-                    manage_data.sounds['warp'].play()
-                player_x, player_y = teleporter["exit"].x, teleporter["exit"].y
-                # Update player_rect immediately after teleport to prevent collision handlers from using old position
-                player_rect = pygame.FRect(player_x, player_y, img_width, img_height)  
+        
 
 def create_lvl8_screen(screen, transition):
     global player_img, font, complete_levels, current_time, medal, deathcount, score
