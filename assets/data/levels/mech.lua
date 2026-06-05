@@ -1,7 +1,7 @@
 local lvl1 = {
 	-- Player init
 	player = {
-	    x = 100, y = -2200,
+	    x = 100, y = 200,
 	    spawn_x = 100, spawn_y = 200,
 	},
 	blocks = {
@@ -84,8 +84,13 @@ local lvl2 = {
 	    {{11200, -1150}, {11250, -1100}, {11300, -1150}},
 	    {{11300, -1150}, {11350, -1100}, {11400, -1150}},
 	},
-	flags = {x = 8700, y = -320, w = 100, h = 125, save_x = 8700, save_y = -320},
-	flags2 = {x = 10000, y = -320, w = 100, h = 125, save_x = 10000, save_y = -320},
+	flags = {
+		{x = 8700, y = -320, w = 100, h = 125, save_x = 8700, save_y = -320},
+		{x = 10000, y = -320, w = 100, h = 125, save_x = 10000, save_y = -320},
+	},
+	teleporters = {
+	    {entry_x = 2090, entry_y = 0, entry_w = 140, entry_h = 180, exit_x = 8300, exit_y = -400, exit_w = 50, exit_h = 50},
+	},
 	exit = {x = 10980, y = -1050, w = 140, h = 180},
 	next_page = "mech_lvl3",
 }
@@ -163,8 +168,10 @@ local lvl3 = {
 	    {{4950, 300}, {5000, 350}, {5050, 300}},
 	    {{4350, 300}, {4400, 350}, {4450, 300}},
 	},
-	flags = {x = 2350, y = 300, w = 100, h = 125, save_x = 2350, save_y = 300},
-	flags2 = {x = 5600, y = 550, w = 100, h = 125, save_x = 5600, save_y = 550},
+	flags = {
+		{x = 2350, y = 300, w = 100, h = 125, save_x = 2350, save_y = 300}, 
+		{x = 5600, y = 550, w = 100, h = 125, save_x = 5600, save_y = 550}
+	},
 	exit = {x = 3325, y = 420, w = 140, h = 180},
 	next_page = "mech_lvl4",
 }
