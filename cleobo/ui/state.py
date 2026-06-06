@@ -1,6 +1,6 @@
 import sys
 import pygame
-from cleobo.data import manage_data, achievements
+from cleobo.data import manage_data
 import cleobo.ui.menu_ui as menu_ui
 import os
 import json
@@ -31,7 +31,7 @@ class TransitionManager:
         self.target_page = target_page
         self.hold_time = 0
 
-    def update(self, lang_code, screen, version, transition, manifest, progress):
+    def update(self, screen, transition):
         global pending_lang_code, selected_id
         
         if not self.active:
@@ -58,8 +58,8 @@ class TransitionManager:
             if pygame.time.get_ticks() - self.hold_time >= self.hold_duration:
                 # Change language if pending
                 if pending_lang_code:
-                    manage_data.change_language(pending_lang_code, manifest, progress)
-                    lang_code = pending_lang_code
+                    manage_data.change_language(pending_lang_code, manage_data.manifest, manage_data.progress)
+                    manage_data.lang_code = pending_lang_code
                     pending_lang_code = None
                 # Update manifest to set 'last_used' so load_progress knows which one to grab
                 if selected_id:
@@ -72,7 +72,7 @@ class TransitionManager:
                     # Load the data and move to main menu
                     manage_data.progress = manage_data.load_progress()
                     selected_id = None
-                set_page(screen, manage_data.current_page, lang_code, manifest, progress, achievements, manage_data.bgs, manage_data.disks, version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+                set_page(screen, manage_data.current_page, transition)
                 self.phase = 2
 
         elif self.phase == 2:  # Slide-out phase
@@ -97,9 +97,7 @@ locked_char_sound_played = False
 wait_time = None
 
 def handle_action(key, transition, current_page):
-    global progress, is_transitioning, transition_time, locked_char_sound_played, locked_char_sound_time, manifest, lang_code, pending_lang_code, selected_id
-    
-    global pending_page
+    global is_transitioning, transition_time, locked_char_sound_played, locked_char_sound_time, pending_lang_code, selected_id, pending_page
     if current_page == 'main_menu':
         if key == "start":
             if not is_transitioning:
@@ -342,32 +340,32 @@ def handle_action(key, transition, current_page):
                 pending_page = "main_menu"
 
 # Central page switcher
-def set_page(screen, page, lang_code, manifest, progress, Achievements, bgs, disks, version, is_mute, is_mute_amb, transition):
+def set_page(screen, page, transition):
     global current_page, current_lang  # Explicitly mark current_page and current_lang as global
     page = manage_data.current_page
     current_page = page  # Update the global current_page variable
 
     # Reload the current language data for the new page
     if page == 'main_menu':
-        current_lang = manage_data.load_language(lang_code, manifest).get('main_menu', {})
-        menu_ui.create_main_menu_buttons(screen, lang_code, manifest, progress)
+        current_lang = manage_data.load_language().get('main_menu', {})
+        menu_ui.create_main_menu_buttons()
     elif page == "profile":
         menu_ui.draw_profile(screen)
     elif page == "achievements":
-        menu_ui.create_achieve_screen(screen, lang_code, manifest, progress)
+        menu_ui.create_achieve_screen(screen)
     elif page == 'character_select':
-        menu_ui.character_select(lang_code, manifest)
+        menu_ui.character_select()
     elif page == 'language_select':
-        current_lang = manage_data.load_language(lang_code, manifest).get('language_select', {})
-        menu_ui.create_language_buttons(screen, lang_code, manifest, progress)
+        current_lang = manage_data.load_language().get('language_select', {})
+        menu_ui.create_language_buttons(screen)
     elif page == "worlds":
-        menu_ui.worlds(screen, lang_code, manifest, progress, bgs, manage_data.disks)
+        menu_ui.worlds(screen)
     elif page == "settings":
-        menu_ui.settings_menu(screen, lang_code, manifest, bgs)
+        menu_ui.settings_menu(screen)
     elif page == "About":
-        menu_ui.about_menu(screen, lang_code, manifest, bgs, version)
+        menu_ui.about_menu(screen)
     elif page == "Audio":
-        menu_ui.audio_settings_menu(screen, lang_code, manifest, progress, bgs, is_mute, is_mute_amb)
+        menu_ui.audio_settings_menu(screen)
     elif page == "Account":
         acc_sys.create_account_selector()
     elif page == "login_screen":
@@ -375,18 +373,18 @@ def set_page(screen, page, lang_code, manifest, progress, Achievements, bgs, dis
     elif page == "registration_screen":
         acc_sys.reset_login_state()
     elif page == 'green':
-        current_lang = manage_data.load_language(lang_code, manifest).get('levels', {})
-        menu_ui.green_world_buttons(screen, lang_code, manifest, progress, bgs, disks)
+        current_lang = manage_data.load_language().get('levels', {})
+        menu_ui.green_world_buttons(screen)
         manage_data.change_ambience("green")
     elif page == 'mech':
-        current_lang = manage_data.load_language(lang_code, manifest).get('levels', {})
-        menu_ui.mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks)
+        current_lang = manage_data.load_language().get('levels', {})
+        menu_ui.mech_world_buttons(screen)
         manage_data.change_ambience("mech")
     elif page == 'quit_confirm':
-        current_lang = manage_data.load_language(lang_code, manifest).get('messages', {})
-        menu_ui.create_quit_confirm_buttons(lang_code, manifest)
+        current_lang = manage_data.load_language().get('messages', {})
+        menu_ui.create_quit_confirm_buttons()
     elif "lvl" in page:
-        current_lang = manage_data.load_language(lang_code, manifest).get('in_game', {})
+        current_lang = manage_data.load_language().get('in_game', {})
         # Extract world and level from page name
         world_name, level_name = page.split("_", 1)
         # Call the generic level launcher
@@ -413,6 +411,6 @@ def muting_amb():
     manage_data.update_local_manifest(manage_data.progress)
 
 def quit_game():
-    manage_data.sync_vault_to_cloud(manage_data.progress, manage_data.manifest)
+    manage_data.sync_vault_to_cloud(manage_data.progress)
     pygame.quit()
     sys.exit()

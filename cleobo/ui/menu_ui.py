@@ -166,19 +166,19 @@ reblit_txt = True
 last_lang = None  # Track language changes
 prev_ID = None # Track Account changes
 
-def create_achieve_screen(screen, lang_code, manifest, progress):
+def create_achieve_screen(screen):
     global current_lang, ui_text_sprites, reblit_txt, last_lang, prev_ID
     buttons.clear()
     
     screen.blit(manage_data.bgs['plain'], (0, 0))  # Draw background
     
     # Detect language change
-    if lang_code != last_lang or progress['player']['ID'] != prev_ID:
+    if manage_data.lang_code != last_lang or manage_data.progress['player']['ID'] != prev_ID:
         reblit_txt = True
-        last_lang = lang_code
-        prev_ID = progress['player']['ID']
+        last_lang = manage_data.lang_code
+        prev_ID = manage_data.progress['player']['ID']
     
-    current_lang = manage_data.load_language(lang_code, manifest)
+    current_lang = manage_data.load_language()
     ach_data = current_lang.get("achieve", {}) 
     header_data = current_lang.get("main_menu", {})
     back_data = current_lang.get("language_select", {})
@@ -217,7 +217,7 @@ def create_achieve_screen(screen, lang_code, manifest, progress):
 
             # Render Title (as TextSprite)
             if title_key[-5:] != "_desc":
-                if progress["achieved"][title_key]:
+                if manage_data.progress["achieved"][title_key]:
                     color = (0, 204, 0)
                 else:
                     color = (255, 255, 0)
@@ -226,7 +226,7 @@ def create_achieve_screen(screen, lang_code, manifest, progress):
             title = TextSprite(title_str, x=100, y=y_offset, color=color)
             
             # Now adjust position based on language
-            if lang_code == "ar" or lang_code == "pk":
+            if manage_data.lang_code == "ar" or manage_data.lang_code == "pk":
                 # For RTL languages, subtract the width from right edge
                 x_pos = manage_data.SCREEN_WIDTH - title.get_width() - 100
                 title.set_position(x_pos, y_offset)
@@ -256,13 +256,13 @@ def draw_profile(screen):
     buttons.clear()
     screen.blit(manage_data.bgs['plain'], (0, 0))
     gold_medals, diamond_medals, total_stars, ulock_ach, total_ach = 0, 0, 0, 0, 0
-    current_lang = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('main_menu', {})
-    settings = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('settings', {})
+    current_lang = manage_data.load_language().get('main_menu', {})
+    settings = manage_data.load_language().get('settings', {})
     profile_text = current_lang.get("profile", "Profile")
     rendered_profile = render_text(profile_text, True, (255, 255, 255))
     screen.blit(rendered_profile, (manage_data.SCREEN_WIDTH // 2 - rendered_profile.get_width() // 2, 50))
     
-    current_lang = manage_data.load_language(manage_data.lang_code, manage_data.manifest)
+    current_lang = manage_data.load_language()
     back_data = current_lang.get("language_select", {})
 
     level, xp_needed, xp_total = manage_data.xp()
@@ -272,7 +272,7 @@ def draw_profile(screen):
         badge = manage_data.assets['badge']
         bar = 250*(xp_needed/xp_total)
     else:
-        max_txt = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {}).get("max_level", "MAX LEVEL!")
+        max_txt = manage_data.load_language().get('messages', {}).get("max_level", "MAX LEVEL!")
         color = (225, 212, 31)
         XP_text2 = render_text(max_txt, True, color)
         badge = manage_data.assets['max_badge']
@@ -375,9 +375,9 @@ def draw_main_menu(screen, event, ui_states):
     ui_states['last_hovered'] = hovered_key
     return ui_states
 
-def create_main_menu_buttons(screen, lang_code, manifest, progress):
+def create_main_menu_buttons():
     global current_lang, buttons
-    current_lang = manage_data.load_language(lang_code, manifest).get('main_menu', {})
+    current_lang = manage_data.load_language().get('main_menu', {})
     buttons.clear()
     button_texts = ["start", "achievements", "character_select", "settings", "profile", "quit"]
 
@@ -391,11 +391,11 @@ def create_main_menu_buttons(screen, lang_code, manifest, progress):
         rect = rendered.get_rect(center=(manage_data.SCREEN_WIDTH // 2, start_y + i * button_spacing)) 
         buttons.append((rendered, rect, key, False))
 
-def create_language_buttons(screen, lang_code, manifest, progress):
+def create_language_buttons(screen):
     global current_lang, buttons
-    current_lang = manage_data.load_language(lang_code, manifest).get('language_select', {})
+    current_lang = manage_data.load_language().get('language_select', {})
     buttons.clear()
-    start = manage_data.load_language(lang_code, manifest).get('main_menu', {})
+    start = manage_data.load_language().get('main_menu', {})
 
     language_options = [
         ("English", "en"),
@@ -479,26 +479,26 @@ def draw_world_stats(screen, world_name, world_key, world_rect):
     screen.blit(medals_text, medals_pos)
     screen.blit(stars_text, stars_pos)
 
-def worlds(screen, lang_code, manifest, progress, bgs, disks):
+def worlds(screen):
     global current_lang, buttons
     buttons.clear()
-    current_lang = manage_data.load_language(lang_code, manifest).get('levels', {})
+    current_lang = manage_data.load_language().get('levels', {})
 
     green_center = (manage_data.SCREEN_WIDTH // 2 - 250, manage_data.SCREEN_HEIGHT // 2 - 70)
     mech_center = (manage_data.SCREEN_WIDTH // 2 + 250, manage_data.SCREEN_HEIGHT // 2 - 70)
     
-    mech_rect = disks['mechpack'].get_rect(center=mech_center)
-    green_rect = disks['greenpack'].get_rect(center=green_center)
+    mech_rect = manage_data.disks['mechpack'].get_rect(center=mech_center)
+    green_rect = manage_data.disks['greenpack'].get_rect(center=green_center)
 
-    screen.blit(disks['mechpack'], mech_rect)
-    screen.blit(disks['greenpack'], green_rect)
+    screen.blit(manage_data.disks['mechpack'], mech_rect)
+    screen.blit(manage_data.disks['greenpack'], green_rect)
 
     # Draw stats for both worlds
     draw_world_stats(screen, "Green", "green", green_rect)
     draw_world_stats(screen, "Mech", "mech", mech_rect)
 
-    buttons.append((disks['greenpack'], green_rect, "levels", False))
-    buttons.append((disks['mechpack'], mech_rect, "mech_levels", False))
+    buttons.append((manage_data.disks['greenpack'], green_rect, "levels", False))
+    buttons.append((manage_data.disks['mechpack'], mech_rect, "mech_levels", False))
 
     world_text = current_lang.get("worlds", "Select World")        
     rendered_world_txt = render_text(world_text, True, (255, 255, 255))
@@ -517,12 +517,9 @@ def worlds(screen, lang_code, manifest, progress, bgs, disks):
     # Add the back button
     buttons.append((rendered_back, back_rect, "back", False))
 
-def green_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
-    global current_lang, buttons
+def green_world_buttons(screen):
+    global current_lang, buttons, text_rect
     buttons.clear()
-
-    # Store the rendered text and its position for later drawing
-    global text_rect, level_key
 
     level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6"]
     level_no = ["1", "2", "3", "4", "5", "6"]
@@ -542,9 +539,9 @@ def green_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
         x = start_x + col * spacing_x
         y = start_y + row * spacing_y
 
-        is_locked = progress["lvls"]["green"][subsection][level]['locked']
+        is_locked = manage_data.progress["lvls"]["green"][subsection][level]['locked']
         text_surface = render_text(level_no[i], True, (255, 255, 255), bigfont=True)
-        disk_rect = disks['green'].get_rect(center=(x, y))
+        disk_rect = manage_data.disks['green'].get_rect(center=(x, y))
         buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
 
     # Get the text
@@ -562,12 +559,9 @@ def green_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
     # Add the button
     buttons.append((rendered_back, back_rect, "back", False))
 
-def mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
-    global current_lang, buttons
+def mech_world_buttons(screen):
+    global text_rect, current_lang, buttons
     buttons.clear()
-
-    # Store the rendered text and its position for later drawing
-    global text_rect, level_key
 
     level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6"]
     level_no = ["1", "2", "3", "4", "5", "6"]
@@ -585,9 +579,9 @@ def mech_world_buttons(screen, lang_code, manifest, progress, bgs, disks):
         x = start_x + col * spacing_x
         y = start_y + row * spacing_y
 
-        is_locked = progress["lvls"]["mech"]["1"][level]['locked']
+        is_locked = manage_data.progress["lvls"]["mech"]["1"][level]['locked']
         text_surface = render_text(level_no[i], True, (255, 255, 255), bigfont=True)
-        disk_rect = disks['mech'].get_rect(center=(x, y))
+        disk_rect = manage_data.disks['mech'].get_rect(center=(x, y))
         buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
 
     # Get the text
@@ -610,7 +604,7 @@ def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, b
     world_type = current_page
     screen.blit(manage_data.bgs[world_type], (0, 0))
     disk_img = manage_data.disks[world_type]
-    current_lang = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('levels', {})
+    current_lang = manage_data.load_language().get('levels', {})
 
     # 2. Header
     title = render_text(current_lang.get("level_display", "Select Level"), True, (255, 255, 255))
@@ -673,7 +667,7 @@ class StarParticles:
 stareffects = []
 
 def level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars):
-    messages = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {})
+    messages = manage_data.load_language().get('messages', {})
     display_score = 0
     star1_p, star2_p, star3_p = False, False, False
     star_time = time.time()
@@ -825,7 +819,7 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
 
 def draw_character_select(screen, mouse_pos, events, transition, rect, key):
          mouse_pos = pygame.mouse.get_pos()
-         header_txt = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('main_menu', {})
+         header_txt = manage_data.load_language().get('main_menu', {})
          char_sel = header_txt.get("character_select", "Character Select")
          char_text = render_text(char_sel, True, (255, 255, 255))
          screen.blit(char_text, (manage_data.SCREEN_WIDTH // 2 - 100, 50))
@@ -870,7 +864,7 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
 
          for event in events:
            if event.type == pygame.QUIT:
-            state.set_page(screen, "quit_confirm", manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.Achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+            state.set_page(screen, "quit_confirm", transition)
 
            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if manage_data.robo_rects['robot'].collidepoint(mouse_pos):
@@ -889,7 +883,7 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
 def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg, transition):
     if rect.collidepoint(pygame.mouse.get_pos()):
         global selected_character
-        charsel = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('char_select', {})
+        charsel = manage_data.load_language().get('char_select', {})
 
         if unlock_flag:
             selected_character = char_key
@@ -910,11 +904,10 @@ def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg, t
             locked_text = charsel.get(locked_msg_key, fallback_msg)
             state.locked_message = render_text(locked_text, True, (255, 255, 0))
 
-def character_select(lang_code, manifest):
-    
+def character_select():
     # Clear screen
     buttons.clear()
-    current_lang = manage_data.load_language(lang_code, manifest)['char_select']
+    current_lang = manage_data.load_language()['char_select']
     button_texts = ["back"]
 
     for i, key in enumerate(button_texts):
@@ -923,13 +916,13 @@ def character_select(lang_code, manifest):
         rect = rendered.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 100)) 
         buttons.append((rendered, rect, key, False))
 
-def settings_menu(screen, lang_code, manifest, bgs):
+def settings_menu(screen):
     global current_lang, buttons
     # 1. Load language (only once per page change is better, but this works)
-    current_lang = manage_data.load_language(lang_code, manifest).get('settings', {})
-    setting_lang = manage_data.load_language(lang_code, manifest).get('main_menu', {})
+    current_lang = manage_data.load_language().get('settings', {})
+    setting_lang = manage_data.load_language().get('main_menu', {})
     buttons.clear()
-    screen.blit(bgs['plain'], (0, 0))
+    screen.blit(manage_data.bgs['plain'], (0, 0))
 
     # 2. Match these keys EXACTLY to handle_action
     # format: (Display Text, Internal Key)
@@ -963,11 +956,11 @@ def settings_menu(screen, lang_code, manifest, bgs):
             pygame.draw.rect(screen, (0, 213, 0), rect.inflate(20, 10), 2)
         screen.blit(rendered, rect)
 
-def about_menu(screen, lang_code, manifest, bgs, version):
+def about_menu(screen):
     global buttons
     buttons.clear()
-    screen.blit(bgs['plain'], (0, 0))
-    settings_lang = manage_data.load_language(lang_code, manifest).get('settings', {})
+    screen.blit(manage_data.bgs['plain'], (0, 0))
+    settings_lang = manage_data.load_language().get('settings', {})
 
     title = settings_lang.get("About", "About")
     title_rendered = render_text(title, True, (255, 255, 255))
@@ -1035,11 +1028,11 @@ def about_menu(screen, lang_code, manifest, bgs, version):
     rect = rendered.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 50))
     buttons.append((rendered, rect, "Back", False))
 
-def audio_settings_menu(screen, lang_code, manifest, progress, bgs, is_mute, is_mute_amb):
+def audio_settings_menu(screen):
     global buttons
     buttons.clear()
-    screen.blit(bgs['plain'], (0, 0))
-    settings_lang = manage_data.load_language(lang_code, manifest).get('settings', {})
+    screen.blit(manage_data.bgs['plain'], (0, 0))
+    settings_lang = manage_data.load_language().get('settings', {})
 
     # 1. Draw Title
     title_str = settings_lang.get("Audio", "Audio")
@@ -1048,7 +1041,7 @@ def audio_settings_menu(screen, lang_code, manifest, progress, bgs, is_mute, is_
     
     # 2. Sound Buttons (SFX)
     sound_label = settings_lang.get("Sound", "Sound")
-    if is_mute:
+    if manage_data.is_mute:
         # Fetches "Unmute {setting}" and replaces {setting} with "Sound"
         sfx_text_str = settings_lang.get("Unmute", "Unmute {setting}").format(setting=sound_label)
     else:
@@ -1061,7 +1054,7 @@ def audio_settings_menu(screen, lang_code, manifest, progress, bgs, is_mute, is_
 
     # 3. Ambience Buttons
     amb_label = settings_lang.get("Ambience", "Ambience")
-    if is_mute_amb:
+    if manage_data.is_mute_amb:
         amb_text_str = settings_lang.get("Unmute", "Unmute {setting}").format(setting=amb_label)
     else:
         amb_text_str = settings_lang.get("Mute", "Mute {setting}").format(setting=amb_label)
@@ -1082,12 +1075,12 @@ def audio_settings_menu(screen, lang_code, manifest, progress, bgs, is_mute, is_
     screen.blit(renderedback, rectback)
 
 
-def create_quit_confirm_buttons(lang_code, manifest):
+def create_quit_confirm_buttons():
     global current_lang, buttons
     buttons.clear()
 
     # Get the quit confirmation text from the current language
-    messages = manage_data.load_language(lang_code, manifest).get('messages', {})
+    messages = manage_data.load_language().get('messages', {})
     confirm_quit = messages.get("confirm_quit", "Are you sure you want to quit?")
 
     # Store the quit confirmation text for rendering in the main loop
@@ -1109,7 +1102,7 @@ def create_quit_confirm_buttons(lang_code, manifest):
     return quit_text, quit_text_rect
 
 def new_txt():
-    current_lang = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('main_menu', {})
+    current_lang = manage_data.load_language().get('main_menu', {})
     new_txt = render_text(current_lang.get("new", "Update Available!"), True, (225, 212, 31))
     return new_txt
 
@@ -1136,7 +1129,7 @@ def show_resolution_limit(screen):
         screen.blit(manage_data.robos['evilrobot'], (robo_x, robo_y))
 
         # Fetch localized messages
-        messages = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {})
+        messages = manage_data.load_language().get('messages', {})
         
         # Render texts using your existing render_text logic
         texts = [
