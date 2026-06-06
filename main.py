@@ -14,7 +14,7 @@ if platform.system() == "Windows":
         sys.exit()
 
 import pygame
-from cleobo.data import manage_data, achievements
+from cleobo.data import manage_data
 import cleobo.startup as startup
 import cleobo.data.acc_sys as acc_sys
 import cleobo.ui.menu_ui as menu_ui
@@ -26,9 +26,6 @@ pygame.init()
 # Initializing screen resolution
 screen = pygame.display.set_mode((1600, 900), pygame.FULLSCREEN)
 manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT = screen.get_size()
-
-if sys.platform.startswith('linux'):
-    os.environ['SDL_VIDEODRIVER'] = 'x11'
 
 pygame.display.set_caption("Roboquix")
 MIN_WIDTH, MIN_HEIGHT = 1128, 634
@@ -65,7 +62,7 @@ transition = state.TransitionManager(screen, manage_data.bgs['trans_left'], mana
 current_lang = manage_data.change_language(manage_data.lang_code, manage_data.manifest, manage_data.progress)
 
 # Start with main menu
-state.set_page(screen, 'main_menu', manage_data.lang_code, manage_data.manifest, manage_data.progress, achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+state.set_page(screen, 'main_menu', transition)
 
 # Global variables(only needed before main loop)!
 button_hovered_last_frame = False
@@ -77,7 +74,7 @@ if not manage_data.is_mute and manage_data.SCREEN_WIDTH > MIN_WIDTH and manage_d
     manage_data.sounds['click'].play()
 
 while running:
-    messages = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('messages', {})
+    messages = manage_data.load_language().get('messages', {})
     screen.blit(manage_data.bgs['plain'], (0, 0))
     mouse_pos = pygame.mouse.get_pos()
 
@@ -86,11 +83,11 @@ while running:
         state.is_transitioning = False
 
     if transition.phase == 1:
-            state.is_transitioning = False
-            current_pending = state.pending_page
-            state.transition_time = None
-            state.pending_page = None
-            state.set_page(screen, current_pending, manage_data.lang_code, manage_data.manifest, manage_data.progress, achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+        state.is_transitioning = False
+        current_pending = state.pending_page
+        state.transition_time = None
+        state.pending_page = None
+        state.set_page(screen, current_pending, transition)
 
     if manage_data.SCREEN_WIDTH < MIN_WIDTH or manage_data.SCREEN_HEIGHT < MIN_HEIGHT:
         menu_ui.show_resolution_limit(screen)
@@ -99,15 +96,15 @@ while running:
         
         for event in events:
             if event.type == pygame.QUIT:
-                state.set_page(screen, "quit_confirm", manage_data.lang_code, manage_data.manifest, manage_data.progress, achievements, manage_data.bgs, manage_data.disks, manage_data.version, manage_data.is_mute, manage_data.is_mute_amb, transition)
+                state.set_page(screen, "quit_confirm", transition)
 
             # Handle login screen events
             elif manage_data.current_page == "login_screen":
-                acc_sys.handle_login_events(screen, transition, events, manage_data.manifest, manage_data.lang_code, manage_data.is_mute, manage_data.sounds, manage_data.progress)
+                acc_sys.handle_login_events(screen, transition, events, manage_data.manifest, manage_data.is_mute, manage_data.sounds, manage_data.progress)
                 break  # Stop processing other events for this frame
 
             elif manage_data.current_page == "registration_screen":
-                acc_sys.handle_registration_events(screen, transition, events, manage_data.manifest, manage_data.lang_code, manage_data.is_mute, manage_data.sounds, manage_data.progress, manage_data.ACCOUNTS_FILE)
+                acc_sys.handle_registration_events(screen, transition, events, manage_data.manifest, manage_data.is_mute, manage_data.sounds, manage_data.progress, manage_data.ACCOUNTS_FILE)
                 break  # Stop processing other events for this frame
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -145,17 +142,17 @@ while running:
             menu_ui.draw_profile(screen)
 
         if manage_data.current_page == "achievements":
-            menu_ui.create_achieve_screen(screen, manage_data.lang_code, manage_data.manifest, manage_data.progress)
+            menu_ui.create_achieve_screen(screen)
 
         if manage_data.current_page == "character_select":
            menu_ui.draw_character_select(screen, mouse_pos, events, transition, rect, key)
 
         if manage_data.current_page == "language_select":
-            menu_ui.create_language_buttons(screen, manage_data.lang_code, manage_data.manifest, manage_data.progress)
+            menu_ui.create_language_buttons(screen)
             
         if manage_data.current_page == "quit_confirm":
             screen.blit(manage_data.bgs['plain'], (0, 0))
-            quit_text, quit_text_rect = menu_ui.create_quit_confirm_buttons(manage_data.lang_code, manage_data.manifest)
+            quit_text, quit_text_rect = menu_ui.create_quit_confirm_buttons()
             screen.blit(quit_text, quit_text_rect)
             screen.blit(manage_data.robos['ironrobot'], (manage_data.SCREEN_WIDTH // 2 - manage_data.robos['robot'].get_width() // 2, manage_data.SCREEN_HEIGHT // 2 - 200))
             button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)
@@ -171,24 +168,24 @@ while running:
             button_hovered_last_frame = menu_ui.draw_level_select(screen, mouse_pos, manage_data.current_page, current_lang, messages, button_hovered_last_frame)
 
         elif manage_data.current_page == "settings":
-            menu_ui.settings_menu(screen, manage_data.lang_code, manage_data.manifest, manage_data.bgs)
+            menu_ui.settings_menu(screen)
             button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)
 
         elif manage_data.current_page == "About":   
-            menu_ui.about_menu(screen, manage_data.lang_code, manage_data.manifest, manage_data.bgs, manage_data.version)
+            menu_ui.about_menu(screen)
             button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)            
         
         elif manage_data.current_page == "Audio":
-            menu_ui.audio_settings_menu(screen, manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.bgs, manage_data.is_mute, manage_data.is_mute_amb)
+            menu_ui.audio_settings_menu(screen)
             button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)
 
         elif manage_data.current_page == "worlds":
-            menu_ui.worlds(screen, manage_data.lang_code, manage_data.manifest, manage_data.progress, manage_data.bgs, manage_data.disks)
+            menu_ui.worlds(screen)
             button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)
 
         elif manage_data.current_page == "Account":
             screen.blit(manage_data.bgs['plain'], (0, 0))
-            account_lang = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('settings', {})  # Fetch localized messages
+            account_lang = manage_data.load_language().get('settings', {})  # Fetch localized messages
             
             title_text = account_lang.get("select", "SELECT PROFILE")
             title = menu_ui.render_text(title_text, True, (255, 255, 255))
@@ -213,7 +210,7 @@ while running:
         screen.blit(manage_data.ui['cursor'], mouse_pos)
 
         if transition.active:
-            transition.update(manage_data.lang_code, screen, manage_data.version, transition, manage_data.manifest, manage_data.progress)
+            transition.update(screen, transition)
         
         pygame.display.flip()
 
