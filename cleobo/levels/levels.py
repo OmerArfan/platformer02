@@ -31,7 +31,7 @@ def level_launcher(level_name, screen, transition, world_name):
     menu_ui.buttons.clear()
     
     # Get in-game language strings
-    in_game = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('in_game', {})
+    in_game = manage_data.load_language().get('in_game', {})
     
     manager = entities.LevelManager()
     # Player
@@ -260,7 +260,7 @@ def create_lvl8_screen(screen, transition):
     death_text = None
     start_time = time.time()
 
-    in_game = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('in_game', {})
+    in_game = manage_data.load_language().get('in_game', {})
 
     # Camera settings
     camera_x = 300
@@ -638,7 +638,7 @@ def create_lvl9_screen(screen, transition):
     death_text = None
     start_time = time.time()
 
-    in_game = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('in_game', {})
+    in_game = manage_data.load_language().get('in_game', {})
 
     # Camera settings
     camera_x = 300
@@ -1083,7 +1083,7 @@ def create_lvl10_screen(screen, transition):
     death_text = None
     start_time = time.time()
 
-    in_game = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('in_game', {})
+    in_game = manage_data.load_language().get('in_game', {})
 
     # Camera settings
     camera_x = 300
@@ -1467,7 +1467,7 @@ def create_lvl11_screen(screen, transition):
     menu_ui.buttons.clear()
     screen.blit(manage_data.bgs['mech'], (0, 0))
 
-    in_game = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('in_game', {})
+    in_game = manage_data.load_language().get('in_game', {})
 
     wait_time = None
     death_text = None
@@ -2000,7 +2000,7 @@ def create_lvl12_screen(screen, transition):
     menu_ui.buttons.clear()
     screen.blit(manage_data.bgs['mech'], (0, 0))
 
-    in_game = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('in_game', {})
+    in_game = manage_data.load_language().get('in_game', {})
 
     wait_time = None
     death_text = None
