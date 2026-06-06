@@ -100,7 +100,6 @@ def resource_path(relative_path):
 def thresholds(world, thr):
     with open(resource_path(f"assets/data/thresholds/{world}.json"), "r", encoding="utf-8") as f:
         thresh_data = json.load(f)
-        print(thresh_data)
         return thresh_data[thr]
 
 fonts = {}
@@ -197,8 +196,8 @@ def migrate_old_progress(progress):
     
     return progress
 
-def load_language(lang_code, manifest):
-    global now
+def load_language():
+    global manifest
     try:
         # Wrap the path in resource_path()
         path = resource_path(f"assets/lang/{lang_code}.json")
@@ -218,7 +217,7 @@ def change_language(lang, manifest, progress):
     global lang_code, last_page_change_time, current_lang, font, font_path_ch, font_path
     lang_code = lang
     last_page_change_time = time.time()  # Track the time when the language changes
-    current_lang = load_language(lang_code, manifest)  # Reload the language data
+    current_lang = load_language()  # Reload the language data
     manifest["pref"]["language"] = lang_code
     update_local_manifest(progress)
     if lang_code == "zh_cn":
@@ -380,7 +379,7 @@ def save_progress(data, manifest):
 
         # 6. Periodic Cloud Sync (Every 4 saves)
         if save_count % 4 == 0:
-            threading.Thread(target=sync_vault_to_cloud, args=(data, manifest), daemon=True).start()
+            threading.Thread(target=sync_vault_to_cloud, args=(data,), daemon=True).start()
 
     except PermissionError:
         if not is_mute:
@@ -557,10 +556,10 @@ def sync_missing_data(data):
                         next_level_num = level_nums[idx + 1]
                         levels[f'lvl{next_level_num}']['locked'] = False
 
-def sync_vault_to_cloud(data, manifest):
+def sync_vault_to_cloud(data):
     global is_syncing, sync_status, sync_finish_time
     is_syncing = True
-    settings = load_language(lang_code, manifest)['settings']
+    settings = load_language()['settings']
     sync_status = settings.get("sync_stat1", "Syncing Vault to Cloud...")
 
     # Using the IDs from your pre-filled link
@@ -745,7 +744,7 @@ def update_xp_ui():
     else:
         color = (225, 212, 31)
         XP_text = fonts['mega'].render(str(level), True, color)
-        max_txt = load_language(lang_code, manifest).get('messages', {}).get("max_level", "MAX LEVEL!")
+        max_txt = load_language().get('messages', {}).get("max_level", "MAX LEVEL!")
         XP_text2 = menu_ui.render_text(max_txt, True, color)   
 
     return XP_text, XP_text2
