@@ -40,6 +40,9 @@ local lvl1 = {
 	teleporters = {
 	    {entry_x = 5150, entry_y = 300, entry_w = 140, entry_h = 180, exit_x = 100, exit_y = -1400, exit_w = 50, exit_h = 50},
 	},
+	text = {
+		saws = {name = "portal_message", fallback = "These blue portals teleport you! But to good places... mostly!", color = {0, 170, 255}, x = 4400, y = 300},
+	},
 	exit = {x = 1960, y = -1320, w = 140, h = 180},
 	next_page = "mech_lvl2",
 }
@@ -84,12 +87,27 @@ local lvl2 = {
 	    {{11200, -1150}, {11250, -1100}, {11300, -1150}},
 	    {{11300, -1150}, {11350, -1100}, {11400, -1150}},
 	},
+	saws = {
+	    {x = 5000, y = 550, radius = 100, type = 'static'},
+        {radius = 60, speed = 11, x = 350, y = 200, max = 800, min = 0, type = 'moving_y'},
+        {radius = 130, speed = 19, x = 11000, y = -950, max = 11300, min = 10700, type = 'moving_x'},
+		{x = 1850, y = 200, radius = 80, type = 'static'},
+	    {x = 9025, y = -175, radius = 150, type = 'static'},
+	    {x = 9625, y = -175, radius = 150, type = 'static'},
+    },
 	flags = {
 		{x = 8700, y = -320, w = 100, h = 125, save_x = 8700, save_y = -320},
 		{x = 10000, y = -320, w = 100, h = 125, save_x = 10000, save_y = -320},
 	},
+	grav_weak = {
+		{x = 8700, y = -350}
+	},
 	teleporters = {
 	    {entry_x = 2090, entry_y = 0, entry_w = 140, entry_h = 180, exit_x = 8300, exit_y = -400, exit_w = 50, exit_h = 50},
+	},
+	text = {
+		button_1 = {name = "button1_message", fallback = "Blue buttons, upon activation, will make you jump higher!", color = {51, 153, 255}, x = 8400, y = -150},
+		clarify = {name = "clarify_message", fallback = "Until you reach a checkpoint, of course!", color = {51, 153, 255}, x = 9800, y = -150}
 	},
 	exit = {x = 10980, y = -1050, w = 140, h = 180},
 	next_page = "mech_lvl3",
@@ -171,6 +189,12 @@ local lvl3 = {
 	flags = {
 		{x = 2350, y = 300, w = 100, h = 125, save_x = 2350, save_y = 300}, 
 		{x = 5600, y = 550, w = 100, h = 125, save_x = 5600, save_y = 550}
+	},
+	grav_strong = {
+		{x = 300, y = 0}
+	},
+	grav_weak = {
+		{x = 2550, y = 300}
 	},
 	exit = {x = 3325, y = 420, w = 140, h = 180},
 	next_page = "mech_lvl4",
