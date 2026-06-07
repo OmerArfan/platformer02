@@ -116,6 +116,10 @@ def level_launcher(level_name, screen, transition, world_name):
             rendered = menu_ui.render_text(display_text, True, color)
             text_elements.append({'rendered': rendered, 'x': x, 'y': y})
 
+    # Buttons
+    weak_grav = level_data.get('grav_weak', {})
+    strong_grav = level_data.get('grav_strong', {})
+
     # Pre-render fall message
     fall_message = in_game.get("fall_message", "Fell too far!")
     rendered_fall_text = menu_ui.render_text(fall_message, True, (255, 0, 0))
@@ -180,6 +184,11 @@ def level_launcher(level_name, screen, transition, world_name):
         # Draw portal
         env.draw_portal(screen, manage_data.assets[f'{world_name}_exit'], exit_portal, player)
 
+        # Handle buttons
+
+        player.jump_mode = mech.handle_buttons(screen, weak_grav, player, player.jump_mode, "weak")
+        player.jump_mode = mech.handle_buttons(screen, strong_grav, player, player.jump_mode, "strong")
+        
         # 2. Check for saw deaths
         if hazards.handle_all_saws(screen, saws, player, blocks):
             player.die()
@@ -247,72 +256,6 @@ def level_launcher(level_name, screen, transition, world_name):
         
 
 def create_lvl8_screen(screen, transition):
-    global player_img, font, complete_levels, current_time, medal, deathcount, score
-    global new_hs, hs, stars
-
-    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(manage_data.selected_character)
-
-    new_hs = False
-    menu_ui.buttons.clear()
-    screen.blit(manage_data.bgs['mech'], (0, 0))
-
-    wait_time = None
-    death_text = None
-    start_time = time.time()
-
-    in_game = manage_data.load_language().get('in_game', {})
-
-    # Camera settings
-    camera_x = 300
-    camera_y = -500
-    spawn_x, spawn_y = 0, 260
-    player_x, player_y = spawn_x, spawn_y
-    running = True
-    gravity = 1
-    jump_strength = 21
-    # When the gravity is weaker
-    weak_jump_strength = 37
-    weak_grav = False
-    move_speed = 8
-    on_ground = False
-    velocity_y = 0
-    camera_speed = 0.5
-    deathcount = 0
-    was_moving = False
-    saw_angle = 0
-
-    # Draw flag
-    flag = pygame.FRect(8700, -320, 100, 125)  # x, y, width, height
-    checkpoint_reached = False
-    flag2 = pygame.FRect(10000, -320, 100, 125)  # x, y, width, height
-    checkpoint_reached2 = False
-    flag_1_x, flag_1_y = 8700, -320
-    flag_2_x, flag_2_y = 10000, -320
-
-    blocks = [
-        pygame.FRect(0, 400, 100, 100),
-        pygame.FRect(460, 650, 540, 50),
-        pygame.FRect(1200, 200, 1050, 50),
-        pygame.FRect(8200, -200, 6000, 400),
-        pygame.FRect(9000, -750, 50, 600),
-        pygame.FRect(9600, -750, 50, 600),
-        pygame.FRect(10000, -1650, 2000, 500),
-        pygame.FRect(10000, -1650, 100, 1220),
-        pygame.FRect(10750, -360, 600, 170),
-    ]
-    
-    jump_blocks = [
-        pygame.FRect(1100, 600, 100, 100),
-        pygame.FRect(11000, -460, 100, 100),
-    ]
-
-    moving_saws = [
-        {'r': 60, 'speed': 11, 'cx': 350, 'cy': 200, 'max': 800, 'min': 0},
-    ]
-
-    moving_saws_x = [
-        {'r': 130, 'speed':19, 'cx': 11000, 'cy': -950, 'max': 11300, 'min': 10700}
-    ]
 
     saws = [
         (1850, 200, 80, (255, 0, 0)),
@@ -377,7 +320,7 @@ def create_lvl8_screen(screen, transition):
 
     level_draw_portal(screen, manage_data.assets['mech_exit'], exit_portal, camera_x, camera_y)
 
-    button1_text = in_game.get("button1_message", "Blue menu_ui.buttons, upon activation, will make you jump higher!")
+    button1_text = in_game.get("button1_message", "Blue buttons, upon activation, will make you jump higher!")
     button1_text = menu_ui.render_text(button1_text, True, (0, 102, 204))
 
     clarify_text = in_game.get("clarify_message", "Until you reach a checkpoint, of course!")
