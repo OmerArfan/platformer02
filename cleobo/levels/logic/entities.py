@@ -33,7 +33,7 @@ class Player:
         self.speed_mode = "normal" # To keep track of the speed mode (For easy switching)
         self.velocity_x = self.speeds[self.speed_mode]
 
-        # Jump Settings (Replaced the dots with underscores)
+        # Jump Settings
         self.grav_strength = {
             "strong": 15,
             "normal": 21,
@@ -110,16 +110,19 @@ class Player:
         self.rect.x, self.rect.y = self.spawn_x, self.spawn_y
         self.velocity_y = 0
         self.deathcount += 1
+        self.jump_mode = "normal"
 
     def update(self, keys, manager, rendered_fall_text):
         self.input_update(keys)
         self.camera_update()
         self.fall(manager, rendered_fall_text)
+        self.jump = self.grav_strength.get(self.jump_mode, "normal")
 
     def reset_stats(self):
         self.rect.x, self.rect.y = self.spawn_x, self.spawn_y
         self.velocity_y = 0
         self.deathcount = 0
+        self.jump_mode = "normal"
 
 class PlayerSprites:
     def __init__(self):
@@ -255,6 +258,7 @@ class LevelManager:
 
     def reset_stats(self):
         self.start_time = time.time()
+        self.current_time = 0
         self.death_text = None
         self.wait_time = None
 
@@ -373,9 +377,7 @@ class LevelManager:
 
     @staticmethod
     def get_stars(level, world, score):
-        print(world)
         thresh = manage_data.thresholds(world, "star")
-        print(thresh)
         thresholds = next((t for t in thresh if t['level'] == level), None)
         if not thresholds:
             return 0
