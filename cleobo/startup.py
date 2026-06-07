@@ -6,8 +6,8 @@ from datetime import datetime
 import traceback
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0484"
-manage_data.kernel = "0.4.1.0033"
+manage_data.version = "1.3.9.0485"
+manage_data.kernel = "0.4.1.0034"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
@@ -74,7 +74,7 @@ def init_ui_images(SCREEN_WIDTH, SCREEN_HEIGHT):
     try:
         ui = {}
         ui_files = {
-            'cursor': ("cursor/cursor.png", False),
+            'cursor': ("ui/cursor.png", False),
             'logo': ("logos/logo.png", False),
             'studio_logo': ("logos/studiologodef.png", False),
             'studio_glow': ("logos/studiologoglow.png", False),
@@ -194,6 +194,10 @@ def init_other_assets():
             'saw': ("ingame/saw.png", None),
             'cpoint_inact': ("ingame/flags/yellow_flag.png", None),
             'cpoint_act': ("ingame/flags/green_flag.png", None),
+            'strong': ("ingame/button/gravity_strong.png", None),
+            'weak': ("ingame/button/gravity_weak.png", None),
+            'stamina': ("ingame/button/speedster.png", None),
+            'light': ("ingame/button/light.png", None),
         }
         
         for name, (file_path, size) in asset_files.items():
