@@ -153,7 +153,7 @@ def handle_key_blocks(screen, key_block_pairs, player):
             if player.rect.colliderect(key_rect):
                 pair['collected'] = True
                 if not manage_data.is_mute:
-                    manage_data.sounds['open'].play()
+                    manage_data.sounds['collect'].play()
 
         # 2. DRAW & COLLIDE WITH THE BLOCK
         if not pair['collected']:
@@ -195,7 +195,7 @@ def handle_key_blocks_timed(screen, key_block_pairs_timed, player):
                 pair["locked_time"] = pygame.time.get_ticks()
                 pair["collected"] = True
                 if not manage_data.is_mute:
-                    manage_data.sounds['open'].play()
+                    manage_data.sounds['collect'].play()
 
         # Draw key and block only if not collected
         if not pair["collected"]:

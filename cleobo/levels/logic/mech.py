@@ -18,7 +18,7 @@ def handle_buttons(screen, buttons, player, current_state, defined_state):
             button_rect = pygame.FRect(button['x'], button['y'], 80, 80)
             if player.rect.colliderect(button_rect): # Have to hard code this for now.
                 if not manage_data.is_mute:
-                    manage_data.sounds['button'].play()
+                    manage_data.sounds['collect'].play()
                 return defined_state
     return current_state
 
