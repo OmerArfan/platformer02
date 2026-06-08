@@ -188,7 +188,7 @@ local lvl4 = {
 	    {radius = 40, orbit_radius = 230, angle = 90,  speed = 2, block = 1, type = 'rotating'},
 	    {radius = 40, orbit_radius = 230, angle = 180, speed = 2, block = 1, type = 'rotating'},
 	    {radius = 40, orbit_radius = 230, angle = 270, speed = 2, block = 1, type = 'rotating'},	
-	    {radius = 100, speed = 5, x = 3800, y = -300, max = -50, min = -700, type = 'moving_y'},
+	    {radius = 80, speed = 5, x = 3800, y = -300, max = -50, min = -700, type = 'moving_y'},
 	},
 	flags = {
 	    {x = 1500, y = 550, w = 100, h = 125, save_x = 1500, save_y = 550},
@@ -196,7 +196,7 @@ local lvl4 = {
 	},
 	key_block_pairs = {
 		{
-		key = {x = 3820, y = -130, radius = 30, color = {255, 255, 0}},
+		key = {x = 3800, y = -140, radius = 30, color = {255, 255, 0}},
 	    block = {x = 2800, y = 30, w = 200, h = 200},
 		collected = false
 		},
@@ -218,7 +218,7 @@ local lvl5 = {
 	    {x = 1500, y = -50,  w = 700,  h = 50},
 	    {x = 1700, y = -350, w = 1050, h = 50},
 	    {x = 1500, y = -250, w = 50,   h = 200},
-	    {x = 2700, y = -220, w = 200,  h = 50},
+	    {x = 2700, y = -180, w = 230,  h = 50},
 	    {x = 2880, y = -350, w = 700,  h = 50},
 	    {x = 3900, y = -350, w = 100,  h = 30},
 	    {x = 3900, y = -50,  w = 100,  h = 30},
@@ -232,10 +232,6 @@ local lvl5 = {
 	    {x = 4800, y = -150, w = 100,  h = 30},
 	    {x = 4800, y = -750, w = 100,  h = 30},
 	    {x = 4800, y = -450, w = 100,  h = 30},
-	},
-	walls = {
-	    {x = 2700, y = -310, w = 50, h = 91},
-	    {x = 2880, y = -310, w = 50, h = 140},
 	},
 	jump_blocks = {
 	    {x = 2200, y = 751, w = 100, h = 100},
