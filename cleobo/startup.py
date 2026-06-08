@@ -6,7 +6,7 @@ from datetime import datetime
 import traceback
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0485"
+manage_data.version = "1.3.9.0486"
 manage_data.kernel = "0.4.1.0034"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
@@ -34,17 +34,14 @@ def init_sounds():
       'death': "game/death.wav",
       'laser': "game/laser.wav",
       'fall': "game/fall.wav",
-      'open': "game/unlock.wav",
       'checkpoint': "game/checkpoint.wav",
       'warp': "game/warp.wav",
-      'button': "game/button.wav",
+      'collect': "game/collect.wav",
       'bounce': "game/bounce.wav",
       'move': "game/travel.wav",
       'jump': "game/jump.wav",
       'hit': "game/hit.wav",
       'notify': "ui/notify.wav",
-      'overheat': "game/overheat.wav",
-      'freeze': "game/freeze.wav",
       'star1': "stars/1star.wav",
       'star2': "stars/2star.wav",
       'star3': "stars/3star.wav",
