@@ -103,7 +103,7 @@ local lvl2 = {
 local lvl3 = {
 	-- Player init
 	player = {
-	    x = 2970, y = -50,
+	    x = 50, y = -50,
 	    spawn_x = 50, spawn_y = -50,
 	},
 	blocks = {
@@ -204,18 +204,40 @@ local lvl4 = {
 	    {x = 1920, y = 400, w = 100, h = 100},
 	    {x = 3000, y = 480, w = 300, h = 50},
 	    {x = 3500, y = 480, w = 100, h = 300},
-	    {x = 3800, y = 260, w = 100, h = 520},
-	    {x = 4100, y = 40, w = 100, h = 740},
-	    {x = 4400, y = 260, w = 100, h = 520},
+	    {x = 3800, y = 280, w = 100, h = 500},
+	    {x = 4100, y = 80, w = 100, h = 700},
+	    {x = 4400, y = 280, w = 100, h = 500},
 	    {x = 4700, y = 480, w = 100, h = 300},
 	    {x = 4950, y = 480, w = 1200, h = 100},
 	},
-	jump_blocks = {
-	    {x = 11000, y = 600, w = 100, h = 100},
-	    {x = 14000, y = 600, w = 100, h = 100},
+	saws = {
+        {radius = 40, orbit_radius = 300, angle = 0, speed = 4, block = 0, type = 'rotating'},
+		{radius = 70, speed = 7, x = 5900, y = 400, max = 600, min = 100, type = 'moving_y'},
+		{radius = 100, speed = 4, x = 600, y = 500, max = 1000, min = 600, type = 'moving_x'},
+		{radius = 50, speed = 14, x = 3550, y = 430, max = 4750, min = 3550, type = 'moving_x'},
+        {radius = 50, speed = 14, x = 3550, y = 30, max = 4750, min = 3550, type = 'moving_x'},
+        {radius = 50, speed = 9, x = 5200, y = 480, max = 6000, min = 5200, type = 'moving_x'},
+        {radius = 50, speed = 9, x = 5200, y = 180, max = 6000, min = 5200, type = 'moving_x'},
+		{x = 1825, y = 525, radius = 80, type = 'static'},
+		{x = 1500, y = 425, radius = 80, type = 'static'},
+		{x = 2500, y = 310, radius = 50, type = 'static'},
 	},
-	flags = {x = 3100, y = 370, w = 100, h = 125, save_x = 3100, save_y = 370},
-	flags2 = {x = 5000, y = 370, w = 100, h = 125, save_x = 5000, save_y = 370},
+	flags = {
+		{x = 3100, y = 370, w = 100, h = 125, save_x = 3100, save_y = 370},
+		{x = 5000, y = 370, w = 100, h = 125, save_x = 5000, save_y = 370},
+	},
+	grav_strong = {
+		{x = 5050, y = 360}
+	},
+	lights ={
+		{
+            button = {x = 350, y = 350},
+		    block = {x = 1300, y = 0, w = 200, h = 400}
+		}
+	},
+	moving_block = {
+        {x = 2200, y = 300, w = 100, h = 50, axis = "x", direction = 1, speed = 5, limit_x = 2200, limit_y = 2800},
+    },
 	exit = {x = 5960, y = 280, w = 140, h = 180},
 	next_page = "mech_lvl5",
 }
@@ -239,7 +261,7 @@ local lvl5 = {
 	    {x = 5180, y = 250, w = 120, h = 300},
 	    {x = 5250, y = 450, w = 1500, h = 100},
 	    {x = 5600, y = -1400, w = 520, h = 1700},
-	},
+	}, 
 	jump_blocks = {
 	    {x = 630, y = 425, w = 100, h = 100},
 	    {x = 14000, y = 600, w = 100, h = 100},
