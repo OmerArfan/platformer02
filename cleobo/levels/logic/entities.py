@@ -111,6 +111,7 @@ class Player:
         self.velocity_y = 0
         self.deathcount += 1
         self.jump_mode = "normal"
+        self.lights_on = True
 
     def update(self, keys, manager, rendered_fall_text):
         self.input_update(keys)
@@ -123,6 +124,7 @@ class Player:
         self.velocity_y = 0
         self.deathcount = 0
         self.jump_mode = "normal"
+        self.lights_on = True
 
 class PlayerSprites:
     def __init__(self):
