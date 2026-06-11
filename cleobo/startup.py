@@ -6,8 +6,8 @@ from datetime import datetime
 import traceback
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0487"
-manage_data.kernel = "0.4.1.0035"
+manage_data.version = "1.3.9.0488"
+manage_data.kernel = "0.4.1.0036"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
@@ -193,7 +193,7 @@ def init_other_assets():
             'cpoint_act': ("ingame/flags/green_flag.png", None),
             'strong': ("ingame/button/gravity_strong.png", None),
             'weak': ("ingame/button/gravity_weak.png", None),
-            'stamina': ("ingame/button/speedster.png", None),
+            'speedster': ("ingame/button/speedster.png", None),
             'light': ("ingame/button/light.png", None),
         }
         
