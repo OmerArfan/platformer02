@@ -718,7 +718,16 @@ def xp():
     total_xp = score_xp + ach_xp + star_xp
     progress["player"]["XP"] = total_xp
     def xp_needed(level):
-        return int(50 * (1.1 ** (level - 1)))  # or tweak multiplier
+        if level <= 5:
+            return 50
+        elif level <= 10:
+            return 70
+        elif level <= 15:
+            return 110
+        elif level <= 20:
+            return 170
+        else: # Buffer
+            return 250
 
     def calculate_level(total_xp):
         level = 1
