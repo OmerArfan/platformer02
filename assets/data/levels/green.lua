@@ -106,8 +106,8 @@ local lvl3 = {
 	},
 	jump_blocks = {
 	    {x = 950,  y = 700, w = 100, h = 50},
-	    {x = 2300, y = 751, w = 100, h = 100},
-	    {x = 2600, y = 285, w = 120, h = 100},
+	    {x = 2260, y = 750, w = 120, h = 120},
+	    {x = 2600, y = 285, w = 120, h = 120},
 	},
 	spikes = {
 	    {{900, 350}, {950, 400}, {1000, 350}},
@@ -116,9 +116,9 @@ local lvl3 = {
 	},
 	saws = {
 	    {x = 620,  y = 750,  radius = 80, type = 'static' },
-	    {x = 1700, y = 335,  radius = 95, type = 'static' },
-	    {x = 1200, y = 335,  radius = 95, type = 'static' },
-	    {x = 800,  y = 335,  radius = 95, type = 'static' },
+	    {x = 1700, y = 325,  radius = 85, type = 'static' },
+	    {x = 1200, y = 325,  radius = 85, type = 'static' },
+	    {x = 800,  y = 325,  radius = 85, type = 'static' },
 	    {x = 1850, y = -170, radius = 80, type = 'static' },
 	    {x = 1550, y = -400, radius = 80, type = 'static' },
 	    {x = 1250, y = -400, radius = 80, type = 'static' },
