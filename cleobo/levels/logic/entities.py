@@ -28,7 +28,7 @@ class Player:
         # Speed settings
         self.speeds = {
             "normal": 8,
-            "stamina": 19
+            "speedster": 19
         }
         self.speed_mode = "normal" # To keep track of the speed mode (For easy switching)
         self.velocity_x = self.speeds[self.speed_mode]
@@ -117,7 +117,8 @@ class Player:
         self.input_update(keys)
         self.camera_update()
         self.fall(manager, rendered_fall_text)
-        self.jump = self.grav_strength.get(self.jump_mode, "normal")
+        self.jump = self.grav_strength[self.jump_mode]
+        self.velocity_x = self.speeds[self.speed_mode]
 
     def reset_stats(self):
         self.rect.x, self.rect.y = self.spawn_x, self.spawn_y
