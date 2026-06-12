@@ -251,11 +251,67 @@ def create_achieve_screen(screen):
     back_rect = rendered_back.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 100))
     buttons.append((rendered_back, back_rect, "back", False))
 
+def init_profile_vars():
+    global gold_medals, diamond_medals, total_stars, ulock_ach, total_ach
+    
+    gold_medals, diamond_medals, total_stars, ulock_ach, total_ach = 0, 0, 0, 0, 0
+
+    for wk, world in (manage_data.progress['lvls'].items() if isinstance(manage_data.progress.get('lvls'), dict) else enumerate(manage_data.progress.get('lvls', []))):
+      if wk != 'ship':
+        if isinstance(world, dict):
+            levels = world.get("1") if "1" in world else None
+            if levels is None:
+                levels = next((v for v in world.values() if isinstance(v, list)), [])
+        else:
+            levels = world
+        if isinstance(levels, dict):
+            # keep keys so we can extract level number (e.g. 'lvl1')
+            iter_levels = levels.items()
+        elif isinstance(levels, list):
+            iter_levels = levels
+        else:
+            iter_levels = []
+
+        # iter_levels is either an iterable of (lvlkey, lvl_dict) or a list of lvl_dict
+        if isinstance(iter_levels, list):
+            for lvl in iter_levels:
+                if not isinstance(lvl, dict):
+                    continue
+                medal = lvl.get('medal')
+                if medal == "Gold" or medal == "Diamond":
+                    gold_medals += 1
+                    if medal == "Diamond":
+                        diamond_medals += 1
+                score = lvl.get('score', 0)
+                # LevelManager expects a level number or id; we don't have the key here — skip number parsing
+                level_star = LevelManager.get_stars(lvl, wk, score)
+                total_stars += level_star
+        else:
+            for lvlkey, lvl in iter_levels:
+                if not isinstance(lvl, dict):
+                    continue
+                medal = lvl.get('medal')
+                if medal == "Gold" or medal == "Diamond":
+                    gold_medals += 1
+                    if medal == "Diamond":
+                        diamond_medals += 1
+                score = lvl.get('score', 0)
+                lvl_no = lvlkey.replace("lvl", "")
+                level_star = LevelManager.get_stars(lvl_no, wk, score)
+                total_stars += level_star
+
+    for ach in manage_data.progress['achieved']:
+        if manage_data.progress["achieved"][ach]:
+            ulock_ach += 1
+        total_ach += 1
+
+
 def draw_profile(screen):
     global current_lang, buttons
     buttons.clear()
     screen.blit(manage_data.bgs['plain'], (0, 0))
-    gold_medals, diamond_medals, total_stars, ulock_ach, total_ach = 0, 0, 0, 0, 0
+    # initialize profile counters (gold/diamond/stars/achievements)
+    init_profile_vars()
     current_lang = manage_data.load_language().get('main_menu', {})
     settings = manage_data.load_language().get('settings', {})
     profile_text = current_lang.get("profile", "Profile")
@@ -266,6 +322,7 @@ def draw_profile(screen):
     back_data = current_lang.get("language_select", {})
 
     level, xp_needed, xp_total = manage_data.xp()
+
     if level < 20:
         color = (255, 255, 255)
         XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, color)
@@ -277,20 +334,6 @@ def draw_profile(screen):
         XP_text2 = render_text(max_txt, True, color)
         badge = manage_data.assets['max_badge']
         bar = 250
-
-    for i in range(1, 13):
-        if manage_data.progress["lvls"]['medals'][f"lvl{i}"] == "Gold" or manage_data.progress["lvls"]['medals'][f"lvl{i}"] == "Diamond":
-            gold_medals += 1
-            if manage_data.progress["lvls"]['medals'][f"lvl{i}"] == "Diamond":
-                diamond_medals += 1
-        score = manage_data.progress["lvls"]['score'][f"lvl{i}"]
-        level_star = LevelManager.get_stars(i, score)
-        total_stars += level_star
-
-    for ach in manage_data.progress['achieved']:
-        if manage_data.progress["achieved"][ach]:
-            ulock_ach += 1
-        total_ach += 1
 
     player_txt = settings.get("username_label", "Player")
     player_text = render_text(f"{player_txt}: {manage_data.progress['player']['Username']}", True, (255, 255, 255))
