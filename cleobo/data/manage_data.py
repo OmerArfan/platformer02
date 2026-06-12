@@ -739,6 +739,8 @@ def xp():
 
     level, xp_in_level = calculate_level(total_xp)
     progress["player"]["Level"] = level
+    if level > 20:
+        level = 20
     achieve.check_xplvl20(level)
     return level, xp_in_level, xp_needed(level)
 
