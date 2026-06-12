@@ -366,7 +366,11 @@ class LevelManager:
     @staticmethod
     def get_medal(level, world, time_taken):
         thresh = manage_data.thresholds(world, "medal")
-        thresholds = next((t for t in thresh if t['level'] == level), None)
+        try:
+            lvl_int = int(level)
+        except Exception:
+            lvl_int = level
+        thresholds = next((t for t in thresh if t.get('level') == lvl_int), None)
         if not thresholds:
             return "None"
         if time_taken <= thresholds['gold']:
@@ -381,7 +385,11 @@ class LevelManager:
     @staticmethod
     def get_stars(level, world, score):
         thresh = manage_data.thresholds(world, "star")
-        thresholds = next((t for t in thresh if t['level'] == level), None)
+        try:
+            lvl_int = int(level)
+        except Exception:
+            lvl_int = level
+        thresholds = next((t for t in thresh if t.get('level') == lvl_int), None)
         if not thresholds:
             return 0
         if score >= thresholds['3']:
