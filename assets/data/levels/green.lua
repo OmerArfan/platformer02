@@ -178,16 +178,13 @@ local lvl4 = {
 	    {x = 3000, y = -50, w = 1000, h = 15},
 	},
 	saws = {
-	    {x = 650,  y = 630, radius = 80, type = 'static'},
+	    {x = 650,  y = 630, radius = 70, type = 'static'},
 	    {x = 2520, y = 230, radius = 90, type = 'static'},
-	    {x = 3320, y = 400, radius = 100, type = 'static'},
 	    {x = 4950, y = 150, radius = 100, type = 'static'},
 	    {x = 4950, y = 550, radius = 100, type = 'static'},
 	    {x = 4500, y = 425, radius = 60, type = 'static'},
 	    {radius = 40, orbit_radius = 230, angle = 0,   speed = 2, block = 1, type = 'rotating'},
-	    {radius = 40, orbit_radius = 230, angle = 90,  speed = 2, block = 1, type = 'rotating'},
-	    {radius = 40, orbit_radius = 230, angle = 180, speed = 2, block = 1, type = 'rotating'},
-	    {radius = 40, orbit_radius = 230, angle = 270, speed = 2, block = 1, type = 'rotating'},	
+	    {radius = 40, orbit_radius = 230, angle = 180, speed = 2, block = 1, type = 'rotating'},	
 	    {radius = 80, speed = 5, x = 3800, y = -300, max = -50, min = -700, type = 'moving_y'},
 	},
 	flags = {
@@ -214,7 +211,7 @@ local lvl5 = {
 	blocks = {
 	    {x = -50,  y = 650,  w = 860,  h = 100},
 	    {x = 920,  y = 510,  w = 100,  h = 100},
-	    {x = 1450, y = 650,  w = 650,  h = 100},
+	    {x = 1300, y = 650,  w = 800,  h = 100},
 	    {x = 1500, y = -50,  w = 700,  h = 50},
 	    {x = 1700, y = -350, w = 1050, h = 50},
 	    {x = 1500, y = -250, w = 50,   h = 200},
@@ -261,11 +258,8 @@ local lvl5 = {
 	},
 	saws = {
 	    {x = 500,  y = 630,  radius = 80, type = 'static'},
-	    {x = 2000, y = -360, radius = 80, type = 'static'},
-	    {x = 2400, y = -360, radius = 80, type = 'static'},
-		{radius = 40, orbit_radius = 230, angle = 0,   speed = 2, block = 1, type = 'rotating'},
-	    {radius = 40, orbit_radius = 230, angle = 180, speed = 2, block = 1, type = 'rotating'},
-		{radius = 100, speed = 6, x = 1250, y = 200, max = 700, min = 200, type = 'moving_y'},
+	    {x = 2200, y = -360, radius = 80, type = 'static'},
+		{radius = 100, speed = 6, x = 1150, y = 200, max = 700, min = 200, type = 'moving_y'},
 	    {radius = 100, speed = 8, x = 2400, y = -500, max = 3300, min = 2400, type = 'moving_x'},
 	},
 	flags = {
