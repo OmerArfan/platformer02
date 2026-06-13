@@ -25,12 +25,8 @@ def handle_blocks(screen, blocks, player):
 
 def handle_bottom_collisions(blocks, player):
     for block in blocks:
-            if block.width <= 100:
-                laser_rect = pygame.FRect(block.x, block.y + block.height +10, block.width, 5)  # 5 px tall death zone
-            else:
-                laser_rect = pygame.FRect(block.x + 8, block.y + block.height, block.width - 16, 5)  # 5 px tall death zone
-            
-            if player.rect.colliderect(laser_rect) and player.velocity_y < 0:  # Only if jumping upward
+            roof_rect = pygame.FRect(block.x, block.y + block.height + 10, block.width, 8)  # 8 px tall death zone  
+            if player.rect.colliderect(roof_rect) and player.velocity_y < 0:  # Only if jumping upward
                 return True
     return False
 
