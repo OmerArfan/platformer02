@@ -248,18 +248,19 @@ local lvl5 = {
 	    spawn_x = -400, spawn_y = 300,
 	},
 	blocks = {
-	    {x = -600, y = 525, w = 2850, h = 50},
+	    {x = -600, y = 525, w = 3449, h = 50},
 	    {x = 1065, y = 200, w = 70, h = 375},
 	    {x = 1625, y = -200, w = 100, h = 590},
 	    {x = 1625, y = 50, w = 150, h = 50},
 	    {x = 2200, y = 400, w = 150, h = 50},
-	    {x = 2250, y = -300, w = 600, h = 2200},
+	    {x = 2250, y = -300, w = 600, h = 825},
 	    {x = 2300, y = 200, w = 3000, h = 100},
-	    {x = 3100, y = -300, w = 2600, h = 100},
+	    {x = 3100, y = -300, w = 2599, h = 100},
 	    {x = 3050, y = -500, w = 120, h = 300},
 	    {x = 5180, y = 250, w = 120, h = 300},
 	    {x = 5250, y = 450, w = 1500, h = 100},
-	    {x = 5600, y = -1400, w = 520, h = 1700},
+	    {x = 5600, y = -300, w = 550, h = 600},
+		{x = 6150, y = -300, w = 5552600, h = 100},
 	}, 
 	jump_blocks = {
 	    {x = 630, y = 425, w = 100, h = 100},
@@ -277,9 +278,30 @@ local lvl5 = {
 		{x = 1400, y = 420, w = 100, h = 125, save_x = 1400, save_y = 420},
 		{x = 5600, y = 330, w = 100, h = 125, save_x = 5600, save_y = 330},
 	},
+	saws = {
+		{radius = 70, speed = 6, x = 3500, y = -350, max = 500, min = -500, type = 'moving_y'},
+		{radius = 70, speed = 6, x = 4000, y = -200, max = 500, min = -500, type = 'moving_y'},
+		{radius = 70, speed = 6, x = 4500, y = -50, max = 500, min = -500, type = 'moving_y'},
+		{radius = 70, speed = 6, x = 5000, y = 50, max = 500, min = -500, type = 'moving_y'},
+		{radius = 30, speed = 4, x = 2100, y = -90, max = 2100, min = 1850, type = 'moving_x'},
+		{radius = 30, speed = 3, x = 1700, y = 270, max = 1900, min = 1650, type = 'moving_x'},
+		{radius = 200, speed = 21, x = 3000, y = 0, max = 5920, min = 2700, type = 'rushing'},
+		{x = 1100, y = 200, radius = 200, type = 'static'},
+		{x = 6350, y = 450, radius = 80, type = 'static'},
+	},
+	moving_block = {
+        {x = 1700, y = 220, w = 110, h = 100, axis = "x", direction = 1, speed = 3, limit_x = 1650, limit_y = 1900},
+        {x = 2100, y = -140, w = 110, h = 100, axis = "x", direction = 1, speed = 4, limit_x = 1850, limit_y = 2100},
+	},
 	speedster = {
 		{x = -100, y = 400},
-		{x = 2450, y = -400}
+		{x = 2450, y = -425}
+	},
+	lights ={
+		{
+            button = {x = 2570, y = -425},
+		    block = {x = 3050, y = -200, w = 120, h = 400}
+		}
 	},
 	exit = {x = 6600, y = 250, w = 140, h = 180},
 	next_page = "mech_lvl6",
