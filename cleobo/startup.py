@@ -6,8 +6,8 @@ from datetime import datetime
 import traceback
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0490"
-manage_data.kernel = "0.5.0.0038"
+manage_data.version = "1.3.9.0491"
+manage_data.kernel = "0.5.0.0039"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
@@ -111,6 +111,7 @@ def init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT):
             'plain': (plain_path, (SCREEN_WIDTH, SCREEN_HEIGHT), False),
             'green': ("bgs/GreenBackground.png", (SCREEN_WIDTH, SCREEN_HEIGHT), False),
             'mech': ("bgs/MechBackground.png", (SCREEN_WIDTH, SCREEN_HEIGHT), False),
+            'ship': ("bgs/ShipBackground.png", (SCREEN_WIDTH, SCREEN_HEIGHT), False),
             'desert': ("bgs/DesertBackground.png", (SCREEN_WIDTH, SCREEN_HEIGHT), False),
             'trans_left': ("bgs/trans_left.png", ((SCREEN_WIDTH // 2 + 20), SCREEN_HEIGHT), False),
             'trans_right': ("bgs/trans_right.png", ((SCREEN_WIDTH // 2 + 20), SCREEN_HEIGHT), False),
@@ -158,9 +159,11 @@ def init_disks():
         disk_files = {
             'green': ("disks/greendisk.png", (110, 110)),
             'mech': ("disks/mechdisk.png", (110, 110)),
+            'ship': ("disks/shipdisk.png", (110, 110)),
             'desert': ("disks/desertdisk.png", (110, 110)),
             'greenpack': ("disks/greenpack.png", (260, 260)),
             'mechpack': ("disks/mechpack.png", (260, 260)),
+            'shippack': ("disks/shippack.png", (260, 260)),
             'locked': ("disks/lockeddisk.png", (110, 110)),
         }
         
@@ -184,6 +187,7 @@ def init_other_assets():
             'star': ("ui/star.png", (150, 140)),
             'green_exit': ("portal/exit.png", (140, 180)),
             'mech_exit': ("portal/mech_exit.png", (140, 180)),
+            'ship_exit': ("portal/ship_exit.png", (140, 180)),
             'teleport': ("portal/teleport.png", (140, 180)),
             'teleport_exit': ("portal/teleport_2.png", (100, 100)),
             'badge': ("ui/badge.png", (80, 80)),
