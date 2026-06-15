@@ -39,7 +39,7 @@ default_progress = {
     },
     "lvls": { 
         "green": {
-            "1": {f"lvl{i}": {"locked": True, "score": 0, "medal": "None", "time": 0} for i in range(1, 7)}
+            "1": {f"lvl{i}": {"locked": True, "score": 0, "medal": "None", "time": 0} for i in range(1, 5)}
         },
         "ship": {
             "1": {f"lvl{i}": {"locked": True, "score": 0, "medal": "None", "time": 0} for i in range(1, 5)}
@@ -157,7 +157,45 @@ def update_locked_levels(progress, manifest):
             progress['lvls'][world][subsection][level_key]['locked'] = False
         else:
             progress['lvls'][world][subsection][level_key]['locked'] = True
-    
+
+    # Additional rule: if the LAST level of the FIRST subsection of a world is completed
+    # (score > 0), then the FIRST level of the FIRST subsection of the next world
+    # should be unlocked. Also unlock if that next level already has score>0.
+    worlds = sorted(progress['lvls'].keys(), key=lambda x: x)
+    for idx in range(len(worlds) - 1):
+        cur_world = worlds[idx]
+        next_world = worlds[idx + 1]
+
+        # get first subsection names (sorted numerically when possible)
+        cur_subsecs = sorted(progress['lvls'][cur_world].keys(), key=lambda x: int(x) if x.isdigit() else x)
+        next_subsecs = sorted(progress['lvls'][next_world].keys(), key=lambda x: int(x) if x.isdigit() else x)
+
+        if not cur_subsecs or not next_subsecs:
+            continue
+
+        cur_first_sub = cur_subsecs[0]
+        next_first_sub = next_subsecs[0]
+
+        cur_levels = [k for k in progress['lvls'][cur_world][cur_first_sub].keys() if k.startswith('lvl')]
+        if not cur_levels:
+            continue
+
+        # determine the last level key in current world's first subsection
+        cur_levels_sorted = sorted(cur_levels, key=lambda k: int(k.replace('lvl', '')))
+        cur_last_key = cur_levels_sorted[-1]
+        cur_last_score = progress['lvls'][cur_world][cur_first_sub].get(cur_last_key, {}).get('score', 0)
+
+        # determine the first level key in next world's first subsection
+        next_levels = [k for k in progress['lvls'][next_world][next_first_sub].keys() if k.startswith('lvl')]
+        if not next_levels:
+            continue
+        next_levels_sorted = sorted(next_levels, key=lambda k: int(k.replace('lvl', '')))
+        next_first_key = next_levels_sorted[0]
+        next_first_score = progress['lvls'][next_world][next_first_sub].get(next_first_key, {}).get('score', 0)
+
+        if cur_last_score > 0 or next_first_score > 0:
+            progress['lvls'][next_world][next_first_sub][next_first_key]['locked'] = False
+        
     save_progress(progress, manifest)
 
 def get_level_info(progress, world, subsection, level_key):
@@ -465,20 +503,6 @@ def update_local_manifest(data):
         print(f"Error during manifest save: {e}")
 
 def sync_missing_data(data):
-    """
-    Ensure all default keys exist in loaded data.
-    Handles the new hierarchical structure:
-      progress['lvls'][world][subsection][level]
-    
-    Works with any world/subsection/level structure.
-    Automatically syncs when levels are added to the game.
-    
-    Args:
-        data: The loaded progress data to sync
-    
-    Returns:
-        data: Updated with all missing keys preserved
-    """
     
     # 1. Ensure top-level keys exist (player, achieved, etc.)
     for key, value in default_progress.items():
@@ -537,7 +561,6 @@ def sync_missing_data(data):
             data['lvls'].pop('complete_levels', None)
             data['lvls'].pop('locked_levels', None)
         
-        # 3b. Handle unlocking logic for all levels
         # Level 1 of green world should always be unlocked
         if "green" in data["lvls"] and "1" in data["lvls"]["green"]:
             if "lvl1" in data["lvls"]["green"]["1"]:
@@ -555,6 +578,43 @@ def sync_missing_data(data):
                     if current_level.get('score', 0) > 0 and idx + 1 < len(level_nums):
                         next_level_num = level_nums[idx + 1]
                         levels[f'lvl{next_level_num}']['locked'] = False
+    
+    green_world_1 = data["lvls"]["green"].get("1", {})
+    ship_world_1 = data["lvls"]["ship"].get("1", {})
+
+    # Count only actual level keys (lvl1, lvl2, ...) to decide when to migrate
+    lvl_keys = [k for k in green_world_1.keys() if k.startswith('lvl')]
+    if len(lvl_keys) == 6:
+        ship_world_1["lvl1"] = green_world_1["lvl3"].copy()
+        ship_world_1["lvl2"] = green_world_1["lvl4"].copy()
+        ship_world_1["lvl3"] = green_world_1["lvl5"].copy()
+        ship_world_1["lvl4"] = green_world_1["lvl6"].copy()
+    
+        # Except make lvl3 unlocked, and lvl4 locked
+        if green_world_1['lvl2']['score'] == 0:
+            lv3_lock_status = True
+        else:
+            lv3_lock_status = False
+
+        green_world_1["lvl3"] = {
+            "locked": lv3_lock_status,
+            "score": 0,
+            "medal": "None",
+            "time": 0
+        }
+        
+        green_world_1["lvl4"] = {
+            "locked": True,
+            "score": 0,
+            "medal": "None",
+            "time": 0
+        }
+        
+        # ---- REMOVE LVL 5 AND LVL 6 FROM GREEN ----
+        green_world_1.pop("lvl5", None)
+        green_world_1.pop("lvl6", None)     
+        
+    update_locked_levels(data, manifest)
 
 def sync_vault_to_cloud(data):
     global is_syncing, sync_status, sync_finish_time
@@ -693,12 +753,11 @@ def xp():
     # XP from stars
     stars = 0
     for world in default_progress['lvls']:
-     if world != "ship": # As it does not exist yet
       for level in world:
         level_num = int(level_key.replace('lvl', ''))
         score = level_scores.get(level_num, 0)
         stars += LevelManager.get_stars(level_num, world, score)
-     star_xp = stars * 20  # 20 XP per star
+      star_xp = stars * 20  # 20 XP per star
 
     # XP from achievements
     achievements = progress["achieved"]  # your achievements dict
