@@ -1,4 +1,3 @@
-import os
 import sys
 import platform
 # In case someone actually tries using older Windows versions (Very unlikely, but still)
@@ -164,7 +163,7 @@ while running:
             # Call the generic level launcher
             levels.level_launcher(level_name, screen, transition, world_name)
         
-        elif manage_data.current_page == "green" or manage_data.current_page == "mech":
+        elif manage_data.current_page == "green" or manage_data.current_page == "mech" or manage_data.current_page == "ship":
             button_hovered_last_frame = menu_ui.draw_level_select(screen, mouse_pos, manage_data.current_page, current_lang, messages, button_hovered_last_frame)
 
         elif manage_data.current_page == "settings":
