@@ -487,12 +487,15 @@ def create_language_buttons(screen):
     buttons.append((rendered_back, back_rect, "back", False))
 
 def draw_world_stats(screen, world_name, world_key, world_rect):
-    """Helper function to render world name, medals, and stars on a world button."""
+    # Helper function to render world name, medals, and stars on a world button.
     # Calculate medals and stars
     medals = 0
     stars = 0
     
-    num_levels = 6 
+    if world_key == "mech":
+        num_levels = 6 
+    else:
+        num_levels = 4
     for i in range(1, num_levels + 1):
         medal = manage_data.progress["lvls"][world_key]["1"][f"lvl{i}"]["medal"]
         if medal == "Gold" or medal == "Diamond":
@@ -504,7 +507,7 @@ def draw_world_stats(screen, world_name, world_key, world_rect):
     # Render text
     title = render_text(world_name, True, (255, 255, 255))
     medals_text = render_text(f"{medals}", True, (255, 255, 0), bigfont=True)
-    stars_text = render_text(f"{stars}", True, (255, 255, 255), bigfont=True)
+    stars_text = render_text(f"{stars}", True, (255, 255, 0), bigfont=True)
 
     # Position text
     title_pos = (world_rect.centerx - title.get_width() // 2, world_rect.centery - 180)
@@ -527,21 +530,26 @@ def worlds(screen):
     buttons.clear()
     current_lang = manage_data.load_language().get('levels', {})
 
-    green_center = (manage_data.SCREEN_WIDTH // 2 - 250, manage_data.SCREEN_HEIGHT // 2 - 70)
-    mech_center = (manage_data.SCREEN_WIDTH // 2 + 250, manage_data.SCREEN_HEIGHT // 2 - 70)
+    green_center = (manage_data.SCREEN_WIDTH // 2 - 375, manage_data.SCREEN_HEIGHT // 2 - 70)
+    ship_center = (manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT // 2 - 70)
+    mech_center = (manage_data.SCREEN_WIDTH // 2 + 375, manage_data.SCREEN_HEIGHT // 2 - 70)
     
     mech_rect = manage_data.disks['mechpack'].get_rect(center=mech_center)
     green_rect = manage_data.disks['greenpack'].get_rect(center=green_center)
+    ship_rect = manage_data.disks['shippack'].get_rect(center=ship_center)
 
     screen.blit(manage_data.disks['mechpack'], mech_rect)
     screen.blit(manage_data.disks['greenpack'], green_rect)
+    screen.blit(manage_data.disks['shippack'], ship_rect)
 
     # Draw stats for both worlds
     draw_world_stats(screen, "Green", "green", green_rect)
+    draw_world_stats(screen, "Ship", "ship", ship_rect)
     draw_world_stats(screen, "Mech", "mech", mech_rect)
 
     buttons.append((manage_data.disks['greenpack'], green_rect, "levels", False))
     buttons.append((manage_data.disks['mechpack'], mech_rect, "mech_levels", False))
+    buttons.append((manage_data.disks['shippack'], ship_rect, "ship_levels", False))
 
     world_text = current_lang.get("worlds", "Select World")        
     rendered_world_txt = render_text(world_text, True, (255, 255, 255))
@@ -564,9 +572,9 @@ def green_world_buttons(screen):
     global current_lang, buttons, text_rect
     buttons.clear()
 
-    level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6"]
-    level_no = ["1", "2", "3", "4", "5", "6"]
-    buttons_per_row = 3
+    level_options = ["lvl1", "lvl2", "lvl3", "lvl4"]
+    level_no = ["1", "2", "3", "4"]
+    buttons_per_row = 2
     spacing_x = 180
     spacing_y = 180
 
@@ -623,6 +631,46 @@ def mech_world_buttons(screen):
         y = start_y + row * spacing_y
 
         is_locked = manage_data.progress["lvls"]["mech"]["1"][level]['locked']
+        text_surface = render_text(level_no[i], True, (255, 255, 255), bigfont=True)
+        disk_rect = manage_data.disks['mech'].get_rect(center=(x, y))
+        buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
+
+    # Get the text
+    back_text = current_lang.get("back", "Back")        
+    rendered_back = render_text(back_text, True, (255, 255, 255))
+
+    # Create a fixed 100x100 hitbox centered at the right location
+    back_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
+    back_rect.center = (manage_data.SCREEN_WIDTH // 2 , manage_data.SCREEN_HEIGHT - 200)
+
+    # Then during draw phase: center the text inside that fixed rect
+    text_rect = rendered_back.get_rect(center=back_rect.center)
+    screen.blit(rendered_back, text_rect)
+
+    # Add the button
+    buttons.append((rendered_back, back_rect, "back", False))
+
+def ship_world_buttons(screen):
+    global text_rect, current_lang, buttons
+    buttons.clear()
+
+    level_options = ["lvl1", "lvl2", "lvl3", "lvl4"]
+    level_no = ["1", "2", "3", "4"]
+    buttons_per_row = 2
+    spacing_x = 180
+    spacing_y = 180
+
+    grid_width = (buttons_per_row - 1) * spacing_x
+    start_x = (manage_data.SCREEN_WIDTH - grid_width) // 2
+    start_y = ((manage_data.SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2)) + 50
+
+    for i, level in enumerate(level_options):
+        col = i % buttons_per_row
+        row = i // buttons_per_row
+        x = start_x + col * spacing_x
+        y = start_y + row * spacing_y
+
+        is_locked = manage_data.progress["lvls"]["ship"]["1"][level]['locked']
         text_surface = render_text(level_no[i], True, (255, 255, 255), bigfont=True)
         disk_rect = manage_data.disks['mech'].get_rect(center=(x, y))
         buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
