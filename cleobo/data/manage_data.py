@@ -541,9 +541,12 @@ def sync_missing_data(data):
         for old_key in old_flat_keys:
             if old_key in data['lvls']:
              for i in range (1,13):
-                if i <= 6:
+                if i <= 2:
                     world = "green"
                     lv = i
+                elif i <= 6:
+                    world = "ship"
+                    lv = i - 2
                 else:
                     world = "mech"
                     lv = i - 6
