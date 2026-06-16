@@ -55,7 +55,8 @@ default_progress = {
         "evilrobo": False, 
         "greenrobo": False,
         "ironrobo": False,
-        "cakebot": False
+        "cakebot": False,
+        "vectorbot": False
     },
     "achieved": { 
         "speedy_starter": False,
@@ -63,6 +64,7 @@ default_progress = {
         "over_9k": False,
         "chase_escape": False,
         "golden": False,
+        "mech_eng": False,
         "lv20": False
     }
 }
@@ -508,6 +510,11 @@ def sync_missing_data(data):
     for key, value in default_progress.items():
         if key not in data:
             data[key] = copy.deepcopy(value)
+    
+    if "char" in data:
+        for char_name, char_status in default_progress["char"].items():
+            if char_name not in data['char']:
+                data['char'][char_name] = char_status
  
     # 2. Sync lvls with new hierarchical structure (world → subsection → level)
     if "lvls" in data:
@@ -766,8 +773,9 @@ def xp():
      "speedy_starter": 30,
      "zen_os": 150,
      "over_9k": 150,
-     "chase_escape": 25,
+     "chase_escape": 50,
      "golden": 200,
+     "mech_eng": 500,
      "lvl20": 0,
     }
 

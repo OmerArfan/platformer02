@@ -85,6 +85,22 @@ def check_green_gold():
             menu_ui.notif = True
             menu_ui.notification_time = time.time()
 
+def check_mech_eng():
+    unlock = manage_data.progress["achieved"].get("mech_eng", False)
+    if not unlock: 
+      all_dia = all(manage_data.progress["lvls"]["mech"]["1"][f"lvl{i}"].get("medal", "None") in ["Diamond"] for i in range(1, 7))
+      if all_dia:
+        manage_data.progress["achieved"]["mech_eng"] = True
+        manage_data.progress["char"]["vectorbot"] = True
+        manage_data.save_progress(manage_data.progress, manage_data.manifest)
+        # LOCALIZED HERE
+        menu_ui.notification_text = get_notif_text("mech_eng", "Mechanical Engineer!")
+        if not manage_data.is_mute:
+            manage_data.sounds['notify'].play()
+        if menu_ui.notification_time is None:
+            menu_ui.notif = True
+            menu_ui.notification_time = time.time()
+
 def check_xplvl20():
     unlock = manage_data.progress["achieved"].get("lv20", False)
     if manage_data.progress['player']['Level'] >= 20 and not unlock:
@@ -101,6 +117,7 @@ def check_xplvl20():
 def check_achievements():
     check_xplvl20()
     check_green_gold()
+    check_mech_eng()
     evilchase()
     lvl90000()
     perfect6()
