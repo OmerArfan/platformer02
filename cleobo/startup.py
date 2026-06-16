@@ -6,8 +6,8 @@ from datetime import datetime
 import traceback
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0492"
-manage_data.kernel = "0.5.0.0041"
+manage_data.version = "1.3.9.0493"
+manage_data.kernel = "0.5.0.0042"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
@@ -225,6 +225,7 @@ def init_robos():
             'greenrobot': "char/greenrobot/idle.png",
             'ironrobot': "char/ironrobot/idle.png",
             'cakebot': "char/cakebot/idle.png",
+            'vectorbot': "char/vectorbot/idle.png",
         }
         
         for name, file_path in robo_files.items():
@@ -333,11 +334,12 @@ def load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT):
     manage_data.robos = init_robos()
     # Get rects and position them for character select screen
     manage_data.robo_rects = {
-        'robot': manage_data.robos['robot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 350, manage_data.SCREEN_HEIGHT // 2 - 50)),
-        'evilrobot': manage_data.robos['evilrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 200, manage_data.SCREEN_HEIGHT // 2 - 50)),
-        'greenrobot': manage_data.robos['greenrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, manage_data.SCREEN_HEIGHT // 2 - 50)),
-        'ironrobot': manage_data.robos['ironrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 100, manage_data.SCREEN_HEIGHT // 2 - 50)),
-        'cakebot': manage_data.robos['cakebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 250, manage_data.SCREEN_HEIGHT // 2 - 50))
+        'robot': manage_data.robos['robot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 450, manage_data.SCREEN_HEIGHT // 2 - 50)),
+        'evilrobot': manage_data.robos['evilrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 300, manage_data.SCREEN_HEIGHT // 2 - 50)),
+        'greenrobot': manage_data.robos['greenrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 150, manage_data.SCREEN_HEIGHT // 2 - 50)),
+        'ironrobot': manage_data.robos['ironrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT // 2 - 50)),
+        'cakebot': manage_data.robos['cakebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 150, manage_data.SCREEN_HEIGHT // 2 - 50)),
+        'vectorbot': manage_data.robos['vectorbot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 300, manage_data.SCREEN_HEIGHT // 2 - 50))
     }
     
     yield "Systems Ready!", 100
