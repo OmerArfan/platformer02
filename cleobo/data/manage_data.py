@@ -725,8 +725,6 @@ def get_all_cloud_ids():
     
     return cloud_ids
 
-import cleobo.data.achievements as achieve
-
 def xp():
     from cleobo.levels.logic.entities import LevelManager
 
@@ -800,11 +798,13 @@ def xp():
     progress["player"]["Level"] = level
     if level > 20:
         level = 20
-    achieve.check_xplvl20(level)
     return level, xp_in_level, xp_needed(level)
 
 def update_xp_ui():
     global progress, lang_code, manifest
+
+    import cleobo.data.achievements as achieve
+    
     level, xp_needed, xp_total = xp(progress, achieve)
 
     if level < 20:
