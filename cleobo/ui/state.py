@@ -8,6 +8,7 @@ import webbrowser
 import cleobo.data.acc_sys as acc_sys
 import time
 from cleobo.levels import levels
+from cleobo.data.achievements import check_achievements
 
 class TransitionManager:
     def __init__(self, screen, left_image, right_image, speed=65):
@@ -55,6 +56,7 @@ class TransitionManager:
             manage_data.saw_cache.clear()
             manage_data.text_cache.clear()
             manage_data.current_page = self.target_page  # Hold phase
+            check_achievements()
             if pygame.time.get_ticks() - self.hold_time >= self.hold_duration:
                 # Change language if pending
                 if pending_lang_code:

@@ -206,7 +206,9 @@ def create_achieve_screen(screen):
             "chase_escape", 
             "chase_escape_desc",
             "golden", 
-            "golden_desc"
+            "golden_desc",
+            "lv20", 
+            "lv20_desc"
         ]
 
         y_offset = 120 
