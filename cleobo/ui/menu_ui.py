@@ -259,7 +259,6 @@ def init_profile_vars():
     gold_medals, diamond_medals, total_stars, ulock_ach, total_ach = 0, 0, 0, 0, 0
 
     for wk, world in (manage_data.progress['lvls'].items() if isinstance(manage_data.progress.get('lvls'), dict) else enumerate(manage_data.progress.get('lvls', []))):
-      if wk != 'ship':
         if isinstance(world, dict):
             levels = world.get("1") if "1" in world else None
             if levels is None:

@@ -56,7 +56,6 @@ class TransitionManager:
             manage_data.saw_cache.clear()
             manage_data.text_cache.clear()
             manage_data.current_page = self.target_page  # Hold phase
-            check_achievements()
             if pygame.time.get_ticks() - self.hold_time >= self.hold_duration:
                 # Change language if pending
                 if pending_lang_code:
@@ -78,6 +77,7 @@ class TransitionManager:
                 self.phase = 2
 
         elif self.phase == 2:  # Slide-out phase
+            check_achievements()
             self.left_x -= self.speed
             self.right_x += self.speed
             
