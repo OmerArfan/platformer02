@@ -7,7 +7,7 @@ import traceback
 
 # Initializing Game and Engine Version
 manage_data.version = "1.3.9.0492"
-manage_data.kernel = "0.5.0.0040"
+manage_data.kernel = "0.5.0.0041"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
