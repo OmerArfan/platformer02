@@ -128,6 +128,7 @@
     "sawed_message": "Parçalandın!",
     "key_message": "Parayı kap ve bloğu aç!",
     "laser_message": "Lazer tarafından vuruldun!",
+    "laser_warn": "Lazerler sinsi kısayolların kullanılmasını engeller!",
     "invisible_message": "Bu testereler sana zarar vermez... söz!",
     "portal_message": "Bu mavi portallar seni ışınlar! Ama genelde iyi yerlere!",
     "button1_message": "Mavi butonlar, etkinleştirildiğinde daha yükseğe zıplarsın!",
@@ -141,9 +142,7 @@
     ,"crushed_message": "Ezildi!",
     "evilrobo1": "Ha? Orada kimse var mı?",
     "evilrobo2": "HEY! Buradan uzaklaş!",
-    "evilrobo3": "NEREYE GİTTİ????"
-  },
-  "in_game_ice": {
+    "evilrobo3": "NEREYE GİTTİ????",
     "temp": "Sıcaklık: {current_temp}",
     "ice_message": "Buz bloklarının üzerinde durunca erir! Ama seni de serinletirler!",
     "freeze_message": "Ama üşümemek için biraz ısınmayı unutma!",

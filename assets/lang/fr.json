@@ -131,6 +131,7 @@
   ,"sawed_message": "Scié en morceaux !"
   ,"key_message": "Prenez la pièce et ouvrez le bloc !"
   ,"laser_message": "Tué par un laser !"
+  ,"laser_warn": "Les lasers empêchent l'utilisation de raccourcis sournois !"
   ,"invisible_message": "Ces scies ne vous blesseront pas... promis!"
   ,"portal_message": "Ces portails bleus vous téléportent ! Mais surtout vers de bons endroits !"
   ,"button1_message": "Les boutons bleus, une fois activés, vous feront sauter plus haut !",
@@ -144,13 +145,11 @@
   ,"crushed_message": "Écrasé !",
   "evilrobo1": "Hein ? Il y a quelqu'un ?",
   "evilrobo2": "HÉ ! Allez-vous-en d'ici !",
-  "evilrobo3": "OÙ EST-IL PASSÉ ????"
-}
-,"in_game_ice":{
-"temp": "Température: {current_temp}"
-,"ice_message": "Les blocs de glace fondent quand tu restes dessus ! Mais ils te rafraîchissent aussi !",
-"freeze_message": "Mais pense à te réchauffer un peu, ne meurs pas de froid !",
-"overheat_message1": "Souviens-toi aussi de surveiller ta température, et si",
-"overheat_message2": "tu surchauffes trop, tiens-toi sur un bloc de glace à proximité !"
+  "evilrobo3": "OÙ EST-IL PASSÉ ????",
+  "temp": "Température: {current_temp}"
+  ,"ice_message": "Les blocs de glace fondent quand tu restes dessus ! Mais ils te rafraîchissent aussi !",
+  "freeze_message": "Mais pense à te réchauffer un peu, ne meurs pas de froid !",
+  "overheat_message1": "Souviens-toi aussi de surveiller ta température, et si",
+  "overheat_message2": "tu surchauffes trop, tiens-toi sur un bloc de glace à proximité !"
 }
 }

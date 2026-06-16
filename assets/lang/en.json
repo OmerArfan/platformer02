@@ -129,6 +129,7 @@
   "sawed_message": "Sawed to bits!",
   "key_message": "Grab the coin and open the block!",
   "laser_message": "Lasered!",
+  "laser_warn": "Lasers prevent sneaky shortcuts from happening!",
   "invisible_message": "These saws won't hurt you... promise!",
   "portal_message": "These blue portals teleport you! But to good places... mostly!",
   "button1_message": "Blue buttons, upon activation, will make you jump higher!",
@@ -142,13 +143,11 @@
   ,"crushed_message": "Crushed!",
   "evilrobo1": "Huh? Is there anyone there?",
   "evilrobo2": "HEY! Get away from here!",
-  "evilrobo3": "WHERE DID HE GO????"
-}
-  ,"in_game_ice":{
-    "temp": "Temperature: {current_temp}",
-    "ice_message": "Ice Blocks melt when you stand on them! But they also cool you down!"
-    ,"freeze_message": "But remember to get some warm ups and don't just freeze to death!"
-    ,"overheat_message1": "Also remember to keep track of your temperature and if"
-    ,"overheat_message2": "you heat up too much, stand on an ice block nearby!"
+  "evilrobo3": "WHERE DID HE GO????",
+  "temp": "Temperature: {current_temp}",
+  "ice_message": "Ice Blocks melt when you stand on them! But they also cool you down!"
+  ,"freeze_message": "But remember to get some warm ups and don't just freeze to death!"
+  ,"overheat_message1": "Also remember to keep track of your temperature and if"
+  ,"overheat_message2": "you heat up too much, stand on an ice block nearby!"
   }
 }

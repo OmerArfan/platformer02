@@ -131,6 +131,7 @@
     "sawed_message": "Terpotong kecil-kecil!",
     "key_message": "Ambil koin dan buka blok!",
     "laser_message": "Kena laser!",
+    "laser_warn": "Laser mencegah terjadinya jalan pintas yang licik!",
     "invisible_message": "Gergaji ini tidak akan menyakitimu... mungkin!",
     "portal_message": "Portal biru ini bisa teleport! Tapi biasanya ke tempat bagus...",
     "button1_message": "Tombol biru akan membuatmu melompat lebih tinggi!",
@@ -144,9 +145,7 @@
     ,"crushed_message": "Hancur!",
     "evilrobo1": "Hah? Apa ada orang di sana?",
     "evilrobo2": "HEI! Pergi dari sini!",
-    "evilrobo3": "KE MANA DIA PERGI????"
-  },
-  "in_game_ice": {
+    "evilrobo3": "KE MANA DIA PERGI????",
     "temp": "Suhu: {current_temp}",
     "ice_message": "Blok es akan mencair saat diinjak! Tapi juga mendinginkanmu!",
     "freeze_message": "Ingat untuk menghangatkan diri atau kamu bisa membeku sampai mati!",

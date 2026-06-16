@@ -131,6 +131,7 @@
     ,"sawed_message": "锯成碎片！"
     ,"key_message": "抓住硬币, 打开方块！"
     ,"laser_message": "激光处理！"
+    ,"laser_warn": "激光可以防止偷拍捷径的行为！"
     ,"invisible_message": "这些锯子不会伤害你……我保证！"  
     ,"portal_message": "这些蓝色传送门会把你传送出去！不过大部分情况下……都会传送到好地方！"
     ,"button1_message": "蓝色按钮激活后会让你跳得更高！",
@@ -144,13 +145,11 @@
     ,"crushed_message": "被粉碎了！",
     "evilrobo1": "嗯？那里有人吗？",
     "evilrobo2": "嘿！快离开这里！",
-    "evilrobo3": "他去哪儿了？？？？"
-  }
-  ,"in_game_ice":{
-  "temp": "温度: {current_temp}"
-  ,"ice_message": "站在冰块上会让它们融化！但它们也能让你降温！",
-  "freeze_message": "记得取点暖, 不要被冻死了！",
-  "overheat_message1": "还要记得关注你的体温, 如果",
-  "overheat_message2": "你太热了, 就站在附近的冰块上降温吧！"
+    "evilrobo3": "他去哪儿了？？？？",
+    "temp": "温度: {current_temp}"
+    ,"ice_message": "站在冰块上会让它们融化！但它们也能让你降温！",
+    "freeze_message": "记得取点暖, 不要被冻死了！",
+    "overheat_message1": "还要记得关注你的体温, 如果",
+    "overheat_message2": "你太热了, 就站在附近的冰块上降温吧！"
 }
 }

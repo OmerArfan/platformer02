@@ -131,6 +131,7 @@
   ,"sawed_message": "¡Despedazado!"
   ,"key_message": "¡Agarrar la moneda y abrir el bloque!"
   ,"laser_message": "¡Grabado con láser!"
+  ,"laser_warn": "¡Los láseres evitan que se tomen atajos astutos!"
   ,"invisible_message": "Estas sierras no te harán daño... ¡prometido!"
   ,"portal_message": "¡Estos portales azules te teletransportan! ¡Pero a buenos lugares... sobre todo!"
   ,"button1_message": "¡Los botones azules, al activarse, te harán saltar más alto!"
@@ -144,9 +145,7 @@
   ,"crushed_message": "¡Aplastado!",
   "evilrobo1": "¿Eh? ¿Hay alguien ahí?",
   "evilrobo2": "¡OYE! ¡Aléjate de aquí!",
-  "evilrobo3": "¿¡A DÓNDE SE FUE!???"
-}
-  ,"in_game_ice":{
+  "evilrobo3": "¿¡A DÓNDE SE FUE!???",
   "temp": "Temperatura: {current_temp}"
   ,"ice_message": "¡Los bloques de hielo se derriten cuando te paras sobre ellos! ¡Pero también te enfrían!",
   "freeze_message": "¡Pero recuerda calentarte un poco o podrías congelarte!",
