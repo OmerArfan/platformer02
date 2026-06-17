@@ -18,7 +18,9 @@ def get_notif_text(ach_key, default_name):
 
 def lvl1speed():
     unlock = manage_data.progress["achieved"].get("speedy_starter", False)
-    if manage_data.progress['lvls']['green']['1']['lvl1']['time'] <= 4.5 and not unlock:
+    if not unlock:
+     lv_time = manage_data.progress['lvls']['green']['1']['lvl1'].get('time', 0)
+     if lv_time != 0 and lv_time <= 4.5:
         manage_data.progress["achieved"]["speedy_starter"] = True  
         # LOCALIZED HERE
         menu_ui.notification_text = get_notif_text("speedy_starter", "Speedy Starter")
@@ -55,14 +57,16 @@ def lvl90000():
             menu_ui.notif = True
             menu_ui.notification_time = time.time()
 
-def evilchase():
-    unlock = manage_data.progress["achieved"].get("chase_escape", False)
+def termvel():
+    unlock = manage_data.progress["achieved"].get("termvel", False)
     if not unlock:
-        manage_data.progress["achieved"]["chase_escape"] = True
+      lv_time = manage_data.progress["lvls"]["mech"]["1"]["lvl5"].get("time", 0)
+      if lv_time != 0 and lv_time < 15:
+        manage_data.progress["achieved"]["termvel"] = True
         manage_data.progress["char"]["evilrobo"] = True
         manage_data.save_progress(manage_data.progress, manage_data.manifest)
         # LOCALIZED HERE
-        menu_ui.notification_text = get_notif_text("chase_escape", "Chased and Escaped")
+        menu_ui.notification_text = get_notif_text("termvel", "Terminal Velocity!")
         if not manage_data.is_mute:
             manage_data.sounds['notify'].play()
         if menu_ui.notification_time is None:
@@ -79,6 +83,22 @@ def check_green_gold():
         manage_data.save_progress(manage_data.progress, manage_data.manifest)
         # LOCALIZED HERE
         menu_ui.notification_text = get_notif_text("golden", "Golden!")
+        if not manage_data.is_mute:
+            manage_data.sounds['notify'].play()
+        if menu_ui.notification_time is None:
+            menu_ui.notif = True
+            menu_ui.notification_time = time.time()
+
+def check_the_captain():
+    unlock = manage_data.progress["achieved"].get("captain", False)
+    if not unlock: 
+      all_dia = all(manage_data.progress["lvls"]["ship"]["1"][f"lvl{i}"].get("medal", "None") in ["Gold", "Diamond"] for i in range(1, 5))
+      if all_dia:
+        manage_data.progress["achieved"]["captain"] = True
+        manage_data.progress["char"]["piratebot"] = True
+        manage_data.save_progress(manage_data.progress, manage_data.manifest)
+        # LOCALIZED HERE
+        menu_ui.notification_text = get_notif_text("captain", "Captain of the Ship!")
         if not manage_data.is_mute:
             manage_data.sounds['notify'].play()
         if menu_ui.notification_time is None:
@@ -118,7 +138,8 @@ def check_achievements():
     check_xplvl20()
     check_green_gold()
     check_mech_eng()
-    evilchase()
+    check_the_captain()
+    termvel()
     lvl90000()
     perfect6()
     lvl1speed()

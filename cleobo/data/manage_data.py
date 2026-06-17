@@ -56,14 +56,16 @@ default_progress = {
         "greenrobo": False,
         "ironrobo": False,
         "cakebot": False,
-        "vectorbot": False
+        "vectorbot": False,
+        "piratebot": False
     },
     "achieved": { 
         "speedy_starter": False,
         "zen_os": False,
         "over_9k": False,
-        "chase_escape": False,
+        "termvel": False,
         "golden": False,
+        "captain": False,
         "mech_eng": False,
         "lv20": False
     }
@@ -506,7 +508,7 @@ def update_local_manifest(data):
 
 def sync_missing_data(data):
     
-    # 1. Ensure top-level keys exist (player, achieved, etc.)
+    # 1a. Ensure top-level keys exist (player, achieved, etc.)
     for key, value in default_progress.items():
         if key not in data:
             data[key] = copy.deepcopy(value)
@@ -515,7 +517,20 @@ def sync_missing_data(data):
         for char_name, char_status in default_progress["char"].items():
             if char_name not in data['char']:
                 data['char'][char_name] = char_status
- 
+
+    # 1b. Make sure achievement keys exist and remove obsolete ones
+    if "achieved" in data:
+        # Ensure all default achievement keys exist in the player's progress
+        for key in default_progress.get('achieved', {}):
+            if key not in data['achieved']:
+                data['achieved'][key] = False
+
+        # Remove truly obsolete achievements that should not appear in newer versions
+        obsolete = ["chase_escape"]
+        for ob in obsolete:
+            if ob in data['achieved'] and not data['achieved'].get(ob, False):
+                data['achieved'].pop(ob, None)
+
     # 2. Sync lvls with new hierarchical structure (world → subsection → level)
     if "lvls" in data:
         # Iterate through default worlds
@@ -623,7 +638,7 @@ def sync_missing_data(data):
         # ---- REMOVE LVL 5 AND LVL 6 FROM GREEN ----
         green_world_1.pop("lvl5", None)
         green_world_1.pop("lvl6", None)     
-        
+    
     update_locked_levels(data, manifest)
 
 def sync_vault_to_cloud(data):
@@ -773,8 +788,9 @@ def xp():
      "speedy_starter": 30,
      "zen_os": 150,
      "over_9k": 150,
-     "chase_escape": 50,
+     "termvel": 100,
      "golden": 200,
+     "captain": 250,
      "mech_eng": 500,
      "lvl20": 0,
     }
