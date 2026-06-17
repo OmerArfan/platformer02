@@ -203,14 +203,18 @@ def create_achieve_screen(screen):
             "speedy_starter_desc",
             "over_9k",
             "over_9k_desc",
-            "chase_escape", 
-            "chase_escape_desc",
+            "termvel",
+            "termvel_desc",
             "golden", 
             "golden_desc",
             "mech_eng", 
             "mech_eng_desc",
+            "captain",
+            "captain_desc",
             "lv20", 
-            "lv20_desc"
+            "lv20_desc",
+            "chase_escape", 
+            "removed",
         ]
 
         y_offset = 120 
@@ -220,8 +224,9 @@ def create_achieve_screen(screen):
             title_str = ach_data.get(title_key, "?")
 
             # Render Title (as TextSprite)
-            if title_key[-5:] != "_desc":
-                if manage_data.progress["achieved"][title_key]:
+            # Only treat non-description/metadata keys as achievements
+            if title_key[-5:] != "_desc" and title_key not in ("removed", "secret"):
+                if manage_data.progress.get("achieved", {}).get(title_key, False):
                     color = (0, 204, 0)
                 else:
                     color = (255, 255, 0)
@@ -924,7 +929,8 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
             'greenrobot': manage_data.progress["char"].get("greenrobo", False),
             'ironrobot': manage_data.progress["char"].get("ironrobo", False),
             'cakebot': manage_data.progress["char"].get("cakebot", False),
-            'vectorbot': manage_data.progress["char"].get("vectorbot", False)
+            'vectorbot': manage_data.progress["char"].get("vectorbot", False),
+            'piratebot': manage_data.progress["char"].get("piratebot", False)
          }
          
          selected_character = manage_data.progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
@@ -933,7 +939,7 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
          LOCKED_FILTER.fill((40, 40, 40)) # A dark grey color
          LOCKED_FILTER.set_alpha(210)     # Adjust this to change how "locked" it looks      
 
-         for robo_name in ['robot', 'evilrobot', 'greenrobot', 'ironrobot', 'cakebot', 'vectorbot']:
+         for robo_name in ['robot', 'evilrobot', 'greenrobot', 'ironrobot', 'cakebot', 'vectorbot', 'piratebot']:
             rect = manage_data.robo_rects[robo_name]  
             if manage_data.unlocked_robos[robo_name]:
                 screen.blit(manage_data.robos[robo_name], rect)
@@ -948,7 +954,8 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
           "greenrobot": (25, 195, 21),
           "ironrobot": (64, 64, 64),
           "cakebot": (255, 171, 204),
-          "vectorbot": (25, 46, 222)
+          "vectorbot": (25, 46, 222),
+          "piratebot": (56, 30, 10)
          }
         
          if selected_character in manage_data.robo_rects:
@@ -975,6 +982,8 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
                 try_select_robo(manage_data.unlocked_robos['cakebot'], "cakebot", manage_data.robo_rects['cakebot'], "cakelocked_message", "This Robo will be available every April 29!", transition)
             elif manage_data.robo_rects['vectorbot'].collidepoint(mouse_pos):
                 try_select_robo(manage_data.unlocked_robos['vectorbot'], "vectorbot", manage_data.robo_rects['vectorbot'], "vectorlocked_message", "Unlock the Mechanical Engineer achievement to get this robo!", transition)
+            elif manage_data.robo_rects['piratebot'].collidepoint(mouse_pos):
+                try_select_robo(manage_data.unlocked_robos['piratebot'], "piratebot", manage_data.robo_rects['piratebot'], "vectorlocked_message", "Become the Captain of the Ship to get this robo!", transition)
             elif rect.collidepoint(mouse_pos):
                 state.handle_action(key, transition, manage_data.current_page)
 
