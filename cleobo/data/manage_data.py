@@ -118,8 +118,11 @@ def change_ambience(new_file):
 def get_ordered_levels(progress):
     """Traverse the actual structure and discover levels—no hardcoding."""
     ordered = []
+    world_list = [w for w in default_progress.get('lvls', {}).keys() if w in progress.get('lvls', {})]
+    if not world_list:
+        world_list = sorted(progress['lvls'].keys())
     
-    for world in sorted(progress['lvls'].keys()):
+    for world in world_list:
         world_data = progress['lvls'][world]
         
         if not isinstance(world_data, dict):
@@ -165,7 +168,10 @@ def update_locked_levels(progress, manifest):
     # Additional rule: if the LAST level of the FIRST subsection of a world is completed
     # (score > 0), then the FIRST level of the FIRST subsection of the next world
     # should be unlocked. Also unlock if that next level already has score>0.
-    worlds = sorted(progress['lvls'].keys(), key=lambda x: x)
+    # Use the canonical world order defined in default_progress to avoid alphabetical reordering
+    worlds = [w for w in default_progress.get('lvls', {}).keys() if w in progress.get('lvls', {})]
+    if not worlds:
+        worlds = sorted(progress['lvls'].keys(), key=lambda x: x)
     for idx in range(len(worlds) - 1):
         cur_world = worlds[idx]
         next_world = worlds[idx + 1]
@@ -318,7 +324,8 @@ def load_progress():
 
         if loaded_data:
             data.update(loaded_data)
-            sync_missing_data(data) 
+            sync_missing_data(data)
+            update_locked_levels(loaded_data, manifest)
             SAVE_FILE = target_file
 
     # 4. Handle Migration/New ID
