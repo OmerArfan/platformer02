@@ -12,13 +12,17 @@
       "back": "Back"
   }
   ,"char_select":{
-    "select": "Select your Robo!"
-    ,"evillocked_message": "Unlock the Chased and Escaped achievement to unlock this robot!"
-    ,"icelocked_message": "This robot is coming soon!"
-    ,"lavalocked_message": "This robot is coming soon!"
-    ,"greenlocked_message": "Unlock the Golden Achievement to unlock this robot!"
-    ,"ironlocked_message": "Unlock the Zenith of Six Achievement to unlock this robot!",
-    "cakelocked_message": "This Robo will be available every April 29!"
+    "common": "Common",
+    "rare": "Rare",
+    "epic": "Epic",
+    "legi": "Legendary",
+    "evilrobo": "Unlock the Terminal Velocity achievement to unlock this robot!"
+    ,"greenrobo": "Unlock the Golden Achievement to unlock this robot!"
+    ,"ironrobo": "Unlock the Zenith of Six Achievement to unlock this robot!",
+    "cakebot": "This Robo will be available every year from April 29 to May 13!",
+    "vectorbot": "Unlock the Mechanical Engineer achievement to get this robo!",
+    "piratebot": "Become the Captain of the Ship to get this robo!"
+    ,"soon": "This robot is coming soon!"
     ,"back": "Back"
   }
   ,"settings": {
@@ -64,17 +68,24 @@
   ,"achieve": {
     "unlock": "Achievement unlocked:",
     "zen_os": "Zenith of Six!",
-    "zen_os_desc": "Complete Level 6 in less than 30 seconds with no deaths!",
+    "zen_os_desc": "Complete Ship 1-4 in less than 30 seconds with no deaths!",
     "speedy_starter": "Speedy Starter!",
-    "speedy_starter_desc": "Complete Level 1 in under 4.5 seconds!",
+    "speedy_starter_desc": "Complete Green 1-1 in under 4.5 seconds!",
     "over_9k": "Its over 9000!",
-    "over_9k_desc": "Achieve a score of 105000 or above in Level 9!",
-    "chase_escape": "Chased and Escaped!",
-    "chase_escape_desc": "Secret...",
+    "over_9k_desc": "Achieve a score of 105000 or above in Mech 1-3!",
+    "termvel": "Terminal Velocity!",
+    "termvel_desc": "Complete Mech 1-5 in less than 15 seconds!",
     "golden": "Golden!",
-    "golden_desc": "Get a Gold or higher medal in all Green World Levels!",
+    "golden_desc": "Get a Gold or higher medal in all Green 1 Levels!",
+    "captain": "Captain of the Ship!",
+    "captain_desc": "Get a Gold or higher medal in all Ship 1 Levels!",
+    "mech_eng": "Mechancal Engineer!",
+    "mech_eng_desc": "Get a Diamond medal in all Mech 1 Levels!",
     "lv20": "XP Collector!",
     "lv20_desc": "Reach XP Level 20!",
+    "chase_escape": "Chased and Escaped!",
+    "removed": "This achievement is no longer obtainable.",
+    "secret": "Secret...",
     "rew": "Reward:",
     "char_rew": "New Robot",
     "xp_rew": "{XP} XP"
