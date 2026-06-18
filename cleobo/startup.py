@@ -6,8 +6,8 @@ from datetime import datetime
 import traceback
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0494"
-manage_data.kernel = "0.5.0.0043"
+manage_data.version = "1.3.9.0495"
+manage_data.kernel = "0.5.0.0044"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
@@ -316,34 +316,38 @@ def load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT):
     yield "Loading settings...", 6
     manage_data.manifest, manage_data.lang_code, manage_data.is_mute, manage_data.is_mute_amb = init_accs()
     
-    yield "Checking for latest save...", 10
-    manage_data.progress = manage_data.load_progress()
-    # Ensure new users are registered in the manifest immediately
-    manage_data.update_local_manifest(manage_data.progress)
-    
-    yield "Loading sounds...", 19
+    yield "Loading sounds...", 14
     manage_data.sounds = init_sounds()
     
-    yield "Loading textures...", 41
+    yield "Loading textures...", 36
     manage_data.ui = init_ui_images(SCREEN_WIDTH, SCREEN_HEIGHT)
+    yield "Loading textures...", 44
     manage_data.bgs = init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT)
+    yield "Loading textures...", 51
     manage_data.assets = init_other_assets()
+    yield "Loading textures...", 64
     manage_data.disks = init_disks()
+    yield "Loading textures...", 78
     manage_data.medals = init_medals()
     
-    yield "Calibrating Robots...", 92
+    yield "Calibrating Robots...", 89
     manage_data.robos = init_robos()
     # Get rects and position them for character select screen
     manage_data.robo_rects = {
-        'robot': manage_data.robos['robot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 480, manage_data.SCREEN_HEIGHT // 2 - 50)),
-        'evilrobot': manage_data.robos['evilrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 330, manage_data.SCREEN_HEIGHT // 2 - 50)),
-        'greenrobot': manage_data.robos['greenrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 180, manage_data.SCREEN_HEIGHT // 2 - 50)),
-        'ironrobot': manage_data.robos['ironrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 30, manage_data.SCREEN_HEIGHT // 2 - 50)),
-        'cakebot': manage_data.robos['cakebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 120, manage_data.SCREEN_HEIGHT // 2 - 50)),
-        'vectorbot': manage_data.robos['vectorbot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 270, manage_data.SCREEN_HEIGHT // 2 - 50)),
-        'piratebot': manage_data.robos['piratebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 420, manage_data.SCREEN_HEIGHT // 2 - 50))
+        'robot': manage_data.robos['robot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, 180)),
+        'evilrobot': manage_data.robos['evilrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 200, 350)),
+        'greenrobot': manage_data.robos['greenrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, 350)),
+        'piratebot': manage_data.robos['piratebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 100, 350)),
+        'ironrobot': manage_data.robos['ironrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 125, 520)),
+        'cakebot': manage_data.robos['cakebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 25, 520)),
+        'vectorbot': manage_data.robos['vectorbot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, 690))        
     }
     
+    yield "Checking for latest save...", 96
+    manage_data.progress = manage_data.load_progress()
+    # Ensure new users are registered in the manifest immediately
+    manage_data.update_local_manifest(manage_data.progress)
+
     yield "Systems Ready!", 100
     verify_initialization(manage_data)
     return True # Just a signal that we finished
