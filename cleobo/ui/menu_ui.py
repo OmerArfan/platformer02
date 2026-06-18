@@ -917,73 +917,83 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
         clock.tick(60)
 
 def draw_character_select(screen, mouse_pos, events, transition, rect, key):
-         mouse_pos = pygame.mouse.get_pos()
-         header_txt = manage_data.load_language().get('main_menu', {})
-         char_sel = header_txt.get("character_select", "Character Select")
-         char_text = render_text(char_sel, True, (255, 255, 255))
-         screen.blit(char_text, (manage_data.SCREEN_WIDTH // 2 - 100, 50))
+    mouse_pos = pygame.mouse.get_pos()
+    header_txt = manage_data.load_language().get('main_menu', {})
+    char_sel = header_txt.get("character_select", "Character Select")
+    char_text = render_text(char_sel, True, (255, 255, 255))
+    screen.blit(char_text, (manage_data.SCREEN_WIDTH // 2 - char_text.get_width() // 2, 50))
 
-         manage_data.unlocked_robos = {
-            'robot': True,
-            'evilrobot': manage_data.progress["char"].get("evilrobo", False),
-            'greenrobot': manage_data.progress["char"].get("greenrobo", False),
-            'ironrobot': manage_data.progress["char"].get("ironrobo", False),
-            'cakebot': manage_data.progress["char"].get("cakebot", False),
-            'vectorbot': manage_data.progress["char"].get("vectorbot", False),
-            'piratebot': manage_data.progress["char"].get("piratebot", False)
-         }
-         
-         selected_character = manage_data.progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
-         
-         LOCKED_FILTER = pygame.Surface((100, 100))
-         LOCKED_FILTER.fill((40, 40, 40)) # A dark grey color
-         LOCKED_FILTER.set_alpha(210)     # Adjust this to change how "locked" it looks      
+    rarities = manage_data.load_language().get('character_select', {})
+    common = render_text(rarities.get("common", "Common"), True, (0, 249, 41))
+    rare = render_text(rarities.get("rare", "Rare"), True, (0, 196, 255))
+    epic = render_text(rarities.get("epic", "Epic"), True, (102, 0, 255))
+    legi = render_text(rarities.get("legi", "Legendary"), True, (255, 154, 0))
 
-         for robo_name in ['robot', 'evilrobot', 'greenrobot', 'ironrobot', 'cakebot', 'vectorbot', 'piratebot']:
-            rect = manage_data.robo_rects[robo_name]  
-            if manage_data.unlocked_robos[robo_name]:
-                screen.blit(manage_data.robos[robo_name], rect)
-            else:
-                screen.blit(manage_data.robos[robo_name], rect)
-                screen.blit(LOCKED_FILTER, rect)
-         
-         # Draw a highlight border around the selected character
-         highlight_colors = {
-          "robot": (63, 72, 204),
-          "evilrobot": (128, 0, 128),
-          "greenrobot": (25, 195, 21),
-          "ironrobot": (64, 64, 64),
-          "cakebot": (255, 171, 204),
-          "vectorbot": (25, 46, 222),
-          "piratebot": (56, 30, 10)
-         }
+    screen.blit(common, (manage_data.SCREEN_WIDTH // 2 - common.get_width() // 2, 130))
+    screen.blit(rare, (manage_data.SCREEN_WIDTH // 2 - rare.get_width() // 2, 300))
+    screen.blit(epic, (manage_data.SCREEN_WIDTH // 2 - epic.get_width() // 2, 470))
+    screen.blit(legi, (manage_data.SCREEN_WIDTH // 2 - legi.get_width() // 2, 640))
+
+    manage_data.unlocked_robos = {
+        'robot': True,
+        'evilrobot': manage_data.progress["char"].get("evilrobo", False),
+        'greenrobot': manage_data.progress["char"].get("greenrobo", False),
+        'ironrobot': manage_data.progress["char"].get("ironrobo", False),
+        'cakebot': manage_data.progress["char"].get("cakebot", False),
+        'vectorbot': manage_data.progress["char"].get("vectorbot", False),
+        'piratebot': manage_data.progress["char"].get("piratebot", False)
+    }
         
-         if selected_character in manage_data.robo_rects:
-          pygame.draw.rect(screen, highlight_colors[selected_character], manage_data.robo_rects[selected_character].inflate(5, 5), 5)
+    selected_character = manage_data.progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
+        
+    LOCKED_FILTER = pygame.Surface((100, 100))
+    LOCKED_FILTER.fill((40, 40, 40)) # A dark grey color
+    LOCKED_FILTER.set_alpha(210)     # Adjust this to change how "locked" it looks      
 
-         # Display locked message if one exists
-         if hasattr(state, 'locked_message') and state.locked_message is not None:
-             screen.blit(state.locked_message, (manage_data.SCREEN_WIDTH // 2 - state.locked_message.get_width() // 2, 100))
+    for robo_name in ['robot', 'evilrobot', 'greenrobot', 'ironrobot', 'cakebot', 'vectorbot', 'piratebot']:
+        rect = manage_data.robo_rects[robo_name]  
+        if manage_data.unlocked_robos[robo_name]:
+            screen.blit(manage_data.robos[robo_name], rect)
+        else:
+            screen.blit(manage_data.robos[robo_name], rect)
+            screen.blit(LOCKED_FILTER, rect)
+        
+    # Draw a highlight border around the selected character
+    highlight_colors = {
+        "robot": (63, 72, 204),
+        "evilrobot": (128, 0, 128),
+        "greenrobot": (25, 195, 21),
+        "ironrobot": (64, 64, 64),
+        "cakebot": (255, 171, 204),
+        "vectorbot": (25, 46, 222),
+        "piratebot": (56, 30, 10)
+        }
+    
+    if selected_character in manage_data.robo_rects:
+        pygame.draw.rect(screen, highlight_colors[selected_character], manage_data.robo_rects[selected_character].inflate(5, 5), 5)
 
-         for event in events:
-           if event.type == pygame.QUIT:
+        # Display locked message if one exists
+    if hasattr(state, 'locked_message') and state.locked_message is not None:
+            screen.blit(state.locked_message, (manage_data.SCREEN_WIDTH // 2 - state.locked_message.get_width() // 2, 100))
+
+    for event in events:
+        if event.type == pygame.QUIT:
             state.set_page(screen, "quit_confirm", transition)
-
-           elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if manage_data.robo_rects['robot'].collidepoint(mouse_pos):
                 try_select_robo(manage_data.unlocked_robos['robot'], "robot", manage_data.robo_rects['robot'], "placeholder", "Imagine if this actually popped up in game BRO-", transition)
             elif manage_data.robo_rects['evilrobot'].collidepoint(mouse_pos):
-                try_select_robo(manage_data.unlocked_robos['evilrobot'], "evilrobot", manage_data.robo_rects['evilrobot'], "evillocked_message", "Encounter this robot in an alternative route to unlock him!", transition)
+                try_select_robo(manage_data.unlocked_robos['evilrobot'], "evilrobot", manage_data.robo_rects['evilrobot'], "evilrobo", "Encounter this robot in an alternative route to unlock him!", transition)
             elif manage_data.robo_rects['greenrobot'].collidepoint(mouse_pos):
-                try_select_robo(manage_data.unlocked_robos['greenrobot'], "greenrobot", manage_data.robo_rects['greenrobot'], "greenlocked_message", "Get GOLD rank in all Green World Levels to unlock this robot!", transition)
+                try_select_robo(manage_data.unlocked_robos['greenrobot'], "greenrobot", manage_data.robo_rects['greenrobot'], "greenrobo", "Get GOLD rank in all Green World Levels to unlock this robot!", transition)
             elif manage_data.robo_rects['ironrobot'].collidepoint(mouse_pos):
-                try_select_robo(manage_data.unlocked_robos['ironrobot'], "ironrobot", manage_data.robo_rects['ironrobot'], "ironlocked_message", "Unlock the Zenith Of Six achievement to get this character!", transition)
+                try_select_robo(manage_data.unlocked_robos['ironrobot'], "ironrobot", manage_data.robo_rects['ironrobot'], "ironrobo", "Unlock the Zenith Of Six achievement to get this character!", transition)
             elif manage_data.robo_rects['cakebot'].collidepoint(mouse_pos):
-                try_select_robo(manage_data.unlocked_robos['cakebot'], "cakebot", manage_data.robo_rects['cakebot'], "cakelocked_message", "This Robo will be available every April 29!", transition)
+                try_select_robo(manage_data.unlocked_robos['cakebot'], "cakebot", manage_data.robo_rects['cakebot'], "cakebot", "This Robo will be available every April 29!", transition)
             elif manage_data.robo_rects['vectorbot'].collidepoint(mouse_pos):
-                try_select_robo(manage_data.unlocked_robos['vectorbot'], "vectorbot", manage_data.robo_rects['vectorbot'], "vectorlocked_message", "Unlock the Mechanical Engineer achievement to get this robo!", transition)
+                try_select_robo(manage_data.unlocked_robos['vectorbot'], "vectorbot", manage_data.robo_rects['vectorbot'], "vectorbot", "Unlock the Mechanical Engineer achievement to get this robo!", transition)
             elif manage_data.robo_rects['piratebot'].collidepoint(mouse_pos):
-                try_select_robo(manage_data.unlocked_robos['piratebot'], "piratebot", manage_data.robo_rects['piratebot'], "vectorlocked_message", "Become the Captain of the Ship to get this robo!", transition)
+                try_select_robo(manage_data.unlocked_robos['piratebot'], "piratebot", manage_data.robo_rects['piratebot'], "piratebot", "Become the Captain of the Ship to get this robo!", transition)
             elif rect.collidepoint(mouse_pos):
                 state.handle_action(key, transition, manage_data.current_page)
 
@@ -1020,7 +1030,7 @@ def character_select():
     for i, key in enumerate(button_texts):
         text = current_lang[key]
         rendered = render_text(text, True, (255, 255, 255))
-        rect = rendered.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 100)) 
+        rect = rendered.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 50)) 
         buttons.append((rendered, rect, key, False))
 
 def settings_menu(screen):
