@@ -5,6 +5,11 @@ import json
 from datetime import datetime
 import traceback
 
+# Initializing Game and Engine Version
+manage_data.version = "1.3.9.0496"
+manage_data.kernel = "0.6.0.0045"
+print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
+
 manage_data.now = datetime.now()
 
 # Path to sound folder
@@ -12,13 +17,10 @@ SOUND_FOLDER = manage_data.resource_path("assets/sound")
 IMAGES_FOLDER = manage_data.resource_path("assets/imgs")
 FONTS_FOLDER = manage_data.resource_path("assets/fonts")
 
-# Initializing Game and Engine Version
-manage_data.version = "1.3.9.0470"
-manage_data.kernel = "0.2.0.0015"
 manage_data.power = pygame.image.load(os.path.join(IMAGES_FOLDER, "logos/power.png"))
 
 def verify_asset_exists(path, asset_name):
-    """Verify asset file exists before loading"""
+    # Verify asset file exists before loading
     if not os.path.exists(path):
         raise FileNotFoundError(f"Missing asset: {asset_name} at {path}")
     return path
@@ -32,17 +34,14 @@ def init_sounds():
       'death': "game/death.wav",
       'laser': "game/laser.wav",
       'fall': "game/fall.wav",
-      'open': "game/unlock.wav",
       'checkpoint': "game/checkpoint.wav",
       'warp': "game/warp.wav",
-      'button': "game/button.wav",
+      'collect': "game/collect.wav",
       'bounce': "game/bounce.wav",
       'move': "game/travel.wav",
       'jump': "game/jump.wav",
       'hit': "game/hit.wav",
       'notify': "ui/notify.wav",
-      'overheat': "game/overheat.wav",
-      'freeze': "game/freeze.wav",
       'star1': "stars/1star.wav",
       'star2': "stars/2star.wav",
       'star3': "stars/3star.wav",
@@ -72,7 +71,7 @@ def init_ui_images(SCREEN_WIDTH, SCREEN_HEIGHT):
     try:
         ui = {}
         ui_files = {
-            'cursor': ("cursor/cursor.png", False),
+            'cursor': ("ui/cursor.png", False),
             'logo': ("logos/logo.png", False),
             'studio_logo': ("logos/studiologodef.png", False),
             'studio_glow': ("logos/studiologoglow.png", False),
@@ -99,7 +98,7 @@ def init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT):
     # Backgrounds Dictionary
     try:
         # Check for events
-        if manage_data.now.day == 29 and manage_data.now.month == 4:
+        if (manage_data.now.day >= 29 and manage_data.now.month == 4) or (manage_data.now.day <= 13 and manage_data.now.month == 5):
             peek_path = "bgs/anipeek.png"
             plain_path = "bgs/AniBackground.png"
         else:
@@ -112,6 +111,8 @@ def init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT):
             'plain': (plain_path, (SCREEN_WIDTH, SCREEN_HEIGHT), False),
             'green': ("bgs/GreenBackground.png", (SCREEN_WIDTH, SCREEN_HEIGHT), False),
             'mech': ("bgs/MechBackground.png", (SCREEN_WIDTH, SCREEN_HEIGHT), False),
+            'ship': ("bgs/ShipBackground.png", (SCREEN_WIDTH, SCREEN_HEIGHT), False),
+            'desert': ("bgs/DesertBackground.png", (SCREEN_WIDTH, SCREEN_HEIGHT), False),
             'trans_left': ("bgs/trans_left.png", ((SCREEN_WIDTH // 2 + 20), SCREEN_HEIGHT), False),
             'trans_right': ("bgs/trans_right.png", ((SCREEN_WIDTH // 2 + 20), SCREEN_HEIGHT), False),
             'end': ("bgs/EndScreen.png", (SCREEN_WIDTH, SCREEN_HEIGHT), True),
@@ -156,11 +157,14 @@ def init_disks():
     try:
         disks = {}
         disk_files = {
-            'green': ("disks/greendisk.png", (100, 100)),
-            'mech': ("disks/mechdisk.png", (100, 100)),
-            'greenpack': ("disks/greenpack.png", (220, 220)),
-            'mechpack': ("disks/mechpack.png", (220, 220)),
-            'locked': ("disks/lockeddisk.png", (100, 100)),
+            'green': ("disks/greendisk.png", (110, 110)),
+            'mech': ("disks/mechdisk.png", (110, 110)),
+            'ship': ("disks/shipdisk.png", (110, 110)),
+            'desert': ("disks/desertdisk.png", (110, 110)),
+            'greenpack': ("disks/greenpack.png", (260, 260)),
+            'mechpack': ("disks/mechpack.png", (260, 260)),
+            'shippack': ("disks/shippack.png", (260, 260)),
+            'locked': ("disks/lockeddisk.png", (110, 110)),
         }
         
         for name, (file_path, size) in disk_files.items():
@@ -181,15 +185,21 @@ def init_other_assets():
         assets = {}
         asset_files = {
             'star': ("ui/star.png", (150, 140)),
-            'exit': ("portal/exit.png", (140, 180)),
+            'green_exit': ("portal/exit.png", (140, 180)),
             'mech_exit': ("portal/mech_exit.png", (140, 180)),
+            'ship_exit': ("portal/ship_exit.png", (140, 180)),
             'teleport': ("portal/teleport.png", (140, 180)),
             'teleport_exit': ("portal/teleport_2.png", (100, 100)),
             'badge': ("ui/badge.png", (80, 80)),
             'max_badge': ("ui/max-badge.png", (80, 80)),
             'saw': ("ingame/saw.png", None),
-            'cpoint_inact': ("ingame/flags/yellow_flag.png", None),
-            'cpoint_act': ("ingame/flags/green_flag.png", None),
+            'cpoint_unused': ("ingame/flags/unused.png", None),
+            'cpoint_active': ("ingame/flags/active.png", None),
+            'cpoint_used': ("ingame/flags/used.png", None),
+            'strong': ("ingame/button/gravity_strong.png", None),
+            'weak': ("ingame/button/gravity_weak.png", None),
+            'speedster': ("ingame/button/speedster.png", None),
+            'light': ("ingame/button/light.png", None),
         }
         
         for name, (file_path, size) in asset_files.items():
@@ -198,7 +208,7 @@ def init_other_assets():
             img = pygame.image.load(full_path).convert_alpha()
             assets[name] = pygame.transform.scale(img, size) if size else img
         
-        assets['star_small'] = pygame.transform.scale(assets['star'], (20, 17))
+        assets['star_small'] = pygame.transform.scale(assets['star'], (30, 26))
         assets['star_normal'] = pygame.transform.scale(assets['star'], (100, 93))
         return assets
     except Exception as e:
@@ -211,20 +221,21 @@ def init_robos():
     try:
         robos = {}
         robo_files = {
-            'robot': "char/robot/robot.png",
-            'evilrobot': "char/evilrobot/evilrobot.png",
-            'greenrobot': "char/greenrobot/greenrobot.png",
-            'ironrobot': "char/ironrobot/ironrobo.png",
-            'cakebot': "char/cakebot/cakebot.png",
-            'greenrobot_moving': "char/greenrobot/movegreenrobot.png",
-            'locked': "char/lockedrobot.png",
+            'robot': "char/robot/idle.png",
+            'sunnyrobot': "char/sunnyrobot/idle.png",
+            'evilrobot': "char/evilrobot/idle.png",
+            'greenrobot': "char/greenrobot/idle.png",
+            'ironrobot': "char/ironrobot/idle.png",
+            'cakebot': "char/cakebot/idle.png",
+            'vectorbot': "char/vectorbot/idle.png",
+            'piratebot': "char/piratebot/idle.png",
         }
         
         for name, file_path in robo_files.items():
             full_path = manage_data.resource_path(os.path.join(IMAGES_FOLDER, file_path))
             verify_asset_exists(full_path, f"{name}")
             robos[name] = pygame.image.load(full_path).convert_alpha()
-        
+
         return robos
     except Exception as e:
         print(f"ERROR loading robots: {e}")
@@ -289,7 +300,7 @@ def verify_initialization(manage_data):
         ('fonts', manage_data.fonts, ['def', 'mega']),
         ('ui', manage_data.ui, ['cursor', 'logo']),
         ('bgs', manage_data.bgs, ['plain']),
-        ('assets', manage_data.assets, ['star', 'exit']),
+        ('assets', manage_data.assets, ['star']),
         ('robos', manage_data.robos, ['robot']),
     ]
     
@@ -300,31 +311,46 @@ def verify_initialization(manage_data):
             if key not in asset_dict:
                 raise RuntimeError(f"Missing {asset_group}: {key}")
     
-    print("✓ All assets verified successfully!")
+    print("All assets verified successfully!")
 
 def load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT):
     manage_data.fonts = init_fonts()
     yield "Loading settings...", 6
     manage_data.manifest, manage_data.lang_code, manage_data.is_mute, manage_data.is_mute_amb = init_accs()
     
-    yield "Checking for latest save...", 10
+    yield "Loading sounds...", 14
+    manage_data.sounds = init_sounds()
+    
+    yield "Loading textures...", 36
+    manage_data.ui = init_ui_images(SCREEN_WIDTH, SCREEN_HEIGHT)
+    yield "Loading textures...", 44
+    manage_data.bgs = init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT)
+    yield "Loading textures...", 51
+    manage_data.assets = init_other_assets()
+    yield "Loading textures...", 64
+    manage_data.disks = init_disks()
+    yield "Loading textures...", 78
+    manage_data.medals = init_medals()
+    
+    yield "Calibrating Robots...", 89
+    manage_data.robos = init_robos()
+    # Get rects and position them for character select screen
+    manage_data.robo_rects = {
+        'robot': manage_data.robos['robot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 125, 180)),
+        'sunnyrobot': manage_data.robos['sunnyrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 25, 180)),
+        'evilrobot': manage_data.robos['evilrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 200, 350)),
+        'greenrobot': manage_data.robos['greenrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, 350)),
+        'piratebot': manage_data.robos['piratebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 100, 350)),
+        'ironrobot': manage_data.robos['ironrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 125, 520)),
+        'cakebot': manage_data.robos['cakebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 25, 520)),
+        'vectorbot': manage_data.robos['vectorbot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, 690))        
+    }
+    
+    yield "Checking for latest save...", 96
     manage_data.progress = manage_data.load_progress()
     # Ensure new users are registered in the manifest immediately
     manage_data.update_local_manifest(manage_data.progress)
-    
-    yield "Loading sounds...", 19
-    manage_data.sounds = init_sounds()
-    
-    yield "Loading textures...", 41
-    manage_data.ui = init_ui_images(SCREEN_WIDTH, SCREEN_HEIGHT)
-    manage_data.bgs = init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT)
-    manage_data.assets = init_other_assets()
-    manage_data.disks = init_disks()
-    manage_data.medals = init_medals()
-    
-    yield "Calibrating Robots...", 92
-    manage_data.robos = init_robos()
-    
+
     yield "Systems Ready!", 100
     verify_initialization(manage_data)
     return True # Just a signal that we finished

@@ -52,7 +52,7 @@ def reset_login_state():
 
 def draw_login_screen(screen):
     """Render the login screen (called from main loop)"""
-    settings = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('settings', {})
+    settings = manage_data.load_language().get('settings', {})
     
     screen.blit(manage_data.bgs['plain'], (0, 0))
     
@@ -97,9 +97,9 @@ def draw_login_screen(screen):
     submit_surf = menu_ui.render_text(submit_txt, True, (0, 255, 0))
     screen.blit(submit_surf, (manage_data.SCREEN_WIDTH // 2 - submit_surf.get_width() // 2, 520))
 
-def handle_login_events(screen, transition, events, manifest, lang_code, is_mute, sounds, progress):
+def handle_login_events(screen, transition, events, manifest, is_mute, sounds, progress):
     # Handle events for login screen (called from main loop
-    settings = manage_data.load_language(lang_code, manifest).get('settings', {})
+    settings = manage_data.load_language().get('settings', {})
     
     for event in events:
         if event.type == pygame.KEYDOWN:
@@ -166,7 +166,7 @@ def handle_login_events(screen, transition, events, manifest, lang_code, is_mute
     return None  # Still processing login
 
 def draw_registration_screen(screen):
-    settings = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('settings', {})    
+    settings = manage_data.load_language().get('settings', {})    
     screen.blit(manage_data.bgs['plain'], (0, 0))
     
     # Header
@@ -213,8 +213,8 @@ def draw_registration_screen(screen):
     submit_surf = menu_ui.render_text(submit_txt, True, (0, 255, 0))
     screen.blit(submit_surf, (manage_data.SCREEN_WIDTH // 2 - submit_surf.get_width() // 2, 520))
 
-def handle_registration_events(screen, transition, events, manifest, lang_code, is_mute, sounds, progress, ACCOUNTS_FILE):
-    settings = manage_data.load_language(lang_code, manifest).get('settings', {})
+def handle_registration_events(screen, transition, events, manifest, is_mute, sounds, progress, ACCOUNTS_FILE):
+    settings = manage_data.load_language().get('settings', {})
     
     for event in events:
         if event.type == pygame.KEYDOWN:
@@ -260,7 +260,7 @@ def handle_registration_events(screen, transition, events, manifest, lang_code, 
                     progress["player"]["Pass"] = hash_password(login_state["password"])
 
                     manage_data.save_progress(progress, manifest)
-                    threading.Thread(target=manage_data.sync_vault_to_cloud, args=(progress, manifest), daemon=True).start()
+                    threading.Thread(target=manage_data.sync_vault_to_cloud, args=(progress,), daemon=True).start()
                     
                     if not is_mute: sounds['notify'].play()
                     login_state["status_msg"] = settings.get("account_created", "Account Created!")
@@ -291,7 +291,7 @@ def handle_registration_events(screen, transition, events, manifest, lang_code, 
 
 def create_account_selector():
     menu_ui.buttons.clear()
-    settings = manage_data.load_language(manage_data.lang_code, manage_data.manifest).get('settings', {})
+    settings = manage_data.load_language().get('settings', {})
 
     # 1. Load manifest
     manifest = {"users": {}}

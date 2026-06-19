@@ -5,7 +5,6 @@ import shutil
 import time
 import threading
 import sys
-import cleobo.ui.menu_ui as menu_ui
 from datetime import datetime, date
 import csv
 import hashlib
@@ -13,9 +12,6 @@ import threading
 import requests
 from io import StringIO
 import pygame
-import cleobo.data.acc_sys as acc_sys
-from cleobo.levels import level_logic
-import cleobo.data.achievements as achieve
 
 pygame.font.init()
 
@@ -42,27 +38,36 @@ default_progress = {
         "Level": 1
     },
     "lvls": { 
-        "complete_levels": 0,
-        "locked_levels": [f"lvl{i}" for i in range(2, 13)],
-        "times": {f"lvl{i}": 0 for i in range(1, 13)},
-        "medals": {f"lvl{i}": "None" for i in range(1, 13)},
-        "score": {f"lvl{i}": 0 for i in range(1, 13)}
+        "green": {
+            "1": {f"lvl{i}": {"locked": True, "score": 0, "medal": "None", "time": 0} for i in range(1, 5)}
+        },
+        "ship": {
+            "1": {f"lvl{i}": {"locked": True, "score": 0, "medal": "None", "time": 0} for i in range(1, 5)}
+        },
+        "mech": {
+            "1": {f"lvl{i}": {"locked": True, "score": 0, "medal": "None", "time": 0} for i in range(1, 7)}
+        },
     },
     "pref" : { 
         "character": "robot"
     },
     "char": { 
+        "sunnyrobo": False,
         "evilrobo": False, 
         "greenrobo": False,
         "ironrobo": False,
-        "cakebot": False
+        "cakebot": False,
+        "vectorbot": False,
+        "piratebot": False
     },
     "achieved": { 
         "speedy_starter": False,
         "zen_os": False,
         "over_9k": False,
-        "chase_escape": False,
+        "termvel": False,
         "golden": False,
+        "captain": False,
+        "mech_eng": False,
         "lv20": False
     }
 }
@@ -97,68 +102,151 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
-with open(resource_path("assets/data/thresholds.json"), "r", encoding="utf-8") as f:
-    thresholds_data = json.load(f)
-    level_thresholds = thresholds_data["level_thresholds"]
-    score_thresholds = thresholds_data["score_thresholds"]
+def thresholds(world, thr):
+    with open(resource_path(f"assets/data/thresholds/{world}.json"), "r", encoding="utf-8") as f:
+        thresh_data = json.load(f)
+        return thresh_data[thr]
 
 fonts = {}
 saw_cache = {}
 
-def char_assets(selected_character):
-    # Load player image
-    CHAR_PATH = resource_path("assets/imgs/char")
-    if selected_character == "robot": 
-        player_img = pygame.image.load(os.path.join(CHAR_PATH, "robot/robot.png")).convert_alpha()
-        blink_img = pygame.image.load(os.path.join(CHAR_PATH, "robot/blinkrobot.png")).convert_alpha()
-        moving_img_l = pygame.image.load(os.path.join(CHAR_PATH, "robot/smilerobotL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(os.path.join(CHAR_PATH, "robot/smilerobot.png")).convert_alpha() # Resize to fit the game
-    elif selected_character == "evilrobot":
-        player_img = pygame.image.load(os.path.join(CHAR_PATH, "evilrobot/evilrobot.png")).convert_alpha()
-        blink_img = pygame.image.load(os.path.join(CHAR_PATH, "evilrobot/blinkevilrobot.png")).convert_alpha()
-        moving_img_l = pygame.image.load(os.path.join(CHAR_PATH, "evilrobot/movevilrobotL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(os.path.join(CHAR_PATH, "evilrobot/movevilrobot.png")).convert_alpha() # Resize to fit the game
-    elif selected_character == "greenrobot":
-        player_img = pygame.image.load(os.path.join(CHAR_PATH, "greenrobot/greenrobot.png")).convert_alpha()
-        blink_img = pygame.image.load(os.path.join(CHAR_PATH, "greenrobot/blinkgreenrobot.png")).convert_alpha()
-        moving_img_l = pygame.image.load(os.path.join(CHAR_PATH, "greenrobot/movegreenrobotL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(os.path.join(CHAR_PATH, "greenrobot/movegreenrobot.png")).convert_alpha() # Resize to fit the game
-    elif selected_character == "ironrobot":
-        player_img = pygame.image.load(os.path.join(CHAR_PATH, "ironrobot/ironrobo.png")).convert_alpha()
-        blink_img = pygame.image.load(os.path.join(CHAR_PATH, "ironrobot/blinkironrobo.png")).convert_alpha()
-        moving_img_l = pygame.image.load(os.path.join(CHAR_PATH, "ironrobot/ironrobomoveL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(os.path.join(CHAR_PATH, "ironrobot/ironrobomove.png")).convert_alpha() # Resize to fit the game
-    elif selected_character == "cakebot":
-        player_img = pygame.image.load(os.path.join(CHAR_PATH, "cakebot/cakebot.png")).convert_alpha()
-        blink_img = pygame.image.load(os.path.join(CHAR_PATH, "cakebot/blinkcakebot.png")).convert_alpha()
-        moving_img_l = pygame.image.load(os.path.join(CHAR_PATH, "cakebot/movecakebotL.png")).convert_alpha() # Resize to fit the game
-        moving_img = pygame.image.load(os.path.join(CHAR_PATH, "cakebot/movecakebot.png")).convert_alpha() # Resize to fit the game
-    img_width, img_height = player_img.get_size()
-    return player_img, blink_img, moving_img, moving_img_l, img_width, img_height
-
 def change_ambience(new_file):
   if not is_mute_amb:
     pygame.mixer.music.load(resource_path(f"assets/sound/amb/{new_file}.ogg"))
-    pygame.mixer.music.set_volume(1.5)  # Adjust as needed
+    pygame.mixer.music.set_volume(1)  # Adjust as needed
     pygame.mixer.music.play(-1)
 
+def get_ordered_levels(progress):
+    """Traverse the actual structure and discover levels—no hardcoding."""
+    ordered = []
+    world_list = [w for w in default_progress.get('lvls', {}).keys() if w in progress.get('lvls', {})]
+    if not world_list:
+        world_list = sorted(progress['lvls'].keys())
+    
+    for world in world_list:
+        world_data = progress['lvls'][world]
+        
+        if not isinstance(world_data, dict):
+            continue
+            
+        for subsection in sorted(world_data.keys(), key=lambda x: int(x) if x.isdigit() else x):
+            subsection_data = world_data[subsection]
+            
+            if not isinstance(subsection_data, dict):
+                continue
+            
+            level_keys = [k for k in subsection_data.keys() if k.startswith('lvl')]
+            level_keys.sort(key=lambda x: int(x.replace('lvl', '')))
+            
+            for level_key in level_keys:
+                ordered.append((world, subsection, level_key))
+    
+    return ordered
+
 def update_locked_levels(progress, manifest):
-    all_levels = ["lvl2", "lvl3", "lvl4", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9", "lvl10", "lvl11", "lvl12"]
-    # Always start with all levels locked except lvl2 (which unlocks after lvl1 is completed)
-    locked = set(all_levels)
-    score = progress["lvls"].get("score", {})
+    """Smart unlock system with zero hardcoding."""
+    ordered_levels = get_ordered_levels(progress)  # ✅ Discovers from structure
+    
+    if not ordered_levels:
+        return
+    
+    # First level always unlocked
+    first_world, first_subsection, first_level = ordered_levels[0]
+    progress['lvls'][first_world][first_subsection][first_level]['locked'] = False
+    
+    # Unlock subsequent levels based on previous completion
+    for i in range(1, len(ordered_levels)):
+        world, subsection, level_key = ordered_levels[i]
+        prev_world, prev_subsection, prev_level_key = ordered_levels[i - 1]
+        
+        prev_level_data = progress['lvls'][prev_world][prev_subsection][prev_level_key]
+        
+        if prev_level_data.get('score', 0) != 0:  # ✅ Uses new structure
+            progress['lvls'][world][subsection][level_key]['locked'] = False
+        else:
+            progress['lvls'][world][subsection][level_key]['locked'] = True
 
-    # Unlock levels if the previous level's time is not 0
-    for i, lvl in enumerate(all_levels):
-        prev_lvl = f"lvl{i+1}"
-        if score.get(prev_lvl, 0) != 0:
-            locked.discard(lvl)  # Unlock this level
+    # Additional rule: if the LAST level of the FIRST subsection of a world is completed
+    # (score > 0), then the FIRST level of the FIRST subsection of the next world
+    # should be unlocked. Also unlock if that next level already has score>0.
+    # Use the canonical world order defined in default_progress to avoid alphabetical reordering
+    worlds = [w for w in default_progress.get('lvls', {}).keys() if w in progress.get('lvls', {})]
+    if not worlds:
+        worlds = sorted(progress['lvls'].keys(), key=lambda x: x)
+    for idx in range(len(worlds) - 1):
+        cur_world = worlds[idx]
+        next_world = worlds[idx + 1]
 
-    progress["lvls"]["locked_levels"] = list(locked)
+        # get first subsection names (sorted numerically when possible)
+        cur_subsecs = sorted(progress['lvls'][cur_world].keys(), key=lambda x: int(x) if x.isdigit() else x)
+        next_subsecs = sorted(progress['lvls'][next_world].keys(), key=lambda x: int(x) if x.isdigit() else x)
+
+        if not cur_subsecs or not next_subsecs:
+            continue
+
+        cur_first_sub = cur_subsecs[0]
+        next_first_sub = next_subsecs[0]
+
+        cur_levels = [k for k in progress['lvls'][cur_world][cur_first_sub].keys() if k.startswith('lvl')]
+        if not cur_levels:
+            continue
+
+        # determine the last level key in current world's first subsection
+        cur_levels_sorted = sorted(cur_levels, key=lambda k: int(k.replace('lvl', '')))
+        cur_last_key = cur_levels_sorted[-1]
+        cur_last_score = progress['lvls'][cur_world][cur_first_sub].get(cur_last_key, {}).get('score', 0)
+
+        # determine the first level key in next world's first subsection
+        next_levels = [k for k in progress['lvls'][next_world][next_first_sub].keys() if k.startswith('lvl')]
+        if not next_levels:
+            continue
+        next_levels_sorted = sorted(next_levels, key=lambda k: int(k.replace('lvl', '')))
+        next_first_key = next_levels_sorted[0]
+        next_first_score = progress['lvls'][next_world][next_first_sub].get(next_first_key, {}).get('score', 0)
+
+        if cur_last_score > 0 or next_first_score > 0:
+            progress['lvls'][next_world][next_first_sub][next_first_key]['locked'] = False
+        
     save_progress(progress, manifest)
 
-def load_language(lang_code, manifest):
-    global now
+def get_level_info(progress, world, subsection, level_key):
+    """Helper to check level status from UI code."""
+    try:
+        level_data = progress['lvls'][world][subsection][level_key]
+        return {
+            'locked': level_data.get('locked', True),
+            'completed': level_data.get('score', 0) != 0,
+            'score': level_data.get('score', 0),
+            'medal': level_data.get('medal', 'None'),
+            'time': level_data.get('time', 0)
+        }
+    except KeyError:
+        return None
+
+def migrate_old_progress(progress):
+    """Handle any old format inconsistencies."""
+    for world in progress.get('lvls', {}).values():
+        for subsection in world.values():
+            if isinstance(subsection, dict):
+                for level_key in subsection.keys():
+                    if level_key.startswith('lvl'):
+                        level = subsection[level_key]
+                        level.setdefault('locked', True)
+                        level.setdefault('score', 0)
+                        level.setdefault('medal', 'None')
+                        level.setdefault('time', 0)
+    
+    if 'lvls' in progress:
+        progress['lvls'].pop('score', None)
+        progress['lvls'].pop('medals', None)
+        progress['lvls'].pop('times', None)
+        progress['lvls'].pop('complete_levels', None)
+        progress['lvls'].pop('locked_levels', None)
+    
+    return progress
+
+def load_language():
+    global manifest
     try:
         # Wrap the path in resource_path()
         path = resource_path(f"assets/lang/{lang_code}.json")
@@ -178,7 +266,7 @@ def change_language(lang, manifest, progress):
     global lang_code, last_page_change_time, current_lang, font, font_path_ch, font_path
     lang_code = lang
     last_page_change_time = time.time()  # Track the time when the language changes
-    current_lang = load_language(lang_code, manifest)  # Reload the language data
+    current_lang = load_language()  # Reload the language data
     manifest["pref"]["language"] = lang_code
     update_local_manifest(progress)
     if lang_code == "zh_cn":
@@ -192,6 +280,8 @@ def change_language(lang, manifest, progress):
     else:
         font = fonts['def']
     return current_lang
+
+import cleobo.data.acc_sys as acc_sys
 
 def load_progress():
     global SAVE_FILE, selected_character
@@ -235,7 +325,8 @@ def load_progress():
 
         if loaded_data:
             data.update(loaded_data)
-            sync_missing_data(data) 
+            sync_missing_data(data)
+            update_locked_levels(loaded_data, manifest)
             SAVE_FILE = target_file
 
     # 4. Handle Migration/New ID
@@ -285,6 +376,8 @@ def load_progress():
         save_progress(data, manifest)
         
     return data
+
+import cleobo.ui.menu_ui as menu_ui
 
 # Save progress to file
 def save_progress(data, manifest):
@@ -336,25 +429,25 @@ def save_progress(data, manifest):
 
         # 6. Periodic Cloud Sync (Every 4 saves)
         if save_count % 4 == 0:
-            threading.Thread(target=sync_vault_to_cloud, args=(data, manifest), daemon=True).start()
+            threading.Thread(target=sync_vault_to_cloud, args=(data,), daemon=True).start()
 
     except PermissionError:
-       # if not is_mute:
-        #    hit_sound.play()
+        if not is_mute:
+            sounds['death'].play()
         notification_text = menu_ui.render_text("Error: Save file is locked by another program.", True, (255, 0, 0))
         notif = True
         menu_ui.notification_time = time.time()
             
     except Exception as e:
-        er = True
-        error_code = menu_ui.render_text(f"Save Error: {str(e)}", True, (255, 0, 0))
-       # if not is_mute:
-        #   hit_sound.play()
+        menu_ui.er = True
+        menu_ui.error_code = menu_ui.render_text(f"Save Error: {str(e)}", True, (255, 0, 0))
+        if not is_mute:
+           sounds['hit'].play()
         menu_ui.notification_time = time.time()
         print(f"Detailed save error: {e}")
 
 def update_local_manifest(data):
-    global er, error_code, is_mute, manifest
+    global is_mute, manifest
     
     # Store the current last_news_count before reloading
     previous_news_count = manifest.get("other", {}).get("last_news_count", 7) if manifest else 7
@@ -367,7 +460,7 @@ def update_local_manifest(data):
                 manifest = json.load(f)
         except:
             try:
-              # I fmain is corrupted check backup.
+              # If main is corrupted check backup.
               with open(ACCOUNTS_FILE + ".bak", "r") as f:
                 manifest = json.load(f)
               # Fixing the main file if it is corrupted.
@@ -415,57 +508,151 @@ def update_local_manifest(data):
             os.fsync(f.fileno()) # Push data from the OS to the actual Hard Drive
 
     except Exception as e:
-        #if not is_mute: hit_sound.play()
-        error_code = menu_ui.render_text(f"Local manifest error: {e}", True, (255, 0, 0))
-        er = True
+        if not is_mute: sounds['death'].play()
+        menu_ui.error_code = menu_ui.render_text(f"Local manifest error: {e}", True, (255, 0, 0))
+        menu_ui.er = True
         menu_ui.notification_time = time.time()
         print(f"Error during manifest save: {e}")
 
 def sync_missing_data(data):
-    # Helper to ensure all default keys exist in loaded data.
+    
+    # 1a. Ensure top-level keys exist (player, achieved, etc.)
     for key, value in default_progress.items():
         if key not in data:
-            data[key] = value
-
-    target_subkeys = ["times", "medals", "score"]
-
-    if "lvls" in data:
-        for subkey in target_subkeys:
-            # Check if the subkey (e.g., "score") exists in the loaded data
-            if subkey not in data["lvls"]:
-                 data["lvls"][subkey] = default_progress["lvls"][subkey]
-            else:
-                # If it exists, check if new levels (e.g., lvl13) were added to the game
-                for lvl_key, lvl_val in default_progress["lvls"][subkey].items():
-                    if lvl_key not in data["lvls"][subkey]:
-                       data["lvls"][subkey][lvl_key] = lvl_val
-
-    if "lvls" in data and "locked_levels" not in data["lvls"]:
-        data["lvls"]["locked_levels"] = default_progress["lvls"]["locked_levels"]
-
-    if "player" in data:
-        if "ID" not in data["player"]:
-            data["player"]["ID"] = default_progress["player"]["ID"]
-
-        if "Pass" not in data["player"]:
-            data["player"]["Pass"] = default_progress["player"]["Pass"]
-        
-        if "Username" not in data["player"]:
-            data["player"]["Username"] = default_progress["player"]["Username"]
+            data[key] = copy.deepcopy(value)
     
-    if "pref" in data:
-        # .pop(key, None) safely removes the key if it exists, otherwise does nothing
-        data["pref"].pop("is_mute", None)
-        data["pref"].pop("language", None)
+    if "char" in data:
+        for char_name, char_status in default_progress["char"].items():
+            if char_name not in data['char']:
+                data['char'][char_name] = char_status
 
-    if data["player"]["ID"] == "":
-        data["player"]["ID"] = acc_sys.generate_player_id()
+    # 1b. Make sure achievement keys exist and remove obsolete ones
+    if "achieved" in data:
+        # Ensure all default achievement keys exist in the player's progress
+        for key in default_progress.get('achieved', {}):
+            if key not in data['achieved']:
+                data['achieved'][key] = False
 
+        # Remove truly obsolete achievements that should not appear in newer versions
+        obsolete = ["chase_escape"]
+        for ob in obsolete:
+            if ob in data['achieved'] and not data['achieved'].get(ob, False):
+                data['achieved'].pop(ob, None)
 
-def sync_vault_to_cloud(data, manifest):
+    # 2. Sync lvls with new hierarchical structure (world → subsection → level)
+    if "lvls" in data:
+        # Iterate through default worlds
+        for world_name, world_data in default_progress["lvls"].items():
+            if world_name not in data["lvls"]:
+                # Entire world is missing, add it with all subsections and levels
+                data["lvls"][world_name] = copy.deepcopy(world_data)
+            else:
+                # World exists, now sync subsections within this world
+                for subsection_name, subsection_data in world_data.items():
+                    if subsection_name not in data["lvls"][world_name]:
+                        # Subsection is missing, add it with all its levels
+                        data["lvls"][world_name][subsection_name] = copy.deepcopy(subsection_data)
+                    else:
+                        # Subsection exists, now sync individual levels
+                        for level_key, level_data in subsection_data.items():
+                            if level_key not in data["lvls"][world_name][subsection_name]:
+                                # Level is missing, add it
+                                data["lvls"][world_name][subsection_name][level_key] = copy.deepcopy(level_data)
+                            else:
+                                # Level exists, ensure all required fields are present
+                                existing_level = data["lvls"][world_name][subsection_name][level_key]
+                                for field in ['locked', 'score', 'medal', 'time']:
+                                    if field not in existing_level:
+                                        existing_level[field] = level_data[field]
+        
+        # 3. Remove old flat structure keys for backward compatibility
+        # These were used in the old system and should not exist in new system
+        old_flat_keys = ['score', 'medals', 'times']
+        for old_key in old_flat_keys:
+            if old_key in data['lvls']:
+             for i in range (1,13):
+                if i <= 2:
+                    world = "green"
+                    lv = i
+                elif i <= 6:
+                    world = "ship"
+                    lv = i - 2
+                else:
+                    world = "mech"
+                    lv = i - 6
+
+                if old_key == "medals":
+                    new_key = "medal"
+                elif old_key == "times":
+                    new_key = "time"
+                else:
+                    new_key = old_key
+
+                data["lvls"][world]['1'][f'lvl{lv}'][new_key] = data['lvls'][old_key][f'lvl{i}']
+
+             data["lvls"].pop(old_key, None)
+            data['lvls'].pop('complete_levels', None)
+            data['lvls'].pop('locked_levels', None)
+        
+        # Level 1 of green world should always be unlocked
+        if "green" in data["lvls"] and "1" in data["lvls"]["green"]:
+            if "lvl1" in data["lvls"]["green"]["1"]:
+                data["lvls"]["green"]["1"]["lvl1"]["locked"] = False
+        
+        # If a level IS completed (score > 0), unlock the next level
+        for world_name in data["lvls"]:
+            for subsection_name in data["lvls"][world_name]:
+                levels = data["lvls"][world_name][subsection_name]
+                level_nums = sorted([int(k.replace('lvl', '')) for k in levels.keys() if k.startswith('lvl')])
+                
+                for idx, level_num in enumerate(level_nums):
+                    current_level = levels[f'lvl{level_num}']
+                    # If current level is completed (score > 0), unlock the next level
+                    if current_level.get('score', 0) > 0 and idx + 1 < len(level_nums):
+                        next_level_num = level_nums[idx + 1]
+                        levels[f'lvl{next_level_num}']['locked'] = False
+    
+    green_world_1 = data["lvls"]["green"].get("1", {})
+    ship_world_1 = data["lvls"]["ship"].get("1", {})
+
+    # Count only actual level keys (lvl1, lvl2, ...) to decide when to migrate
+    lvl_keys = [k for k in green_world_1.keys() if k.startswith('lvl')]
+    if len(lvl_keys) == 6:
+        ship_world_1["lvl1"] = green_world_1["lvl3"].copy()
+        ship_world_1["lvl2"] = green_world_1["lvl4"].copy()
+        ship_world_1["lvl3"] = green_world_1["lvl5"].copy()
+        ship_world_1["lvl4"] = green_world_1["lvl6"].copy()
+    
+        # Except make lvl3 unlocked, and lvl4 locked
+        if green_world_1['lvl2']['score'] == 0:
+            lv3_lock_status = True
+        else:
+            lv3_lock_status = False
+
+        green_world_1["lvl3"] = {
+            "locked": lv3_lock_status,
+            "score": 0,
+            "medal": "None",
+            "time": 0
+        }
+        
+        green_world_1["lvl4"] = {
+            "locked": True,
+            "score": 0,
+            "medal": "None",
+            "time": 0
+        }
+        
+        # ---- REMOVE LVL 5 AND LVL 6 FROM GREEN ----
+        green_world_1.pop("lvl5", None)
+        green_world_1.pop("lvl6", None)     
+    
+    update_locked_levels(data, manifest)
+
+def sync_vault_to_cloud(data):
     global is_syncing, sync_status, sync_finish_time
     is_syncing = True
-    settings = load_language(lang_code, manifest)['settings']
+    settings = load_language()['settings']
     sync_status = settings.get("sync_stat1", "Syncing Vault to Cloud...")
 
     # Using the IDs from your pre-filled link
@@ -514,9 +701,8 @@ def recover_account_from_cloud(target_user, target_pass):
                 
                 if cloud_user == target_user:
                     if cloud_pass == hashed_input:
-                        print("Cloud Vault: Credentials verified. Downloading progress...")
-                        #if not is_mute:
-                         #   notify_sound.play()
+                        if not is_mute:
+                           sounds['notify'].play()
                         # Grab the JSON from the 'Progress' column
                         return json.loads(row.get('Progress'))
                     else:
@@ -573,17 +759,36 @@ def get_all_cloud_ids():
     return cloud_ids
 
 def xp():
+    from cleobo.levels.logic.entities import LevelManager
+
     global progress
-    # XP from scores
-    scores = progress["lvls"]["score"]
-    score_xp = sum(scores.values()) // 1000
+    
+    # XP from scores - collect all scores from the new hierarchical structure
+    total_score = 0
+    level_scores = {}  # Map of level_num -> score for star calculation
+    
+    for world_name in progress["lvls"]:
+        for subsection_name in progress["lvls"][world_name]:
+            for level_key in progress["lvls"][world_name][subsection_name]:
+                level_data = progress["lvls"][world_name][subsection_name][level_key]
+                score = level_data.get('score', 0)
+                total_score += score
+                
+                # Extract level number for star calculation
+                if level_key.startswith('lvl'):
+                    level_num = int(level_key.replace('lvl', ''))
+                    level_scores[level_num] = score
+    
+    score_xp = total_score // 1000
 
     # XP from stars
     stars = 0
-    for level in range(1, 13):
-        score = scores.get(f"lvl{level}", 0)
-        stars += level_logic.get_stars(level, score)
-    star_xp = stars * 20  # 50 XP per star
+    for world in default_progress['lvls']:
+      for level in world:
+        level_num = int(level_key.replace('lvl', ''))
+        score = level_scores.get(level_num, 0)
+        stars += LevelManager.get_stars(level_num, world, score)
+      star_xp = stars * 20  # 20 XP per star
 
     # XP from achievements
     achievements = progress["achieved"]  # your achievements dict
@@ -591,8 +796,10 @@ def xp():
      "speedy_starter": 30,
      "zen_os": 150,
      "over_9k": 150,
-     "chase_escape": 25,
+     "termvel": 100,
      "golden": 200,
+     "captain": 250,
+     "mech_eng": 500,
      "lvl20": 0,
     }
 
@@ -603,7 +810,16 @@ def xp():
     total_xp = score_xp + ach_xp + star_xp
     progress["player"]["XP"] = total_xp
     def xp_needed(level):
-        return int(50 * (1.1 ** (level - 1)))  # or tweak multiplier
+        if level <= 5:
+            return 50
+        elif level <= 10:
+            return 70
+        elif level <= 15:
+            return 110
+        elif level <= 20:
+            return 170
+        else: # Buffer
+            return 250
 
     def calculate_level(total_xp):
         level = 1
@@ -615,11 +831,15 @@ def xp():
 
     level, xp_in_level = calculate_level(total_xp)
     progress["player"]["Level"] = level
-    achieve.check_xplvl20(level)
+    if level > 20:
+        level = 20
     return level, xp_in_level, xp_needed(level)
 
 def update_xp_ui():
     global progress, lang_code, manifest
+
+    import cleobo.data.achievements as achieve
+    
     level, xp_needed, xp_total = xp(progress, achieve)
 
     if level < 20:
@@ -629,7 +849,7 @@ def update_xp_ui():
     else:
         color = (225, 212, 31)
         XP_text = fonts['mega'].render(str(level), True, color)
-        max_txt = load_language(lang_code, manifest).get('messages', {}).get("max_level", "MAX LEVEL!")
+        max_txt = load_language().get('messages', {}).get("max_level", "MAX LEVEL!")
         XP_text2 = menu_ui.render_text(max_txt, True, color)   
 
     return XP_text, XP_text2
