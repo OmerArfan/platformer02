@@ -25,7 +25,7 @@ def handle_blocks(screen, blocks, player):
 
 def handle_bottom_collisions(blocks, player):
     for block in blocks:
-            roof_rect = pygame.FRect(block.x, block.y + block.height + 10, block.width, 8)  # 8 px tall death zone  
+            roof_rect = pygame.FRect(block.x, block.y + block.height + 10, block.width, 4)  # 8 px tall death zone  
             if player.rect.colliderect(roof_rect) and player.velocity_y < 0:  # Only if jumping upward
                 return True
     return False
@@ -181,7 +181,8 @@ def handle_key_blocks(screen, key_block_pairs, player):
 
 def handle_key_blocks_timed(screen, key_block_pairs_timed, player):
     for pair in key_block_pairs_timed:
-        key_x, key_y, key_r, key_color = pair["key"]
+        key_data = pair['key']
+        key_x, key_y, key_r, key_color = key_data['x'], key_data['y'], key_data['radius'], key_data['color']
         block = pair["block"]
 
         key_rect = pygame.FRect(key_x - key_r, key_y - key_r, key_r * 2, key_r * 2)
@@ -206,7 +207,8 @@ def handle_key_blocks_timed(screen, key_block_pairs_timed, player):
                 # Check if player is inside block when it reappears
         
                 if player.rect.colliderect(pair["block"]):
-                    return True, player
+                    player.crushed = True
+                    return player
 
         if not pair["collected"]:  # Only active locked blocks
             block = pair["block"]
@@ -224,4 +226,5 @@ def handle_key_blocks_timed(screen, key_block_pairs_timed, player):
                     elif player.rect.x + player.rect.width > block.x + block.width:
                         player.rect.x = block.x + block.width
 
-    return False, player
+    player.crushed = False
+    return player

@@ -18,8 +18,8 @@ class Player:
         self.rect = pygame.FRect(x, y, self.sprite.width, self.sprite.height)
 
         # Spawn data
-        self.spawn_x = 0
-        self.spawn_y = 0
+        self.init_x, self.init_y = 0, 0 # This is to ensure if player resets the level, original spawn points are saved.
+        self.spawn_x, self.spawn_y = self.init_x, self.init_y
 
         # Physics
         self.gravity = 1
@@ -54,6 +54,7 @@ class Player:
 
         # Other
         self.deathcount = 0
+        self.crushed = False
 
     def input_update(self, keys):
         # === JUMPING ===
@@ -97,7 +98,7 @@ class Player:
         # Use interpolation for Y as well to stop the jitter
         self.camera_y += (target_y - self.camera_y) * self.camera_speed
     
-    def fall(self, manager, rendered_fall_text):
+    def fall(self, manager, rendered_fall_text, key_block_pairs, key_block_pairs_timed):
     # Fall death
         if self.rect.y > 1100:
             self.die()
@@ -105,6 +106,10 @@ class Player:
             manager.wait_time = pygame.time.get_ticks()
             if not manage_data.is_mute:
                 manage_data.sounds['fall'].play()
+            for kbp in (key_block_pairs or []):
+                kbp['collected'] = False
+            for kbp in (key_block_pairs_timed or []):
+                kbp['collected'] = False
             
     def die(self):
         self.rect.x, self.rect.y = self.spawn_x, self.spawn_y
@@ -114,14 +119,15 @@ class Player:
         self.speed_mode = "normal"
         self.lights_on = True
 
-    def update(self, keys, manager, rendered_fall_text):
+    def update(self, keys, manager, rendered_fall_text, key_block_pairs=None, key_block_pairs_timed=None):
         self.input_update(keys)
         self.camera_update()
-        self.fall(manager, rendered_fall_text)
+        self.fall(manager, rendered_fall_text, key_block_pairs, key_block_pairs_timed)
         self.jump = self.grav_strength[self.jump_mode]
         self.velocity_x = self.speeds[self.speed_mode]
 
     def reset_stats(self):
+        self.spawn_x, self.spawn_y = self.init_x, self.init_y
         self.rect.x, self.rect.y = self.spawn_x, self.spawn_y
         self.velocity_y = 0
         self.deathcount = 0
@@ -172,14 +178,14 @@ class PlayerSprites:
             frames = self.move_r_start_frames if self.animation_direction == 'right' else self.move_l_start_frames
             if frame_index >= len(frames):
                 self.animation_complete = True
-                return frames[-1]  # Return last frame
+                return None
             return frames[frame_index]
         
         elif self.current_animation == 'end':
             frames = self.move_r_end_frames if self.animation_direction == 'right' else self.move_l_end_frames
             if frame_index >= len(frames):
                 self.animation_complete = True
-                return frames[-1]  # Return last frame
+                return None
             return frames[frame_index]
         
         return None

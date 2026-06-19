@@ -25,3 +25,20 @@ def handle_teleports(screen, teleporters, player):
             player.rect.x, player.rect.y = teleporter['exit'].x, teleporter['exit'].y
     
     return player
+
+def handle_flags(screen, flags, player):
+    for flag in flags:
+        screen.blit(manage_data.assets[f"cpoint_{flag['status']}"], (flag['x'] - player.camera_x, flag['y'] - player.camera_y))
+        if player.rect.colliderect(flag['rect']):
+            if flag['status'] == "unused": # To ensure that accidental activation does not occur
+                player.jump_mode = "normal"
+                player.speed_mode = "normal"
+                player.lights_on = True
+                player.spawn_x, player.spawn_y = flag['save_x'], flag['save_y']
+                for f in flags: # in order to find the flag which is already active
+                    if f['status'] == 'active':
+                        f['status'] = 'used'
+                flag['status'] = "active"
+                if not manage_data.is_mute:
+                 manage_data.sounds['checkpoint'].play()
+    return player, flags
