@@ -6,8 +6,8 @@ from datetime import datetime
 import traceback
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0495"
-manage_data.kernel = "0.5.0.0044"
+manage_data.version = "1.3.9.0496"
+manage_data.kernel = "0.6.0.0045"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
@@ -193,8 +193,9 @@ def init_other_assets():
             'badge': ("ui/badge.png", (80, 80)),
             'max_badge': ("ui/max-badge.png", (80, 80)),
             'saw': ("ingame/saw.png", None),
-            'cpoint_inact': ("ingame/flags/yellow_flag.png", None),
-            'cpoint_act': ("ingame/flags/green_flag.png", None),
+            'cpoint_unused': ("ingame/flags/unused.png", None),
+            'cpoint_active': ("ingame/flags/active.png", None),
+            'cpoint_used': ("ingame/flags/used.png", None),
             'strong': ("ingame/button/gravity_strong.png", None),
             'weak': ("ingame/button/gravity_weak.png", None),
             'speedster': ("ingame/button/speedster.png", None),
@@ -221,6 +222,7 @@ def init_robos():
         robos = {}
         robo_files = {
             'robot': "char/robot/idle.png",
+            'sunnyrobot': "char/sunnyrobot/idle.png",
             'evilrobot': "char/evilrobot/idle.png",
             'greenrobot': "char/greenrobot/idle.png",
             'ironrobot': "char/ironrobot/idle.png",
@@ -334,7 +336,8 @@ def load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT):
     manage_data.robos = init_robos()
     # Get rects and position them for character select screen
     manage_data.robo_rects = {
-        'robot': manage_data.robos['robot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, 180)),
+        'robot': manage_data.robos['robot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 125, 180)),
+        'sunnyrobot': manage_data.robos['sunnyrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 25, 180)),
         'evilrobot': manage_data.robos['evilrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 200, 350)),
         'greenrobot': manage_data.robos['greenrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, 350)),
         'piratebot': manage_data.robos['piratebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 100, 350)),
