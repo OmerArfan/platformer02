@@ -923,7 +923,7 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
     char_text = render_text(char_sel, True, (255, 255, 255))
     screen.blit(char_text, (manage_data.SCREEN_WIDTH // 2 - char_text.get_width() // 2, 50))
 
-    rarities = manage_data.load_language().get('character_select', {})
+    rarities = manage_data.load_language().get('char_select', {})
     common = render_text(rarities.get("common", "Common"), True, (0, 249, 41))
     rare = render_text(rarities.get("rare", "Rare"), True, (0, 196, 255))
     epic = render_text(rarities.get("epic", "Epic"), True, (102, 0, 255))
@@ -936,6 +936,7 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
 
     manage_data.unlocked_robos = {
         'robot': True,
+        'sunnyrobot': manage_data.progress["char"].get("sunnyrobo", False),
         'evilrobot': manage_data.progress["char"].get("evilrobo", False),
         'greenrobot': manage_data.progress["char"].get("greenrobo", False),
         'ironrobot': manage_data.progress["char"].get("ironrobo", False),
@@ -950,7 +951,7 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
     LOCKED_FILTER.fill((40, 40, 40)) # A dark grey color
     LOCKED_FILTER.set_alpha(210)     # Adjust this to change how "locked" it looks      
 
-    for robo_name in ['robot', 'evilrobot', 'greenrobot', 'ironrobot', 'cakebot', 'vectorbot', 'piratebot']:
+    for robo_name in ['robot', 'evilrobot', 'greenrobot', 'ironrobot', 'cakebot', 'vectorbot', 'piratebot', 'sunnyrobot']:
         rect = manage_data.robo_rects[robo_name]  
         if manage_data.unlocked_robos[robo_name]:
             screen.blit(manage_data.robos[robo_name], rect)
@@ -961,6 +962,7 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
     # Draw a highlight border around the selected character
     highlight_colors = {
         "robot": (63, 72, 204),
+        'sunnyrobot': (189, 82, 10),
         "evilrobot": (128, 0, 128),
         "greenrobot": (25, 195, 21),
         "ironrobot": (64, 64, 64),
@@ -974,7 +976,7 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
 
         # Display locked message if one exists
     if hasattr(state, 'locked_message') and state.locked_message is not None:
-            screen.blit(state.locked_message, (manage_data.SCREEN_WIDTH // 2 - state.locked_message.get_width() // 2, 100))
+            screen.blit(state.locked_message, (manage_data.SCREEN_WIDTH // 2 - state.locked_message.get_width() // 2, 90))
 
     for event in events:
         if event.type == pygame.QUIT:
@@ -994,6 +996,8 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
                 try_select_robo(manage_data.unlocked_robos['vectorbot'], "vectorbot", manage_data.robo_rects['vectorbot'], "vectorbot", "Unlock the Mechanical Engineer achievement to get this robo!", transition)
             elif manage_data.robo_rects['piratebot'].collidepoint(mouse_pos):
                 try_select_robo(manage_data.unlocked_robos['piratebot'], "piratebot", manage_data.robo_rects['piratebot'], "piratebot", "Become the Captain of the Ship to get this robo!", transition)
+            elif manage_data.robo_rects['sunnyrobot'].collidepoint(mouse_pos):
+                try_select_robo(manage_data.unlocked_robos['sunnyrobot'], "sunnyrobot", manage_data.robo_rects['sunnyrobot'], "sunnyrobot", "Get the speedy starter achievement to unlock this robo!", transition)            
             elif rect.collidepoint(mouse_pos):
                 state.handle_action(key, transition, manage_data.current_page)
 

@@ -7,7 +7,7 @@ import json
 import webbrowser
 import cleobo.data.acc_sys as acc_sys
 import time
-from cleobo.levels import levels
+from cleobo.levels import launcher
 from cleobo.data.achievements import check_achievements
 
 class TransitionManager:
@@ -400,7 +400,7 @@ def set_page(screen, page, transition):
         # Extract world and level from page name
         world_name, level_name = page.split("_", 1)
         # Call the generic level launcher
-        levels.level_launcher(level_name, screen, transition, world_name)
+        launcher.level_launcher(level_name, screen, transition, world_name)
 
 def muting_sfx():
     manage_data.is_mute = not manage_data.is_mute
