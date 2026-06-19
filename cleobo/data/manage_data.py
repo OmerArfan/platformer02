@@ -52,6 +52,7 @@ default_progress = {
         "character": "robot"
     },
     "char": { 
+        "sunnyrobo": False,
         "evilrobo": False, 
         "greenrobo": False,
         "ironrobo": False,
