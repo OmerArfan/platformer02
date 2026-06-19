@@ -37,7 +37,8 @@ def level_launcher(level_name, screen, transition, world_name):
     # Player
     player_data = level_data['player']
     player = entities.Player(player_data['x'], player_data['y'])
-    player.spawn_x, player.spawn_y = player_data['spawn_x'], player_data['spawn_y']
+    player.init_x, player.init_y = player_data['spawn_x'], player_data['spawn_y']
+    player.spawn_x, player.spawn_y = player.init_x, player.init_y
     
     clock = pygame.time.Clock()
     running = True
@@ -80,16 +81,42 @@ def level_launcher(level_name, screen, transition, world_name):
             'collected': is_collected
         })
 
+    key_block_pairs_timed = []
+    for kbp in level_data.get('key_block_pairs_timed', []):
+        # Handle the Boolean Fix (String to Bool)
+        collected_raw = kbp.get('collected', False)
+        if isinstance(collected_raw, str):
+            is_collected = collected_raw.lower() == "true"
+        else:
+            is_collected = bool(collected_raw)
+
+        # Transform raw data into Game-Ready data
+        key_block_pairs_timed.append({
+            'key': kbp['key'],  # This stays a dict with x, y, radius, color
+            'block': pygame.FRect(kbp['block']['x'], kbp['block']['y'], kbp['block']['w'], kbp['block']['h']),
+            'collected': is_collected,
+            'duration': kbp['duration'],
+            'locked_time': kbp['locked_time']
+        })
+
     saws = level_data.get('saws', [])
     hazards.pre_render_saws(manage_data.assets['saw'], saws)
 
     lasers = [pygame.FRect(laser['x'], laser['y'], laser['w'], laser['h']) for laser in level_data.get('lasers', [])]
 
     # Flags/Checkpoints
-    flags = level_data.get('flags', [])
-    if not isinstance(flags, list):
-        flags = [flags] if flags else []
-    
+    # Ensure flags are dicts and append status/rect safely
+    raw_flags = level_data.get('flags', [])
+    flags = []
+    for f in raw_flags:
+        if isinstance(f, dict) and all(k in f for k in ('x', 'y', 'w', 'h')):
+            new_f = f.copy()
+            new_f['status'] = 'unused'
+            new_f['rect'] = pygame.FRect(new_f['x'], new_f['y'], new_f['w'], new_f['h'])
+            flags.append(new_f)
+        else:
+            print(f"Skipping invalid flag entry: {f}")
+
     # Exit portal
     exit_data = level_data['exit']
     exit_portal = pygame.FRect(exit_data['x'], exit_data['y'], exit_data['w'], exit_data['h'])
@@ -181,10 +208,12 @@ def level_launcher(level_name, screen, transition, world_name):
             running = False
         
         # === UPDATE PLAYER INPUT & VELOCITY (BEFORE collisions) ===
-        player.update(keys, manager, rendered_fall_text)
+        player.update(keys, manager, rendered_fall_text, key_block_pairs, key_block_pairs_timed)
         
         # === RENDER ===
         screen.blit(background, (0, 0))
+
+        player, flags = env.handle_flags(screen, flags, player)
 
         # Draw spikes
         hazards.draw_spikes(screen, spikes, player)
@@ -206,6 +235,8 @@ def level_launcher(level_name, screen, transition, world_name):
                 manage_data.sounds['death'].play()
             for kbp in key_block_pairs: 
                 kbp['collected'] = False
+            for kbp in key_block_pairs_timed: 
+                kbp['collected'] = False
 
         if hazards.handle_lasers(screen, lasers, player):
             player.die()
@@ -214,6 +245,8 @@ def level_launcher(level_name, screen, transition, world_name):
             if not manage_data.is_mute:
                 manage_data.sounds['laser'].play()
             for kbp in key_block_pairs: 
+                kbp['collected'] = False
+            for kbp in key_block_pairs_timed: 
                 kbp['collected'] = False
 
         # === PHYSICS: BLOCK COLLISIONS ===
@@ -224,6 +257,8 @@ def level_launcher(level_name, screen, transition, world_name):
         player = blockmgr.handle_jump_blocks(screen, jump_blocks, player)
 
         player = blockmgr.handle_key_blocks(screen, key_block_pairs, player)
+
+        player = blockmgr.handle_key_blocks_timed(screen, key_block_pairs_timed, player)
 
         player = env.handle_teleports(screen, teleporters, player)   
 
@@ -237,15 +272,31 @@ def level_launcher(level_name, screen, transition, world_name):
                 manage_data.sounds['hit'].play()
             for kbp in key_block_pairs: 
                 kbp['collected'] = False
+            for kbp in key_block_pairs_timed: 
+                kbp['collected'] = False
+
+        # Death if got inside a locked block (or if crushed in general)
+        if player.crushed:
+            player.die()
+            manager.death_text = menu_ui.render_text(in_game.get("crushed_message", "Crushed!"), True, (255, 0, 0))
+            manager.wait_time = pygame.time.get_ticks()
+            if not manage_data.is_mute:
+                manage_data.sounds['hit'].play()
+            for kbp in key_block_pairs: 
+                kbp['collected'] = False
+            for kbp in key_block_pairs_timed: 
+                kbp['collected'] = False
 
         # Spike collisions
         if hazards.check_spike_collisions(spikes, player):
             player.die()
-            manager.death_text = menu_ui.render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
+            manager.death_text = menu_ui.render_text(in_game.get("dead_message", "You Died!"), True, (255, 0, 0))
             manager.wait_time = pygame.time.get_ticks()
             if not manage_data.is_mute:
                 manage_data.sounds['death'].play()
             for kbp in key_block_pairs: 
+                kbp['collected'] = False
+            for kbp in key_block_pairs_timed: 
                 kbp['collected'] = False
 
         # Draw text elements
@@ -275,6 +326,10 @@ def level_launcher(level_name, screen, transition, world_name):
             player.deathcount = 0
             for kbp in key_block_pairs: 
                 kbp['collected'] = False
+            for kbp in key_block_pairs_timed: 
+                kbp['collected'] = False
+            for flag in flags:
+                flag['status'] = 'unused'
         
         # Update Player sprite
         player.sprite.draw(screen, player, keys, manager)
@@ -285,392 +340,3 @@ def level_launcher(level_name, screen, transition, world_name):
 
 # IMPORTANT!
 # ANYTHING BELOW THIS IS OLD, LEGACY CODE WHICH WILL GET PHASED OUT AS TIME GOES ON.
-
-def create_lvl12_screen(screen, transition):
-    global player_img, font, complete_levels, current_time, medal, deathcount, score
-    global new_hs, hs, stars
-
-    player_img, blink_img, moving_img, moving_img_l, img_width, img_height = manage_data.char_assets(manage_data.selected_character)
-    new_hs = False
-    menu_ui.buttons.clear()
-    screen.blit(manage_data.bgs['mech'], (0, 0))
-
-    in_game = manage_data.load_language().get('in_game', {})
-
-    wait_time = None
-    death_text = None
-    start_time = time.time()
-
-    # Camera settings
-    camera_x = 0
-    camera_y = -500
-    spawn_x, spawn_y =  100, 0
-    player_x, player_y = spawn_x, spawn_y
-    running = True
-    gravity = 1
-    jump_strength = 21
-
-    # Gravity menu_ui.buttons
-    strong_jump_strength = 15
-    strong_grav = False
-    weak_grav_strength = 37
-    weak_grav = False
-    
-    # Speed settings
-    move_speed = 8
-    stamina = False
-    stamina_speed = 19
-    velocity_x = move_speed
-
-    # Other settings
-    on_ground = False
-    velocity_y = 0
-    camera_speed = 0.5
-    deathcount = 0
-    was_moving = False
-
-    # Draw flag
-    flag = pygame.FRect(3900, 200, 100, 125)  # x, y, width, height
-    checkpoint_reached = False
-    flag_1_x, flag_1_y = 3900, 200
-
-    gravity_strongers = [
-        (3800, 250, 30, (204, 102, 204)),  # Strong gravity button
-    ]
-
-    gravity_weakers = [
-        (5000, 700, 30, (0, 102, 204)),
-    ]
-
-    key_block_pairs_timed = [
-        {
-            "key": (300, 100, 30, (255, 119, 0)),
-            "block": pygame.FRect(1900, 0, 100, 200),
-            "collected": False,
-            "duration": 5000,  # Duration for which the block is active
-            "locked_time": None
-        },
-        {
-            "key": (4000, 250, 30, (255, 119, 0)),
-            "block": pygame.FRect(4150, 400, 50, 250),
-            "collected": False,
-            "duration": 3500,  # Duration for which the block is active
-            "locked_time": None
-        }
-    ]
-
-    blocks = [
-        pygame.FRect(0, 200, 2000, 100),
-        pygame.FRect(1900, -1000, 100, 1000),
-        pygame.FRect(3200, -50, 800, 100),
-        pygame.FRect(3600, 300, 500, 100),
-        pygame.FRect(4100, -700, 101, 1100),
-        pygame.FRect(3450, 650, 1000, 100),
-        pygame.FRect(3350, 0, 100, 750),
-        pygame.FRect(2300, 200, 150, 100),
-        pygame.FRect(2600, 20, 200, 100),
-        pygame.FRect(4500, 750, 600, 200),
-    ]
-
-    jump_blocks = [
-        pygame.FRect(3000, 250, 100, 100),
-        pygame.FRect(4300, 550, 100, 100),
-    ]
-
-    moving_saws = [ 
-        {'r': 70, 'speed': 4, 'cx': 800, 'cy': 0, 'max': 500, 'min': -100},
-        {'r': 70, 'speed': 5, 'cx': 1400, 'cy': 300, 'max': 600, 'min': 0},
-    ]
-
-    moving_saws_x = [
-        {'r': 95, 'speed': 6, 'cx': 3350, 'cy': -50, 'min': 3300, 'max': 3900},
-    ]
-
-    saws = [
-        (4600, 550, 80, (255, 0, 0)),
-    ]
-
-    spikes = [
-    [(1000, 200), (1050, 150), (1100, 200)],
-    [(2710, 20), (2755, -30), (2800, 20)],
-    [(3600, 300), (3650, 250), (3700, 300)],
-    [(3650, 650), (3700, 600), (3750, 650)],
-    [(3900, 650), (3950, 600), (4000, 650)]
-    ]
-
-    exit_portal = pygame.FRect(4080, -910, 140, 180)
-    clock = pygame.time.Clock()
-
-    menu_ui.draw_notifs(screen)
-    menu_ui.draw_syncing_status(screen)
-
-    timed_coin_text_2 = in_game.get("timed_coin_message_2", "time. Run before they close again, or at worst, crush you...")
-    rendered_timed_text_2 = menu_ui.render_text(timed_coin_text_2, True, (255, 128, 0))
-
-    timed_coin_text = in_game.get("timed_coin_message", "Orange coins are timed! They open blocks for a limited")
-    rendered_timed_text = menu_ui.render_text(timed_coin_text, True, (255, 128, 0))
-
-    if not transition.active:
-      while running:
-        clock.tick(60)
-        keys = pygame.key.get_pressed()
-
-        current_time = time.time() - start_time
-        formatted_time = "{:.2f}".format(current_time)
-
-        if keys[pygame.K_r]:
-            start_time = time.time()
-            lights_off = True
-            stamina = False
-            weak_grav = False
-            strong_grav = False
-            checkpoint_reached = False  # Reset checkpoint status
-            spawn_x, spawn_y = 100, 0
-            player_x, player_y = spawn_x, spawn_y  # Reset player position
-            velocity_y = 0
-            deathcount = 0
-            for pair in key_block_pairs_timed:
-                pair["collected"] = False  # Reset the collected status for all keys
-                pair["locked_time"] = None  # Reset the timer for all key blocks
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or keys[pygame.K_q]:
-                running = False
-                state.handle_action("quit", transition, manage_data.current_page)
-
-        # Input
-        if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
-            if strong_grav:
-                velocity_y = -strong_jump_strength
-            elif weak_grav:
-                velocity_y = -weak_grav_strength
-            else:
-                velocity_y = -jump_strength
-            if not manage_data.is_mute:
-                manage_data.sounds['jump'].play()
-
-        # Detect if any movement key is pressed
-        moving = (keys[pygame.K_LEFT] or keys[pygame.K_a] or
-                  keys[pygame.K_RIGHT] or keys[pygame.K_d])
-
-        if moving:
-            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-                if stamina:
-                    velocity_x = stamina_speed
-                    player_x -= velocity_x
-                else:
-                    velocity_x = move_speed
-                    player_x -= velocity_x
-            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-                if stamina:
-                    velocity_x = stamina_speed
-                    player_x += velocity_x
-                else:
-                    velocity_x = move_speed
-                    player_x += velocity_x
-
-            if on_ground and not was_moving and not manage_data.is_mute:
-                manage_data.sounds['move'].play()
-            was_moving = True
-        else:
-            was_moving = False
-
-        # Gravity and stamina
-        if not on_ground:
-            velocity_y += gravity
-        player_y += velocity_y
-
-        # Collisions and Ground Detection
-        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
-        on_ground = False
-
-        player_rect = pygame.FRect(player_x, player_y, img_width, img_height)
-
-        # Checkpoint logic
-        if player_rect.colliderect(flag) and not checkpoint_reached:
-            checkpoint_reached = True
-            stamina = False  # Reset stamina status
-            weak_grav = False
-            strong_grav = False
-            spawn_x, spawn_y = 3900, 150  # Store checkpoint position
-            if not manage_data.is_mute:
-                manage_data.sounds['checkpoint'].play()
-            pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle representing the active flag
-
-        # Exit portal
-        if player_rect.colliderect(exit_portal):
-            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = level_fin_lvl_logic(current_time, deathcount, medal, 12)
-            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
-            manage_data.save_progress(manage_data.progress, manage_data.manifest)  # Save manage_data.progress to JSON file
-            
-            state.handle_action('quit', transition, manage_data.current_page)
-            running = False  
-
-        # Draw flag
-        if checkpoint_reached:
-            pygame.draw.rect(screen, (0, 105, 0), flag.move(-camera_x, -camera_y))  # Green rectangle for active checkpoint
-        else:
-            pygame.draw.rect(screen, (255, 215, 0), flag.move(-camera_x, -camera_y))  # Gold rectangle for inactive checkpoint
-
-        # Drawing
-        screen.blit(manage_data.bgs['mech'], (0, 0))
-
-        if checkpoint_reached:
-            screen.blit(manage_data.assets['cpoint_act'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
-        else:
-            screen.blit(manage_data.assets['cpoint_inact'], ((flag_1_x - camera_x), (flag_1_y - camera_y)))
-
-        # Handle Moving Saws
-        if level_handle_moving_saws(screen, moving_saws, player_rect, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache):
-            # Death logic (same as above)
-            player_x, player_y = spawn_x, spawn_y
-            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
-            wait_time = pygame.time.get_ticks()
-            deathcount += 1
-            if not manage_data.is_mute: manage_data.sounds['death'].play()
-            velocity_y = 0
-        
-        # Handle Moving Saws
-        if level_handle_moving_saws_x(screen, moving_saws_x, player_rect, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache):
-            # Death logic (same as above)
-            player_x, player_y = spawn_x, spawn_y
-            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
-            wait_time = pygame.time.get_ticks()
-            deathcount += 1
-            if not manage_data.is_mute: manage_data.sounds['death'].play()
-            velocity_y = 0
-            weak_grav = False
-            strong_grav = False
-            for pair in key_block_pairs_timed:
-                pair["collected"] = False  # Reset the collected status for all keys
-                pair["locked_time"] = None  # Reset the timer for all key blocks
-
-        level_draw_saws(screen, saws, manage_data.assets['saw'], camera_x, camera_y, manage_data.saw_cache)
-
-        # 2. Check for saw deaths
-        if level_check_saw_collisions(player_rect, saws):
-            death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
-            wait_time = pygame.time.get_ticks()
-            if not manage_data.is_mute:
-                manage_data.sounds['death'].play()
-            player_x, player_y = spawn_x, spawn_y
-            velocity_y = 0
-            deathcount += 1
-            strong_grav = False
-            weak_grav = False
-            for pair in key_block_pairs_timed:
-                pair["collected"] = False  # Reset the collected status for all keys
-                pair["locked_time"] = None  # Reset the timer for all key blocks
-
-        player_x, player_y, velocity_y = level_jump_block_func(screen, jump_blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, manage_data.is_mute, manage_data.sounds['bounce'], strong_grav, weak_grav)
-        level_draw_spikes(screen, spikes, camera_x, camera_y)
-
-        player_x, player_y, velocity_y, on_ground, player_rect = level_block_func(screen, blocks, camera_x, camera_y, player_x, player_y, img_width, img_height, velocity_y, player_rect, on_ground)
-        
-        if level_handle_bottom_collisions(blocks, player_rect, velocity_y):  # Only if jumping upward
-                player_x, player_y = spawn_x, spawn_y  # Reset player position
-                death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
-                wait_time = pygame.time.get_ticks()
-                if not manage_data.is_mute:    
-                    manage_data.sounds['hit'].play()
-                velocity_y = 0
-                deathcount += 1 
-                strong_grav = False
-                weak_grav = False
-                for pair in key_block_pairs_timed:
-                    pair["collected"] = False  # Reset the collected status for all keys
-                    pair["locked_time"] = None  # Reset the timer for all key blocks
-
-        level_draw_portal(screen, manage_data.assets['mech_exit'], exit_portal, camera_x, camera_y)
-
-        screen.blit(rendered_timed_text, (0 - camera_x, -80 - camera_y))
-        screen.blit(rendered_timed_text_2, (-20 - camera_x, -30 - camera_y))
-        
-        if level_handling_gravity_strongers(screen, gravity_strongers, player_rect, camera_x, camera_y, strong_grav):
-            strong_grav = True
-            weak_grav = False
-
-        if level_handling_gravity_weakers(screen, gravity_weakers, player_rect, camera_x, camera_y, weak_grav):
-            strong_grav = False
-            weak_grav = True
-
-        is_crushed, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y, on_ground = level_handle_key_blocks_timed(screen, key_block_pairs_timed, player_rect, player_x, player_y, img_width, img_height, velocity_y, camera_x, camera_y, on_ground)
-        if is_crushed:
-            if not manage_data.is_mute:
-                manage_data.sounds['hit'].play()
-            deathcount += 1
-            stamina = False  # Reset stamina status
-            weak_grav = False
-            strong_grav = False
-            for pair in key_block_pairs_timed:
-                pair["collected"] = False  # Reset the collected status for all keys
-                pair["locked_time"] = None  # Reset the timer for all key blocks
-            player_x, player_y = spawn_x, spawn_y
-            velocity_y = 0  # Reset vertical speed
-            wait_time = pygame.time.get_ticks()  # Start the wait time
-            death_text = menu_ui.render_text(in_game.get("crushed_message", "Crushed!"), True, (255, 0, 0))
-
-        deaths_val = in_game.get("deaths_no", "Deaths: {deathcount}").format(deathcount=deathcount)
-        deaths_rendered = menu_ui.render_text(deaths_val, True, (255, 255, 255))
-
-        timer_txt = in_game.get("time", f"Time: {time}s").format(time=formatted_time)
-        timer_text = menu_ui.render_text(timer_txt, True, (255, 255, 255))  # white color
-
-        # Initialize and draw the reset and quit text
-        reset_text = in_game.get("reset_message", "Press R to reset")
-        rendered_reset_text = menu_ui.render_text(reset_text, True, (255, 255, 255))  # Render the reset text
-
-        quit_text = in_game.get("quit_message", "Press Q to quit")
-        rendered_quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))  # Render the quit text
-
-        level_draw_level_ui(screen, manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT, deaths_rendered, rendered_reset_text, rendered_quit_text, timer_text)
-        
-        medal = level_get_medal(12, current_time)
-        level_draw_medals(screen, medal, deathcount, manage_data.medals, timer_text.get_width(), manage_data.SCREEN_WIDTH)
-
-        level_draw_spikes(screen, spikes, camera_x, camera_y)
-
-        if level_check_spike_collisions(spikes, player_x, player_y, img_width, img_height):
-            player_x, player_y = spawn_x, spawn_y
-            death_text = menu_ui.render_text(in_game.get("dead_message", "You Died"), True, (255, 0, 0))
-            wait_time = pygame.time.get_ticks()
-            if not manage_data.is_mute:
-                manage_data.sounds['death'].play()
-            velocity_y = 0
-            deathcount += 1
-            strong_grav = False
-            weak_grav = False
-            for pair in key_block_pairs_timed:
-                pair["collected"] = False  # Reset the collected status for all keys
-                pair["locked_time"] = None  # Reset the timer for all key blocks
-
-        if player_y > 1100:
-            death_text = menu_ui.render_text(in_game.get("fall_message", "Fell too far!"), True, (255, 0, 0))
-            wait_time = pygame.time.get_ticks()  # Start the wait time
-            weak_grav = False
-            strong_grav = False
-            for pair in key_block_pairs_timed:
-                pair["collected"] = False  # Reset the collected status for all keys
-                pair["locked_time"] = None  # Reset the timer for all key blocks
-            if not manage_data.is_mute:    
-                manage_data.sounds['fall'].play()
-            player_x, player_y = spawn_x, spawn_y  # Reset player position
-            velocity_y = 0
-            deathcount += 1
-
-        # Player Image
-        level_player_image(current_time, moving_img, moving_img_l, player_img, blink_img,screen, keys, player_x, player_y, camera_x, camera_y)
-
-        # Camera logic
-        camera_x += (player_x - camera_x - screen.get_width() // 2 + img_width // 2) * camera_speed
-
-        # Adjust the camera's Y position when the player moves up
-        if player_y <= 200:
-            camera_y = player_y - 200
-        else:
-            camera_y = 0  # Keep the camera fixed when the player is below the threshold
-
-        level_death_message(screen, death_text, wait_time, duration=2500)
-        menu_ui.draw_notifs(screen)
-        menu_ui.draw_syncing_status(screen)
-        pygame.display.update() 

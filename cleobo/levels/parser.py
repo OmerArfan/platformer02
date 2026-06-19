@@ -242,6 +242,8 @@ def _parse_value(value):
         return True
     if value.lower() == "false":
         return False
+    if value.lower() == "nil":
+        return None
 
     if value.startswith('{'):
         return _parse_table_or_list(value)
