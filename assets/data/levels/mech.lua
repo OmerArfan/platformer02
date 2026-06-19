@@ -82,8 +82,8 @@ local lvl2 = {
 	    {x = 9625, y = 725, radius = 150, type = 'static'},
     },
 	flags = {
-		{x = 8700, y = 580, w = 100, h = 125, save_x = 8700, save_y = -320},
-		{x = 10000, y = 580, w = 100, h = 125, save_x = 10000, save_y = -320},
+		{x = 8700, y = 580, w = 100, h = 125, save_x = 8700, save_y = 540},
+		{x = 10000, y = 580, w = 100, h = 125, save_x = 10000, save_y = 540},
 	},
 	grav_weak = {
 		{x = 8700, y = 550}
@@ -187,6 +187,10 @@ local lvl3 = {
 	moving_block = {
         {x = 4450, y = 30, w = 100, h = 50, axis = "x", direction = 1, speed = 8, limit_x = 4050, limit_y = 5600},
     },
+	text = {
+		clarify2 = {name = "clarify_message2", fallback = "They also affect your jumps on jump blocks!", color =  {204, 102, 204}, x = 1000, y = 450},
+    	button2_text = {name = "button2_message", fallback = "Lavender buttons, upon activation, will make you jump lower!", color = {204, 102, 204}, x = 100, y = 100}
+	},
 	exit = {x = 3340, y = 420, w = 140, h = 180},
 	next_page = "mech_lvl4",
 }
@@ -237,6 +241,9 @@ local lvl4 = {
 	moving_block = {
         {x = 2200, y = 300, w = 100, h = 50, axis = "x", direction = 1, speed = 5, limit_x = 2200, limit_y = 2800},
     },
+	text = {
+		button3_message = {name = "button3_message", fallback = "Purple buttons, upon activation, will turn out almost all the lights!", color = {104, 102, 204}, x = 100, y = 300}
+	},
 	exit = {x = 5960, y = 280, w = 140, h = 180},
 	next_page = "mech_lvl5",
 }
@@ -250,7 +257,7 @@ local lvl5 = {
 	blocks = {
 	    {x = -600, y = 525, w = 3449, h = 50},
 	    {x = 1065, y = 200, w = 70, h = 375},
-	    {x = 1625, y = -200, w = 100, h = 590},
+	    {x = 1625, y = -200, w = 100, h = 480},
 	    {x = 1625, y = 50, w = 150, h = 50},
 	    {x = 2200, y = 400, w = 150, h = 50},
 	    {x = 2250, y = -300, w = 600, h = 825},
@@ -272,7 +279,6 @@ local lvl5 = {
 	    {{1625, -50}, {1575, 0}, {1625, 50}},
 	    {{1625, 60}, {1575, 110}, {1625, 160}},
 	    {{1625, 170}, {1575, 220}, {1625, 270}},
-	    {{1625, 280}, {1575, 330}, {1625, 380}},
 	},
 	flags = {
 		{x = 1400, y = 420, w = 100, h = 125, save_x = 1400, save_y = 420},
@@ -302,6 +308,9 @@ local lvl5 = {
             button = {x = 2570, y = -425},
 		    block = {x = 3050, y = -200, w = 120, h = 400}
 		}
+	},
+	text = {
+		button4_text = {name = "button4_message", fallback = "Green buttons, upon activation, will give you a massive speed boost!", color = {51, 255, 51}, x = -320, y = 300}
 	},
 	exit = {x = 6600, y = 250, w = 140, h = 180},
 	next_page = "mech_lvl6",
@@ -348,7 +357,27 @@ local lvl6 = {
 		{radius = 95, speed = 6, x = 3350, y = -50, max = 3900, min = 3300, type = 'moving_x'},
 		{x = 4600, y = 570, radius = 80, type = 'static'},
 	},
-	flags = {x = 3900, y = 200, w = 100, h = 125, save_x = 3900, save_y = 200},
+	key_block_pairs_timed = {
+        {
+            key = {x = 300, y = 100, radius = 30, color = {255, 119, 0}},
+            block = {x = 1900, y = 0, w = 100, h = 200},
+            collected = false,
+            duration = 5000,
+            locked_time = nil
+        },
+		{
+            key = {x = 4000, y = 250, radius = 30, color = {255, 119, 0}},
+            block = {x = 4150, y = 400, w = 50, h = 250},
+            collected = false,
+            duration = 3500,
+            locked_time = nil
+        },
+	},
+	text = {
+		timed_coin_message_2 = {name = "timed_coin_message_2", fallback = "time. Run before they close again, or at worst, crush you...", color = {255, 128, 0}, x = -20, y = -30},
+		timed_coin_message = {name = "timed_coin_message", fallback = "Orange coins are timed! They open blocks for a limited", color = {255, 128, 0}, x = 0, y = -80}
+	},
+	flags = {{x = 3900, y = 200, w = 100, h = 125, save_x = 3900, save_y = 200}},
 	exit = {x = 4080, y = -910, w = 140, h = 180},
 	next_page = "quit",
 }
