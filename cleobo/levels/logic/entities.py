@@ -277,10 +277,11 @@ class LevelManager:
         base_score = 100000 # From where the score is added to/subtracted from
         token_score = 0
         time_score = int(self.current_time * 160)
-        if self.medal == "Diamond":
-            medal_score = -10000
-        elif self.medal == "Gold":
-            medal_score = 5000
+        if self.medal == "Gold":
+            if player.deathcount == 0:
+                medal_score = -10000
+            else:
+                medal_score = 5000
         elif self.medal == "Silver":
             medal_score = 10000
         elif self.medal == "Bronze":
