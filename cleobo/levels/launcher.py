@@ -194,11 +194,7 @@ def level_launcher(level_name, screen, transition, world_name):
                 subsection=subsection
             )
             
-            # ✅ Get medal from updated progress
-            level_data_updated = manage_data.progress["lvls"][world_name][subsection][f"lvl{level_num}"]
-            medal = level_data_updated.get('medal', 'None')
-            
-            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars)
+            menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, manager.medal, stars)
             
             manage_data.save_progress(manage_data.progress, manage_data.manifest)
             
