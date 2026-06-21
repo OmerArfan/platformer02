@@ -6,8 +6,8 @@ from datetime import datetime
 import traceback
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0496"
-manage_data.kernel = "0.6.0.0045"
+manage_data.version = "1.3.9.0497"
+manage_data.kernel = "0.6.0.0046"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
@@ -115,7 +115,7 @@ def init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT):
             'desert': ("bgs/DesertBackground.png", (SCREEN_WIDTH, SCREEN_HEIGHT), False),
             'trans_left': ("bgs/trans_left.png", ((SCREEN_WIDTH // 2 + 20), SCREEN_HEIGHT), False),
             'trans_right': ("bgs/trans_right.png", ((SCREEN_WIDTH // 2 + 20), SCREEN_HEIGHT), False),
-            'end': ("bgs/EndScreen.png", (SCREEN_WIDTH, SCREEN_HEIGHT), True),
+            'end': ("bgs/EndScreen.png", (650, SCREEN_HEIGHT), True),
         }
         
         for name, (file_path, size, use_alpha) in bg_files.items():
@@ -164,6 +164,7 @@ def init_disks():
             'greenpack': ("disks/greenpack.png", (260, 260)),
             'mechpack': ("disks/mechpack.png", (260, 260)),
             'shippack': ("disks/shippack.png", (260, 260)),
+            'desertpack': ("disks/desertpack.png", (260, 260)),
             'locked': ("disks/lockeddisk.png", (110, 110)),
         }
         
