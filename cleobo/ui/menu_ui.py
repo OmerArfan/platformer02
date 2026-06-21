@@ -266,6 +266,7 @@ def init_profile_vars():
     gold_medals, diamond_medals, total_stars, ulock_ach, total_ach = 0, 0, 0, 0, 0
 
     for wk, world in (manage_data.progress['lvls'].items() if isinstance(manage_data.progress.get('lvls'), dict) else enumerate(manage_data.progress.get('lvls', []))):
+      if wk != "desert":  
         if isinstance(world, dict):
             levels = world.get("1") if "1" in world else None
             if levels is None:
@@ -538,17 +539,20 @@ def worlds(screen):
     buttons.clear()
     current_lang = manage_data.load_language().get('levels', {})
 
-    green_center = (manage_data.SCREEN_WIDTH // 2 - 375, manage_data.SCREEN_HEIGHT // 2 - 70)
-    ship_center = (manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT // 2 - 70)
-    mech_center = (manage_data.SCREEN_WIDTH // 2 + 375, manage_data.SCREEN_HEIGHT // 2 - 70)
+    green_center = (manage_data.SCREEN_WIDTH // 2 - 560, manage_data.SCREEN_HEIGHT // 2 - 70)
+    ship_center = (manage_data.SCREEN_WIDTH // 2 - 185, manage_data.SCREEN_HEIGHT // 2 - 70)
+    mech_center = (manage_data.SCREEN_WIDTH // 2 + 190, manage_data.SCREEN_HEIGHT // 2 - 70)
+    desert_center = (manage_data.SCREEN_WIDTH // 2 + 565, manage_data.SCREEN_HEIGHT // 2 - 70)
     
     mech_rect = manage_data.disks['mechpack'].get_rect(center=mech_center)
     green_rect = manage_data.disks['greenpack'].get_rect(center=green_center)
     ship_rect = manage_data.disks['shippack'].get_rect(center=ship_center)
+    desert_rect = manage_data.disks['desertpack'].get_rect(center=desert_center)
 
     screen.blit(manage_data.disks['mechpack'], mech_rect)
     screen.blit(manage_data.disks['greenpack'], green_rect)
     screen.blit(manage_data.disks['shippack'], ship_rect)
+    screen.blit(manage_data.disks['desertpack'], desert_rect)
 
     # Draw stats for both worlds
     draw_world_stats(screen, "Green", "green", green_rect)
@@ -558,6 +562,7 @@ def worlds(screen):
     buttons.append((manage_data.disks['greenpack'], green_rect, "levels", False))
     buttons.append((manage_data.disks['mechpack'], mech_rect, "mech_levels", False))
     buttons.append((manage_data.disks['shippack'], ship_rect, "ship_levels", False))
+    buttons.append((manage_data.disks['desertpack'], desert_rect, "desert_levels", False))
 
     world_text = current_lang.get("worlds", "Select World")        
     rendered_world_txt = render_text(world_text, True, (255, 255, 255))
@@ -698,6 +703,46 @@ def ship_world_buttons(screen):
     # Add the button
     buttons.append((rendered_back, back_rect, "back", False))
 
+def desert_world_buttons(screen):
+    global text_rect, current_lang, buttons
+    buttons.clear()
+
+    level_options = ["lvl1", "lvl2", "lvl3", "lvl4"]
+    level_no = ["1", "2", "3", "4"]
+    buttons_per_row = 2
+    spacing_x = 180
+    spacing_y = 180
+
+    grid_width = (buttons_per_row - 1) * spacing_x
+    start_x = (manage_data.SCREEN_WIDTH - grid_width) // 2
+    start_y = ((manage_data.SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2)) + 50
+
+    for i, level in enumerate(level_options):
+        col = i % buttons_per_row
+        row = i // buttons_per_row
+        x = start_x + col * spacing_x
+        y = start_y + row * spacing_y
+
+        is_locked = manage_data.progress["lvls"]["desert"]["1"][level]['locked']
+        text_surface = render_text(level_no[i], True, (255, 255, 255), bigfont=True)
+        disk_rect = manage_data.disks['mech'].get_rect(center=(x, y))
+        buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
+
+    # Get the text
+    back_text = current_lang.get("back", "Back")        
+    rendered_back = render_text(back_text, True, (255, 255, 255))
+
+    # Create a fixed 100x100 hitbox centered at the right location
+    back_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
+    back_rect.center = (manage_data.SCREEN_WIDTH // 2 , manage_data.SCREEN_HEIGHT - 200)
+
+    # Then during draw phase: center the text inside that fixed rect
+    text_rect = rendered_back.get_rect(center=back_rect.center)
+    screen.blit(rendered_back, text_rect)
+
+    # Add the button
+    buttons.append((rendered_back, back_rect, "back", False))
+
 def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, button_hovered_last_frame):
     # 1. Dynamic Setup
     world_type = current_page
@@ -777,8 +822,13 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
     lvl_comp = messages.get("lvl_comp", "Level Complete!")
     old_xp = manage_data.progress["player"].get("XP", 0)
     rendered_lvl_comp = render_text(lvl_comp, True, (255, 255, 255))
+
+    BG = pygame.Surface((manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT))
+    BG.fill((40, 40, 40)) # A dark grey color
+    BG.set_alpha(25)     # Adjust this to change how "locked" it looks
     while running:
-        screen.blit(manage_data.bgs['end'], (0, 0))
+        screen.blit(BG, (0, 0))
+        screen.blit(manage_data.bgs['end'], (manage_data.SCREEN_WIDTH // 2 - manage_data.bgs['end'].get_width() // 2, 0))
         keys = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -824,8 +874,9 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
         if medal == "Gold" and death_score == 0:
             medal = "Diamond"
 
-        if medal != "None":
-            screen.blit(manage_data.medals[medal], (manage_data.SCREEN_WIDTH // 2 - 200, 300 - manage_data.medals[medal].get_height() // 2))
+        if medal is not None and medal != "None":
+            if medal in manage_data.medals:
+                screen.blit(manage_data.medals[medal], (manage_data.SCREEN_WIDTH // 2 - 200, 300 - manage_data.medals[medal].get_height() // 2))
 
         for particle in stareffects[:]:
          particle.update()
@@ -874,7 +925,7 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
             if time.time() - star_time > 4:
              low_text = messages.get("lowest", "Lowest possible score!")
              low_render = render_text(low_text, True, (255, 0, 0))
-             screen.blit(low_render, (manage_data.SCREEN_WIDTH // 2 - low_render.get_width() // 2, 500))
+             screen.blit(low_render, (manage_data.SCREEN_WIDTH // 2 - low_render.get_width() // 2, 450))
              if time_score > death_score:
                  reason_text = messages.get("time_reason", "You took too long to")
                  reason_text_2 = messages.get("time_reason_2", "complete the level.")
@@ -882,9 +933,9 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
                  reason_text = messages.get("death_reason", "You died too many times!")
                  reason_text_2 = messages.get("death_reason_2", "")
              reason_render = render_text(reason_text, True, (255, 0, 0))
-             screen.blit(reason_render, (manage_data.SCREEN_WIDTH // 2 - reason_render.get_width() // 2, 540))
+             screen.blit(reason_render, (manage_data.SCREEN_WIDTH // 2 - reason_render.get_width() // 2, 490))
              reason_render_2 = render_text(reason_text_2, True, (255, 0, 0))
-             screen.blit(reason_render_2, (manage_data.SCREEN_WIDTH // 2 - reason_render_2.get_width() // 2, 580))
+             screen.blit(reason_render_2, (manage_data.SCREEN_WIDTH // 2 - reason_render_2.get_width() // 2, 530))
 
         if time.time() - star_time > 5.5:  # Show for 3.5 seconds
                 if new_hs:
@@ -906,10 +957,10 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
             # Instead of hardcoded text:
             press_text = messages.get("press_space", "Press the spacebar to")
             p_render = render_text(press_text, True, (158, 158, 158))
-            screen.blit(p_render, (manage_data.SCREEN_WIDTH // 2 - p_render.get_width() // 2, manage_data.SCREEN_HEIGHT - 60))
+            screen.blit(p_render, (manage_data.SCREEN_WIDTH // 2 - p_render.get_width() // 2, manage_data.SCREEN_HEIGHT - 135))
             wait_text = messages.get("continue_wait", "continue or wait for {next_left}").format(next_left=next_left)
             w_render = render_text(wait_text, True, (158, 158, 158))
-            screen.blit(w_render, (manage_data.SCREEN_WIDTH // 2 - w_render.get_width() // 2, manage_data.SCREEN_HEIGHT - 35))
+            screen.blit(w_render, (manage_data.SCREEN_WIDTH // 2 - w_render.get_width() // 2, manage_data.SCREEN_HEIGHT - 100))
 
         draw_notifs(screen)
         draw_syncing_status(screen)
@@ -917,13 +968,23 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
         clock.tick(60)
 
 def draw_character_select(screen, mouse_pos, events, transition, rect, key):
+    global buttons
+    buttons.clear()
+
     mouse_pos = pygame.mouse.get_pos()
     header_txt = manage_data.load_language().get('main_menu', {})
+
     char_sel = header_txt.get("character_select", "Character Select")
     char_text = render_text(char_sel, True, (255, 255, 255))
     screen.blit(char_text, (manage_data.SCREEN_WIDTH // 2 - char_text.get_width() // 2, 50))
 
     rarities = manage_data.load_language().get('char_select', {})
+
+    back_text = rarities.get("back", "Back")
+    rendered_back = render_text(back_text, True, (255, 255, 255))
+    back_rect = rendered_back.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 50))
+    buttons.append((rendered_back, back_rect, "back", False))
+
     common = render_text(rarities.get("common", "Common"), True, (0, 249, 41))
     rare = render_text(rarities.get("rare", "Rare"), True, (0, 196, 255))
     epic = render_text(rarities.get("epic", "Epic"), True, (102, 0, 255))
@@ -1024,18 +1085,6 @@ def try_select_robo(unlock_flag, char_key, rect, locked_msg_key, fallback_msg, t
                 state.wait_time = pygame.time.get_ticks()
             locked_text = charsel.get(locked_msg_key, fallback_msg)
             state.locked_message = render_text(locked_text, True, (255, 255, 0))
-
-def character_select():
-    # Clear screen
-    buttons.clear()
-    current_lang = manage_data.load_language()['char_select']
-    button_texts = ["back"]
-
-    for i, key in enumerate(button_texts):
-        text = current_lang[key]
-        rendered = render_text(text, True, (255, 255, 255))
-        rect = rendered.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 50)) 
-        buttons.append((rendered, rect, key, False))
 
 def settings_menu(screen):
     global current_lang, buttons

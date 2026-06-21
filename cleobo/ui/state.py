@@ -262,6 +262,12 @@ def handle_action(key, transition, current_page):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "ship"
+        elif key == "desert_levels":
+            if not is_transitioning:
+                transition.start("desert")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "desert"
     elif current_page == 'language_select':
         if key == "back":
             if not is_transitioning:
@@ -276,7 +282,7 @@ def handle_action(key, transition, current_page):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "main_menu"
-    elif current_page == 'green' or current_page == 'mech' or current_page == 'ship':
+    elif current_page == 'green' or current_page == 'mech' or current_page == 'ship' or current_page == 'desert':
         if key is None:  # Ignore clicks on locked levels
             return
         elif key == "back":
@@ -361,8 +367,6 @@ def set_page(screen, page, transition):
         menu_ui.draw_profile(screen)
     elif page == "achievements":
         menu_ui.create_achieve_screen(screen)
-    elif page == 'character_select':
-        menu_ui.character_select()
     elif page == 'language_select':
         current_lang = manage_data.load_language().get('language_select', {})
         menu_ui.create_language_buttons(screen)
@@ -392,6 +396,10 @@ def set_page(screen, page, transition):
         current_lang = manage_data.load_language().get('levels', {})
         menu_ui.ship_world_buttons(screen)
         manage_data.change_ambience("ship")
+    elif page == 'desert':
+        current_lang = manage_data.load_language().get('levels', {})
+        menu_ui.desert_world_buttons(screen)
+        manage_data.change_ambience("desert")
     elif page == 'quit_confirm':
         current_lang = manage_data.load_language().get('messages', {})
         menu_ui.create_quit_confirm_buttons()
