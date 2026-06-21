@@ -47,6 +47,9 @@ default_progress = {
         "mech": {
             "1": {f"lvl{i}": {"locked": True, "score": 0, "medal": "None", "time": 0} for i in range(1, 7)}
         },
+        "desert": {
+            "1": {f"lvl{i}": {"locked": True, "score": 0, "medal": "None", "time": 0} for i in range(1, 5)}
+        },
     },
     "pref" : { 
         "character": "robot"
@@ -784,6 +787,7 @@ def xp():
     # XP from stars
     stars = 0
     for world in default_progress['lvls']:
+     if world != "desert": 
       for level in world:
         level_num = int(level_key.replace('lvl', ''))
         score = level_scores.get(level_num, 0)
