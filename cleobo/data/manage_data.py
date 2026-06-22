@@ -252,7 +252,7 @@ def load_language():
     global manifest
     try:
         # Wrap the path in resource_path()
-        path = resource_path(f"assets/lang/{lang_code}.json")
+        path = resource_path(f"assets/data/lang/{lang_code}.json")
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
@@ -261,7 +261,7 @@ def load_language():
         update_local_manifest(manifest)
         
         # Wrap the fallback path too!
-        fallback_path = resource_path("lang/en.json")
+        fallback_path = resource_path("assets/data/lang/en.json")
         with open(fallback_path, "r", encoding="utf-8") as f:
             return json.load(f)
 
@@ -787,7 +787,6 @@ def xp():
     # XP from stars
     stars = 0
     for world in default_progress['lvls']:
-     if world != "desert": 
       for level in world:
         level_num = int(level_key.replace('lvl', ''))
         score = level_scores.get(level_num, 0)
@@ -799,7 +798,7 @@ def xp():
     achievement_xp = {
      "speedy_starter": 30,
      "zen_os": 150,
-     "over_9k": 150,
+     "over_9k": 170,
      "termvel": 100,
      "golden": 200,
      "captain": 250,
@@ -835,8 +834,8 @@ def xp():
 
     level, xp_in_level = calculate_level(total_xp)
     progress["player"]["Level"] = level
-    if level > 20:
-        level = 20
+    if level > 25:
+        level = 25
     return level, xp_in_level, xp_needed(level)
 
 def update_xp_ui():
@@ -846,7 +845,7 @@ def update_xp_ui():
     
     level, xp_needed, xp_total = xp(progress, achieve)
 
-    if level < 20:
+    if level < 25:
         color = (255, 255, 255)
         XP_text = fonts['mega'].render(str(level), True, color)
         XP_text2 = menu_ui.render_text(f"{xp_needed}/{xp_total}", True, color)

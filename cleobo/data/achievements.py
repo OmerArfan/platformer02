@@ -51,7 +51,7 @@ def perfect6():
 
 def lvl90000():
     unlock = manage_data.progress["achieved"].get("over_9k", False)
-    if manage_data.progress['lvls']['mech']['1']['lvl3']['score'] >= 105000 and not unlock:
+    if manage_data.progress['lvls']['mech']['1']['lvl3']['score'] >= 103500 and not unlock:
         manage_data.progress["achieved"]["over_9k"] = True          
         # LOCALIZED HERE
         menu_ui.notification_text = get_notif_text("over_9k", "It's over 9000!!", (255, 128, 0))
