@@ -30,7 +30,7 @@ pygame.display.set_caption("Roboquix")
 MIN_WIDTH, MIN_HEIGHT = 1128, 634
 
 # Load and set window icon
-icon = pygame.image.load(manage_data.resource_path("assets/icons/icon.png")).convert_alpha()
+icon = pygame.image.load(manage_data.resource_path("assets/imgs/icons/icon.png")).convert_alpha()
 pygame.display.set_icon(icon)
 pygame.mouse.set_visible(False)  # Hide the system cursor
 
