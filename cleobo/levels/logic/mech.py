@@ -48,16 +48,14 @@ def handle_light_blocks(screen, lights, player):
             
             if player.rect.colliderect(lights['block']):
                 # Falling onto a block
-                if player.velocity_y > 0 and player.rect.y + player.rect.width - player.velocity_y <= lights['block'].y:
-                    player.rect.y = lights['block'].x - player.rect.height
+                if player.velocity_y > 0 and player.rect.y + player.rect.height - player.velocity_y <= lights['block'].y:
+                    player.rect.y = lights['block'].y - player.rect.height
                     player.velocity_y = 0
                     player.on_ground = True
-
                 # Horizontal collision (left or right side of the block)
                 elif player.rect.x + player.rect.width > lights['block'].x and player.rect.x < lights['block'].x + lights['block'].width:
                     if player.rect.x < lights['block'].x:  # Colliding with the left side of the block
                         player.rect.x = lights['block'].x - player.rect.width
                     elif player.rect.x + player.rect.width > lights['block'].x + lights['block'].width:  # Colliding with the right side
                         player.rect.x = lights['block'].x + lights['block'].width
-
   return player
