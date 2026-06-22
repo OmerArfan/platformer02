@@ -6,8 +6,8 @@ from datetime import datetime
 import traceback
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0497"
-manage_data.kernel = "0.6.0.0046"
+manage_data.version = "1.3.9.0498"
+manage_data.kernel = "0.6.0.0047"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
@@ -189,6 +189,7 @@ def init_other_assets():
             'green_exit': ("portal/exit.png", (140, 180)),
             'mech_exit': ("portal/mech_exit.png", (140, 180)),
             'ship_exit': ("portal/ship_exit.png", (140, 180)),
+            'desert_exit': ("portal/desert_exit.png", (140, 180)),
             'teleport': ("portal/teleport.png", (140, 180)),
             'teleport_exit': ("portal/teleport_2.png", (100, 100)),
             'badge': ("ui/badge.png", (80, 80)),
