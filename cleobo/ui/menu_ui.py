@@ -266,7 +266,6 @@ def init_profile_vars():
     gold_medals, diamond_medals, total_stars, ulock_ach, total_ach = 0, 0, 0, 0, 0
 
     for wk, world in (manage_data.progress['lvls'].items() if isinstance(manage_data.progress.get('lvls'), dict) else enumerate(manage_data.progress.get('lvls', []))):
-      if wk != "desert":  
         if isinstance(world, dict):
             levels = world.get("1") if "1" in world else None
             if levels is None:
@@ -332,7 +331,7 @@ def draw_profile(screen):
 
     level, xp_needed, xp_total = manage_data.xp()
 
-    if level < 20:
+    if level < 25:
         color = (255, 255, 255)
         XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, color)
         badge = manage_data.assets['badge']
@@ -558,7 +557,8 @@ def worlds(screen):
     draw_world_stats(screen, "Green", "green", green_rect)
     draw_world_stats(screen, "Ship", "ship", ship_rect)
     draw_world_stats(screen, "Mech", "mech", mech_rect)
-
+    draw_world_stats(screen, "Desert", "desert", desert_rect)
+    
     buttons.append((manage_data.disks['greenpack'], green_rect, "levels", False))
     buttons.append((manage_data.disks['mechpack'], mech_rect, "mech_levels", False))
     buttons.append((manage_data.disks['shippack'], ship_rect, "ship_levels", False))
