@@ -4,10 +4,12 @@ local lvl1 = {
 	    spawn_x = 600, spawn_y = 200,
 	},
 	blocks = {
-	    {x = 600,  y = 450, w = 1800, h = 100},
+	    {x = 400,  y = 450, w = 2000, h = 100},
 		{x = 1100,  y = -160, w = 100, h = 410},
 		{x = 1750,  y = -660, w = 100, h = 1140},
-		{x = 600, y = -160, w = 900, h = 100}
+		{x = 600, y = -160, w = 900, h = 100},
+		{x = 2300, y = 550, w = 400, h = 100},
+		{x = 2600, y = 450, w = 400, h = 100}
 	},
 	jump_blocks = {
 		{x = 1560, y = 350, w = 100, h = 100}
@@ -41,6 +43,11 @@ local lvl1 = {
 	teleporters = {
 	    {entry_x = -1800, entry_y = -400, entry_w = 140, entry_h = 180, exit_x = 1900, exit_y = 290, exit_w = 50, exit_h = 50},
 	},
+	cacti_spikes = {
+		{cord = {{2405, 550}, {2450, 500}, {2495, 550}}, axis = 'y', dir = -1, limit = -500},
+		{cord = {{2505, 550}, {2550, 500}, {2595, 550}}, axis = 'y', dir = -1, limit = -500}
+	},
+	flags = {{x = 2050, y = 340, w = 80, h = 50, save_x = 2050, save_y = 300}},
     exit = {x = -900, y = 850, w = 140, h = 180}, 
     next_page = "desert_lvl2",
 }
