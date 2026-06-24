@@ -54,6 +54,29 @@ def check_spike_collisions(spikes, player):
                 return True 
     return False
 
+def handle_cacti_spikes(screen, player, spikes):
+    for spike in spikes:
+        speed = 6 * spike['dir']
+        # Draw the spike polygon using all coordinate points
+        pts = [(x - player.camera_x, y - player.camera_y) for x, y in spike['cord']]
+        if len(pts) >= 3:
+            pygame.draw.polygon(screen, (3, 104, 0), pts)
+        xs = [p[0] for p in spike['cord']]
+        ys = [p[1] for p in spike['cord']]
+        if xs and ys:
+            s_left = min(xs)
+            s_top = min(ys)
+            s_right = max(xs)
+            s_bottom = max(ys)
+
+            if spike['axis'] == 'x':
+                # distance in x from player to spike
+                if s_left - player.rect.x <= spike['limit']:
+                    pass
+            elif spike['axis'] == 'y':
+                if s_top - player.rect.y <= spike['limit']:
+                    pass
+        
 def draw_spikes(screen, spikes, player):
     for spike in spikes:
         pygame.draw.polygon(screen, (255, 0, 0), [(x - player.camera_x, y - player.camera_y) for x, y in spike])
