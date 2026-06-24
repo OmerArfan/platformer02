@@ -60,6 +60,14 @@ def level_launcher(level_name, screen, transition, world_name):
     
     # Spikes
     spikes = [spike for spike in level_data.get('spikes', [])]
+    cacti_spikes = []
+    for spike in level_data.get('cacti_spikes', []):
+        cacti_spikes.append({
+            'cord': spike['cord'],
+            'axis': spike['axis'],
+            'dir': spike['dir'],
+            'limit': spike['limit']
+        })
     
     # Jump blocks (orange blocks)
     jump_blocks = [pygame.FRect(jb['x'], jb['y'], jb['w'], jb['h']) for jb in level_data.get('jump_blocks', [])]
@@ -213,6 +221,7 @@ def level_launcher(level_name, screen, transition, world_name):
 
         # Draw spikes
         hazards.draw_spikes(screen, spikes, player)
+        hazards.handle_cacti_spikes(screen, player, cacti_spikes)
         # Draw portal
         env.draw_portal(screen, manage_data.assets[f'{world_name}_exit'], exit_portal, player)
 
