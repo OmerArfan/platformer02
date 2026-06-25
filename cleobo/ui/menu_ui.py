@@ -2,9 +2,7 @@ import sys
 import webbrowser
 
 import pygame
-import arabic_reshaper
 import time
-from bidi.algorithm import get_display
 import cleobo.data.manage_data as manage_data
 import math
 import cleobo.ui.state as state
@@ -47,14 +45,6 @@ def render_text(text, Boolean, color, bigfont=False):
 
     if bigfont:
         font_key = 'mega'
-    elif match:
-        char = match.group(0)
-        if '\u0590' <= char <= '\u06FF':
-            display_text = get_display(arabic_reshaper.reshape(text))
-            font_key = 'ar'
-        elif '\u4e00' <= char <= '\u9fff': font_key = 'ch'
-        elif '\u3040' <= char <= '\u30FF': font_key = 'jp'
-        elif '\uAC00' <= char <= '\uD7A3': font_key = 'kr'
 
     font_to_use = manage_data.fonts[font_key]
 
@@ -1100,7 +1090,6 @@ def settings_menu(screen):
         (current_lang["About"], "About"),
         (current_lang["Audio"], "Audio"),
         (current_lang["Account"], "Account"),
-        (setting_lang["language"], "Language"),
         (current_lang["Back"], "Back")
     ]
 
