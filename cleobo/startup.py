@@ -275,10 +275,6 @@ def init_fonts():
     global fonts
     try:
         font_files = {
-            'ch': ('SimplifiedChinese.ttf', 25),
-            'jp': ('Japanese.ttf', 25),
-            'kr': ('Korean.ttf', 25),
-            'ar': ('NaskhArabic.ttf', 25),
             'def': ('DefaultFont.ttf', 25),
             'mega': ('DefaultFont.ttf', 55),
         }
