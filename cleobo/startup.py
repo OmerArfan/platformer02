@@ -4,10 +4,34 @@ import os
 import json
 from datetime import datetime
 import traceback
+from random import random
+
+# Random final message
+val = random()
+if val == 0.05:
+    fin_message = "Cakebot is a robot, not a dessert."
+elif val <= 0.15:
+    fin_message = "Back in my day, Evil Robo chased robos out of his space..."
+elif val <= 0.25:
+    fin_message = "Green Robo might open her eyes before GTA VI guys!"
+elif val <= 0.35:
+    fin_message = "Loading over 450 days of questionable decisions..."
+elif val <= 0.45:
+    fin_message = "Does anyone even know what's under Iron Robo?"
+elif val <= 0.55:
+    fin_message = "If you cannot finish fast enough, just start speedrunning! Amazing right?"
+elif val <= 0.65:
+    fin_message = "Lil Robo was here! :D"
+elif val <= 0.75:
+    fin_message = "Teleporters are usually faster than walking."
+elif val <= 0.85:
+    fin_message = "Loading another adventure..."
+else:
+    fin_message = "Welcome to Roboquix!"
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0500"
-manage_data.kernel = "0.6.0.0048"
+manage_data.version = "1.3.9.0502"
+manage_data.kernel = "0.6.0.0050"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
@@ -317,24 +341,32 @@ def verify_initialization(manage_data):
 
 def load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT):
     manage_data.fonts = init_fonts()
-    yield "Loading settings...", 6
+    for i in range (0, 7):
+        yield "Loading settings...", i
     manage_data.manifest, manage_data.lang_code, manage_data.is_mute, manage_data.is_mute_amb = init_accs()
     
-    yield "Loading sounds...", 14
+    for i in range (7, 15):
+     yield "Loading sounds...", i
     manage_data.sounds = init_sounds()
     
-    yield "Loading textures...", 36
+    for i in range (15, 37):
+        yield "Loading textures...", i
     manage_data.ui = init_ui_images(SCREEN_WIDTH, SCREEN_HEIGHT)
-    yield "Loading textures...", 44
+    for i in range (37, 48):
+        yield "Loading textures...", i
     manage_data.bgs = init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT)
-    yield "Loading textures...", 51
+    for i in range (48, 62):
+        yield "Loading textures...", i
     manage_data.assets = init_other_assets()
-    yield "Loading textures...", 64
+    for i in range (62, 77):
+        yield "Loading textures...", i
     manage_data.disks = init_disks()
-    yield "Loading textures...", 78
+    for i in range (77, 89):
+        yield "Loading textures...", i
     manage_data.medals = init_medals()
     
-    yield "Calibrating Robots...", 89
+    for i in range (89, 96):
+        yield "Calibrating robots...", i
     manage_data.robos = init_robos()
     # Get rects and position them for character select screen
     manage_data.robo_rects = {
@@ -348,11 +380,14 @@ def load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT):
         'vectorbot': manage_data.robos['vectorbot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, 690))        
     }
     
-    yield "Checking for latest save...", 96
+    for i in range (96, 98):
+        yield "Checking for latest save...", i
     manage_data.progress = manage_data.load_progress()
     # Ensure new users are registered in the manifest immediately
+    yield "Checking for latest save...", 99
     manage_data.update_local_manifest(manage_data.progress)
 
-    yield "Systems Ready!", 100
+    
+    yield fin_message, 100
     verify_initialization(manage_data)
     return True # Just a signal that we finished
