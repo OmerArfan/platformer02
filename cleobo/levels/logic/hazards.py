@@ -1,5 +1,6 @@
 import pygame
 import math
+import copy
 import cleobo.data.manage_data as manage_data
 
 """
@@ -55,28 +56,108 @@ def check_spike_collisions(spikes, player):
     return False
 
 def handle_cacti_spikes(screen, player, spikes):
+    collision = False
+    
     for spike in spikes:
-        speed = 6 * spike['dir']
-        # Draw the spike polygon using all coordinate points
+        # Check if player has crossed the trigger threshold
+        if spike['axis'] == "'y'":
+            spike_y = max([p[1] for p in spike['def_cord']])
+            spike_x_min = min([p[0] for p in spike['def_cord']])
+            spike_x_max = max([p[0] for p in spike['def_cord']])
+            
+            # Check if player is horizontally aligned with spike
+            player_aligned = player.rect.x + player.rect.width >= spike_x_min and player.rect.x <= spike_x_max
+            
+            if spike['dir'] < 0:
+                if player.rect.bottom >= spike_y + spike['limit'] and player.rect.bottom < spike_y and player_aligned:
+                    spike['activated'] = True
+                    spike['cycle_complete'] = False
+            
+            else:  
+                if player.rect.top <= spike_y + spike['limit'] and player.rect.top > spike_y and player_aligned:
+                    spike['activated'] = True
+                    spike['cycle_complete'] = False
+       
+        elif spike['axis'] == "'x'":
+            spike_x = max([p[0] for p in spike['def_cord']])
+            spike_y_min = min([p[1] for p in spike['def_cord']])
+            spike_y_max = max([p[1] for p in spike['def_cord']])
+            
+            # Check if player is vertically aligned with spike
+            player_aligned = player.rect.y + player.rect.height >= spike_y_min and player.rect.y <= spike_y_max
+            
+            if spike['dir'] < 0:
+                if player.rect.right >= spike_x + spike['limit'] and player.rect.right < spike_x and player_aligned:
+                    spike['activated'] = True
+                    spike['cycle_complete'] = False
+            else: 
+                if player.rect.left <= spike_x + spike['limit'] and player.rect.left > spike_y and player_aligned:
+                    spike['activated'] = True
+                    spike['cycle_complete'] = False
+        
+        # Only move if activated or still completing a cycle
+        if spike['activated'] or not spike['cycle_complete']:
+            spike['speed'] += spike['acc']
+            new_cords = []
+            for x, y in spike['cord']:
+                if spike['axis'] == "'x'":
+                    new_cords.append([x + spike['speed'], y])
+                elif spike['axis'] == "'y'":
+                    new_cords.append([x, y + spike['speed']])
+            spike['cord'] = new_cords
+
+            # Check if limit is reached
+            xs = [p[0] for p in spike['cord']]
+            ys = [p[1] for p in spike['cord']]
+            def_xs = [p[0] for p in spike['def_cord']]
+            def_ys = [p[1] for p in spike['def_cord']]
+
+            has_reached_limit = False
+            
+            if spike['axis'] == "'x'":
+                distance_traveled = max(xs) - max(def_xs) if spike['dir'] > 0 else min(xs) - min(def_xs)
+                if abs(distance_traveled) >= abs(spike['limit']):
+                    has_reached_limit = True
+
+            elif spike['axis'] == "'y'":
+                distance_traveled = max(ys) - max(def_ys) if spike['dir'] > 0 else min(ys) - min(def_ys)
+                if abs(distance_traveled) >= abs(spike['limit']):
+                    has_reached_limit = True
+
+            if has_reached_limit:
+                spike['cord'] = copy.deepcopy(spike['def_cord'])
+                spike['activated'] = False
+                spike['cycle_complete'] = True
+                spike['speed'] = spike['init_speed']
+        
+        # Draw the spike
         pts = [(x - player.camera_x, y - player.camera_y) for x, y in spike['cord']]
         if len(pts) >= 3:
             pygame.draw.polygon(screen, (3, 104, 0), pts)
-        xs = [p[0] for p in spike['cord']]
-        ys = [p[1] for p in spike['cord']]
-        if xs and ys:
-            s_left = min(xs)
-            s_top = min(ys)
-            s_right = max(xs)
-            s_bottom = max(ys)
-
-            if spike['axis'] == 'x':
-                # distance in x from player to spike
-                if s_left - player.rect.x <= spike['limit']:
-                    pass
-            elif spike['axis'] == 'y':
-                if s_top - player.rect.y <= spike['limit']:
-                    pass
+    
+    # Collision detection (same as before)
+        s_left = min([p[0] for p in spike['cord']])
+        s_top = min([p[1] for p in spike['cord']])
+        s_width = max([p[0] for p in spike['cord']]) - s_left
+        s_height = max([p[1] for p in spike['cord']]) - s_top
         
+        if player.rect.colliderect(pygame.Rect(s_left, s_top, s_width, s_height)):
+            points = [
+                (player.rect.centerx, player.rect.bottom), 
+                (player.rect.left + 5, player.rect.bottom), 
+                (player.rect.right - 5, player.rect.bottom),
+                (player.rect.centerx, player.rect.top), 
+                (player.rect.left + 5, player.rect.top), 
+                (player.rect.right - 5, player.rect.top)
+            ]
+            
+            for pt in points:
+                if point_in_triangle(pt[0], pt[1], spike['cord'][0], spike['cord'][1], spike['cord'][2]):
+                    collision = True
+                    break
+    
+    return collision
+
 def draw_spikes(screen, spikes, player):
     for spike in spikes:
         pygame.draw.polygon(screen, (255, 0, 0), [(x - player.camera_x, y - player.camera_y) for x, y in spike])
