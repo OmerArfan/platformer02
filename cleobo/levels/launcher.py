@@ -63,10 +63,16 @@ def level_launcher(level_name, screen, transition, world_name):
     cacti_spikes = []
     for spike in level_data.get('cacti_spikes', []):
         cacti_spikes.append({
+            'def_cord': spike['cord'],
             'cord': spike['cord'],
             'axis': spike['axis'],
             'dir': spike['dir'],
-            'limit': spike['limit']
+            'limit': spike['limit'],
+            'activated': False,
+            'cycle_complete': True,
+            'init_speed': 6 * spike['dir'],
+            'speed': 6 * spike['dir'],
+            'acc': 0.3 * spike['dir']
         })
     
     # Jump blocks (orange blocks)
@@ -221,7 +227,18 @@ def level_launcher(level_name, screen, transition, world_name):
 
         # Draw spikes
         hazards.draw_spikes(screen, spikes, player)
-        hazards.handle_cacti_spikes(screen, player, cacti_spikes)
+
+        if hazards.handle_cacti_spikes(screen, player, cacti_spikes):
+            player.die()
+            manager.death_text = menu_ui.render_text(in_game.get("dead_message", "You Died!"), True, (255, 0, 0))
+            manager.wait_time = pygame.time.get_ticks()
+            if not manage_data.is_mute:
+                manage_data.sounds['death'].play()
+            for kbp in key_block_pairs: 
+                kbp['collected'] = False
+            for kbp in key_block_pairs_timed: 
+                kbp['collected'] = False
+                
         # Draw portal
         env.draw_portal(screen, manage_data.assets[f'{world_name}_exit'], exit_portal, player)
 
