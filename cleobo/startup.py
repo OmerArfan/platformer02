@@ -30,8 +30,8 @@ else:
     fin_message = "Welcome to Roboquix!"
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0502"
-manage_data.kernel = "0.6.0.0050"
+manage_data.version = "1.3.9.0503"
+manage_data.kernel = "0.6.0.0051"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
@@ -216,8 +216,6 @@ def init_other_assets():
             'desert_exit': ("portal/desert_exit.png", (140, 180)),
             'teleport': ("portal/teleport.png", (140, 180)),
             'teleport_exit': ("portal/teleport_2.png", (100, 100)),
-            'badge': ("ui/badge.png", (80, 80)),
-            'max_badge': ("ui/max-badge.png", (80, 80)),
             'saw': ("ingame/saw.png", None),
             'cpoint_unused': ("ingame/flags/unused.png", None),
             'cpoint_active': ("ingame/flags/active.png", None),
@@ -237,6 +235,30 @@ def init_other_assets():
         assets['star_small'] = pygame.transform.scale(assets['star'], (30, 26))
         assets['star_normal'] = pygame.transform.scale(assets['star'], (100, 93))
         return assets
+    except Exception as e:
+        print(f"ERROR loading assets: {e}")
+        traceback.print_exc()
+        raise
+
+def init_badges():
+    # In-game assets (saws, teleporters, badges, checkpoints)
+    try:
+        badges = {}
+        badge_files = {
+            'tier1': ("ui/badge/tier1.png", (150, 110)),
+            'tier2': ("ui/badge/tier2.png", (150, 110)),
+            'tier3': ("ui/badge/tier3.png", (150, 110)),
+            'tier4': ("ui/badge/tier4.png", (150, 110)),
+            'tier5': ("ui/badge/tier5.png", (150, 110)),
+        }
+        
+        for name, (file_path, size) in badge_files.items():
+            full_path = manage_data.resource_path(os.path.join(IMAGES_FOLDER, file_path))
+            verify_asset_exists(full_path, f"{name}")
+            img = pygame.image.load(full_path).convert_alpha()
+            badges[name] = pygame.transform.scale(img, size) if size else img
+        
+        return badges
     except Exception as e:
         print(f"ERROR loading assets: {e}")
         traceback.print_exc()
@@ -350,19 +372,22 @@ def load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT):
     manage_data.sounds = init_sounds()
     
     for i in range (15, 37):
-        yield "Loading textures...", i
+        yield "Loading logos...", i
     manage_data.ui = init_ui_images(SCREEN_WIDTH, SCREEN_HEIGHT)
     for i in range (37, 48):
-        yield "Loading textures...", i
+        yield "Loading backgrounds...", i
     manage_data.bgs = init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT)
     for i in range (48, 62):
-        yield "Loading textures...", i
+        yield "Loading in-game assets...", i
     manage_data.assets = init_other_assets()
-    for i in range (62, 77):
-        yield "Loading textures...", i
+    for i in range (62, 72):
+        yield "Loading badges...", i
+    manage_data.badges = init_badges()
+    for i in range (72, 77):
+        yield "Loading disks...", i
     manage_data.disks = init_disks()
     for i in range (77, 89):
-        yield "Loading textures...", i
+        yield "Loading medals...", i
     manage_data.medals = init_medals()
     
     for i in range (89, 96):
