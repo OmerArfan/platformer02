@@ -190,7 +190,7 @@ while running:
             title = menu_ui.render_text(title_text, True, (255, 255, 255))
             screen.blit(title, (manage_data.SCREEN_WIDTH // 2 - title.get_width() // 2, 80))
             
-            acc_sys.create_account_selector()
+            acc_sys.create_account_selector(screen)
             button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)
 
         elif manage_data.current_page == "login_screen":
