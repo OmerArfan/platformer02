@@ -230,7 +230,7 @@ def level_launcher(level_name, screen, transition, world_name):
 
         if hazards.handle_cacti_spikes(screen, player, cacti_spikes):
             player.die()
-            manager.death_text = menu_ui.render_text(in_game.get("dead_message", "You Died!"), True, (255, 0, 0))
+            manager.death_text = menu_ui.render_text(in_game.get("cacti_message", "Prickled!"), True, (255, 0, 0))
             manager.wait_time = pygame.time.get_ticks()
             if not manage_data.is_mute:
                 manage_data.sounds['death'].play()
