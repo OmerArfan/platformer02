@@ -72,7 +72,46 @@ local lvl1 = {
 		{cord = {{4505, 150}, {4550, 200}, {4595, 150}}, axis = 'y', dir = 1, limit = 1200},
 		{cord = {{5400, 330}, {5320, 380}, {5400, 430}}, axis = 'x', dir = -1, limit = -600},
 	},
+	text = {
+		cactus = {name = "cacti_warn", fallback = "Cacti spikes rush towards the direction they face if you pass by them!", color = {3, 104, 0}, x = 2160, y = 250},
+	},
 	flags = {{x = 2050, y = 340, w = 80, h = 50, save_x = 2050, save_y = 300}},
     exit = {x = 5600, y = 100, w = 140, h = 180}, 
     next_page = "desert_lvl2",
+}
+
+local lvl2 = {
+	player = {
+	    x = 600, y = 200,
+	    spawn_x = 600, spawn_y = 200,
+	},
+	blocks = {
+	    {x = 500,  y = 450, w = 200, h = 100},
+	},
+	exit = {x = 5600, y = 100, w = 140, h = 180}, 
+    next_page = "desert_lvl3",
+}
+
+local lvl3 = {
+	player = {
+	    x = 600, y = 200,
+	    spawn_x = 600, spawn_y = 200,
+	},
+	blocks = {
+	    {x = 500,  y = 450, w = 200, h = 100},
+	},
+	exit = {x = 5600, y = 100, w = 140, h = 180}, 
+    next_page = "desert_lvl4",
+}
+
+local lvl4 = {
+	player = {
+	    x = 600, y = 200,
+	    spawn_x = 600, spawn_y = 200,
+	},
+	blocks = {
+	    {x = 500,  y = 450, w = 200, h = 100},
+	},
+	exit = {x = 5600, y = 100, w = 140, h = 180}, 
+    next_page = "quit",
 }
