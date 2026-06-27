@@ -154,9 +154,8 @@
     ,"timed_coin_message": "オレンジコインは時間制限あり！一定時間ブロックを"
     ,"timed_coin_message_2": "開きます。再び閉じて押しつぶされる前に走り抜けましょう..."
     ,"crushed_message": "ぺしゃんこ！",
-    "evilrobo1": "ん？誰かいるのか？",
-    "evilrobo2": "おい！ここから失せろ！",
-    "evilrobo3": "どこへ行ったんだ！？",
+    "cacti_message": "チクッとした！",
+    "cacti_warn": "サボテンのトゲは、横を通り過ぎると向いている方向へ飛んでくるぞ！",
     "temp": "温度: {current_temp}",
     "ice_message": "氷ブロックは乗ると溶けるけど、体を冷やしてくれる！",
     "freeze_message": "でも、凍え死なないように暖かい場所にも行こう！",

@@ -152,9 +152,8 @@
     ,"timed_coin_message": "Turuncu paralar süreli! Blokları sınırlı bir süre için"
     ,"timed_coin_message_2": "açarlar. Tekrar kapanmadan veya seni ezmeden önce koş..."  
     ,"crushed_message": "Ezildi!",
-    "evilrobo1": "Ha? Orada kimse var mı?",
-    "evilrobo2": "HEY! Buradan uzaklaş!",
-    "evilrobo3": "NEREYE GİTTİ????",
+    "cacti_message": "Diken Battı!",
+    "cacti_warn": "Kaktüs dikenleri, yanlarından geçerseniz baktıkları yöne doğru fırlar!",
     "temp": "Sıcaklık: {current_temp}",
     "ice_message": "Buz bloklarının üzerinde durunca erir! Ama seni de serinletirler!",
     "freeze_message": "Ama üşümemek için biraz ısınmayı unutma!",

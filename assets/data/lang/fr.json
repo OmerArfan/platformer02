@@ -155,9 +155,8 @@
   ,"timed_coin_message": "Les pièces oranges sont chronométrées ! Elles ouvrent des blocs pour un temps"
   ,"timed_coin_message_2": "limité. Courez avant qu'ils ne se referment, ou pire, vous écrasent..."
   ,"crushed_message": "Écrasé !",
-  "evilrobo1": "Hein ? Il y a quelqu'un ?",
-  "evilrobo2": "HÉ ! Allez-vous-en d'ici !",
-  "evilrobo3": "OÙ EST-IL PASSÉ ????",
+  "cacti_message": "Piqué !",
+  "cacti_warn": "Les épines des cactus se lancent dans la direction face à eux si vous passez à côté !",
   "temp": "Température: {current_temp}"
   ,"ice_message": "Les blocs de glace fondent quand tu restes dessus ! Mais ils te rafraîchissent aussi !",
   "freeze_message": "Mais pense à te réchauffer un peu, ne meurs pas de froid !",

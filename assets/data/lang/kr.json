@@ -155,9 +155,8 @@
     ,"timed_coin_message": "오렌지 코인은 시간 제한이 있습니다! 짧은 시간 동안 블록을"
     ,"timed_coin_message_2": "엽니다. 다시 닫혀서 깔리기 전에 서둘러 뛰세요..."
     ,"crushed_message": "박살났다!",
-    "evilrobo1": "응? 거기 누구 있어?",
-    "evilrobo2": "야! 여기서 당장 꺼져!",
-    "evilrobo3": "어디로 간 거야????",
+    "cacti_message": "찔렸다!",
+    "cacti_warn": "선인장 가시 옆을 지나가면 가시가 마주 보는 방향으로 돌진합니다!",
     "temp": "온도: {current_temp}",
     "ice_message": "얼음 블록은 밟으면 녹지만, 몸을 식혀줘요!",
     "freeze_message": "너무 추워지기 전에 따뜻하게 해야 해요!",

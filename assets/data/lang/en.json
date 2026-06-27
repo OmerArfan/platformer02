@@ -153,10 +153,9 @@
   ,"timed_coin_message": "Orange coins are timed! They open blocks for a limited"
   ,"timed_coin_message_2": "time. Run before they close again, or at worst, crush you..."
   ,"crushed_message": "Crushed!",
-  "evilrobo1": "Huh? Is there anyone there?",
-  "evilrobo2": "HEY! Get away from here!",
-  "evilrobo3": "WHERE DID HE GO????",
-  "temp": "Temperature: {current_temp}",
+  "cacti_message": "Prickled!",
+  "cacti_warn": "Cacti spikes rush towards the direction they face if you pass by them!"
+  ,"temp": "Temperature: {current_temp}",
   "ice_message": "Ice Blocks melt when you stand on them! But they also cool you down!"
   ,"freeze_message": "But remember to get some warm ups and don't just freeze to death!"
   ,"overheat_message1": "Also remember to keep track of your temperature and if"

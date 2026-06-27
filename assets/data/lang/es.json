@@ -155,9 +155,8 @@
   ,"timed_coin_message": "¡Las monedas naranjas tienen tiempo! Abren bloques por un tiempo"
   ,"timed_coin_message_2": "limitado. Corra antes de que se cierren o, en el peor de los casos, lo aplasten..."
   ,"crushed_message": "¡Aplastado!",
-  "evilrobo1": "¿Eh? ¿Hay alguien ahí?",
-  "evilrobo2": "¡OYE! ¡Aléjate de aquí!",
-  "evilrobo3": "¿¡A DÓNDE SE FUE!???",
+  "cacti_message": "¡Pinchado!",
+  "cacti_warn": "¡Espinas de cactus se lanzan hacia la dirección a la que miran si pasas cerca!",
   "temp": "Temperatura: {current_temp}"
   ,"ice_message": "¡Los bloques de hielo se derriten cuando te paras sobre ellos! ¡Pero también te enfrían!",
   "freeze_message": "¡Pero recuerda calentarte un poco o podrías congelarte!",

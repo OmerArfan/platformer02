@@ -155,9 +155,8 @@
     ,"timed_coin_message": "橙色硬币是计时的！它们会开启方块一段"
     ,"timed_coin_message_2": "有限的时间。在它们再次关闭前快跑, 否则最糟的情况是被压碎..."
     ,"crushed_message": "被粉碎了！",
-    "evilrobo1": "嗯？那里有人吗？",
-    "evilrobo2": "嘿！快离开这里！",
-    "evilrobo3": "他去哪儿了？？？？",
+    "cacti_message": "被刺伤了！",
+    "cacti_warn": "如果你从仙人掌身边经过，它们的刺就会朝着它们所面对的方向冲过来！",
     "temp": "温度: {current_temp}"
     ,"ice_message": "站在冰块上会让它们融化！但它们也能让你降温！",
     "freeze_message": "记得取点暖, 不要被冻死了！",

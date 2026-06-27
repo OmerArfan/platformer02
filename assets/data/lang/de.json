@@ -155,9 +155,8 @@
   ,"timed_coin_message": "Orangefarbene Münzen sind zeitlich begrenzt! Sie öffnen Blöcke für eine"
   ,"timed_coin_message_2": "begrenzte Zeit. Lauf, bevor sie sich wieder schließen oder dich zerquetschen..."
   ,"crushed_message": "Zermalmt!",
-  "evilrobo1": "Hä? Ist da jemand?",
-  "evilrobo2": "HEY! Verschwinde von hier!",
-  "evilrobo3": "WO IST ER HINGEGANGEN????",
+  "cacti_message": "Gepiekt!",
+  "cacti_warn": "Kaktusstacheln schießen in die Richtung, in die sie zeigen, wenn du an ihnen vorbeigehst!",
   "temp": "Temperatur: {current_temp}",
   "ice_message": "Eisblöcke schmelzen, wenn du auf ihnen stehst! Aber sie kühlen dich auch ab!",
   "freeze_message": "Vergiss aber nicht, dich wieder aufzuwärmen – sonst erfrierst du!",
