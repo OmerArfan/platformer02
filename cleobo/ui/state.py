@@ -379,7 +379,7 @@ def set_page(screen, page, transition):
     elif page == "Audio":
         menu_ui.audio_settings_menu(screen)
     elif page == "Account":
-        acc_sys.create_account_selector()
+        acc_sys.create_account_selector(screen)
     elif page == "login_screen":
         acc_sys.reset_login_state()
     elif page == "registration_screen":

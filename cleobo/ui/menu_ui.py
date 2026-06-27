@@ -331,17 +331,37 @@ def draw_profile(screen):
 
     level, xp_needed, xp_total = manage_data.xp()
 
-    if level < 25:
+    if level < 5:
         color = (255, 255, 255)
         XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, color)
-        badge = manage_data.assets['badge']
-        bar = 250*(xp_needed/xp_total)
-    else:
-        max_txt = manage_data.load_language().get('messages', {}).get("max_level", "MAX LEVEL!")
-        color = (225, 212, 31)
-        XP_text2 = render_text(max_txt, True, color)
-        badge = manage_data.assets['max_badge']
-        bar = 250
+        badge = manage_data.badges['tier1']
+        bar = 400*(xp_needed/xp_total)
+    elif level < 10:
+        color = (255, 255, 255)
+        XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, color)
+        badge = manage_data.badges['tier2']
+        bar = 400*(xp_needed/xp_total)
+    elif level < 15:
+        color = (255, 255, 255)
+        XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, color)
+        badge = manage_data.badges['tier3']
+        bar = 400*(xp_needed/xp_total)
+    elif level < 20:
+        color = (255, 255, 255)
+        XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, color)
+        badge = manage_data.badges['tier4']
+        bar = 400*(xp_needed/xp_total)
+    elif level <= 25:
+        if level < 25:
+            color = (255, 255, 255)
+            XP_text2 = render_text(f"{xp_needed}/{xp_total}", True, color)
+            bar = 400*(xp_needed/xp_total)
+        else:
+            max_txt = manage_data.load_language().get('messages', {}).get("max_level", "MAX LEVEL!")
+            color = (225, 212, 31)
+            XP_text2 = render_text(max_txt, True, color)
+            bar = 400
+        badge = manage_data.badges['tier5']
 
     player_txt = settings.get("username_label", "Player")
     player_text = render_text(f"{player_txt}: {manage_data.progress['player']['Username']}", True, (255, 255, 255))
@@ -351,12 +371,12 @@ def draw_profile(screen):
     ID_pos = (manage_data.SCREEN_WIDTH // 2 - (ID_text.get_width() // 2), 150)
 
     XP_text = render_text(f"{level}", True, color, bigfont=True)
-    XP_pos2 = (manage_data.SCREEN_WIDTH // 2 - (XP_text2.get_width() + 10), 205)
+    XP_pos2 = (manage_data.SCREEN_WIDTH // 2 - (XP_text2.get_width() - 100), 205)
     XP_pos = (manage_data.SCREEN_WIDTH // 2 - (XP_text.get_width() + XP_text2.get_width() + 30), 200)
 
     xp_center_x = XP_pos[0] + (XP_text.get_width() / 2)
-    badge_x = xp_center_x - (manage_data.assets['badge'].get_width() // 2)
-    badge_pos = (badge_x, 200)
+    badge_x = xp_center_x - (badge.get_width() // 2)
+    badge_pos = (badge_x, 185)
 
     ach_txt = current_lang.get("main_menu", {}).get("achievements", "Achievements")
     ach_text = render_text(f"{ach_txt}: {ulock_ach}/{total_ach}", True, (255, 255, 255))
@@ -375,8 +395,8 @@ def draw_profile(screen):
     screen.blit(ID_text, ID_pos)
     screen.blit(player_text, player_pos)
     screen.blit(ach_text, ach_pos)
-    pygame.draw.rect(screen, color, (XP_pos2[0] + 5, 240, bar, 25))
-    pygame.draw.rect(screen, color, (XP_pos2[0] + 5, 240, 250, 25), 2)
+    pygame.draw.rect(screen, color, (XP_pos2[0] - 80, 240, bar, 25))
+    pygame.draw.rect(screen, color, (XP_pos2[0] - 80, 240, 400, 25), 2)
 
     back_text = back_data.get("back", "Back")
     rendered_back = render_text(back_text, True, (255, 255, 255))
