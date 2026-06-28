@@ -96,7 +96,12 @@
     "worlds": "Pilih Dunia",
     "level_display": "PILIH LEVEL",
     "back": "Kembali",
-    "next": "Berikutnya"
+    "next": "Berikutnya",
+    "prev": "Sebelumnya",
+    "green": "Hijau",
+    "ship": "Kapal",
+    "mech": "Mech",
+    "desert": "Gurun"
   },
   "messages": {
     "you_are_in": "{level} segera hadir!",

@@ -93,7 +93,12 @@
     "worlds": "Dünya Seç",
     "level_display": "BİR SEVİYE SEÇ",
     "back": "Geri",
-    "next": "İleri"
+    "next": "İleri",
+    "prev": "Önceki",
+    "green": "Yeşil",
+    "ship": "Gemi",
+    "mech": "Mech",
+    "desert": "Çöl"
   },
   "messages": {
     "you_are_in": "{level} yakında geliyor!",

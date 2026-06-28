@@ -95,7 +95,12 @@
     "worlds": "ワールド選択",
     "level_display": "レベルを選択",
     "back": "戻る",
-    "next": "次へ"
+    "next": "次へ",
+    "prev": "前へ",
+    "green": "グリーン",
+    "ship": "シップ",
+    "mech": "メック",
+    "desert": "デザート"
   },
   "messages": {
     "you_are_in": "{level} は近日公開！",

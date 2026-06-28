@@ -96,7 +96,12 @@
     "worlds": "دنیا کا انتخاب کریں",
     "level_display": "ایک سطح منتخب کریں",
     "back": "پیچھے",
-    "next": "اگلا"
+    "next": "اگلا",
+    "prev": "پچھلا",
+    "green": "گرین",
+    "ship": "جہاز",
+    "mech": "میک",
+    "desert": "صحرا"
   },
   "messages": {
     "you_are_in": "{level} جلد آ رہا ہے!",

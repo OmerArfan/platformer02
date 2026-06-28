@@ -96,7 +96,12 @@
     "worlds": "选择世界",
     "level_display": "选择一个级别",
     "back": "返回"
-    ,"next": "下一个"
+    ,"next": "下一个",
+    "prev": "上一页",
+    "green": "绿色",
+    "ship": "飞船",
+    "mech": "机甲",
+    "desert": "沙漠"
      }
   ,"messages": {    
   "you_are_in": "你在{level}"

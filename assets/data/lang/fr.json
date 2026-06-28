@@ -96,7 +96,12 @@
   "worlds": "Sélectionner le monde",
   "level_display": "CHOISIR UN NIVEAU",
   "back": "retour"
-  ,"next": "prochain"
+  ,"next": "prochain",
+  "prev": "Précédent",
+  "green": "Vert",
+  "ship": "Vaisseau",
+  "mech": "Mecha",
+  "desert": "Désert"
 },
   "messages": {
   "you_are_in": "Vous êtes dans {level}",

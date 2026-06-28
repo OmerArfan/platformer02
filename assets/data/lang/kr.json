@@ -96,7 +96,12 @@
     "worlds": "월드 선택",
     "level_display": "레벨 선택",
     "back": "뒤로",
-    "next": "다음"
+    "next": "다음",
+    "prev": "이전",
+    "green": "그린",
+    "ship": "우주선",
+    "mech": "메카",
+    "desert": "사막"
   },
   "messages": {
     "you_are_in": "{level}는 곧 출시됩니다!",
