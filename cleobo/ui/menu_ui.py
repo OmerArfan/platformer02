@@ -558,6 +558,11 @@ def worlds(screen):
     buttons.clear()
     current_lang = manage_data.load_language().get('levels', {})
 
+    green_txt = current_lang.get("green", "Green")
+    ship_txt = current_lang.get("ship", "Ship")
+    mech_txt = current_lang.get("mech", "Mech")
+    desert_txt = current_lang.get("desert", "Desert")
+
     green_center = (manage_data.SCREEN_WIDTH // 2 - 560, manage_data.SCREEN_HEIGHT // 2 - 70)
     ship_center = (manage_data.SCREEN_WIDTH // 2 - 185, manage_data.SCREEN_HEIGHT // 2 - 70)
     mech_center = (manage_data.SCREEN_WIDTH // 2 + 190, manage_data.SCREEN_HEIGHT // 2 - 70)
@@ -574,10 +579,10 @@ def worlds(screen):
     screen.blit(manage_data.disks['desertpack'], desert_rect)
 
     # Draw stats for both worlds
-    draw_world_stats(screen, "Green", "green", green_rect)
-    draw_world_stats(screen, "Ship", "ship", ship_rect)
-    draw_world_stats(screen, "Mech", "mech", mech_rect)
-    draw_world_stats(screen, "Desert", "desert", desert_rect)
+    draw_world_stats(screen, green_txt, "green", green_rect)
+    draw_world_stats(screen, ship_txt, "ship", ship_rect)
+    draw_world_stats(screen, mech_txt, "mech", mech_rect)
+    draw_world_stats(screen, desert_txt, "desert", desert_rect)
     
     buttons.append((manage_data.disks['greenpack'], green_rect, "levels", False))
     buttons.append((manage_data.disks['mechpack'], mech_rect, "mech_levels", False))
@@ -632,56 +637,36 @@ def green_world_buttons(screen):
     back_text = current_lang.get("back", "Back")        
     rendered_back = render_text(back_text, True, (255, 255, 255))
 
-    # Create a fixed 100x100 hitbox centered at the right location
-    back_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
-    back_rect.center = (manage_data.SCREEN_WIDTH // 2 , manage_data.SCREEN_HEIGHT - 200)
+    prev_text = current_lang.get("prev", "Previous")
+    rendered_prev = render_text(prev_text, True, (255, 255, 255))
 
-    # Then during draw phase: center the text inside that fixed rect
-    text_rect = rendered_back.get_rect(center=back_rect.center)
-    screen.blit(rendered_back, text_rect)
-
-    # Add the button
-    buttons.append((rendered_back, back_rect, "back", False))
-
-def mech_world_buttons(screen):
-    global text_rect, current_lang, buttons
-    buttons.clear()
-
-    level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6"]
-    level_no = ["1", "2", "3", "4", "5", "6"]
-    buttons_per_row = 3
-    spacing_x = 180
-    spacing_y = 180
-
-    grid_width = (buttons_per_row - 1) * spacing_x
-    start_x = (manage_data.SCREEN_WIDTH - grid_width) // 2
-    start_y = ((manage_data.SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2)) + 50
-
-    for i, level in enumerate(level_options):
-        col = i % buttons_per_row
-        row = i // buttons_per_row
-        x = start_x + col * spacing_x
-        y = start_y + row * spacing_y
-
-        is_locked = manage_data.progress["lvls"]["mech"]["1"][level]['locked']
-        text_surface = render_text(level_no[i], True, (255, 255, 255), bigfont=True)
-        disk_rect = manage_data.disks['mech'].get_rect(center=(x, y))
-        buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
-
-    # Get the text
-    back_text = current_lang.get("back", "Back")        
-    rendered_back = render_text(back_text, True, (255, 255, 255))
+    next_text = current_lang.get("next", "Next")
+    rendered_next = render_text(next_text, True, (255, 255, 255))
 
     # Create a fixed 100x100 hitbox centered at the right location
     back_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
     back_rect.center = (manage_data.SCREEN_WIDTH // 2 , manage_data.SCREEN_HEIGHT - 200)
 
+    prev_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_prev.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
+    prev_rect.center = (manage_data.SCREEN_WIDTH // 2 - 150, manage_data.SCREEN_HEIGHT - 200)
+
+    next_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_next.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
+    next_rect.center = (manage_data.SCREEN_WIDTH // 2 + 150, manage_data.SCREEN_HEIGHT - 200)
+
     # Then during draw phase: center the text inside that fixed rect
     text_rect = rendered_back.get_rect(center=back_rect.center)
     screen.blit(rendered_back, text_rect)
 
+    prev_txt_rect = rendered_prev.get_rect(center=prev_rect.center)
+    screen.blit(rendered_prev, prev_txt_rect)
+
+    next_txt_rect = rendered_next.get_rect(center=next_rect.center)
+    screen.blit(rendered_next, next_txt_rect)
+
     # Add the button
     buttons.append((rendered_back, back_rect, "back", False))
+    buttons.append((rendered_prev, prev_rect, "previous", True))
+    buttons.append((rendered_next, next_rect, "next", True))
 
 def ship_world_buttons(screen):
     global text_rect, current_lang, buttons
@@ -712,16 +697,96 @@ def ship_world_buttons(screen):
     back_text = current_lang.get("back", "Back")        
     rendered_back = render_text(back_text, True, (255, 255, 255))
 
+    prev_text = current_lang.get("prev", "Previous")
+    rendered_prev = render_text(prev_text, True, (255, 255, 255))
+
+    next_text = current_lang.get("next", "Next")
+    rendered_next = render_text(next_text, True, (255, 255, 255))
+
     # Create a fixed 100x100 hitbox centered at the right location
     back_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
     back_rect.center = (manage_data.SCREEN_WIDTH // 2 , manage_data.SCREEN_HEIGHT - 200)
+
+    prev_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_prev.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
+    prev_rect.center = (manage_data.SCREEN_WIDTH // 2 - 150, manage_data.SCREEN_HEIGHT - 200)
+
+    next_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_next.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
+    next_rect.center = (manage_data.SCREEN_WIDTH // 2 + 150, manage_data.SCREEN_HEIGHT - 200)
 
     # Then during draw phase: center the text inside that fixed rect
     text_rect = rendered_back.get_rect(center=back_rect.center)
     screen.blit(rendered_back, text_rect)
 
+    prev_txt_rect = rendered_prev.get_rect(center=prev_rect.center)
+    screen.blit(rendered_prev, prev_txt_rect)
+
+    next_txt_rect = rendered_next.get_rect(center=next_rect.center)
+    screen.blit(rendered_next, next_txt_rect)
+    
     # Add the button
     buttons.append((rendered_back, back_rect, "back", False))
+    buttons.append((rendered_prev, prev_rect, "previous", True))
+    buttons.append((rendered_next, next_rect, "next", True))
+
+def mech_world_buttons(screen):
+    global text_rect, current_lang, buttons
+    buttons.clear()
+
+    level_options = ["lvl1", "lvl2", "lvl3", "lvl4", "lvl5", "lvl6"]
+    level_no = ["1", "2", "3", "4", "5", "6"]
+    buttons_per_row = 3
+    spacing_x = 180
+    spacing_y = 180
+
+    grid_width = (buttons_per_row - 1) * spacing_x
+    start_x = (manage_data.SCREEN_WIDTH - grid_width) // 2
+    start_y = ((manage_data.SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2)) + 50
+
+    for i, level in enumerate(level_options):
+        col = i % buttons_per_row
+        row = i // buttons_per_row
+        x = start_x + col * spacing_x
+        y = start_y + row * spacing_y
+
+        is_locked = manage_data.progress["lvls"]["mech"]["1"][level]['locked']
+        text_surface = render_text(level_no[i], True, (255, 255, 255), bigfont=True)
+        disk_rect = manage_data.disks['mech'].get_rect(center=(x, y))
+        buttons.append((text_surface, disk_rect, level if not is_locked else None, is_locked))
+
+    # Get the text
+    back_text = current_lang.get("back", "Back")        
+    rendered_back = render_text(back_text, True, (255, 255, 255))
+
+    prev_text = current_lang.get("prev", "Previous")
+    rendered_prev = render_text(prev_text, True, (255, 255, 255))
+
+    next_text = current_lang.get("next", "Next")
+    rendered_next = render_text(next_text, True, (255, 255, 255))
+
+    # Create a fixed 100x100 hitbox centered at the right location
+    back_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
+    back_rect.center = (manage_data.SCREEN_WIDTH // 2 , manage_data.SCREEN_HEIGHT - 200)
+
+    prev_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_prev.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
+    prev_rect.center = (manage_data.SCREEN_WIDTH // 2 - 150, manage_data.SCREEN_HEIGHT - 200)
+
+    next_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_next.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
+    next_rect.center = (manage_data.SCREEN_WIDTH // 2 + 150, manage_data.SCREEN_HEIGHT - 200)
+
+    # Then during draw phase: center the text inside that fixed rect
+    text_rect = rendered_back.get_rect(center=back_rect.center)
+    screen.blit(rendered_back, text_rect)
+
+    prev_txt_rect = rendered_prev.get_rect(center=prev_rect.center)
+    screen.blit(rendered_prev, prev_txt_rect)
+
+    next_txt_rect = rendered_next.get_rect(center=next_rect.center)
+    screen.blit(rendered_next, next_txt_rect)
+    
+    # Add the button
+    buttons.append((rendered_back, back_rect, "back", False))
+    buttons.append((rendered_prev, prev_rect, "previous", True))
+    buttons.append((rendered_next, next_rect, "next", True))
 
 def desert_world_buttons(screen):
     global text_rect, current_lang, buttons
@@ -752,16 +817,36 @@ def desert_world_buttons(screen):
     back_text = current_lang.get("back", "Back")        
     rendered_back = render_text(back_text, True, (255, 255, 255))
 
+    prev_text = current_lang.get("prev", "Previous")
+    rendered_prev = render_text(prev_text, True, (255, 255, 255))
+
+    next_text = current_lang.get("next", "Next")
+    rendered_next = render_text(next_text, True, (255, 255, 255))
+
     # Create a fixed 100x100 hitbox centered at the right location
     back_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_back.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
     back_rect.center = (manage_data.SCREEN_WIDTH // 2 , manage_data.SCREEN_HEIGHT - 200)
+
+    prev_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_prev.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
+    prev_rect.center = (manage_data.SCREEN_WIDTH // 2 - 150, manage_data.SCREEN_HEIGHT - 200)
+
+    next_rect = pygame.FRect(manage_data.SCREEN_WIDTH // 2 - rendered_next.get_width() // 2, manage_data.SCREEN_HEIGHT - 175, 110, 110)
+    next_rect.center = (manage_data.SCREEN_WIDTH // 2 + 150, manage_data.SCREEN_HEIGHT - 200)
 
     # Then during draw phase: center the text inside that fixed rect
     text_rect = rendered_back.get_rect(center=back_rect.center)
     screen.blit(rendered_back, text_rect)
 
+    prev_txt_rect = rendered_prev.get_rect(center=prev_rect.center)
+    screen.blit(rendered_prev, prev_txt_rect)
+
+    next_txt_rect = rendered_next.get_rect(center=next_rect.center)
+    screen.blit(rendered_next, next_txt_rect)
+    
     # Add the button
     buttons.append((rendered_back, back_rect, "back", False))
+    buttons.append((rendered_prev, prev_rect, "previous", True))
+    buttons.append((rendered_next, next_rect, "next", True))
 
 def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, button_hovered_last_frame):
     # 1. Dynamic Setup
