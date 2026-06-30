@@ -75,20 +75,60 @@ local lvl1 = {
 	text = {
 		cactus = {name = "cacti_warn", fallback = "Cacti spikes rush towards the direction they face if you pass by them!", color = {3, 104, 0}, x = 2100, y = 250},
 	},
-	flags = {{x = 2050, y = 340, w = 80, h = 50, save_x = 2050, save_y = 300}},
+	flags = {{x = 2050, y = 340, w = 100, h = 125, save_x = 2050, save_y = 300}},
     exit = {x = 5600, y = 100, w = 140, h = 180}, 
     next_page = "desert_lvl2",
 }
 
 local lvl2 = {
 	player = {
-	    x = 600, y = 200,
-	    spawn_x = 600, spawn_y = 200,
+	    x = 500, y = 200,
+	    spawn_x = 500, spawn_y = 200,
 	},
 	blocks = {
-	    {x = 500,  y = 450, w = 200, h = 100},
+	    {x = 300,  y = 450, w = 1700, h = 100},
+		{x = 400,  y = -50, w = 1900, h = 100},
+		{x = 300,  y = -450, w = 100, h = 999},
+		{x = 2300,  y = -50, w = 100, h = 1200},
+		{x = -100,  y = 880, w = 2500, h = 100},
 	},
-	exit = {x = 5600, y = 100, w = 140, h = 180}, 
+	spikes = {
+		{{1005, 450}, {1050, 400}, {1095, 450}},
+		{{1105, 450}, {1150, 400}, {1195, 450}},
+		{{1505, 450}, {1550, 400}, {1595, 450}},
+		{{1605, 450}, {1650, 400}, {1695, 450}},
+	},
+	cacti_spikes = {
+		{cord = {{705, 50}, {750, 100}, {795, 50}}, axis = 'y', dir = 1, limit = 450},
+		{cord = {{805, 50}, {850, 100}, {895, 50}}, axis = 'y', dir = 1, limit = 450},
+		{cord = {{1205, 50}, {1250, 100}, {1295, 50}}, axis = 'y', dir = 1, limit = 450},
+		{cord = {{1305, 50}, {1350, 100}, {1395, 50}}, axis = 'y', dir = 1, limit = 450},
+		{cord = {{1705, 50}, {1750, 100}, {1795, 50}}, axis = 'y', dir = 1, limit = 450},
+		{cord = {{1805, 50}, {1850, 100}, {1895, 50}}, axis = 'y', dir = 1, limit = 450},
+		{cord = {{900, -50}, {1050, -100}, {1200, -50}}, axis = 'y', dir = -1, limit = -1500},
+		{cord = {{1600, -50}, {1750, -100}, {1900, -50}}, axis = 'y', dir = -1, limit = -1500},
+		{cord = {{400, -440}, {450, -250}, {400, -60}}, axis = 'x', dir = 1, limit = 2000},
+	},
+	saws = {
+		{x = 1600, y = 900, radius = 85, type = 'static'},
+		{radius = 35, speed = 5, x = 1300, y = 900, max = 920, min = 500, type = 'moving_y'},
+		{radius = 35, speed = 5, x = 950, y = 500, max = 920, min = 500, type = 'moving_y'},
+		{radius = 35, speed = 5, x = 600, y = 900, max = 920, min = 500, type = 'moving_y'},
+	},
+	lights ={
+		{
+            button = {x = 500, y = 340},
+		    block = {x = 650, y = 50, w = 260, h = 400}
+		},
+	},
+	grav_weak = {
+		{x = 350, y = 750}
+	},
+	jump_blocks = {
+		{x = 100, y = 780, w = 100, h = 100}
+	},
+	flags = {{x = 450, y = 770, w = 100, h = 125, save_x = 450, save_y = 730}},
+	exit = {x = 2040, y = -250, w = 140, h = 180}, 
     next_page = "desert_lvl3",
 }
 
