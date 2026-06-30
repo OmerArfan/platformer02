@@ -291,6 +291,8 @@ def handle_action(key, transition, current_page):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "worlds"
+        elif key == "next" or key == "previous":
+            pass
         else:  # Trigger a level's screen
             if not is_transitioning:
                 transition.start(f"{current_page}_{key}")
