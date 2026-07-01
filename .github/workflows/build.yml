@@ -50,9 +50,15 @@ jobs:
             source venv/bin/activate
           fi
           pyinstaller platformer.spec
-          
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Roboquix-${{ matrix.os }}
           path: dist/
+          
+      - name: Upload Dist Folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-app-files      # The name of the zip file you'll download
+          path: dist/                    # The folder you want to grab
