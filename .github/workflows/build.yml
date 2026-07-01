@@ -58,5 +58,10 @@ jobs:
           path: dist/
           
       - name: Print Analysis Summary
+        shell: bash
         run: |
-            cat build/my_script/warn-my_script.txt || true
+          if [ -f "build/platformer/warn-platformer.txt" ]; then
+            cat build/platformer/warn-platformer.txt
+          else
+            echo "Warning file not found at build/platformer/warn-platformer.txt"
+          fi
