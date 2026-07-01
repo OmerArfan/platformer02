@@ -32,7 +32,7 @@ a = Analysis(
         'PIL.PyAccess',           
         'bidi.tests',
         'bidi.bin',
-        'email', 
+        'email.generator', 
         'email.parser', 
         'email.message', 
         'ftplib', 
