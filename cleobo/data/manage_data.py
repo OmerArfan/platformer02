@@ -211,6 +211,7 @@ def update_locked_levels(progress, manifest):
             progress['lvls'][next_world][next_first_sub][next_first_key]['locked'] = False
         
     save_progress(progress, manifest)
+    return progress
 
 def get_level_info(progress, world, subsection, level_key):
     """Helper to check level status from UI code."""
@@ -328,8 +329,8 @@ def load_progress():
 
         if loaded_data:
             data.update(loaded_data)
+            data = update_locked_levels(data, manifest)
             sync_missing_data(data)
-            update_locked_levels(loaded_data, manifest)
             SAVE_FILE = target_file
 
     # 4. Handle Migration/New ID
@@ -376,8 +377,9 @@ def load_progress():
     
     # Ensure new players have their save file created immediately
     if not os.path.exists(SAVE_FILE):
+        data = update_locked_levels(data, manifest)
         save_progress(data, manifest)
-        
+    
     return data
 
 import cleobo.ui.menu_ui as menu_ui

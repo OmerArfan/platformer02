@@ -254,6 +254,7 @@ def handle_registration_events(screen, transition, events, manifest, is_mute, so
                         new_progress = copy.deepcopy(manage_data.default_progress)
                         progress.update(new_progress)
                         progress["player"]["ID"] = generate_player_id()
+                        progress = manage_data.update_locked_levels(progress, manifest)
 
                     # Set credentials and save
                     progress["player"]["Username"] = login_state["username"]
