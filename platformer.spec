@@ -16,57 +16,42 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
-    'setuptools', 
-    'pkg_resources', 
-    'distutils', 
-    'doctest', 
-    'pdb', 
-    'PIL.SpiderImagePlugin',   
-    'PIL.ImageTk',        
-    'PIL.ImageQt',             
-    'PIL.ImageFilter',         
-    'PIL.ImageDraw',           
-    'PIL.ImageFont',           
-    'PIL.OleFileIO',           
-    'PIL.PdfParser',           
-    'PIL.PyAccess',           
-    'bidi.tests',
-    'bidi.bin',
+        'setuptools', 
+        'pkg_resources', 
+        'distutils', 
+        'doctest', 
+        'pdb', 
+        'PIL.SpiderImagePlugin',   
+        'PIL.ImageTk',        
+        'PIL.ImageQt',             
+        'PIL.ImageFilter',         
+        'PIL.ImageDraw',           
+        'PIL.ImageFont',           
+        'PIL.OleFileIO',           
+        'PIL.PdfParser',           
+        'PIL.PyAccess',           
+        'bidi.tests',
+        'bidi.bin',
+        'email', 
+        'email.parser', 
+        'email.message', 
+        'ftplib', 
+        'PIL.PdfImagePlugin', 
+        'PIL.EpsImagePlugin', 
+        'PIL.TiffImagePlugin', 
+        'PIL.PcxImagePlugin', 
+        'PIL.XpmImagePlugin', 
+        'PIL.MpegImagePlugin',
+        'PIL.FpxImagePlugin',
+        'PIL.Hdf5StubImagePlugin',
+        'tracemalloc', 
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
     noarchive=False,
 )
- 
-# ========== INSPECTION CODE ==========
-print("\n" + "="*60)
-print("PYINSTALLER ANALYSIS RESULTS")
-print("="*60)
- 
-print(f"\n📦 PURE PYTHON MODULES ({len(a.pure)} total):")
-for item in a.pure:
-    # a.pure is a list of tuples with variable length
-    if isinstance(item, (list, tuple)) and len(item) > 0:
-        print(f"  {item[0]}")
-    else:
-        print(f"  {item}")
- 
-print(f"\n📚 BINARIES ({len(a.binaries)} total):")
-for binary in a.binaries:
-    print(f"  {binary}")
- 
-print(f"\n📁 DATA FILES ({len(a.datas)} total):")
-for data in a.datas:
-    print(f"  {data}")
- 
-print(f"\n📖 ZIPFILES ({len(a.zipfiles)} total):")
-for zf in a.zipfiles:
-    print(f"  {zf}")
- 
-print("\n" + "="*60 + "\n")
-# ========== END INSPECTION ==========
- 
+
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
