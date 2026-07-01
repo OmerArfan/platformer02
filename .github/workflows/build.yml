@@ -57,11 +57,13 @@ jobs:
           name: Roboquix-${{ matrix.os }}
           path: dist/
           
-      - name: Print Analysis Summary
+      - name: Print Included Dependencies
         shell: bash
         run: |
-          if [ -f "build/platformer/warn-platformer.txt" ]; then
-            cat build/platformer/warn-platformer.txt
+          if [ -f "build/platformer/Analysis-00.toc" ]; then
+            echo "=== BINARIES & PACKAGES INCLUDED IN EXE ==="
+            # This filters the TOC file to show actual libraries, DLLs, and Python modules included
+            grep -E "'(BINARY|MODULE|EXTENSION)'" build/platformer/Analysis-00.toc | awk -F"'" '{print $2 " -> " $4}' | sort
           else
-            echo "Warning file not found at build/platformer/warn-platformer.txt"
+            echo "Analysis file not found."
           fi
