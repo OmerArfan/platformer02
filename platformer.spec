@@ -45,12 +45,16 @@ print("PYINSTALLER ANALYSIS RESULTS")
 print("="*60)
  
 print(f"\n📦 PURE PYTHON MODULES ({len(a.pure)} total):")
-for name, path in sorted(a.pure):
-    print(f"  {name}")
+for item in a.pure:
+    # a.pure is a list of tuples with variable length
+    if isinstance(item, (list, tuple)) and len(item) > 0:
+        print(f"  {item[0]}")
+    else:
+        print(f"  {item}")
  
 print(f"\n📚 BINARIES ({len(a.binaries)} total):")
 for binary in a.binaries:
-    print(f"  {binary[0]}")
+    print(f"  {binary}")
  
 print(f"\n📁 DATA FILES ({len(a.datas)} total):")
 for data in a.datas:
