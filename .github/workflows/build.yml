@@ -33,13 +33,15 @@ jobs:
         shell: bash
         run: |
           python -m venv venv
-          # Use different activation paths for Windows vs Linux
           if [ "$RUNNER_OS" == "Windows" ]; then
             source venv/Scripts/activate
           else
             source venv/bin/activate
           fi
           python -m pip install --upgrade pip
+          # Remove legacy pygame just in case
+          pip uninstall pygame -y || true 
+          
           pip install pygame-ce==2.5.7 pyinstaller arabic-reshaper python-bidi requests Pillow
 
       - name: Build with PyInstaller
@@ -55,27 +57,5 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Roboquix-${{ matrix.os }}
+          name: Roboquix-Build-${{ runner.os }}
           path: dist/
-          
-      - name: Print Included Dependencies
-        shell: bash
-        run: |
-          python -c "
-          import os
-          toc_path = 'build/platformer/Analysis-00.toc'
-          if os.path.exists(toc_path):
-              print('=== PACKAGES & BINARIES INSIDE EXE ===')
-              with open(toc_path, 'r') as f:
-                  for line in f:
-                      # Grab lines that contain binaries, extensions, or modules
-                      if any(k in line for k in [\"'BINARY'\", \"'EXTENSION'\", \"'MODULE'\"]):
-                          try:
-                              # Safely extract the name and target type
-                              parts = eval(line.strip().rstrip(','))
-                              print(f'{parts[2]}: {parts[0]}')
-                          except:
-                              pass
-          else:
-              print('Analysis file not found.')
-          "
