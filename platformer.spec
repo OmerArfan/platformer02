@@ -50,6 +50,17 @@ a = Analysis(
     noarchive=False,
 )
 
+unused_pillow_libs = {
+    'libwebp', 'libwebpdemux', 'libwebpmux', 'libsharpyuv',
+    'libavif', 'libtiff', 'libopenjp2', 'liblzma', 'libzstd'
+}
+
+# This filters the binaries array dynamically during compilation
+a.binaries = [
+    b for b in a.binaries 
+    if not any(lib in b[1] for lib in unused_pillow_libs)
+]
+
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
