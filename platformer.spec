@@ -1,14 +1,11 @@
 # -*- mode: python ; coding: utf-8 -*-
 import sys
-
 block_cipher = None
-
 # List of all active folders
 added_files = [
     ('assets', 'assets'),
     ('cleobo', 'cleobo'),
 ]
-
 a = Analysis(
     ['main.py'],
     pathex=[],
@@ -41,8 +38,32 @@ a = Analysis(
     cipher=block_cipher,
     noarchive=False,
 )
+ 
+# ========== INSPECTION CODE ==========
+print("\n" + "="*60)
+print("PYINSTALLER ANALYSIS RESULTS")
+print("="*60)
+ 
+print(f"\n📦 PURE PYTHON MODULES ({len(a.pure)} total):")
+for name, path in sorted(a.pure):
+    print(f"  {name}")
+ 
+print(f"\n📚 BINARIES ({len(a.binaries)} total):")
+for binary in a.binaries:
+    print(f"  {binary[0]}")
+ 
+print(f"\n📁 DATA FILES ({len(a.datas)} total):")
+for data in a.datas:
+    print(f"  {data}")
+ 
+print(f"\n📖 ZIPFILES ({len(a.zipfiles)} total):")
+for zf in a.zipfiles:
+    print(f"  {zf}")
+ 
+print("\n" + "="*60 + "\n")
+# ========== END INSPECTION ==========
+ 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
-
 exe = EXE(
     pyz,
     a.scripts,
@@ -68,3 +89,4 @@ exe = EXE(
     icon='assets/imgs/icons/robots.ico' if sys.platform == 'win32' else None,
     version='version_info.txt' if sys.platform == 'win32' else None,
 )
+ 
