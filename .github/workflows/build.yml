@@ -60,10 +60,21 @@ jobs:
       - name: Print Included Dependencies
         shell: bash
         run: |
-          if [ -f "build/platformer/Analysis-00.toc" ]; then
-            echo "=== BINARIES & PACKAGES INCLUDED IN EXE ==="
-            # This filters the TOC file to show actual libraries, DLLs, and Python modules included
-            grep -E "'(BINARY|MODULE|EXTENSION)'" build/platformer/Analysis-00.toc | awk -F"'" '{print $2 " -> " $4}' | sort
-          else
-            echo "Analysis file not found."
-          fi
+          python -c "
+          import os
+          toc_path = 'build/platformer/Analysis-00.toc'
+          if os.path.exists(toc_path):
+              print('=== PACKAGES & BINARIES INSIDE EXE ===')
+              with open(toc_path, 'r') as f:
+                  for line in f:
+                      # Grab lines that contain binaries, extensions, or modules
+                      if any(k in line for k in [\"'BINARY'\", \"'EXTENSION'\", \"'MODULE'\"]):
+                          try:
+                              # Safely extract the name and target type
+                              parts = eval(line.strip().rstrip(','))
+                              print(f'{parts[2]}: {parts[0]}')
+                          except:
+                              pass
+          else:
+              print('Analysis file not found.')
+          "
