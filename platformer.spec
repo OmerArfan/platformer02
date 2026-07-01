@@ -33,7 +33,6 @@ a = Analysis(
         'bidi.tests',
         'bidi.bin',
         'email.generator',
-        'email.message', 
         'ftplib', 
         'PIL.PdfImagePlugin', 
         'PIL.EpsImagePlugin', 
