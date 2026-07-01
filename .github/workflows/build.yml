@@ -57,8 +57,6 @@ jobs:
           name: Roboquix-${{ matrix.os }}
           path: dist/
           
-      - name: Upload Dist Folder
-        uses: actions/upload-artifact@v4
-        with:
-          name: compiled-app-files      # The name of the zip file you'll download
-          path: dist/                    # The folder you want to grab
+      - name: Print Analysis Summary
+        run: |
+            cat build/my_script/warn-my_script.txt || true
