@@ -55,10 +55,18 @@ unused_pillow_libs = {
     'libavif', 'libtiff', 'libopenjp2', 'liblzma', 'libzstd'
 }
 
-# This filters the binaries array dynamically during compilation
+unused_audio_libs = {
+    'libfluidsynth',  
+    'libmpg123',      
+    'libFLAC',       
+    'libwavpack',     
+    'libsndfile',     
+}
+all_unused_binaries = unused_pillow_libs.union(unused_audio_libs)
+
 a.binaries = [
     b for b in a.binaries 
-    if not any(lib in b[1] for lib in unused_pillow_libs)
+    if not any(lib in b[0] or lib in b[1] for lib in all_unused_binaries)
 ]
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
