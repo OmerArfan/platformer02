@@ -52,7 +52,7 @@ a = Analysis(
 
 unused_pillow_libs = {
     'libwebp', 'libwebpdemux', 'libwebpmux', 'libsharpyuv',
-    'libavif', 'libtiff', 'libopenjp2', 'liblzma', 'libzstd'
+    'libavif', 'libopenjp2', 'liblzma', 'libzstd'
 }
 
 unused_audio_libs = {
