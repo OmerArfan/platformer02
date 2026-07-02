@@ -8,19 +8,19 @@ If you do have an idea for a new block, do make sure to add it here without any 
 
 def handle_blocks(screen, blocks, player):
     for block in blocks:
-            pygame.draw.rect(screen, (0, 0, 0), (block.x - player.camera_x, block.y - player.camera_y, block.width, block.height))
-            if player.rect.colliderect(block):
-                # Falling onto a block
-                if player.velocity_y > 0 and player.rect.y + player.rect.height - player.velocity_y <= block.y:
-                    player.rect.y = block.y - player.rect.height
-                    player.velocity_y = 0
-                    player.on_ground = True
-                # Horizontal collision (left or right side of the block)
-                elif player.rect.x + player.rect.width > block.x and player.rect.x < block.x + block.width:
-                    if player.rect.x < block.x:  # Colliding with the left side of the block
-                        player.rect.x = block.x - player.rect.width
-                    elif player.rect.x + player.rect.width > block.x + block.width:  # Colliding with the right side
-                        player.rect.x = block.x + block.width
+        pygame.draw.rect(screen, (0, 0, 0), (block.x - player.camera_x, block.y - player.camera_y, block.width, block.height))
+        if player.rect.colliderect(block):
+            # Falling onto a block
+            if player.velocity_y > 0 and player.rect.y + player.rect.height - player.velocity_y <= block.y:
+                player.rect.y = block.y - player.rect.height
+                player.velocity_y = 0
+                player.on_ground = True
+            # Horizontal collision (left or right side of the block)
+            elif player.rect.x + player.rect.width > block.x and player.rect.x < block.x + block.width:
+                if player.rect.x < block.x:  # Colliding with the left side of the block
+                    player.rect.x = block.x - player.rect.width
+                elif player.rect.x + player.rect.width > block.x + block.width:  # Colliding with the right side
+                    player.rect.x = block.x + block.width
     return player
 
 def handle_bottom_collisions(blocks, player):
@@ -31,107 +31,107 @@ def handle_bottom_collisions(blocks, player):
     return False
 
 def handle_moving_blocks(screen, moving_blocks, player):
-        for mb in moving_blocks:
-            pygame.draw.rect(screen, (128, 0, 128), (mb['rect'].x - player.camera_x, mb['rect'].y - player.camera_y, mb['rect'].width, mb['rect'].height))
-            
-            # Setup dimensions
-            adj_x = mb['rect'].x + 5 - player.camera_x
-            adj_y = mb['rect'].y + 5 - player.camera_y
-            adj_w = (mb['rect'].width - 10) // 2  # Keep them side-by-side
-            adj_h = mb['rect'].height - 10
-
-            # Define colors
-            bright = (224, 113, 224)
-            dark = (180, 93, 180) # Darker shade for inactive direction
-
-            # Define Left Triangle Points
-            left_tri_points = [
-                (adj_x + adj_w - 5, adj_y),               # Top Right of left half
-                (adj_x + adj_w - 5, adj_y + adj_h),       # Bottom Right of left half
-                (adj_x, adj_y + adj_h / 2)            # Left Tip
-            ]
-
-            # Define Right Triangle Points (Pointing Right)
-            right_tri_points = [
-                (adj_x + adj_w + 5, adj_y),               # Top Left of right half
-                (adj_x + adj_w + 5, adj_y + adj_h),       # Bottom Left of right half
-                (adj_x + (adj_w * 2), adj_y + adj_h / 2) # Right Tip
-            ]
-
-            # Draw them based on direction
-            if mb['direction'] == 1: # Right is active
-                pygame.draw.polygon(screen, dark, left_tri_points)
-                pygame.draw.polygon(screen, bright, right_tri_points)
-            else: # Left is active
-                pygame.draw.polygon(screen, bright, left_tri_points)
-                pygame.draw.polygon(screen, dark, right_tri_points)
-                        
-            mb['rect'].x += mb['speed'] * mb['direction']
-            if mb['rect'].x < mb['limit_left'] or mb['rect'].x > mb['limit_right']:
-                mb['direction'] *= -1
-            
-            if player.rect.colliderect(mb['rect']):
-                # Standing on top of the moving block
-                if player.velocity_y > 0 and player.rect.y + player.rect.height - player.velocity_y <= mb['rect'].y:
-                    player.rect.y = mb['rect'].y - player.rect.height
-                    player.velocity_y = 0
-                    player.on_ground = True
-                    # Carry the player along with the block's horizontal movement
-                    player.rect.x += mb['speed'] * mb['direction']
-                # Hitting from the side
-                elif player.rect.x + player.rect.width > mb['rect'].x and player.rect.x < mb['rect'].x + mb['rect'].width:
-                    if player.rect.x < mb['rect'].x:
-                        player.rect.x = mb['rect'].x - player.rect.width
-                    elif player.rect.x + player.rect.width > mb['rect'].x + mb['rect'].width:
-                        player.rect.x = mb['rect'].x + mb['rect'].width
+    for mb in moving_blocks:
+        pygame.draw.rect(screen, (128, 0, 128), (mb['rect'].x - player.camera_x, mb['rect'].y - player.camera_y, mb['rect'].width, mb['rect'].height))
         
-        return player, moving_blocks
+        # Setup dimensions
+        adj_x = mb['rect'].x + 5 - player.camera_x
+        adj_y = mb['rect'].y + 5 - player.camera_y
+        adj_w = (mb['rect'].width - 10) // 2  # Keep them side-by-side
+        adj_h = mb['rect'].height - 10
+
+        # Define colors
+        bright = (224, 113, 224)
+        dark = (180, 93, 180) # Darker shade for inactive direction
+
+        # Define Left Triangle Points
+        left_tri_points = [
+            (adj_x + adj_w - 5, adj_y),               # Top Right of left half
+            (adj_x + adj_w - 5, adj_y + adj_h),       # Bottom Right of left half
+            (adj_x, adj_y + adj_h / 2)            # Left Tip
+        ]
+
+        # Define Right Triangle Points (Pointing Right)
+        right_tri_points = [
+            (adj_x + adj_w + 5, adj_y),               # Top Left of right half
+            (adj_x + adj_w + 5, adj_y + adj_h),       # Bottom Left of right half
+            (adj_x + (adj_w * 2), adj_y + adj_h / 2) # Right Tip
+        ]
+
+        # Draw them based on direction
+        if mb['direction'] == 1: # Right is active
+            pygame.draw.polygon(screen, dark, left_tri_points)
+            pygame.draw.polygon(screen, bright, right_tri_points)
+        else: # Left is active
+            pygame.draw.polygon(screen, bright, left_tri_points)
+            pygame.draw.polygon(screen, dark, right_tri_points)
+                    
+        mb['rect'].x += mb['speed'] * mb['direction']
+        if mb['rect'].x < mb['limit_left'] or mb['rect'].x > mb['limit_right']:
+            mb['direction'] *= -1
+        
+        if player.rect.colliderect(mb['rect']):
+            # Standing on top of the moving block
+            if player.velocity_y > 0 and player.rect.y + player.rect.height - player.velocity_y <= mb['rect'].y:
+                player.rect.y = mb['rect'].y - player.rect.height
+                player.velocity_y = 0
+                player.on_ground = True
+                # Carry the player along with the block's horizontal movement
+                player.rect.x += mb['speed'] * mb['direction']
+            # Hitting from the side
+            elif player.rect.x + player.rect.width > mb['rect'].x and player.rect.x < mb['rect'].x + mb['rect'].width:
+                if player.rect.x < mb['rect'].x:
+                    player.rect.x = mb['rect'].x - player.rect.width
+                elif player.rect.x + player.rect.width > mb['rect'].x + mb['rect'].width:
+                    player.rect.x = mb['rect'].x + mb['rect'].width
+    
+    return player, moving_blocks
 
 def handle_jump_blocks(screen, jump_blocks, player):
-        for jump_block in jump_blocks:
-            pygame.draw.rect(screen, (255, 128, 0), (jump_block.x - player.camera_x, jump_block.y - player.camera_y, jump_block.width, jump_block.height))
+    for jump_block in jump_blocks:
+        pygame.draw.rect(screen, (255, 128, 0), (jump_block.x - player.camera_x, jump_block.y - player.camera_y, jump_block.width, jump_block.height))
 
-            adj_x = jump_block.x + 5 - player.camera_x
-            adj_y = jump_block.y + 5 - player.camera_y # Changed to +5 to keep it inside the top of the block
-            adj_w = jump_block.width - 10
-            adj_h = jump_block.height - 10
+        adj_x = jump_block.x + 5 - player.camera_x
+        adj_y = jump_block.y + 5 - player.camera_y # Changed to +5 to keep it inside the top of the block
+        adj_w = jump_block.width - 10
+        adj_h = jump_block.height - 10
 
-            #  Define the three points of the triangle
-            points = [
-                (adj_x + adj_w / 2, adj_y),          # Top Tip (Middle)
-                (adj_x, adj_y + adj_h),              # Bottom Left
-                (adj_x + adj_w, adj_y + adj_h)       # Bottom Right
-            ]
+        #  Define the three points of the triangle
+        points = [
+            (adj_x + adj_w / 2, adj_y),          # Top Tip (Middle)
+            (adj_x, adj_y + adj_h),              # Bottom Left
+            (adj_x + adj_w, adj_y + adj_h)       # Bottom Right
+        ]
 
-            # Draw the triangle
-            pygame.draw.polygon(screen, (255, 190, 81), points)
-            
-            if player.rect.colliderect(jump_block):
-                # Falling onto a jump block
-                if player.velocity_y > 0 and player.rect.y + player.rect.height - player.velocity_y < jump_block.y + 5:
-                    player.rect.bottom = jump_block.y
-                    if player.jump_mode == "strong":
-                        player.velocity_y = -21
-                    elif player.jump_mode == "weak":
-                        player.velocity_y = -54
-                    else:
-                        player.velocity_y = -33  # Apply upward velocity for the jump
-                    if not manage_data.is_mute:
-                        manage_data.sounds["bounce"].play()
-
-                # Hitting the bottom of a jump block
-                elif player.velocity_y < 0 and player.rect.y >= jump_block.y + jump_block.height - player.velocity_y:
-                    player.rect.y = jump_block.y + jump_block.height
-                    player.velocity_y = 0
-
-                # Horizontal collision (left or right side of the jump block)
-                elif player.rect.x + player.rect.width > jump_block.x and player.rect.x < jump_block.x + jump_block.width:
-                    if player.rect.x < jump_block.x:  # Colliding with the left side of the jump block
-                        player.rect.x = jump_block.x - player.rect.width
-                    elif player.rect.x + player.rect.width > jump_block.x + jump_block.width:  # Colliding with the right side
-                        player.rect.x = jump_block.x + jump_block.width
+        # Draw the triangle
+        pygame.draw.polygon(screen, (255, 190, 81), points)
         
-        return player
+        if player.rect.colliderect(jump_block):
+            # Falling onto a jump block
+            if player.velocity_y > 0 and player.rect.y + player.rect.height - player.velocity_y < jump_block.y + 5:
+                player.rect.bottom = jump_block.y
+                if player.jump_mode == "strong":
+                    player.velocity_y = -21
+                elif player.jump_mode == "weak":
+                    player.velocity_y = -54
+                else:
+                    player.velocity_y = -33  # Apply upward velocity for the jump
+                if not manage_data.is_mute:
+                    manage_data.sounds["bounce"].play()
+
+            # Hitting the bottom of a jump block
+            elif player.velocity_y < 0 and player.rect.y >= jump_block.y + jump_block.height - player.velocity_y:
+                player.rect.y = jump_block.y + jump_block.height
+                player.velocity_y = 0
+
+            # Horizontal collision (left or right side of the jump block)
+            elif player.rect.x + player.rect.width > jump_block.x and player.rect.x < jump_block.x + jump_block.width:
+                if player.rect.x < jump_block.x:  # Colliding with the left side of the jump block
+                    player.rect.x = jump_block.x - player.rect.width
+                elif player.rect.x + player.rect.width > jump_block.x + jump_block.width:  # Colliding with the right side
+                    player.rect.x = jump_block.x + jump_block.width
+    
+    return player
 
 def handle_key_blocks(screen, key_block_pairs, player):
     for pair in key_block_pairs:
@@ -227,4 +227,44 @@ def handle_key_blocks_timed(screen, key_block_pairs_timed, player):
                         player.rect.x = block.x + block.width
 
     player.crushed = False
+    return player
+
+def handle_quicksand(screen, qsand, player):
+    for sand in qsand:
+        block = sand['block']
+        pygame.draw.rect(screen, (153, 153, 102), (block.x - player.camera_x, block.y - player.camera_y, block.width, block.height))
+        if player.rect.colliderect(block):
+            overlap_x = min(player.rect.right, block.x + block.width) - max(player.rect.left, block.x)
+            overlap_y = min(player.rect.bottom, block.y + block.height) - max(player.rect.top, block.y)
+            if overlap_x > 0 and overlap_y > 0:
+                if overlap_y <= overlap_x:
+                    # Vertical collision: landing on top or hitting from below
+                    if player.rect.centery < block.y + block.height / 2:
+                        player.rect.bottom = block.y
+                        player.velocity_y = 0
+                        player.on_ground = True
+                    else:
+                        player.rect.top = block.y + block.height
+                        player.velocity_y = 0
+
+                    if player.rect.bottom == block.y:
+                        if sand['timer'] is None:
+                            sand['timer'] = pygame.time.get_ticks()
+                        elif pygame.time.get_ticks() - sand['timer'] >= 2500:
+                            player.crushed = True
+                            sand['timer'] = None
+                        elif pygame.time.get_ticks() - sand['timer'] >= 2486:
+                            player.rect.y += 9
+                            player.velocity_x -= player.velocity_x * 0.74
+                    else:
+                        sand['timer'] = None
+                else:
+                    # Horizontal collision: push out to nearest side
+                    if player.rect.centerx < block.x + block.width / 2:
+                        player.rect.right = block.x
+                    else:
+                        player.rect.left = block.x + block.width
+                    sand['timer'] = None
+        else:
+            sand['timer'] = None
     return player
