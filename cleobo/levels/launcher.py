@@ -168,6 +168,14 @@ def level_launcher(level_name, screen, transition, world_name):
             'block': pygame.FRect(int(l['block']['x']), int(l['block']['y']), int(l['block']['w']), int(l['block']['h']))
         })
 
+    qsand = [
+        {
+            'block': pygame.FRect(int(b['x']), int(b['y']), int(b['w']), int(b['h'])),
+            'timer': None
+        }
+        for b in level_data.get('qsand', [])
+    ]
+
     # Pre-render fall message
     fall_message = in_game.get("fall_message", "Fell too far!")
     rendered_fall_text = menu_ui.render_text(fall_message, True, (255, 0, 0))
@@ -273,15 +281,11 @@ def level_launcher(level_name, screen, transition, world_name):
 
         # === PHYSICS: BLOCK COLLISIONS ===
         player, moving_blocks = blockmgr.handle_moving_blocks(screen, moving_blocks, player)
-
         player = blockmgr.handle_blocks(screen, blocks, player)
-
         player = blockmgr.handle_jump_blocks(screen, jump_blocks, player)
-
         player = blockmgr.handle_key_blocks(screen, key_block_pairs, player)
-
         player = blockmgr.handle_key_blocks_timed(screen, key_block_pairs_timed, player)
-
+        player = blockmgr.handle_quicksand(screen, qsand, player)
         player = env.handle_teleports(screen, teleporters, player)   
 
         # moving_blocks is a list of dicts; pass a list of their rects to the collision helper
@@ -358,6 +362,7 @@ def level_launcher(level_name, screen, transition, world_name):
 
         menu_ui.draw_notifs(screen)
         menu_ui.draw_syncing_status(screen)
+        
         pygame.display.update()
 
 # IMPORTANT!
