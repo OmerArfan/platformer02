@@ -67,7 +67,6 @@ else:
         'libavif', 
     }
     unused_audio_libs = {
-        'libfluidsynth',  
         'libsndfile',     
     }
 
