@@ -151,7 +151,7 @@ def update_locked_levels(progress, manifest):
     ordered_levels = get_ordered_levels(progress)  # ✅ Discovers from structure
     
     if not ordered_levels:
-        return
+        return progress
     
     # First level always unlocked
     first_world, first_subsection, first_level = ordered_levels[0]
@@ -329,7 +329,6 @@ def load_progress():
 
         if loaded_data:
             data.update(loaded_data)
-            data = update_locked_levels(data, manifest)
             sync_missing_data(data)
             SAVE_FILE = target_file
 
@@ -520,7 +519,8 @@ def update_local_manifest(data):
         print(f"Error during manifest save: {e}")
 
 def sync_missing_data(data):
-    
+    global progress
+
     # 1a. Ensure top-level keys exist (player, achieved, etc.)
     for key, value in default_progress.items():
         if key not in data:
@@ -652,7 +652,8 @@ def sync_missing_data(data):
         green_world_1.pop("lvl5", None)
         green_world_1.pop("lvl6", None)     
     
-    update_locked_levels(data, manifest)
+    data = update_locked_levels(data, manifest)
+    progress = data
 
 def sync_vault_to_cloud(data):
     global is_syncing, sync_status, sync_finish_time
