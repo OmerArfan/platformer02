@@ -50,10 +50,15 @@ a = Analysis(
     noarchive=False,
 )
 
-unused_pillow_libs = {
-    'libwebp', 'libwebpdemux', 'libwebpmux', 'libsharpyuv',
-    'libavif', 
-}
+if sys.platform == *win32*: 
+    unused_pillow_libs = {
+        'libwebp', 'libwebpdemux', 'libwebpmux', 'libsharpyuv',
+        'libavif', 'libtiff', 'libopenjp2', 'liblzma', 'libzstd'
+    }
+else:
+    unused_pillow_libs = {
+        'libavif', 
+    }
 
 unused_audio_libs = {
     'libfluidsynth',  
