@@ -55,18 +55,25 @@ if sys.platform == "win32":
         'libwebp', 'libwebpdemux', 'libwebpmux', 'libsharpyuv',
         'libavif', 'libtiff', 'libopenjp2', 'liblzma', 'libzstd'
     }
+    unused_audio_libs = {
+        'libfluidsynth',  
+        'libmpg123',      
+        'libFLAC',        
+        'libwavpack',     
+        'libsndfile',     
+    }
 else:
     unused_pillow_libs = {
         'libavif', 
     }
+    unused_audio_libs = {
+        'libfluidsynth',  
+        'libmpg123',      
+        'libwavpack',     
+        'libsndfile',     
+    }
 
-unused_audio_libs = {
-    'libfluidsynth',  
-    'libmpg123',      
-    'libFLAC',       
-    'libwavpack',     
-    'libsndfile',     
-}
+all_unused_binaries = unused_pillow_libs.union(unused_audio_libs)
 all_unused_binaries = unused_pillow_libs.union(unused_audio_libs)
 
 a.binaries = [
