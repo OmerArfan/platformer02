@@ -67,7 +67,6 @@ else:
         'libavif', 
     }
     unused_audio_libs = {
-        'libsndfile',     
     }
 
 all_unused_binaries = unused_pillow_libs.union(unused_audio_libs)
