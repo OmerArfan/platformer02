@@ -68,8 +68,6 @@ else:
     }
     unused_audio_libs = {
         'libfluidsynth',  
-        'libmpg123',      
-        'libwavpack',     
         'libsndfile',     
     }
 
