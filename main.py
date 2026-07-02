@@ -27,7 +27,7 @@ screen = pygame.display.set_mode((1600, 900), pygame.FULLSCREEN)
 manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT = screen.get_size()
 
 pygame.display.set_caption("Roboquix")
-MIN_WIDTH, MIN_HEIGHT = 1128, 634
+MIN_WIDTH, MIN_HEIGHT = 1366, 768
 
 # Load and set window icon
 icon = pygame.image.load(manage_data.resource_path("assets/imgs/icons/icon.png")).convert_alpha()
@@ -201,15 +201,14 @@ while running:
     
         else:
             button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)
-        
-        menu_ui.draw_notifs(screen)
-        menu_ui.draw_syncing_status(screen)
 
-        mouse_pos = pygame.mouse.get_pos()
         screen.blit(manage_data.ui['cursor'], mouse_pos)
 
         if transition.active:
             transition.update(screen, transition)
+
+        menu_ui.draw_notifs(screen)
+        menu_ui.draw_syncing_status(screen)
         
         pygame.display.flip()
 
