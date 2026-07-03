@@ -30,8 +30,8 @@ else:
     fin_message = "Welcome to Roboquix!"
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0504"
-manage_data.kernel = "0.6.0.0051"
+manage_data.version = "1.3.9.0510"
+manage_data.kernel = "0.7.0.0052"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
