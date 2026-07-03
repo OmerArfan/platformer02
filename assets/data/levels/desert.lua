@@ -139,9 +139,24 @@ local lvl3 = {
 	},
 	blocks = {
 	    {x = 500,  y = 450, w = 200, h = 100},
+		{x = 1100,  y = 120, w = 750, h = 100},
+		{x = 2200,  y = 450, w = 500, h = 100},
+		{x = 2200,  y = 450, w = 500, h = 100},
 	},
 	qsand = {
-	    {x = 800,  y = 450, w = 500, h = 100},
+	    {x = 700,  y = 450, w = 1500, h = 100},
+		{x = 2750,  y = 270, w = 800, h = 100},
+	},
+	saws = {
+		{x = 950, y = 450, radius = 74, type = 'static'},
+	},
+	spikes = {
+		{{3005, 270}, {3050, 220}, {3095, 270}},
+		{{3105, 270}, {3150, 220}, {3195, 270}},
+	},
+	text = {
+		qsand = {name = "qsand_warn", fallback = "Caution! Be aware of where you are when you stand on quicksand! If you don't", color = {153, 102, 0}, x = 200, y = 260},
+		qsand2 = {name = "qsand2_warn", fallback = "escape fast enough... you will get crushed as you're sucked inside!", color = {153, 102, 0}, x = 230, y = 310},
 	},
 	exit = {x = 5600, y = 100, w = 140, h = 180}, 
     next_page = "desert_lvl4",
