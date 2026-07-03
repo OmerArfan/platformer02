@@ -233,6 +233,7 @@ def handle_quicksand(screen, qsand, player):
     for sand in qsand:
         block = sand['block']
         pygame.draw.rect(screen, (153, 153, 102), (block.x - player.camera_x, block.y - player.camera_y, block.width, block.height))
+        pygame.draw.rect(screen, (153, 102, 0), (block.x - player.camera_x, block.y - player.camera_y, block.width, 30))
         if player.rect.colliderect(block):
             overlap_x = min(player.rect.right, block.x + block.width) - max(player.rect.left, block.x)
             overlap_y = min(player.rect.bottom, block.y + block.height) - max(player.rect.top, block.y)
@@ -248,23 +249,49 @@ def handle_quicksand(screen, qsand, player):
                         player.velocity_y = 0
 
                     if player.rect.bottom == block.y:
-                        if sand['timer'] is None:
-                            sand['timer'] = pygame.time.get_ticks()
-                        elif pygame.time.get_ticks() - sand['timer'] >= 2500:
+                        # Start or resume timer. We keep 'timer' as the start timestamp
+                        # and 'elapsed' as accumulated time while paused.
+                        if sand.get('timer') is None:
+                            sand['timer'] = pygame.time.get_ticks() - sand.get('elapsed', 0)
+
+                        sand['elapsed'] = pygame.time.get_ticks() - sand['timer']
+                        if sand['elapsed'] >= 2500:
                             player.crushed = True
                             sand['timer'] = None
-                        elif pygame.time.get_ticks() - sand['timer'] >= 2486:
+                            sand['elapsed'] = 0
+                        elif sand['elapsed'] >= 2456:
+                            player.rect.y += 24
+                            player.velocity_x -= player.velocity_x * 0.91
+                        elif sand['elapsed'] >= 2103:
                             player.rect.y += 9
-                            player.velocity_x -= player.velocity_x * 0.74
+                            player.velocity_x -= player.velocity_x * 0.5
                     else:
-                        sand['timer'] = None
+                        # Player is colliding but not standing on top — pause timer
+                        if sand.get('timer') is not None:
+                            # Use elapsed (time since timer started). Subtract a small
+                            elapsed = pygame.time.get_ticks() - sand['timer']
+                            sand['elapsed'] = max(0, elapsed - (250 * (1 - elapsed / 2500) / 5))
+                            sand['timer'] = None
                 else:
                     # Horizontal collision: push out to nearest side
-                    if player.rect.centerx < block.x + block.width / 2:
-                        player.rect.right = block.x
-                    else:
-                        player.rect.left = block.x + block.width
-                    sand['timer'] = None
+                    if sand['elapsed'] <= 2000:
+                        # Horizontal collision (left or right side of the block)
+                        if player.rect.x + player.rect.width > block.x and player.rect.x < block.x + block.width:
+                            if player.rect.x < block.x:  # Colliding with the left side of the block
+                                player.rect.x = block.x - player.rect.width
+                            elif player.rect.x + player.rect.width > block.x + block.width:  # Colliding with the right side
+                                player.rect.x = block.x + block.width
+
+                    # If pushed out horizontally, stop/pause the timer
+                    if sand.get('timer') is not None:
+                        elapsed = pygame.time.get_ticks() - sand['timer']
+                        sand['elapsed'] = max(0, min(elapsed - 250 * (1 - elapsed/2500), 2000))
+                        sand['timer'] = None
+        elif sand['timer'] is not None:
+            # Player not colliding with this sand; pause timer and store elapsed
+            elapsed = pygame.time.get_ticks() - sand['timer']
+            sand['elapsed'] = max(0, elapsed - 250 * (1 - elapsed/25000))
+            sand['timer'] = None
         else:
             sand['timer'] = None
     return player
