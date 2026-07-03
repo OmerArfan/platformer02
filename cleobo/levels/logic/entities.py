@@ -55,6 +55,7 @@ class Player:
         # Other
         self.deathcount = 0
         self.crushed = False
+        self.fall_thresh = 1100
 
     def input_update(self, keys):
         # === JUMPING ===
@@ -97,19 +98,6 @@ class Player:
         
         # Use interpolation for Y as well to stop the jitter
         self.camera_y += (target_y - self.camera_y) * self.camera_speed
-    
-    def fall(self, manager, rendered_fall_text, key_block_pairs, key_block_pairs_timed):
-    # Fall death
-        if self.rect.y > 1100:
-            self.die()
-            manager.death_text = rendered_fall_text
-            manager.wait_time = pygame.time.get_ticks()
-            if not manage_data.is_mute:
-                manage_data.sounds['fall'].play()
-            for kbp in (key_block_pairs or []):
-                kbp['collected'] = False
-            for kbp in (key_block_pairs_timed or []):
-                kbp['collected'] = False
             
     def die(self):
         self.rect.x, self.rect.y = self.spawn_x, self.spawn_y
@@ -119,10 +107,9 @@ class Player:
         self.speed_mode = "normal"
         self.lights_on = True
 
-    def update(self, keys, manager, rendered_fall_text, key_block_pairs=None, key_block_pairs_timed=None):
+    def update(self, keys):
         self.input_update(keys)
         self.camera_update()
-        self.fall(manager, rendered_fall_text, key_block_pairs, key_block_pairs_timed)
         self.jump = self.grav_strength[self.jump_mode]
         self.velocity_x = self.speeds[self.speed_mode]
 
