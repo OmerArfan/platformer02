@@ -161,6 +161,7 @@ def level_launcher(level_name, screen, transition, world_name):
     weak_grav = level_data.get('grav_weak', {})
     strong_grav = level_data.get('grav_strong', {})
     speedster = level_data.get('speedster', {})
+
     lights = []
     for l in level_data.get('lights', []):
         lights.append({
@@ -168,10 +169,12 @@ def level_launcher(level_name, screen, transition, world_name):
             'block': pygame.FRect(int(l['block']['x']), int(l['block']['y']), int(l['block']['w']), int(l['block']['h']))
         })
 
+    # Quicksand
     qsand = [
         {
             'block': pygame.FRect(int(b['x']), int(b['y']), int(b['w']), int(b['h'])),
-            'timer': None
+            'timer': None,
+            'elapsed': 0
         }
         for b in level_data.get('qsand', [])
     ]
@@ -189,7 +192,6 @@ def level_launcher(level_name, screen, transition, world_name):
     # === MAIN GAME LOOP ===
     if not transition.active:
       while running:
-        
         keys = pygame.key.get_pressed()
         
         real_dt = clock.tick_busy_loop(60) / 1000.0
@@ -226,12 +228,26 @@ def level_launcher(level_name, screen, transition, world_name):
             running = False
         
         # === UPDATE PLAYER INPUT & VELOCITY (BEFORE collisions) ===
-        player.update(keys, manager, rendered_fall_text, key_block_pairs, key_block_pairs_timed)
+        player.update(keys)
         
         # === RENDER ===
         screen.blit(background, (0, 0))
 
         player, flags = env.handle_flags(screen, flags, player)
+        
+        if player.rect.y > player.fall_thresh:
+            player.die()
+            manager.death_text = rendered_fall_text
+            manager.wait_time = pygame.time.get_ticks()
+            if not manage_data.is_mute:
+                manage_data.sounds['fall'].play()
+            for kbp in key_block_pairs:
+                kbp['collected'] = False
+            for kbp in key_block_pairs_timed:
+                kbp['collected'] = False
+            for sand in qsand:
+                sand['time'] = None
+                sand['elapsed'] = 0
 
         # Draw spikes
         hazards.draw_spikes(screen, spikes, player)
@@ -246,6 +262,9 @@ def level_launcher(level_name, screen, transition, world_name):
                 kbp['collected'] = False
             for kbp in key_block_pairs_timed: 
                 kbp['collected'] = False
+            for sand in qsand:
+                sand['time'] = None
+                sand['elapsed'] = 0
                 
         # Draw portal
         env.draw_portal(screen, manage_data.assets[f'{world_name}_exit'], exit_portal, player)
@@ -267,6 +286,9 @@ def level_launcher(level_name, screen, transition, world_name):
                 kbp['collected'] = False
             for kbp in key_block_pairs_timed: 
                 kbp['collected'] = False
+            for sand in qsand:
+                sand['time'] = None
+                sand['elapsed'] = 0
 
         if hazards.handle_lasers(screen, lasers, player):
             player.die()
@@ -278,6 +300,9 @@ def level_launcher(level_name, screen, transition, world_name):
                 kbp['collected'] = False
             for kbp in key_block_pairs_timed: 
                 kbp['collected'] = False
+            for sand in qsand:
+                sand['time'] = None
+                sand['elapsed'] = 0
 
         # === PHYSICS: BLOCK COLLISIONS ===
         player, moving_blocks = blockmgr.handle_moving_blocks(screen, moving_blocks, player)
@@ -300,6 +325,9 @@ def level_launcher(level_name, screen, transition, world_name):
                 kbp['collected'] = False
             for kbp in key_block_pairs_timed: 
                 kbp['collected'] = False
+            for sand in qsand:
+                sand['time'] = None
+                sand['elapsed'] = 0
 
         # Death if got inside a locked block (or if crushed in general)
         if player.crushed:
@@ -312,6 +340,9 @@ def level_launcher(level_name, screen, transition, world_name):
                 kbp['collected'] = False
             for kbp in key_block_pairs_timed: 
                 kbp['collected'] = False
+            for sand in qsand:
+                sand['time'] = None
+                sand['elapsed'] = 0
 
         # Spike collisions
         if hazards.check_spike_collisions(spikes, player):
@@ -324,6 +355,9 @@ def level_launcher(level_name, screen, transition, world_name):
                 kbp['collected'] = False
             for kbp in key_block_pairs_timed: 
                 kbp['collected'] = False
+            for sand in qsand:
+                sand['time'] = None
+                sand['elapsed'] = 0
 
         # Draw text elements
         for text_elem in text_elements:
@@ -354,6 +388,9 @@ def level_launcher(level_name, screen, transition, world_name):
                 kbp['collected'] = False
             for kbp in key_block_pairs_timed: 
                 kbp['collected'] = False
+            for sand in qsand:
+                sand['time'] = None
+                sand['elapsed'] = 0
             for flag in flags:
                 flag['status'] = 'unused'
         
@@ -364,6 +401,3 @@ def level_launcher(level_name, screen, transition, world_name):
         menu_ui.draw_syncing_status(screen)
         
         pygame.display.update()
-
-# IMPORTANT!
-# ANYTHING BELOW THIS IS OLD, LEGACY CODE WHICH WILL GET PHASED OUT AS TIME GOES ON.
