@@ -145,6 +145,8 @@
   "mock_message": "Falscher Weg, mein Freund, hier ist nichts Besonderes...",
   "jump_message": "Verwende orangefarbene Blöcke, um große Entfernungen zu springen!",
   "saws_message": "Sägen sind auch gefährlich!"
+  ,"saws_message2": "Einige Sägen rotieren um einen Block ...",
+    "saws_message3": "… während andere sich in eine bestimmte Richtung bewegen."
   ,"sawed_message": "In Stücke gesägt!"
   ,"key_message": "Nimm die Münze und öffne den Block!"
   ,"laser_message": "Gelasrat!"
@@ -162,6 +164,10 @@
   ,"crushed_message": "Zermalmt!",
   "cacti_message": "Gepiekt!",
   "cacti_warn": "Kaktusstacheln schießen in die Richtung, in die sie zeigen, wenn du an ihnen vorbeigehst!",
+  "qsand_warn": "Achtung! Achte genau darauf, wo du stehst, wenn du auf Treibsand bist! Wenn du nicht",
+    "qsand2_warn": "schnell genug entkommst, wirst du zerquetscht, während du hineingezogen wirst!",
+    "qsand3_warn": "Denn sobald du erst einmal eingesaugt wirst, wird es extrem schwer zu überleben.",
+    "qsand4_warn": "Oder wenn du ganz außen an den Ecken stehst... wirst du stattdessen vielleicht einfach herausgedrückt...",
   "temp": "Temperatur: {current_temp}",
   "ice_message": "Eisblöcke schmelzen, wenn du auf ihnen stehst! Aber sie kühlen dich auch ab!",
   "freeze_message": "Vergiss aber nicht, dich wieder aufzuwärmen – sonst erfrierst du!",

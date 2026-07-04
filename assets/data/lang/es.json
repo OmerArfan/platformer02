@@ -145,6 +145,8 @@
   ,"mock_message": "Camino equivocado, amigo, no hay nada especial aquí..."
   ,"jump_message": "¡Usa bloques naranjas para saltar grandes distancias!"
   ,"saws_message": "¡Las sierras también son peligrosas!"
+  ,"saws_message2": "Algunas sierras giran alrededor de un bloque...",
+    "saws_message3": "... mientras que otras se mueven en una dirección específica."
   ,"sawed_message": "¡Despedazado!"
   ,"key_message": "¡Agarrar la moneda y abrir el bloque!"
   ,"laser_message": "¡Grabado con láser!"
@@ -162,6 +164,10 @@
   ,"crushed_message": "¡Aplastado!",
   "cacti_message": "¡Pinchado!",
   "cacti_warn": "¡Espinas de cactus se lanzan hacia la dirección a la que miran si pasas cerca!",
+  "qsand_warn": "¡Cuidado! ¡Ten en cuenta dónde estás cuando pises arenas movedizas! Si no",
+    "qsand2_warn": "escapas lo suficientemente rápido, ¡te aplastará mientras te absorbe hacia adentro!",
+    "qsand3_warn": "Porque una vez que empiezas a ser absorbido, se vuelve muy difícil sobrevivir.",
+    "qsand4_warn": "O si te quedas justo en las esquinas... puede que simplemente seas expulsado hacia afuera...",
   "temp": "Temperatura: {current_temp}"
   ,"ice_message": "¡Los bloques de hielo se derriten cuando te paras sobre ellos! ¡Pero también te enfrían!",
   "freeze_message": "¡Pero recuerda calentarte un poco o podrías congelarte!",

@@ -145,7 +145,9 @@
   ,"mock_message": "Mauvais chemin mon gars rien de spécial ici...",
   "jump_message": "Utilisez des blocs orange pour sauter de grandes distances !",
   "saws_message": "Les scies sont aussi dangereuses !"
-  ,"sawed_message": "Scié en morceaux !"
+  ,"saws_message2": "Certaines scies tournent autour d'un bloc...",
+    "saws_message3": "... tandis que d'autres se déplacent dans une direction précise.",
+  "sawed_message": "Scié en morceaux !"
   ,"key_message": "Prenez la pièce et ouvrez le bloc !"
   ,"laser_message": "Tué par un laser !"
   ,"laser_warn": "Les lasers empêchent l'utilisation de raccourcis sournois !"
@@ -162,6 +164,10 @@
   ,"crushed_message": "Écrasé !",
   "cacti_message": "Piqué !",
   "cacti_warn": "Les épines des cactus se lancent dans la direction face à eux si vous passez à côté !",
+  "qsand_warn": "Attention ! Faites bien attention à là où vous vous trouvez sur les sables mouvants ! Si vous ne",
+    "qsand2_warn": "vous échappez pas assez vite, vous serez écrasé en étant aspiré à l'intérieur !",
+    "qsand3_warn": "Car une fois que vous commencez à vous faire aspirer, il devient difficile de survivre.",
+    "qsand4_warn": "Ou alors, si vous restez pile sur les bords... vous risquez plutôt de vous faire éjecter...",
   "temp": "Température: {current_temp}"
   ,"ice_message": "Les blocs de glace fondent quand tu restes dessus ! Mais ils te rafraîchissent aussi !",
   "freeze_message": "Mais pense à te réchauffer un peu, ne meurs pas de froid !",

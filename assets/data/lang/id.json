@@ -145,6 +145,8 @@
     "mock_message": "Arah yang salah, bro. Nggak ada yang spesial di sini...",
     "jump_message": "Gunakan blok oranye untuk melompat jauh!",
     "saws_message": "Gergaji juga berbahaya!",
+    "saws_message2": "Beberapa gergaji berputar mengelilingi balok...",
+    "saws_message3": "... sementara yang lain bergerak ke arah tertentu.",
     "sawed_message": "Terpotong kecil-kecil!",
     "key_message": "Ambil koin dan buka blok!",
     "laser_message": "Kena laser!",
@@ -161,8 +163,12 @@
     ,"timed_coin_message_2": "terbatas. Lari sebelum mereka tertutup lagi, atau paling buruk, menghancurkanmu..."
     ,"crushed_message": "Hancur!",
     "cacti_message": "Tertusuk!",
-    "cacti_warn": "Duri kaktus akan melesat ke arah yang mereka hadapi jika kamu melewatinya!"
-    ,"temp": "Suhu: {current_temp}",
+    "cacti_warn": "Duri kaktus akan melesat ke arah yang mereka hadapi jika kamu melewatinya!",
+    "qsand_warn": "Awas! Perhatikan posisi kamu saat berdiri di atas pasir hisap! Jika kamu tidak",
+    "qsand2_warn": "cepat lolos, kamu akan hancur saat tersedot ke dalam!",
+    "qsand3_warn": "Karena begitu kamu mulai tersedot, akan sangat sulit untuk bertahan hidup.",
+    "qsand4_warn": "Atau jika kamu berdiri tepat di sudut-sudutnya... kamu mungkin malah terdorong keluar...",
+    "temp": "Suhu: {current_temp}",
     "ice_message": "Blok es akan mencair saat diinjak! Tapi juga mendinginkanmu!",
     "freeze_message": "Ingat untuk menghangatkan diri atau kamu bisa membeku sampai mati!",
     "overheat_message1": "Ingat juga untuk memantau suhu tubuhmu dan jika",

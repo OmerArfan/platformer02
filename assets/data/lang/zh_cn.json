@@ -145,6 +145,8 @@
     "mock_message": "路线错误, 这里没什么特别的, 我的朋友……"
     ,"jump_message": "使用橙色方块跳跃！"
     ,"saws_message": "小心锯子！"
+    ,"saws_message2": "有些电锯绕着方块旋转……",
+    "saws_message3": "……而有些则沿着特定的方向移动。"
     ,"sawed_message": "锯成碎片！"
     ,"key_message": "抓住硬币, 打开方块！"
     ,"laser_message": "激光处理！"
@@ -162,7 +164,11 @@
     ,"crushed_message": "被粉碎了！",
     "cacti_message": "被刺伤了！",
     "cacti_warn": "如果你从仙人掌身边经过，它们的刺就会朝着它们所面对的方向冲过来！",
-    "temp": "温度: {current_temp}"
+    "qsand_warn": "警告！站在流沙上时，务必注意你所处的位置！如果你不",
+    "qsand2_warn": "快点逃离，在被吸入内部的同时你将会被压碎！",
+    "qsand3_warn": "因为一旦你开始被吸进去，想要活命就会变得十分困难。",
+    "qsand4_warn": "或者，如果你刚好站在最边缘的角落……说不定反而会被直接推挤出来..."
+    ,"temp": "温度: {current_temp}"
     ,"ice_message": "站在冰块上会让它们融化！但它们也能让你降温！",
     "freeze_message": "记得取点暖, 不要被冻死了！",
     "overheat_message1": "还要记得关注你的体温, 如果",

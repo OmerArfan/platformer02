@@ -143,6 +143,8 @@
   "mock_message": "Wrong way my guy nothing special here...",
   "jump_message": "Use orange blocks to jump high distances!",
   "saws_message": "Saws are also dangerous!",
+  "saws_message2": "Some saws rotate around a block...",
+    "saws_message3": "... while others move in a specific direction.",
   "sawed_message": "Sawed to bits!",
   "key_message": "Grab the coin and open the block!",
   "laser_message": "Lasered!",
@@ -160,6 +162,10 @@
   ,"crushed_message": "Crushed!",
   "cacti_message": "Prickled!",
   "cacti_warn": "Cacti spikes rush towards the direction they face if you pass by them!"
+  ,"qsand_warn": "Caution! Be aware of where you are when you stand on quicksand! If you don't",
+    "qsand2_warn": "escape fast enough, you will get crushed as you're sucked inside!",
+    "qsand3_warn": "Because once you start getting sucked in, it becomes difficult to survive.",
+    "qsand4_warn": "Or if you stand at the very corners... you might just get pushed out instead..."
   ,"temp": "Temperature: {current_temp}",
   "ice_message": "Ice Blocks melt when you stand on them! But they also cool you down!"
   ,"freeze_message": "But remember to get some warm ups and don't just freeze to death!"
