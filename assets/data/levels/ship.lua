@@ -106,6 +106,10 @@ local lvl2 = {
 		collected = false
 		},
 	},
+	text = {
+	    saws = {name = "saws_message2", fallback = "Some saws rotate around a block...", color = {255, 0, 0}, x = 960, y = 430},
+	    key  = {name = "saws_message3", fallback = "... while others move in a specific direction.", color = {255, 0, 0}, x = 3100, y = -500},
+	},
 	exit = {x = 4870, y = 265, w = 140, h = 180},
 	next_page = "ship_lvl3",
 }

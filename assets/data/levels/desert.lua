@@ -134,31 +134,43 @@ local lvl2 = {
 
 local lvl3 = {
 	player = {
-	    x = 600, y = 200,
-	    spawn_x = 600, spawn_y = 200,
+	    x = 550, y = 200,
+	    spawn_x = 550, spawn_y = 200,
 	},
 	blocks = {
 	    {x = 500,  y = 450, w = 200, h = 100},
 		{x = 1100,  y = 120, w = 750, h = 100},
 		{x = 2200,  y = 450, w = 500, h = 100},
-		{x = 2200,  y = 450, w = 500, h = 100},
+		{x = 3300,  y = 580, w = 1600, h = 150},
+		{x = 3300,  y = -250, w = 600, h = 150},
+		{x = 3600,  y = 320, w = 0, h = 0},
+		{x = 4270,  y = 270, w = 300, h = 100},
+		{x = 4870,  y = 70, w = 100, h = 630},
 	},
 	qsand = {
 	    {x = 700,  y = 450, w = 1500, h = 100},
-		{x = 2750,  y = 270, w = 800, h = 100},
+		{x = 2870,  y = 270, w = 1400, h = 100},
 	},
 	saws = {
 		{x = 950, y = 450, radius = 74, type = 'static'},
+		{radius = 40, orbit_radius = 300, angle = 0, speed = 4, block = 5, type = 'rotating'},
+		{radius = 55, orbit_radius = 180, angle = 65, speed = 7, block = 2, type = 'rotating'},
+		{radius = 60, speed = 14, x = 3400, y = 600, max = 630, min = -200, dir = -1, type = 'rushing_y'},
+		{radius = 60, speed = 11, x = 3800, y = 600, max = 630, min = -200, dir = -1, type = 'rushing_y'},
 	},
-	spikes = {
-		{{3005, 270}, {3050, 220}, {3095, 270}},
-		{{3105, 270}, {3150, 220}, {3195, 270}},
+	cacti_spikes = {
+		{cord = {{4870, 580}, {4820, 475}, {4870, 370}}, axis = 'x', dir = -1, limit = 730},
 	},
 	text = {
-		qsand = {name = "qsand_warn", fallback = "Caution! Be aware of where you are when you stand on quicksand! If you don't", color = {153, 102, 0}, x = 200, y = 260},
-		qsand2 = {name = "qsand2_warn", fallback = "escape fast enough... you will get crushed as you're sucked inside!", color = {153, 102, 0}, x = 230, y = 310},
+		qsand = {name = "qsand_warn", fallback = "Caution! Be aware of where you are when you stand on quicksand! If you don't", color = {153, 102, 0}, x = 160, y = 200},
+		qsand2 = {name = "qsand2_warn", fallback = "escape fast enough, you will get crushed as you're sucked inside!", color = {153, 102, 0}, x = 210, y = 240},
+		qsand3 = {name = "qsand3_warn", fallback = "Because once you start getting sucked in, it becomes difficult to survive.", color = {153, 102, 0}, x = 180, y = 280},		
+		qsand4 = {name = "qsand4_warn", fallback = "Or if you stand at the very corners... you might just get pushed out instead...", color = {153, 102, 0}, x = 2780, y = 10},
 	},
-	exit = {x = 5600, y = 100, w = 140, h = 180}, 
+	speedster = {
+		{x = 4680, y = 320},
+	},
+	exit = {x = 3530, y = 385, w = 140, h = 180}, 
     next_page = "desert_lvl4",
 }
 
