@@ -195,22 +195,23 @@ def _parse_key_value_table(content):
     """Parse a key-value table."""
     result = {}
     
-    # Content is already stripped of outer braces by _parse_table_or_list()
-    # Don't strip again
-    
-    # Split by top-level commas
+    # Split by top-level commas (not inside nested brackets OR quotes)
     depth = 0
+    in_quotes = False
     current = []
     pairs = []
     
     for char in content:
-        if char in '{[':
+        if char == '"':
+            in_quotes = not in_quotes
+            current.append(char)
+        elif char in '{[' and not in_quotes:
             depth += 1
             current.append(char)
-        elif char in '}]':
+        elif char in '}]' and not in_quotes:
             depth -= 1
             current.append(char)
-        elif char == ',' and depth == 0:
+        elif char == ',' and depth == 0 and not in_quotes:
             pair_str = ''.join(current).strip()
             if pair_str:
                 pairs.append(pair_str)

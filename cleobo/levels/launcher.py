@@ -315,7 +315,8 @@ def level_launcher(level_name, screen, transition, world_name):
 
         # moving_blocks is a list of dicts; pass a list of their rects to the collision helper
         moving_rects = [mb['rect'] for mb in moving_blocks]
-        if blockmgr.handle_bottom_collisions(blocks, player) or blockmgr.handle_bottom_collisions(moving_rects, player) or blockmgr.handle_bottom_collisions(jump_blocks, player):
+        q_rects = [qsand['block'] for qsand in qsand]
+        if blockmgr.handle_bottom_collisions(blocks, player) or blockmgr.handle_bottom_collisions(moving_rects, player) or blockmgr.handle_bottom_collisions(jump_blocks, player) or blockmgr.handle_bottom_collisions(q_rects, player):
             player.die()
             manager.death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
             manager.wait_time = pygame.time.get_ticks()
