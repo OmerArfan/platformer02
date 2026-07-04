@@ -26,13 +26,13 @@ pygame.init()
 screen = pygame.display.set_mode((1600, 900), pygame.FULLSCREEN)
 manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT = screen.get_size()
 
-pygame.display.set_caption("Roboquix")
-MIN_WIDTH, MIN_HEIGHT = 1366, 768
-
 # Load and set window icon
 icon = pygame.image.load(manage_data.resource_path("assets/imgs/icons/icon.png")).convert_alpha()
 pygame.display.set_icon(icon)
-pygame.mouse.set_visible(False)  # Hide the system cursor
+pygame.mouse.set_visible(False)  # Hide the system cursor   
+
+pygame.display.set_caption("Roboquix")
+MIN_WIDTH, MIN_HEIGHT = 1366, 768
 
 running = False
 loader = startup.load_game_generator(manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT)
