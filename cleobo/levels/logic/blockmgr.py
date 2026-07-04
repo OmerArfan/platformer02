@@ -240,13 +240,10 @@ def handle_quicksand(screen, qsand, player):
             if overlap_x > 0 and overlap_y > 0:
                 if overlap_y <= overlap_x:
                     # Vertical collision: landing on top or hitting from below
-                    if player.rect.centery < block.y + block.height / 2:
+                    if player.rect.centery < block.y + block.height and player.velocity_y > 0:
                         player.rect.bottom = block.y
                         player.velocity_y = 0
                         player.on_ground = True
-                    else:
-                        player.rect.top = block.y + block.height
-                        player.velocity_y = 0
 
                     if player.rect.bottom == block.y:
                         # Start or resume timer. We keep 'timer' as the start timestamp

@@ -79,19 +79,18 @@ def handle_cacti_spikes(screen, player, spikes):
                     spike['cycle_complete'] = False
        
         elif spike['axis'] == "'x'":
-            spike_x = max([p[0] for p in spike['def_cord']])
-            spike_y_min = min([p[1] for p in spike['def_cord']])
-            spike_y_max = max([p[1] for p in spike['def_cord']])
+            spike_x = max([p[0] for p in spike['def_cord']])  # 4870
+            spike_y_min = min([p[1] for p in spike['def_cord']])  # 370
+            spike_y_max = max([p[1] for p in spike['def_cord']])  # 580
             
-            # Check if player is vertically aligned with spike
             player_aligned = player.rect.y + player.rect.height >= spike_y_min and player.rect.y <= spike_y_max
             
             if spike['dir'] < 0:
-                if player.rect.right >= spike_x + spike['limit'] and player.rect.right < spike_x and player_aligned:
+                if player.rect.right < spike_x and player.rect.right > spike['limit'] and player_aligned: 
                     spike['activated'] = True
                     spike['cycle_complete'] = False
             else: 
-                if player.rect.left <= spike_x + spike['limit'] and player.rect.left > spike_x and player_aligned:
+                if player.rect.left > spike_x and player.rect.left < spike['limit'] and player_aligned:                
                     spike['activated'] = True
                     spike['cycle_complete'] = False
         
@@ -201,10 +200,25 @@ def handle_all_saws(screen, saws, player, blocks):
             if saw['x'] > saw['max'] or saw['x'] < saw['min']:
                 saw['speed'] *= -1
                 
-        elif saw_type == "'rushing'":
-            saw['x'] += saw['speed']
-            if saw['x'] > saw['max']:
-                saw['x'] = saw['min']
+        elif saw_type == "'rushing_x'":
+            if saw['dir'] > 0:
+                saw['x'] += saw['speed']
+                if saw['x'] > saw['max']:
+                    saw['x'] = saw['min']
+            else:
+                saw['x'] -= saw['speed']
+                if saw['x'] < saw['min']:
+                    saw['x'] = saw['max']
+        
+        elif saw_type == "'rushing_y'":
+            if saw['dir'] > 0:
+                saw['y'] += saw['speed']
+                if saw['y'] > saw['max']:
+                    saw['y'] = saw['min']
+            else:
+                saw['y'] -= saw['speed']
+                if saw['y'] < saw['min']:
+                    saw['y'] = saw['max']
 
         r = saw.get('radius') or saw.get('r')
         cache_key = (r, angle_key)
