@@ -1110,7 +1110,8 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
         'ironrobot': manage_data.progress["char"].get("ironrobo", False),
         'cakebot': manage_data.progress["char"].get("cakebot", False),
         'vectorbot': manage_data.progress["char"].get("vectorbot", False),
-        'piratebot': manage_data.progress["char"].get("piratebot", False)
+        'piratebot': manage_data.progress["char"].get("piratebot", False),
+        'cashrobot': manage_data.progress["char"].get("cashrobo", False)
     }
         
     selected_character = manage_data.progress["pref"].get("character", manage_data.default_progress["pref"]["character"])
@@ -1119,7 +1120,7 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
     LOCKED_FILTER.fill((40, 40, 40)) # A dark grey color
     LOCKED_FILTER.set_alpha(210)     # Adjust this to change how "locked" it looks      
 
-    for robo_name in ['robot', 'evilrobot', 'greenrobot', 'ironrobot', 'cakebot', 'vectorbot', 'piratebot', 'sunnyrobot']:
+    for robo_name in ['robot', 'evilrobot', 'greenrobot', 'ironrobot', 'cakebot', 'vectorbot', 'piratebot', 'sunnyrobot', 'cashrobot']:
         rect = manage_data.robo_rects[robo_name]  
         if manage_data.unlocked_robos[robo_name]:
             screen.blit(manage_data.robos[robo_name], rect)
@@ -1136,7 +1137,8 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
         "ironrobot": (64, 64, 64),
         "cakebot": (255, 171, 204),
         "vectorbot": (25, 46, 222),
-        "piratebot": (56, 30, 10)
+        "piratebot": (56, 30, 10),
+        "cashrobot": (2, 214, 1),
         }
     
     if selected_character in manage_data.robo_rects:
@@ -1166,6 +1168,8 @@ def draw_character_select(screen, mouse_pos, events, transition, rect, key):
                 try_select_robo(manage_data.unlocked_robos['piratebot'], "piratebot", manage_data.robo_rects['piratebot'], "piratebot", "Become the Captain of the Ship to get this robo!", transition)
             elif manage_data.robo_rects['sunnyrobot'].collidepoint(mouse_pos):
                 try_select_robo(manage_data.unlocked_robos['sunnyrobot'], "sunnyrobot", manage_data.robo_rects['sunnyrobot'], "sunnyrobot", "Get the speedy starter achievement to unlock this robo!", transition)            
+            elif manage_data.robo_rects['cashrobot'].collidepoint(mouse_pos):
+                try_select_robo(manage_data.unlocked_robos['cashrobot'], "cashrobot", manage_data.robo_rects['cashrobot'], "cashrobot", "Get the XP Collector achievement to unlock this robo!", transition)            
             elif rect.collidepoint(mouse_pos):
                 state.handle_action(key, transition, manage_data.current_page)
 
