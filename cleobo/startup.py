@@ -6,6 +6,11 @@ from datetime import datetime
 import traceback
 from random import random
 
+# Initializing Game and Engine Version
+manage_data.version = "1.3.9.0512"
+manage_data.kernel = "0.7.2.0060"
+print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
+
 # Random final message
 val = random()
 if val == 0.05:
@@ -28,11 +33,6 @@ elif val <= 0.85:
     fin_message = "Loading another adventure..."
 else:
     fin_message = "Welcome to Roboquix!"
-
-# Initializing Game and Engine Version
-manage_data.version = "1.3.9.0510"
-manage_data.kernel = "0.7.0.0052"
-print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 manage_data.now = datetime.now()
 
@@ -277,6 +277,7 @@ def init_robos():
             'cakebot': "char/cakebot/idle.png",
             'vectorbot': "char/vectorbot/idle.png",
             'piratebot': "char/piratebot/idle.png",
+            'cashrobot': "char/cashrobot/idle.png",
         }
         
         for name, file_path in robo_files.items():
@@ -395,13 +396,18 @@ def load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT):
     manage_data.robos = init_robos()
     # Get rects and position them for character select screen
     manage_data.robo_rects = {
+        # common
         'robot': manage_data.robos['robot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 125, 180)),
         'sunnyrobot': manage_data.robos['sunnyrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 25, 180)),
+        # rare
         'evilrobot': manage_data.robos['evilrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 200, 350)),
         'greenrobot': manage_data.robos['greenrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, 350)),
         'piratebot': manage_data.robos['piratebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 100, 350)),
-        'ironrobot': manage_data.robos['ironrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 125, 520)),
-        'cakebot': manage_data.robos['cakebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 25, 520)),
+        # epic
+        'ironrobot': manage_data.robos['ironrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 200, 520)),
+        'cakebot': manage_data.robos['cakebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, 520)),
+        'cashrobot': manage_data.robos['cashrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 100, 520)),
+        # legendary
         'vectorbot': manage_data.robos['vectorbot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, 690))        
     }
     
