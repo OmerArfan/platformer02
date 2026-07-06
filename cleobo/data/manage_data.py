@@ -61,7 +61,8 @@ default_progress = {
         "ironrobo": False,
         "cakebot": False,
         "vectorbot": False,
-        "piratebot": False
+        "piratebot": False,
+        "cashrobo": False
     },
     "achieved": { 
         "speedy_starter": False,

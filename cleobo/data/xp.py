@@ -2,9 +2,10 @@ from cleobo.data import manage_data
 
 def xp():
     from cleobo.levels.logic.entities import LevelManager
-    # XP from scores - collect all scores from the new hierarchical structure
+    
+    # XP from scores
     total_score = 0
-    level_scores = {}  # Map of level_num -> score for star calculation
+    level_scores = {}  # Map of (world, level_num) -> score for precise star calculation
     
     for world_name in manage_data.progress["lvls"]:
         for subsection_name in manage_data.progress["lvls"][world_name]:
@@ -13,52 +14,54 @@ def xp():
                 score = level_data.get('score', 0)
                 total_score += score
                 
-                # Extract level number for star calculation
+                # Extract level number safely
                 if level_key.startswith('lvl'):
-                    level_num = int(level_key.replace('lvl', ''))
-                    level_scores[level_num] = score
+                    try:
+                        level_num = int(level_key.replace('lvl', ''))
+                        level_scores[(world_name, level_num)] = score
+                    except ValueError:
+                        pass
     
     score_xp = total_score // 1000
 
     # XP from stars
     stars = 0
-    for world in manage_data.default_progress['lvls']:
-      for level in world:
-        level_num = int(level_key.replace('lvl', ''))
-        score = level_scores.get(level_num, 0)
-        stars += LevelManager.get_stars(level_num, world, score)
-      star_xp = stars * 20  # 20 XP per star
+    for world_name in manage_data.default_progress['lvls']:
+        for subsection_name in manage_data.default_progress['lvls'][world_name]:
+            for level_key in manage_data.default_progress['lvls'][world_name][subsection_name]:
+                if level_key.startswith('lvl'):
+                    level_num = int(level_key.replace('lvl', ''))
+                    score = level_scores.get((world_name, level_num), 0)
+                    stars += LevelManager.get_stars(level_num, world_name, score)
+                    
+    star_xp = stars * 20  # 20 XP per star
 
     # XP from achievements
-    achievements = manage_data.progress["achieved"]  # your achievements dict
+    achievements = manage_data.progress["achieved"]  # dict of {achievement_name: bool}
     achievement_xp = {
-     "speedy_starter": 30,
-     "zen_os": 150,
-     "over_9k": 170,
-     "termvel": 100,
-     "golden": 200,
-     "captain": 250,
-     "mech_eng": 500,
-     "lvl20": 0,
+        "speedy_starter": 30,
+        "zen_os": 150,
+        "over_9k": 170,
+        "termvel": 100,
+        "golden": 200,
+        "captain": 250,
+        "mech_eng": 500,
+        "lvl20": 0,
     }
 
-    # Sum XP for unlocked achievements
-    ach_xp = sum(xp for ach, unlocked in achievements.items() if unlocked for name, xp in achievement_xp.items() if ach == name)
+    # $O(1)$ lookup optimization
+    ach_xp = sum(achievement_xp.get(ach, 0) for ach, unlocked in achievements.items() if unlocked)
 
     # Total XP
     total_xp = score_xp + ach_xp + star_xp
     manage_data.progress["player"]["XP"] = total_xp
+
     def xp_needed(level):
-        if level <= 5:
-            return 50
-        elif level <= 10:
-            return 70
-        elif level <= 15:
-            return 110
-        elif level <= 20:
-            return 170
-        else: # Buffer
-            return 250
+        if level <= 5: return 50
+        elif level <= 10: return 70
+        elif level <= 15: return 110
+        elif level <= 20: return 170
+        else: return 250
 
     def calculate_level(total_xp):
         level = 1
@@ -69,7 +72,10 @@ def xp():
         return level, xp_left
 
     level, xp_in_level = calculate_level(total_xp)
-    manage_data.progress["player"]["Level"] = level
+    
+    # Cap level at 25 max
     if level > 25:
         level = 25
+        
+    manage_data.progress["player"]["Level"] = level
     return level, xp_in_level, xp_needed(level)

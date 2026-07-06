@@ -129,14 +129,18 @@ def check_xplvl20():
     unlock = manage_data.progress["achieved"].get("lv20", False)
     if manage_data.progress['player']['Level'] >= 20 and not unlock:
         manage_data.progress["achieved"]["lv20"] = True
+        manage_data.progress["char"]["cashrobo"] = True
         manage_data.save_progress(manage_data.progress, manage_data.manifest)
         # LOCALIZED HERE
-        menu_ui.notification_text = get_notif_text("lv20", "XP Collector!", (255, 128, 0))
+        menu_ui.notification_text = get_notif_text("lv20", "XP Collector!", (0, 196, 255))
         if not manage_data.is_mute:
             manage_data.sounds['notify'].play()
         if menu_ui.notification_time is None:
             menu_ui.notif = True
             menu_ui.notification_time = time.time()
+    else:
+       if not manage_data.progress["char"]["cashrobo"] and unlock:
+          manage_data.progress["char"]["cashrobo"] = True
 
 def check_achievements():
     check_xplvl20()
