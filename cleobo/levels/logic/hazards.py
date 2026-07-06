@@ -60,39 +60,40 @@ def handle_cacti_spikes(screen, player, spikes):
     
     for spike in spikes:
         # Check if player has crossed the trigger threshold
-        if spike['axis'] == "'y'":
-            spike_y = max([p[1] for p in spike['def_cord']])
-            spike_x_min = min([p[0] for p in spike['def_cord']])
-            spike_x_max = max([p[0] for p in spike['def_cord']])
-            
-            # Check if player is horizontally aligned with spike
-            player_aligned = player.rect.x + player.rect.width >= spike_x_min and player.rect.x <= spike_x_max
-            
-            if spike['dir'] < 0:
-                if player.rect.bottom >= spike_y + spike['limit'] and player.rect.bottom < spike_y and player_aligned:
-                    spike['activated'] = True
-                    spike['cycle_complete'] = False
-            
-            else:  
-                if player.rect.top <= spike_y + spike['limit'] and player.rect.top > spike_y and player_aligned:
-                    spike['activated'] = True
-                    spike['cycle_complete'] = False
-       
-        elif spike['axis'] == "'x'":
-            spike_x = max([p[0] for p in spike['def_cord']])  # 4870
-            spike_y_min = min([p[1] for p in spike['def_cord']])  # 370
-            spike_y_max = max([p[1] for p in spike['def_cord']])  # 580
-            
-            player_aligned = player.rect.y + player.rect.height >= spike_y_min and player.rect.y <= spike_y_max
-            
-            if spike['dir'] < 0:
-                if player.rect.right < spike_x and player.rect.right > spike['limit'] and player_aligned: 
-                    spike['activated'] = True
-                    spike['cycle_complete'] = False
-            else: 
-                if player.rect.left > spike_x and player.rect.left < spike['limit'] and player_aligned:                
-                    spike['activated'] = True
-                    spike['cycle_complete'] = False
+        if not spike['activated'] and spike['cycle_complete']:
+            if spike['axis'] == "'y'":
+                spike_y = max([p[1] for p in spike['def_cord']])
+                spike_x_min = min([p[0] for p in spike['def_cord']])
+                spike_x_max = max([p[0] for p in spike['def_cord']])
+                
+                # Check if player is horizontally aligned with spike
+                player_aligned = player.rect.x + player.rect.width >= spike_x_min and player.rect.x <= spike_x_max
+                
+                if spike['dir'] < 0:
+                    if player.rect.bottom >= spike_y + spike['limit'] and player.rect.bottom < spike_y and player_aligned:
+                        spike['activated'] = True
+                        spike['cycle_complete'] = False
+                
+                else:  
+                    if player.rect.top <= spike_y + spike['limit'] and player.rect.top > spike_y and player_aligned:
+                        spike['activated'] = True
+                        spike['cycle_complete'] = False
+        
+            elif spike['axis'] == "'x'":
+                spike_x = max([p[0] for p in spike['def_cord']])  
+                spike_y_min = min([p[1] for p in spike['def_cord']])  
+                spike_y_max = max([p[1] for p in spike['def_cord']])  
+                
+                player_aligned = player.rect.y + player.rect.height >= spike_y_min and player.rect.y <= spike_y_max
+                
+                if spike['dir'] < 0:
+                    if player.rect.right < spike_x and player.rect.right + spike_x > spike['limit'] and player_aligned: 
+                        spike['activated'] = True
+                        spike['cycle_complete'] = False
+                else: 
+                    if player.rect.left > spike_x and player.rect.left < spike_x + spike['limit'] and player_aligned:                
+                        spike['activated'] = True
+                        spike['cycle_complete'] = False
         
         # Only move if activated or still completing a cycle
         if spike['activated'] or not spike['cycle_complete']:
