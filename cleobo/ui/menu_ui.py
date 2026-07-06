@@ -329,7 +329,7 @@ def draw_profile(screen):
     current_lang = manage_data.load_language()
     back_data = current_lang.get("language_select", {})
 
-    level, xp_needed, xp_total = manage_data.xp()
+    level, xp_needed, xp_total = xp.xp()
 
     if level < 5:
         color = (255, 255, 255)
@@ -915,6 +915,8 @@ class StarParticles:
             
 stareffects = []
 
+from cleobo.data import xp
+
 def level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars):
     messages = manage_data.load_language().get('messages', {})
     display_score = 0
@@ -996,7 +998,7 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
         screen.blit(score_text, (manage_data.SCREEN_WIDTH // 2 - score_text.get_width() // 2, 300 - score_text.get_height() // 2))
 
         # Check for XP gained
-        manage_data.xp()
+        xp.xp()
         new_xp = manage_data.progress["player"].get("XP", 0)
         gain = new_xp - old_xp
         if time.time() - star_time > 3.2:
