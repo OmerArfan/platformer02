@@ -30,6 +30,8 @@
     "Account": "Hesap",
     "Back": "Geri",
     "new_acc": "Kayıt Ol",
+    "register_instr1": "Kullanıcı adı ve şifre ile yeni bir hesap oluşturun.",
+    "register_instr2": "Hesabınız bulut ile senkronize edilecektir.",
     "select": "PROFİL SEÇ",
     "sync_stat1": "Kasa Bulut ile senkronize ediliyor...",
     "sync_stat2": "Senkronizasyon başarısız!",
