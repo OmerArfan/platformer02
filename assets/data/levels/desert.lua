@@ -70,7 +70,7 @@ local lvl1 = {
 		{cord = {{4305, 150}, {4350, 200}, {4395, 150}}, axis = 'y', dir = 1, limit = 1200},
 		{cord = {{4405, 150}, {4450, 200}, {4495, 150}}, axis = 'y', dir = 1, limit = 1200},
 		{cord = {{4505, 150}, {4550, 200}, {4595, 150}}, axis = 'y', dir = 1, limit = 1200},
-		{cord = {{5400, 330}, {5320, 380}, {5400, 430}}, axis = 'x', dir = -1, limit = -600},
+		{cord = {{5400, 330}, {5320, 380}, {5400, 430}}, axis = 'x', dir = -1, limit = 600},
 	},
 	text = {
 		cactus = {name = "cacti_warn", fallback = "Cacti spikes rush towards the direction they face if you pass by them!", color = {3, 104, 0}, x = 2100, y = 250},
