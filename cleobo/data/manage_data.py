@@ -404,7 +404,7 @@ def save_progress(data, manifest):
            sounds['hit'].play()
         notification_text = menu_ui.render_text("Refusing to save: Invalid data structure!", True, (255, 0, 0))
         notif = True
-        menu_ui.notification_time = time.time()
+        menu_ui.notif_time = time.time()
         return
 
     # 2. Folder & Path Logic
@@ -441,14 +441,14 @@ def save_progress(data, manifest):
             sounds['death'].play()
         notification_text = menu_ui.render_text("Error: Save file is locked by another program.", True, (255, 0, 0))
         notif = True
-        menu_ui.notification_time = time.time()
+        menu_ui.notif_time = time.time()
             
     except Exception as e:
         menu_ui.er = True
         menu_ui.error_code = menu_ui.render_text(f"Save Error: {str(e)}", True, (255, 0, 0))
         if not is_mute:
            sounds['hit'].play()
-        menu_ui.notification_time = time.time()
+        menu_ui.er_time = time.time()
         print(f"Detailed save error: {e}")
 
 def update_local_manifest(data):
@@ -516,7 +516,7 @@ def update_local_manifest(data):
         if not is_mute: sounds['death'].play()
         menu_ui.error_code = menu_ui.render_text(f"Local manifest error: {e}", True, (255, 0, 0))
         menu_ui.er = True
-        menu_ui.notification_time = time.time()
+        menu_ui.er_time = time.time()
         print(f"Error during manifest save: {e}")
 
 def sync_missing_data(data):
