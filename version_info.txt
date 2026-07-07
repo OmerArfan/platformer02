@@ -1,7 +1,7 @@
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(1, 3, 9, 514),
-    prodvers=(0, 7, 2, 61),
+    filevers=(1, 3, 9, 515),
+    prodvers=(0, 7, 2, 62),
     mask=0x3f,
     flags=0x0,
     OS=0x40004,
@@ -17,11 +17,11 @@ VSVersionInfo(
           [
             StringStruct('CompanyName', 'Lil Robo Studios'),
             StringStruct('FileDescription', 'Roboquix: Robot Platformer!'),
-            StringStruct('FileVersion', '1.3.9.0514'),
+            StringStruct('FileVersion', '1.3.9.0515'),
             StringStruct('InternalName', 'Roboquix'),
             StringStruct('OriginalFilename', 'Roboquix.exe'),
             StringStruct('ProductName', 'Roboquix'),
-            StringStruct('ProductVersion', '0.7.2.0061')
+            StringStruct('ProductVersion', '0.7.2.0062')
           ]
         )
       ]
