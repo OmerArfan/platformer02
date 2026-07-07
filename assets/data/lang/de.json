@@ -64,6 +64,7 @@
       "cakebot": "Dieser Roboter ist jedes Jahr vom 29. April bis zum 13. Mai verfügbar!",
       "vectorbot": "Schließe den Erfolg „Maschinenbauingenieur“ ab, um diesen Roboter zu erhalten!",
       "piratebot": "Werde zum Kapitän des Schiffes, um diesen Roboter zu erhalten!",
+      "cashrobot": "Schließe den Erfolg „EP-Sammler“ ab, um diesen Roboter freizuschalten!",
       "soon": "Dieser Roboter kommt bald!",
       "back": "Zurück"
   }
@@ -130,6 +131,7 @@
   "death_reason_2": "",
   "press_space": "Drücke die Leertaste zum",
   "continue_wait": "Fortfahren oder warte {next_left}"
+  ,"more_soon": "Weitere Level folgen bald ..."
 }
   ,"in_game": {
   "dead_message": "Du bist tot!",

@@ -64,6 +64,7 @@
       "cakebot": "此机器人将在每年的4月29日至5月13日期间限时开放！",
       "vectorbot": "解锁“机械工程师”成就可以获得此机器人！",
       "piratebot": "成为“一船之长”以获得此机器人！",
+      "cashrobot": "解锁“经验收集者”成就以解锁此机器人！",
       "soon": "此机器人即将推出！",
       "back": "返回"
   }
@@ -129,7 +130,8 @@
   "death_reason": "你死得次数太多了！",
   "death_reason_2": "",
   "press_space": "按空格键",
-  "continue_wait": "继续或等待 {next_left}"
+  "continue_wait": "继续或等待 {next_left}",
+  "more_soon": "更多关卡即将推出..."
   }
   ,"in_game": {
     "dead_message": "你死了！",

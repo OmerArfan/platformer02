@@ -89,6 +89,7 @@
       "cakebot": "이 로봇은 매년 4월 29일부터 5월 13일까지 이용 가능합니다!",
       "vectorbot": "이 로봇을 획득하려면 '기계 공학자' 업적을 달성하세요!",
       "piratebot": "이 로봇을 획득하려면 '우주선의 선장'이 되세요!",
+      "cashrobot": "이 로봇을 잠금 해제하려면 'XP 수집가' 업적을 달성하세요!",
       "soon": "이 로봇은 곧 출시됩니다!",
       "back": "뒤로"
   },
@@ -129,7 +130,8 @@
     "death_reason": "너무 많이 죽었습니다!",
     "death_reason_2": "",
     "press_space": "계속하려면 스페이스바를 누르거나",
-    "continue_wait": "{next_left}초 동안 기다리세요"
+    "continue_wait": "{next_left}초 동안 기다리세요",
+    "more_soon": "더 많은 레벨이 곧 추가됩니다..."
   },
   "in_game": {
     "dead_message": "사망했습니다!",

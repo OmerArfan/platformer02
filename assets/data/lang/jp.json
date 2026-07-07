@@ -88,6 +88,7 @@
       "cakebot": "このロボットは毎年4月29日から5月13日まで利用可能になります！",
       "vectorbot": "このロボットを獲得するには、実績「機械エンジニア」を解除せよ！",
       "piratebot": "このロボットを獲得するには、「船長」になれ！",
+      "cashrobot": "このロボットを解放するには、実績「XPコレクター」を解除せよ！",
       "soon": "このロボットはまもなく登場します！",
       "back": "戻る"
   },
@@ -128,7 +129,8 @@
     "death_reason": "ミスが多すぎます！",
     "death_reason_2": "",
     "press_space": "スペースキーで",
-    "continue_wait": "続行、またはあと {next_left} 待つ"
+    "continue_wait": "続行、またはあと {next_left} 待つ",
+    "more_soon": "さらなるステージがまもなく登場..."
   },
   "in_game": {
     "dead_message": "やられた！",

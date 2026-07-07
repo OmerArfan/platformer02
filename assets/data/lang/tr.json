@@ -61,6 +61,7 @@
       "cakebot": "Bu robot her yıl 29 Nisan - 13 Mayıs tarihleri arasında mevcut olacak!",
       "vectorbot": "Bu robotu elde etmek için Makine Mühendisi başarımını kazan!",
       "piratebot": "Bu robotu elde etmek için Geminin Kaptanı ol!",
+      "cashrobot": "Bu robotun kilidini açmak için XP Koleksiyoncusu başarımını kazan!",
       "soon": "Bu robot yakında geliyor!",
       "back": "Geri"
   }
@@ -127,6 +128,7 @@
     "death_reason_2": "",
     "press_space": "Devam etmek için boşluk",
     "continue_wait": "tuşuna basın veya {next_left} bekleyin"
+    ,"more_soon": "Daha fazla seviye yakında gelecek..."
   },
   "in_game": {
     "dead_message": "Öldün!",

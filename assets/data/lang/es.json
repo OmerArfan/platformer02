@@ -64,6 +64,7 @@
       "cakebot": "¡Este robot estará disponible todos los años del 29 de abril al 13 de mayo!",
       "vectorbot": "¡Desbloquea el logro Ingeniero mecánico para obtener este robot!",
       "piratebot": "¡Conviértete en el Capitán del barco para obtener este robot!",
+      "cashrobot": "¡Consigue el logro Colector de PE para desbloquear este robot!",
       "soon": "¡Este robot llegará pronto!",
       "back": "Volver"
   }    
@@ -129,7 +130,8 @@
   "death_reason": "¡Has muerto demasiadas veces!",
   "death_reason_2": "",
   "press_space": "Presiona espacio para",
-  "continue_wait": "continuar o espera {next_left}"
+  "continue_wait": "continuar o espera {next_left}",
+  "more_soon": "¡Pronto llegarán más niveles!"
 }
   ,"in_game": {
   "dead_message": "¡Has muerto!", 

@@ -64,7 +64,8 @@
       "cakebot": "Ce robot sera disponible chaque année du 29 avril au 13 mai !",
       "vectorbot": "Déverrouillez le succès Ingénieur mécanicien pour obtenir ce robot !",
       "piratebot": "Devenez le Capitaine du navire pour obtenir ce robot !",
-      "soon": "Ce robot sera bientôt disponible !",
+      "cashrobot": "Obtenez le succès Collecteur d'XP pour débloquer ce robot !"
+      ,"soon": "Ce robot sera bientôt disponible !",
       "back": "Retour"
   }
   ,"achieve": {
@@ -129,7 +130,8 @@
   "death_reason": "Vous êtes mort trop souvent !",
   "death_reason_2": "",
   "press_space": "Appuyez sur espace pour",
-  "continue_wait": "continuer ou attendez {next_left}"  
+  "continue_wait": "continuer ou attendez {next_left}" , 
+    "more_soon": "D'autres niveaux arrivent bientôt..."
 }
   ,"in_game": {
   "dead_message": "Vous êtes mort !",

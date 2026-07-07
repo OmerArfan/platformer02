@@ -64,6 +64,7 @@
       "cakebot": "Robo ini akan tersedia setiap tahun dari tanggal 29 April hingga 13 Mei!",
       "vectorbot": "Buka pencapaian Insinyur Mesin untuk mendapatkan robo ini!",
       "piratebot": "Jadilah Kapten Kapal untuk mendapatkan robo ini!",
+      "cashrobot": "Buka pencapaian Pengumpul XP untuk membuka robot ini!",
       "soon": "Robot ini akan segera hadir!",
       "back": "Kembali"
   }
@@ -130,6 +131,7 @@
     "death_reason_2": "",
     "press_space": "Tekan spasi untuk",
     "continue_wait": "lanjut atau tunggu {next_left}"
+    ,"more_soon": "Lebih banyak level akan segera hadir..."
   },
   "in_game": {
     "dead_message": "Kamu mati!",
