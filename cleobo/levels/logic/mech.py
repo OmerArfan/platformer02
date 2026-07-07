@@ -42,10 +42,11 @@ def handle_light_blocks(screen, lights, player):
             screen.blit(manage_data.assets['light'], (bx, by))
 
             if player.rect.colliderect(lights['button']):
-                if not manage_data.is_mute and player.lights_on:
-                    manage_data.sounds['collect'].play()
+                if player.lights_on:
                     player.lights_on = False
-            
+                    if not manage_data.is_mute:
+                        manage_data.sounds['collect'].play()
+                    
             if player.rect.colliderect(lights['block']):
                 # Falling onto a block
                 if player.velocity_y > 0 and player.rect.y + player.rect.height - player.velocity_y <= lights['block'].y:
