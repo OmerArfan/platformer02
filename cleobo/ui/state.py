@@ -306,6 +306,19 @@ def handle_action(key, transition, current_page):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "worlds"
+        if key == "quit_final":
+            if not is_transitioning:
+                current_lang = manage_data.load_language().get('messages', {})
+                menu_ui.notification_text = menu_ui.render_text(current_lang.get("more_soon", "More levels are coming soon..."), True, (255, 255, 0))
+                if not manage_data.is_mute:
+                    manage_data.sounds['notify'].play()
+                if menu_ui.notif_time is None:
+                    menu_ui.notif = True     
+                    menu_ui.notif_time = time.time()
+                transition.start("worlds")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "worlds"
         else:
             # This is for the in-level pause menu, so we don't want to trigger if they click on locked levels in the background
             if key and "lvl" in key and not is_transitioning:

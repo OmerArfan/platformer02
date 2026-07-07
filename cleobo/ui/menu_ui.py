@@ -21,7 +21,8 @@ manage_data.text_cache = {}
 buttons = []
 
 # To handle notifications
-notification_time = None
+notif_time = None
+er_time = None
 notif = False
 er = False
 
@@ -106,18 +107,20 @@ def hover_effect(screen, rect, button_hovered_last_frame):
     return button_hovered_last_frame
 
 def draw_notifs(screen):
-    global notif, er, notification_time, notification_text, error_code
+    global notif, er, notif_time, er_time, notification_text, error_code
     if notif:
-            if time.time() - notification_time < 4:  # Show for 4 seconds
-                screen.blit(notification_text, (manage_data.SCREEN_WIDTH // 2 - notification_text.get_width() // 2, 100))
-    else:
-        notif = False
+        if notif_time is not None and time.time() - notif_time < 4:  # Show for 4 seconds
+            screen.blit(notification_text, (manage_data.SCREEN_WIDTH // 2 - notification_text.get_width() // 2, 100))
+        else:
+            notif = False
+            notif_time = None
 
     if er:
-        if notification_time is not None and time.time() - notification_time < 4:  # Show for 4 seconds
+        if er_time is not None and time.time() - er_time < 4:  # Show for 4 seconds
             screen.blit(error_code, (manage_data.SCREEN_WIDTH // 2 - error_code.get_width() // 2, 130))
-    else:
-        er = False
+        else:
+            er = False
+            er_time = None
 
 buttons = []
 
