@@ -7,8 +7,8 @@ import traceback
 from random import random
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0512"
-manage_data.kernel = "0.7.2.0060"
+manage_data.version = "1.3.9.0514"
+manage_data.kernel = "0.7.2.0061"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 # Random final message
