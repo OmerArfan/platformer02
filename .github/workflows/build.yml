@@ -4,6 +4,7 @@ on:
     paths:
       - 'version_info.txt'
       - '.github/workflows/build.yml'
+      - 'platformer.spec'
 
 jobs:
   build:
@@ -32,13 +33,15 @@ jobs:
         shell: bash
         run: |
           python -m venv venv
-          # Use different activation paths for Windows vs Linux
           if [ "$RUNNER_OS" == "Windows" ]; then
             source venv/Scripts/activate
           else
             source venv/bin/activate
           fi
           python -m pip install --upgrade pip
+          # Remove legacy pygame just in case
+          pip uninstall pygame -y || true 
+          
           pip install pygame-ce==2.5.7 pyinstaller arabic-reshaper python-bidi requests Pillow
 
       - name: Build with PyInstaller
@@ -50,9 +53,9 @@ jobs:
             source venv/bin/activate
           fi
           pyinstaller platformer.spec
-          
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Roboquix-${{ matrix.os }}
+          name: Roboquix-Build-${{ runner.os }}
           path: dist/

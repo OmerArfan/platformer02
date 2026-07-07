@@ -4,11 +4,35 @@ import os
 import json
 from datetime import datetime
 import traceback
+from random import random
 
 # Initializing Game and Engine Version
-manage_data.version = "1.3.9.0496"
-manage_data.kernel = "0.6.0.0045"
+manage_data.version = "1.4.0.0516"
+manage_data.kernel = "0.7.2.0061"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
+
+# Random final message
+val = random()
+if val == 0.05:
+    fin_message = "Cakebot is a robot, not a dessert."
+elif val <= 0.15:
+    fin_message = "Back in my day, Evil Robo chased robos out of his space..."
+elif val <= 0.25:
+    fin_message = "Green Robo might open her eyes before GTA VI guys!"
+elif val <= 0.35:
+    fin_message = "Loading over 450 days of questionable decisions..."
+elif val <= 0.45:
+    fin_message = "Does anyone even know what's under Iron Robo?"
+elif val <= 0.55:
+    fin_message = "If you cannot finish fast enough, just start speedrunning! Amazing right?"
+elif val <= 0.65:
+    fin_message = "Lil Robo was here! :D"
+elif val <= 0.75:
+    fin_message = "Teleporters are usually faster than walking."
+elif val <= 0.85:
+    fin_message = "Loading another adventure..."
+else:
+    fin_message = "Welcome to Roboquix!"
 
 manage_data.now = datetime.now()
 
@@ -115,7 +139,7 @@ def init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT):
             'desert': ("bgs/DesertBackground.png", (SCREEN_WIDTH, SCREEN_HEIGHT), False),
             'trans_left': ("bgs/trans_left.png", ((SCREEN_WIDTH // 2 + 20), SCREEN_HEIGHT), False),
             'trans_right': ("bgs/trans_right.png", ((SCREEN_WIDTH // 2 + 20), SCREEN_HEIGHT), False),
-            'end': ("bgs/EndScreen.png", (SCREEN_WIDTH, SCREEN_HEIGHT), True),
+            'end': ("bgs/EndScreen.png", (650, SCREEN_HEIGHT), True),
         }
         
         for name, (file_path, size, use_alpha) in bg_files.items():
@@ -164,6 +188,7 @@ def init_disks():
             'greenpack': ("disks/greenpack.png", (260, 260)),
             'mechpack': ("disks/mechpack.png", (260, 260)),
             'shippack': ("disks/shippack.png", (260, 260)),
+            'desertpack': ("disks/desertpack.png", (260, 260)),
             'locked': ("disks/lockeddisk.png", (110, 110)),
         }
         
@@ -188,10 +213,9 @@ def init_other_assets():
             'green_exit': ("portal/exit.png", (140, 180)),
             'mech_exit': ("portal/mech_exit.png", (140, 180)),
             'ship_exit': ("portal/ship_exit.png", (140, 180)),
+            'desert_exit': ("portal/desert_exit.png", (140, 180)),
             'teleport': ("portal/teleport.png", (140, 180)),
             'teleport_exit': ("portal/teleport_2.png", (100, 100)),
-            'badge': ("ui/badge.png", (80, 80)),
-            'max_badge': ("ui/max-badge.png", (80, 80)),
             'saw': ("ingame/saw.png", None),
             'cpoint_unused': ("ingame/flags/unused.png", None),
             'cpoint_active': ("ingame/flags/active.png", None),
@@ -216,6 +240,30 @@ def init_other_assets():
         traceback.print_exc()
         raise
 
+def init_badges():
+    # In-game assets (saws, teleporters, badges, checkpoints)
+    try:
+        badges = {}
+        badge_files = {
+            'tier1': ("ui/badge/tier1.png", (150, 110)),
+            'tier2': ("ui/badge/tier2.png", (150, 110)),
+            'tier3': ("ui/badge/tier3.png", (150, 110)),
+            'tier4': ("ui/badge/tier4.png", (150, 110)),
+            'tier5': ("ui/badge/tier5.png", (150, 110)),
+        }
+        
+        for name, (file_path, size) in badge_files.items():
+            full_path = manage_data.resource_path(os.path.join(IMAGES_FOLDER, file_path))
+            verify_asset_exists(full_path, f"{name}")
+            img = pygame.image.load(full_path).convert_alpha()
+            badges[name] = pygame.transform.scale(img, size) if size else img
+        
+        return badges
+    except Exception as e:
+        print(f"ERROR loading assets: {e}")
+        traceback.print_exc()
+        raise
+
 def init_robos():
     # Characters Dictionary
     try:
@@ -229,6 +277,7 @@ def init_robos():
             'cakebot': "char/cakebot/idle.png",
             'vectorbot': "char/vectorbot/idle.png",
             'piratebot': "char/piratebot/idle.png",
+            'cashrobot': "char/cashrobot/idle.png",
         }
         
         for name, file_path in robo_files.items():
@@ -315,42 +364,61 @@ def verify_initialization(manage_data):
 
 def load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT):
     manage_data.fonts = init_fonts()
-    yield "Loading settings...", 6
+    for i in range (0, 7):
+        yield "Loading settings...", i
     manage_data.manifest, manage_data.lang_code, manage_data.is_mute, manage_data.is_mute_amb = init_accs()
     
-    yield "Loading sounds...", 14
+    for i in range (7, 15):
+     yield "Loading sounds...", i
     manage_data.sounds = init_sounds()
     
-    yield "Loading textures...", 36
+    for i in range (15, 37):
+        yield "Loading logos...", i
     manage_data.ui = init_ui_images(SCREEN_WIDTH, SCREEN_HEIGHT)
-    yield "Loading textures...", 44
+    for i in range (37, 48):
+        yield "Loading backgrounds...", i
     manage_data.bgs = init_bgs(SCREEN_WIDTH, SCREEN_HEIGHT)
-    yield "Loading textures...", 51
+    for i in range (48, 62):
+        yield "Loading in-game assets...", i
     manage_data.assets = init_other_assets()
-    yield "Loading textures...", 64
+    for i in range (62, 72):
+        yield "Loading badges...", i
+    manage_data.badges = init_badges()
+    for i in range (72, 77):
+        yield "Loading disks...", i
     manage_data.disks = init_disks()
-    yield "Loading textures...", 78
+    for i in range (77, 89):
+        yield "Loading medals...", i
     manage_data.medals = init_medals()
     
-    yield "Calibrating Robots...", 89
+    for i in range (89, 96):
+        yield "Calibrating robots...", i
     manage_data.robos = init_robos()
     # Get rects and position them for character select screen
     manage_data.robo_rects = {
+        # common
         'robot': manage_data.robos['robot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 125, 180)),
         'sunnyrobot': manage_data.robos['sunnyrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 25, 180)),
+        # rare
         'evilrobot': manage_data.robos['evilrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 200, 350)),
         'greenrobot': manage_data.robos['greenrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, 350)),
         'piratebot': manage_data.robos['piratebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 100, 350)),
-        'ironrobot': manage_data.robos['ironrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 125, 520)),
-        'cakebot': manage_data.robos['cakebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 25, 520)),
+        # epic
+        'ironrobot': manage_data.robos['ironrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 200, 520)),
+        'cakebot': manage_data.robos['cakebot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, 520)),
+        'cashrobot': manage_data.robos['cashrobot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 + 100, 520)),
+        # legendary
         'vectorbot': manage_data.robos['vectorbot'].get_rect(topleft=(manage_data.SCREEN_WIDTH // 2 - 50, 690))        
     }
     
-    yield "Checking for latest save...", 96
+    for i in range (96, 98):
+        yield "Checking for latest save...", i
     manage_data.progress = manage_data.load_progress()
     # Ensure new users are registered in the manifest immediately
+    yield "Checking for latest save...", 99
     manage_data.update_local_manifest(manage_data.progress)
 
-    yield "Systems Ready!", 100
+    
+    yield fin_message, 100
     verify_initialization(manage_data)
     return True # Just a signal that we finished

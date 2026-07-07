@@ -291,7 +291,7 @@ local lvl5 = {
 		{radius = 70, speed = 6, x = 5000, y = 50, max = 500, min = -500, type = 'moving_y'},
 		{radius = 30, speed = 4, x = 2100, y = -90, max = 2100, min = 1850, type = 'moving_x'},
 		{radius = 30, speed = 3, x = 1700, y = 270, max = 1900, min = 1650, type = 'moving_x'},
-		{radius = 200, speed = 21, x = 3000, y = 0, max = 5920, min = 2700, type = 'rushing'},
+		{radius = 200, speed = 21, x = 3000, y = 0, max = 5920, min = 2700, dir = 1, type = 'rushing_x'},
 		{x = 1100, y = 200, radius = 200, type = 'static'},
 		{x = 6350, y = 450, radius = 80, type = 'static'},
 	},

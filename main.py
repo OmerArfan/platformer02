@@ -26,13 +26,13 @@ pygame.init()
 screen = pygame.display.set_mode((1600, 900), pygame.FULLSCREEN)
 manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT = screen.get_size()
 
-pygame.display.set_caption("Roboquix")
-MIN_WIDTH, MIN_HEIGHT = 1128, 634
-
 # Load and set window icon
-icon = pygame.image.load(manage_data.resource_path("assets/icons/icon.png")).convert_alpha()
+icon = pygame.image.load(manage_data.resource_path("assets/imgs/icons/icon.png")).convert_alpha()
 pygame.display.set_icon(icon)
-pygame.mouse.set_visible(False)  # Hide the system cursor
+pygame.mouse.set_visible(False)  # Hide the system cursor   
+
+pygame.display.set_caption("Roboquix")
+MIN_WIDTH, MIN_HEIGHT = 1366, 768
 
 running = False
 loader = startup.load_game_generator(manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT)
@@ -163,7 +163,7 @@ while running:
             # Call the generic level launcher
             launcher.level_launcher(level_name, screen, transition, world_name)
         
-        elif manage_data.current_page == "green" or manage_data.current_page == "mech" or manage_data.current_page == "ship":
+        elif manage_data.current_page in ["green", "mech", 'ship', 'desert']:
             button_hovered_last_frame = menu_ui.draw_level_select(screen, mouse_pos, manage_data.current_page, current_lang, messages, button_hovered_last_frame)
 
         elif manage_data.current_page == "settings":
@@ -190,7 +190,7 @@ while running:
             title = menu_ui.render_text(title_text, True, (255, 255, 255))
             screen.blit(title, (manage_data.SCREEN_WIDTH // 2 - title.get_width() // 2, 80))
             
-            acc_sys.create_account_selector()
+            acc_sys.create_account_selector(screen)
             button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)
 
         elif manage_data.current_page == "login_screen":
@@ -201,15 +201,14 @@ while running:
     
         else:
             button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)
-        
-        menu_ui.draw_notifs(screen)
-        menu_ui.draw_syncing_status(screen)
 
-        mouse_pos = pygame.mouse.get_pos()
         screen.blit(manage_data.ui['cursor'], mouse_pos)
 
         if transition.active:
             transition.update(screen, transition)
+
+        menu_ui.draw_notifs(screen)
+        menu_ui.draw_syncing_status(screen)
         
         pygame.display.flip()
 

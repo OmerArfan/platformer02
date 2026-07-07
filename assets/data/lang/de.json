@@ -57,12 +57,14 @@
       "rare": "Selten",
       "epic": "Episch",
       "legi": "Legendär",
+      "sunnyrobot": "Schließe den Erfolg „Schneller Starter“ ab, um diesen Roboter freizuschalten!",
       "evilrobo": "Schließe den Erfolg „Endgeschwindigkeit“ ab, um diesen Roboter freizuschalten!",
       "greenrobo": "Schließe den Erfolg „Golden“ ab, um diesen Roboter freizuschalten!",
       "ironrobo": "Schließe den Erfolg „Zenit der Sechs“ ab, um diesen Roboter freizuschalten!",
       "cakebot": "Dieser Roboter ist jedes Jahr vom 29. April bis zum 13. Mai verfügbar!",
       "vectorbot": "Schließe den Erfolg „Maschinenbauingenieur“ ab, um diesen Roboter zu erhalten!",
       "piratebot": "Werde zum Kapitän des Schiffes, um diesen Roboter zu erhalten!",
+      "cashrobot": "Schließe den Erfolg „EP-Sammler“ ab, um diesen Roboter freizuschalten!",
       "soon": "Dieser Roboter kommt bald!",
       "back": "Zurück"
   }
@@ -73,7 +75,7 @@
       "speedy_starter": "Schneller Starter!",
       "speedy_starter_desc": "Schließe Grün 1-1 in weniger als 4,5 Sekunden ab!",
       "over_9k": "Es ist über 9000!",
-      "over_9k_desc": "Erreiche eine Punktzahl von mindestens 105.000 in Mech 1-3!",
+      "over_9k_desc": "Erreiche eine Punktzahl von mindestens 103.500 in Mech 1-3!",
       "termvel": "Endgeschwindigkeit!",
       "termvel_desc": "Schließe Mech 1-5 in weniger als 15 Sekunden ab!",
       "golden": "Golden!",
@@ -95,7 +97,12 @@
   "worlds": "Welt auswählen",
   "level_display": "WÄHLE EINEN LEVEL",
   "back": "Zurück"
-  ,"next": "Nächste"
+  ,"next": "Nächste",
+  "prev": "Zurück",
+  "green": "Grün",
+  "ship": "Schiff",
+  "mech": "Mech",
+  "desert": "Wüste"
    }
   ,"messages": {
   "you_are_in": "Du bist in {level}"
@@ -124,6 +131,7 @@
   "death_reason_2": "",
   "press_space": "Drücke die Leertaste zum",
   "continue_wait": "Fortfahren oder warte {next_left}"
+  ,"more_soon": "Weitere Level folgen bald ..."
 }
   ,"in_game": {
   "dead_message": "Du bist tot!",
@@ -139,6 +147,8 @@
   "mock_message": "Falscher Weg, mein Freund, hier ist nichts Besonderes...",
   "jump_message": "Verwende orangefarbene Blöcke, um große Entfernungen zu springen!",
   "saws_message": "Sägen sind auch gefährlich!"
+  ,"saws_message2": "Einige Sägen rotieren um einen Block ...",
+    "saws_message3": "… während andere sich in eine bestimmte Richtung bewegen."
   ,"sawed_message": "In Stücke gesägt!"
   ,"key_message": "Nimm die Münze und öffne den Block!"
   ,"laser_message": "Gelasrat!"
@@ -154,9 +164,12 @@
   ,"timed_coin_message": "Orangefarbene Münzen sind zeitlich begrenzt! Sie öffnen Blöcke für eine"
   ,"timed_coin_message_2": "begrenzte Zeit. Lauf, bevor sie sich wieder schließen oder dich zerquetschen..."
   ,"crushed_message": "Zermalmt!",
-  "evilrobo1": "Hä? Ist da jemand?",
-  "evilrobo2": "HEY! Verschwinde von hier!",
-  "evilrobo3": "WO IST ER HINGEGANGEN????",
+  "cacti_message": "Gepiekt!",
+  "cacti_warn": "Kaktusstacheln schießen in die Richtung, in die sie zeigen, wenn du an ihnen vorbeigehst!",
+  "qsand_warn": "Achtung! Achte genau darauf, wo du stehst, wenn du auf Treibsand bist! Wenn du nicht",
+    "qsand2_warn": "schnell genug entkommst, wirst du zerquetscht, während du hineingezogen wirst!",
+    "qsand3_warn": "Denn sobald du erst einmal eingesaugt wirst, wird es extrem schwer zu überleben.",
+    "qsand4_warn": "Oder wenn du ganz außen an den Ecken stehst... wirst du stattdessen vielleicht einfach herausgedrückt...",
   "temp": "Temperatur: {current_temp}",
   "ice_message": "Eisblöcke schmelzen, wenn du auf ihnen stehst! Aber sie kühlen dich auch ab!",
   "freeze_message": "Vergiss aber nicht, dich wieder aufzuwärmen – sonst erfrierst du!",

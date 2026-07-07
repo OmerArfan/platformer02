@@ -1,14 +1,11 @@
 # -*- mode: python ; coding: utf-8 -*-
 import sys
-
 block_cipher = None
-
 # List of all active folders
 added_files = [
     ('assets', 'assets'),
     ('cleobo', 'cleobo'),
 ]
-
 a = Analysis(
     ['main.py'],
     pathex=[],
@@ -19,30 +16,68 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
-    'setuptools', 
-    'pkg_resources', 
-    'distutils', 
-    'doctest', 
-    'pdb', 
-    'PIL.SpiderImagePlugin',   
-    'PIL.ImageTk',        
-    'PIL.ImageQt',             
-    'PIL.ImageFilter',         
-    'PIL.ImageDraw',           
-    'PIL.ImageFont',           
-    'PIL.OleFileIO',           
-    'PIL.PdfParser',           
-    'PIL.PyAccess',           
-    'bidi.tests',
-    'bidi.bin',
+        'setuptools', 
+        'pkg_resources', 
+        'distutils', 
+        'doctest', 
+        'pdb', 
+        'PIL.SpiderImagePlugin',   
+        'PIL.ImageTk',        
+        'PIL.ImageQt',             
+        'PIL.ImageFilter',         
+        'PIL.ImageDraw',           
+        'PIL.ImageFont',           
+        'PIL.OleFileIO',           
+        'PIL.PdfParser',           
+        'PIL.PyAccess',           
+        'bidi.tests',
+        'bidi.bin',
+        'email.generator',
+        'ftplib', 
+        'PIL.PdfImagePlugin', 
+        'PIL.EpsImagePlugin', 
+        'PIL.TiffImagePlugin', 
+        'PIL.PcxImagePlugin', 
+        'PIL.XpmImagePlugin', 
+        'PIL.MpegImagePlugin',
+        'PIL.FpxImagePlugin',
+        'PIL.Hdf5StubImagePlugin',
+        'tracemalloc', 
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
     noarchive=False,
 )
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
+if sys.platform == "win32": 
+    unused_pillow_libs = {
+        'libwebp', 'libwebpdemux', 'libwebpmux', 'libsharpyuv',
+        'libavif', 'libtiff', 'libopenjp2', 'liblzma', 'libzstd'
+    }
+    unused_audio_libs = {
+        'libfluidsynth',  
+        'libmpg123',      
+        'libFLAC',        
+        'libwavpack',     
+        'libsndfile',     
+    }
+else:
+    unused_pillow_libs = {
+        'libavif', 
+    }
+    unused_audio_libs = {
+    }
+
+all_unused_binaries = unused_pillow_libs.union(unused_audio_libs)
+all_unused_binaries = unused_pillow_libs.union(unused_audio_libs)
+
+a.binaries = [
+    b for b in a.binaries 
+    if not any(lib in b[0] or lib in b[1] for lib in all_unused_binaries)
+]
+
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
@@ -65,6 +100,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     # Logic for OS-specific assets
-    icon='assets/icons/robots.ico' if sys.platform == 'win32' else None,
+    icon='assets/imgs/icons/robots.ico' if sys.platform == 'win32' else None,
     version='version_info.txt' if sys.platform == 'win32' else None,
 )
+ 

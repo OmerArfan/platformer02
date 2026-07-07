@@ -27,9 +27,9 @@ def lvl1speed():
         menu_ui.notification_text = get_notif_text("speedy_starter", "Speedy Starter", (0, 249, 41))
         if not manage_data.is_mute:
             manage_data.sounds['notify'].play()
-        if menu_ui.notification_time is None:
+        if menu_ui.notif_time is None:
             menu_ui.notif = True
-            menu_ui.notification_time = time.time()
+            menu_ui.notif_time = time.time()
     else:
        if not manage_data.progress["char"]["sunnyrobo"]:
           manage_data.progress["char"]["sunnyrobo"] = True
@@ -45,21 +45,21 @@ def perfect6():
         menu_ui.notification_text = get_notif_text("zen_os", "Zenith of Six", (102, 0, 255))
         if not manage_data.is_mute:
             manage_data.sounds['notify'].play()
-        if menu_ui.notification_time is None:
+        if menu_ui.notif_time is None:
             menu_ui.notif = True
-            menu_ui.notification_time = time.time()
+            menu_ui.notif_time = time.time()
 
 def lvl90000():
     unlock = manage_data.progress["achieved"].get("over_9k", False)
-    if manage_data.progress['lvls']['mech']['1']['lvl3']['score'] >= 105000 and not unlock:
+    if manage_data.progress['lvls']['mech']['1']['lvl3']['score'] >= 103500 and not unlock:
         manage_data.progress["achieved"]["over_9k"] = True          
         # LOCALIZED HERE
         menu_ui.notification_text = get_notif_text("over_9k", "It's over 9000!!", (255, 128, 0))
         if not manage_data.is_mute:
             manage_data.sounds['notify'].play()
-        if menu_ui.notification_time is None:
+        if menu_ui.notif_time is None:
             menu_ui.notif = True
-            menu_ui.notification_time = time.time()
+            menu_ui.notif_time = time.time()
 
 def termvel():
     unlock = manage_data.progress["achieved"].get("termvel", False)
@@ -73,9 +73,9 @@ def termvel():
         menu_ui.notification_text = get_notif_text("termvel", "Terminal Velocity!", (0, 196, 255))
         if not manage_data.is_mute:
             manage_data.sounds['notify'].play()
-        if menu_ui.notification_time is None:
+        if menu_ui.notif_time is None:
             menu_ui.notif = True
-            menu_ui.notification_time = time.time()
+            menu_ui.notif_time = time.time()
 
 def check_green_gold():
     unlock = manage_data.progress["achieved"].get("golden", False)
@@ -89,9 +89,9 @@ def check_green_gold():
         menu_ui.notification_text = get_notif_text("golden", "Golden!", (0, 196, 255))
         if not manage_data.is_mute:
             manage_data.sounds['notify'].play()
-        if menu_ui.notification_time is None:
+        if menu_ui.notif_time is None:
             menu_ui.notif = True
-            menu_ui.notification_time = time.time()
+            menu_ui.notif_time = time.time()
 
 def check_the_captain():
     unlock = manage_data.progress["achieved"].get("captain", False)
@@ -105,9 +105,9 @@ def check_the_captain():
         menu_ui.notification_text = get_notif_text("captain", "Captain of the Ship!", (0, 196, 255))
         if not manage_data.is_mute:
             manage_data.sounds['notify'].play()
-        if menu_ui.notification_time is None:
+        if menu_ui.notif_time is None:
             menu_ui.notif = True
-            menu_ui.notification_time = time.time()
+            menu_ui.notif_time = time.time()
 
 def check_mech_eng():
     unlock = manage_data.progress["achieved"].get("mech_eng", False)
@@ -121,22 +121,26 @@ def check_mech_eng():
         menu_ui.notification_text = get_notif_text("mech_eng", "Mechanical Engineer!", (255, 154, 0))
         if not manage_data.is_mute:
             manage_data.sounds['notify'].play()
-        if menu_ui.notification_time is None:
+        if menu_ui.notif_time is None:
             menu_ui.notif = True
-            menu_ui.notification_time = time.time()
+            menu_ui.notif_time = time.time()
 
 def check_xplvl20():
     unlock = manage_data.progress["achieved"].get("lv20", False)
     if manage_data.progress['player']['Level'] >= 20 and not unlock:
         manage_data.progress["achieved"]["lv20"] = True
+        manage_data.progress["char"]["cashrobo"] = True
         manage_data.save_progress(manage_data.progress, manage_data.manifest)
         # LOCALIZED HERE
-        menu_ui.notification_text = get_notif_text("lv20", "XP Collector!", (255, 128, 0))
+        menu_ui.notification_text = get_notif_text("lv20", "XP Collector!", (0, 196, 255))
         if not manage_data.is_mute:
             manage_data.sounds['notify'].play()
-        if menu_ui.notification_time is None:
+        if menu_ui.notif_time is None:
             menu_ui.notif = True
-            menu_ui.notification_time = time.time()
+            menu_ui.notif_time = time.time()
+    else:
+       if not manage_data.progress["char"]["cashrobo"] and unlock:
+          manage_data.progress["char"]["cashrobo"] = True
 
 def check_achievements():
     check_xplvl20()

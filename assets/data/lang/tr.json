@@ -30,6 +30,8 @@
     "Account": "Hesap",
     "Back": "Geri",
     "new_acc": "Kayıt Ol",
+    "register_instr1": "Kullanıcı adı ve şifre ile yeni bir hesap oluşturun.",
+    "register_instr2": "Hesabınız bulut ile senkronize edilecektir.",
     "select": "PROFİL SEÇ",
     "sync_stat1": "Kasa Bulut ile senkronize ediliyor...",
     "sync_stat2": "Senkronizasyon başarısız!",
@@ -54,12 +56,14 @@
       "rare": "Nadir",
       "epic": "Destansı",
       "legi": "Efsanevi",
+      "sunnyrobot": "Bu robotun kilidini açmak için Hızlı Başlangıç başarımını kazan!",
       "evilrobo": "Bu robotun kilidini açmak için Limit Hız başarımını kazan!",
       "greenrobo": "Bu robotun kilidini açmak için Altın başarımını kazan!",
       "ironrobo": "Bu robotun kilidini açmak için Altının Zirvesi başarımını kazan!",
       "cakebot": "Bu robot her yıl 29 Nisan - 13 Mayıs tarihleri arasında mevcut olacak!",
       "vectorbot": "Bu robotu elde etmek için Makine Mühendisi başarımını kazan!",
       "piratebot": "Bu robotu elde etmek için Geminin Kaptanı ol!",
+      "cashrobot": "Bu robotun kilidini açmak için XP Koleksiyoncusu başarımını kazan!",
       "soon": "Bu robot yakında geliyor!",
       "back": "Geri"
   }
@@ -70,7 +74,7 @@
       "speedy_starter": "Hızlı Başlangıç!",
       "speedy_starter_desc": "Yeşil 1-1'i 4.5 saniyenin altında tamamla!",
       "over_9k": "9000'in üzerinde!",
-      "over_9k_desc": "Mech 1-3'te 105000 veya üzeri skor elde et!",
+      "over_9k_desc": "Mech 1-3'te 103500 veya üzeri skor elde et!",
       "termvel": "Limit Hız!",
       "termvel_desc": "Mech 1-5'i 15 saniyeden kısa sürede tamamla!",
       "golden": "Altın!",
@@ -92,7 +96,12 @@
     "worlds": "Dünya Seç",
     "level_display": "BİR SEVİYE SEÇ",
     "back": "Geri",
-    "next": "İleri"
+    "next": "İleri",
+    "prev": "Önceki",
+    "green": "Yeşil",
+    "ship": "Gemi",
+    "mech": "Mech",
+    "desert": "Çöl"
   },
   "messages": {
     "you_are_in": "{level} yakında geliyor!",
@@ -121,6 +130,7 @@
     "death_reason_2": "",
     "press_space": "Devam etmek için boşluk",
     "continue_wait": "tuşuna basın veya {next_left} bekleyin"
+    ,"more_soon": "Daha fazla seviye yakında gelecek..."
   },
   "in_game": {
     "dead_message": "Öldün!",
@@ -136,7 +146,9 @@
     "mock_message": "Yanlış yol kardeşim, burada özel bir şey yok...",
     "jump_message": "Turuncu blokları kullanarak yüksek mesafelere zıpla!",
     "saws_message": "Testereler de tehlikelidir!",
-    "sawed_message": "Parçalandın!",
+    "saws_message2": "Bazı testereler bir bloğun etrafında döner...",
+    "saws_message3": "... bazıları ise belirli bir yönde hareket eder."
+    ,"sawed_message": "Parçalandın!",
     "key_message": "Parayı kap ve bloğu aç!",
     "laser_message": "Lazer tarafından vuruldun!",
     "laser_warn": "Lazerler sinsi kısayolların kullanılmasını engeller!",
@@ -151,9 +163,12 @@
     ,"timed_coin_message": "Turuncu paralar süreli! Blokları sınırlı bir süre için"
     ,"timed_coin_message_2": "açarlar. Tekrar kapanmadan veya seni ezmeden önce koş..."  
     ,"crushed_message": "Ezildi!",
-    "evilrobo1": "Ha? Orada kimse var mı?",
-    "evilrobo2": "HEY! Buradan uzaklaş!",
-    "evilrobo3": "NEREYE GİTTİ????",
+    "cacti_message": "Diken Battı!",
+    "cacti_warn": "Kaktüs dikenleri, yanlarından geçerseniz baktıkları yöne doğru fırlar!",
+    "qsand_warn": "Dikkat! Bataklık üzerinde dururken nerede olduğunuza dikkat edin! Eğer yeterince",
+    "qsand2_warn": "hızlı kaçamazsanız, içeri çekilirken ezilerek can verirsiniz!",
+    "qsand3_warn": "Çünkü bir kez içeri çekilmeye başladığınızda, hayatta kalmak çok zorlaşır.",
+    "qsand4_warn": "Ya da tam köşelerde durursanız... bunun yerine dışarı da fırlatılabilirsiniz...",
     "temp": "Sıcaklık: {current_temp}",
     "ice_message": "Buz bloklarının üzerinde durunca erir! Ama seni de serinletirler!",
     "freeze_message": "Ama üşümemek için biraz ısınmayı unutma!",

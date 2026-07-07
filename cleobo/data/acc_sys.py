@@ -254,6 +254,7 @@ def handle_registration_events(screen, transition, events, manifest, is_mute, so
                         new_progress = copy.deepcopy(manage_data.default_progress)
                         progress.update(new_progress)
                         progress["player"]["ID"] = generate_player_id()
+                        progress = manage_data.update_locked_levels(progress, manifest)
 
                     # Set credentials and save
                     progress["player"]["Username"] = login_state["username"]
@@ -289,7 +290,7 @@ def handle_registration_events(screen, transition, events, manifest, is_mute, so
     
     return None  # Still processing registration
 
-def create_account_selector():
+def create_account_selector(screen):
     menu_ui.buttons.clear()
     settings = manage_data.load_language().get('settings', {})
 
@@ -304,39 +305,54 @@ def create_account_selector():
     accounts = list(manifest.get("users", {}).items())
     
     # --- LAYOUT CONSTANTS ---
-    COLUMN_WIDTH = 300
-    START_Y = 200
+    COLUMN_WIDTH = 350
+    START_Y = 150
     MAX_Y = manage_data.SCREEN_HEIGHT - 150
-    SPACING_Y = 72
+    SPACING_Y = 117
     
     # Calculate how many columns we actually have
-    num_accounts = len(accounts) + 1  # +1 for the "New Player" button
+    num_accounts = len(accounts)
     items_per_col = (MAX_Y - START_Y) // SPACING_Y
-    num_cols = (num_accounts // items_per_col) + 1
-    
-    # Calculate the starting X so the WHOLE group is centered
-    # Total width is (number of columns * width), then we find the center
-    total_group_width = num_cols * COLUMN_WIDTH
-    start_x = (manage_data.SCREEN_WIDTH // 2) - (total_group_width // 2) + (COLUMN_WIDTH // 2)
+    start_x = 180
 
     current_x = start_x
     current_y = START_Y
 
     # 2. Render Account Buttons
     for p_id, info in accounts:
-        name_str = info.get("username", "Unknown")
-        rendered_name = menu_ui.render_text(name_str, True, (255, 255, 255))
-
-        # Check if we need to wrap to a new column
+        # Check wrap FIRST
         if current_y >= MAX_Y:
             current_y = START_Y
             current_x += COLUMN_WIDTH
-            
-        # Left-aligning looks better in columns:
-        # We use current_x as the anchor for the left side of the text
-        rect = rendered_name.get_rect(topleft=(current_x - 100, current_y))
-
+        
+        name_str = info.get("username", "Unknown")
+        lvl = info.get("level", 1)
+        rendered_name = menu_ui.render_text(name_str, True, (255, 255, 255))
+        
+        # Fix tier logic with elif chain
+        if lvl < 5:
+            badge = manage_data.badges['tier1']
+        elif lvl < 10:
+            badge = manage_data.badges['tier2']
+        elif lvl < 15:
+            badge = manage_data.badges['tier3']
+        elif lvl < 20:
+            badge = manage_data.badges['tier4']
+        else:  # lvl >= 20
+            badge = manage_data.badges['tier5']
+        
+        # Position badge to the LEFT of the name
+        badge_x = current_x - badge.get_width() - 20  # 20px gap between badge and name
+        badge_pos = (badge_x, current_y - 35)
+        
+        # Draw badge
+        screen.blit(badge, badge_pos)
+        
+        # Draw name
+        rect = rendered_name.get_rect(topleft=(current_x, current_y))
+        screen.blit(rendered_name, rect)
         menu_ui.buttons.append((rendered_name, rect, f"load_user_{p_id}", False))
+        
         current_y += SPACING_Y
 
     # 3. "Login" and "New Account" Buttons at the bottom

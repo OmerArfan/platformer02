@@ -16,12 +16,14 @@
     "rare": "Rare",
     "epic": "Epic",
     "legi": "Legendary",
+    "sunnyrobot": "Get the speedy starter achievement to unlock this robo!",
     "evilrobo": "Unlock the Terminal Velocity achievement to unlock this robot!"
     ,"greenrobo": "Unlock the Golden Achievement to unlock this robot!"
     ,"ironrobo": "Unlock the Zenith of Six Achievement to unlock this robot!",
     "cakebot": "This Robo will be available every year from April 29 to May 13!",
     "vectorbot": "Unlock the Mechanical Engineer achievement to get this robo!",
-    "piratebot": "Become the Captain of the Ship to get this robo!"
+    "piratebot": "Become the Captain of the Ship to get this robo!",
+    "cashrobot": "Get the XP Collector achievement to unlock this robo!"
     ,"soon": "This robot is coming soon!"
     ,"back": "Back"
   }
@@ -72,7 +74,7 @@
     "speedy_starter": "Speedy Starter!",
     "speedy_starter_desc": "Complete Green 1-1 in under 4.5 seconds!",
     "over_9k": "Its over 9000!",
-    "over_9k_desc": "Achieve a score of 105000 or above in Mech 1-3!",
+    "over_9k_desc": "Achieve a score of 103500 or above in Mech 1-3!",
     "termvel": "Terminal Velocity!",
     "termvel_desc": "Complete Mech 1-5 in less than 15 seconds!",
     "golden": "Golden!",
@@ -93,13 +95,19 @@
   ,"levels": {
   "worlds": "Select World",
   "level_display": "SELECT A LEVEL",
+  "prev": "Previous",
   "back": "Back"
   ,"next": "Next"
+  ,"green": "Green",
+  "ship": "Ship",
+  "mech": "Mech",
+  "desert": "Desert"
    }
   ,"messages": {
   "you_are_in": "{level} is coming soon!",
   "loading": "Loading...",
   "confirm_quit": "Are you sure you want to quit?",
+  "more_soon": "More levels are coming soon...",
   "yes": "Yes",
   "no": "No"
   ,"deny_message": "Access denied!"
@@ -137,6 +145,8 @@
   "mock_message": "Wrong way my guy nothing special here...",
   "jump_message": "Use orange blocks to jump high distances!",
   "saws_message": "Saws are also dangerous!",
+  "saws_message2": "Some saws rotate around a block...",
+  "saws_message3": "... while others move in a specific direction.",
   "sawed_message": "Sawed to bits!",
   "key_message": "Grab the coin and open the block!",
   "laser_message": "Lasered!",
@@ -152,10 +162,13 @@
   ,"timed_coin_message": "Orange coins are timed! They open blocks for a limited"
   ,"timed_coin_message_2": "time. Run before they close again, or at worst, crush you..."
   ,"crushed_message": "Crushed!",
-  "evilrobo1": "Huh? Is there anyone there?",
-  "evilrobo2": "HEY! Get away from here!",
-  "evilrobo3": "WHERE DID HE GO????",
-  "temp": "Temperature: {current_temp}",
+  "cacti_message": "Prickled!",
+  "cacti_warn": "Cacti spikes rush towards the direction they face if you pass by them!"
+  ,"qsand_warn": "Caution! Be aware of where you are when you stand on quicksand! If you don't",
+    "qsand2_warn": "escape fast enough, you will get crushed as you're sucked inside!",
+    "qsand3_warn": "Because once you start getting sucked in, it becomes difficult to survive.",
+    "qsand4_warn": "Or if you stand at the very corners... you might just get pushed out instead..."
+  ,"temp": "Temperature: {current_temp}",
   "ice_message": "Ice Blocks melt when you stand on them! But they also cool you down!"
   ,"freeze_message": "But remember to get some warm ups and don't just freeze to death!"
   ,"overheat_message1": "Also remember to keep track of your temperature and if"

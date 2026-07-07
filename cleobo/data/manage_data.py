@@ -47,6 +47,9 @@ default_progress = {
         "mech": {
             "1": {f"lvl{i}": {"locked": True, "score": 0, "medal": "None", "time": 0} for i in range(1, 7)}
         },
+        "desert": {
+            "1": {f"lvl{i}": {"locked": True, "score": 0, "medal": "None", "time": 0} for i in range(1, 5)}
+        },
     },
     "pref" : { 
         "character": "robot"
@@ -58,7 +61,8 @@ default_progress = {
         "ironrobo": False,
         "cakebot": False,
         "vectorbot": False,
-        "piratebot": False
+        "piratebot": False,
+        "cashrobo": False
     },
     "achieved": { 
         "speedy_starter": False,
@@ -148,7 +152,7 @@ def update_locked_levels(progress, manifest):
     ordered_levels = get_ordered_levels(progress)  # ✅ Discovers from structure
     
     if not ordered_levels:
-        return
+        return progress
     
     # First level always unlocked
     first_world, first_subsection, first_level = ordered_levels[0]
@@ -208,6 +212,7 @@ def update_locked_levels(progress, manifest):
             progress['lvls'][next_world][next_first_sub][next_first_key]['locked'] = False
         
     save_progress(progress, manifest)
+    return progress
 
 def get_level_info(progress, world, subsection, level_key):
     """Helper to check level status from UI code."""
@@ -249,7 +254,7 @@ def load_language():
     global manifest
     try:
         # Wrap the path in resource_path()
-        path = resource_path(f"assets/lang/{lang_code}.json")
+        path = resource_path(f"assets/data/lang/{lang_code}.json")
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
@@ -258,7 +263,7 @@ def load_language():
         update_local_manifest(manifest)
         
         # Wrap the fallback path too!
-        fallback_path = resource_path("lang/en.json")
+        fallback_path = resource_path("assets/data/lang/en.json")
         with open(fallback_path, "r", encoding="utf-8") as f:
             return json.load(f)
 
@@ -326,7 +331,6 @@ def load_progress():
         if loaded_data:
             data.update(loaded_data)
             sync_missing_data(data)
-            update_locked_levels(loaded_data, manifest)
             SAVE_FILE = target_file
 
     # 4. Handle Migration/New ID
@@ -373,8 +377,9 @@ def load_progress():
     
     # Ensure new players have their save file created immediately
     if not os.path.exists(SAVE_FILE):
+        data = update_locked_levels(data, manifest)
         save_progress(data, manifest)
-        
+    
     return data
 
 import cleobo.ui.menu_ui as menu_ui
@@ -399,7 +404,7 @@ def save_progress(data, manifest):
            sounds['hit'].play()
         notification_text = menu_ui.render_text("Refusing to save: Invalid data structure!", True, (255, 0, 0))
         notif = True
-        menu_ui.notification_time = time.time()
+        menu_ui.notif_time = time.time()
         return
 
     # 2. Folder & Path Logic
@@ -436,14 +441,14 @@ def save_progress(data, manifest):
             sounds['death'].play()
         notification_text = menu_ui.render_text("Error: Save file is locked by another program.", True, (255, 0, 0))
         notif = True
-        menu_ui.notification_time = time.time()
+        menu_ui.notif_time = time.time()
             
     except Exception as e:
         menu_ui.er = True
         menu_ui.error_code = menu_ui.render_text(f"Save Error: {str(e)}", True, (255, 0, 0))
         if not is_mute:
            sounds['hit'].play()
-        menu_ui.notification_time = time.time()
+        menu_ui.er_time = time.time()
         print(f"Detailed save error: {e}")
 
 def update_local_manifest(data):
@@ -511,11 +516,12 @@ def update_local_manifest(data):
         if not is_mute: sounds['death'].play()
         menu_ui.error_code = menu_ui.render_text(f"Local manifest error: {e}", True, (255, 0, 0))
         menu_ui.er = True
-        menu_ui.notification_time = time.time()
+        menu_ui.er_time = time.time()
         print(f"Error during manifest save: {e}")
 
 def sync_missing_data(data):
-    
+    global progress
+
     # 1a. Ensure top-level keys exist (player, achieved, etc.)
     for key, value in default_progress.items():
         if key not in data:
@@ -647,7 +653,8 @@ def sync_missing_data(data):
         green_world_1.pop("lvl5", None)
         green_world_1.pop("lvl6", None)     
     
-    update_locked_levels(data, manifest)
+    data = update_locked_levels(data, manifest)
+    progress = data
 
 def sync_vault_to_cloud(data):
     global is_syncing, sync_status, sync_finish_time
@@ -757,102 +764,6 @@ def get_all_cloud_ids():
         print(f"Error fetching cloud IDs: {e}")
     
     return cloud_ids
-
-def xp():
-    from cleobo.levels.logic.entities import LevelManager
-
-    global progress
-    
-    # XP from scores - collect all scores from the new hierarchical structure
-    total_score = 0
-    level_scores = {}  # Map of level_num -> score for star calculation
-    
-    for world_name in progress["lvls"]:
-        for subsection_name in progress["lvls"][world_name]:
-            for level_key in progress["lvls"][world_name][subsection_name]:
-                level_data = progress["lvls"][world_name][subsection_name][level_key]
-                score = level_data.get('score', 0)
-                total_score += score
-                
-                # Extract level number for star calculation
-                if level_key.startswith('lvl'):
-                    level_num = int(level_key.replace('lvl', ''))
-                    level_scores[level_num] = score
-    
-    score_xp = total_score // 1000
-
-    # XP from stars
-    stars = 0
-    for world in default_progress['lvls']:
-      for level in world:
-        level_num = int(level_key.replace('lvl', ''))
-        score = level_scores.get(level_num, 0)
-        stars += LevelManager.get_stars(level_num, world, score)
-      star_xp = stars * 20  # 20 XP per star
-
-    # XP from achievements
-    achievements = progress["achieved"]  # your achievements dict
-    achievement_xp = {
-     "speedy_starter": 30,
-     "zen_os": 150,
-     "over_9k": 150,
-     "termvel": 100,
-     "golden": 200,
-     "captain": 250,
-     "mech_eng": 500,
-     "lvl20": 0,
-    }
-
-    # Sum XP for unlocked achievements
-    ach_xp = sum(xp for ach, unlocked in achievements.items() if unlocked for name, xp in achievement_xp.items() if ach == name)
-
-    # Total XP
-    total_xp = score_xp + ach_xp + star_xp
-    progress["player"]["XP"] = total_xp
-    def xp_needed(level):
-        if level <= 5:
-            return 50
-        elif level <= 10:
-            return 70
-        elif level <= 15:
-            return 110
-        elif level <= 20:
-            return 170
-        else: # Buffer
-            return 250
-
-    def calculate_level(total_xp):
-        level = 1
-        xp_left = total_xp
-        while xp_left >= xp_needed(level):
-            xp_left -= xp_needed(level)
-            level += 1
-        return level, xp_left
-
-    level, xp_in_level = calculate_level(total_xp)
-    progress["player"]["Level"] = level
-    if level > 20:
-        level = 20
-    return level, xp_in_level, xp_needed(level)
-
-def update_xp_ui():
-    global progress, lang_code, manifest
-
-    import cleobo.data.achievements as achieve
-    
-    level, xp_needed, xp_total = xp(progress, achieve)
-
-    if level < 20:
-        color = (255, 255, 255)
-        XP_text = fonts['mega'].render(str(level), True, color)
-        XP_text2 = menu_ui.render_text(f"{xp_needed}/{xp_total}", True, color)
-    else:
-        color = (225, 212, 31)
-        XP_text = fonts['mega'].render(str(level), True, color)
-        max_txt = load_language().get('messages', {}).get("max_level", "MAX LEVEL!")
-        XP_text2 = menu_ui.render_text(max_txt, True, color)   
-
-    return XP_text, XP_text2
 
 def check_for_new_gamenews(return_count):
     url = "https://omerarfan.github.io/lilrobowebsite/gamestuff.html"

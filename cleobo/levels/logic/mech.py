@@ -42,22 +42,21 @@ def handle_light_blocks(screen, lights, player):
             screen.blit(manage_data.assets['light'], (bx, by))
 
             if player.rect.colliderect(lights['button']):
-                if not manage_data.is_mute and player.lights_on:
-                    manage_data.sounds['collect'].play()
+                if player.lights_on:
                     player.lights_on = False
-            
+                    if not manage_data.is_mute:
+                        manage_data.sounds['collect'].play()
+                    
             if player.rect.colliderect(lights['block']):
                 # Falling onto a block
-                if player.velocity_y > 0 and player.rect.y + player.rect.width - player.velocity_y <= lights['block'].y:
-                    player.rect.y = lights['block'].x - player.rect.height
+                if player.velocity_y > 0 and player.rect.y + player.rect.height - player.velocity_y <= lights['block'].y:
+                    player.rect.y = lights['block'].y - player.rect.height
                     player.velocity_y = 0
                     player.on_ground = True
-
                 # Horizontal collision (left or right side of the block)
                 elif player.rect.x + player.rect.width > lights['block'].x and player.rect.x < lights['block'].x + lights['block'].width:
                     if player.rect.x < lights['block'].x:  # Colliding with the left side of the block
                         player.rect.x = lights['block'].x - player.rect.width
                     elif player.rect.x + player.rect.width > lights['block'].x + lights['block'].width:  # Colliding with the right side
                         player.rect.x = lights['block'].x + lights['block'].width
-
   return player

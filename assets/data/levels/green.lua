@@ -82,7 +82,7 @@ local lvl2 = {
 	    {{4400, 250}, {4450, 300}, {4500, 250}},
 	    {{4500, 250}, {4550, 300}, {4600, 250}},
 	},
-	flags = {x = 2150, y = 650, w = 80, h = 50, save_x = 2150, save_y = 650},
+	flags = {{x = 2150, y = 650, w = 100, h = 125, save_x = 2150, save_y = 650}},
 	text = {
 	    jump = {name = "jump_message", fallback = "Use orange blocks to jump high distances!", color = {255, 128, 0}, x = 900, y = 500},
 	},
@@ -167,7 +167,8 @@ local lvl4 = {
 	text = {
 	    laser = {name = "laser_warn", fallback = "Lasers prevent sneaky shortcuts from happening!", color = {255, 0, 0}, x = 430, y = -140},
 	},
-	flags = {x = 2800, y = 780, w = 80, h = 50, save_x = 2800, save_y = 750},
+	
+	flags = {{x = 2800, y = 700, w = 100, h = 125, save_x = 2800, save_y = 680}},
 	exit = {x = 80, y = 190, w = 140, h = 180},
 	next_page = "quit",
 }

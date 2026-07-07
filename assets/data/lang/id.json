@@ -57,12 +57,14 @@
       "rare": "Langka",
       "epic": "Epik",
       "legi": "Legendaris",
+      "sunnyrobot": "Buka pencapaian Pemulai Cepat untuk membuka robot ini!",
       "evilrobo": "Buka pencapaian Kecepatan Terminal untuk membuka robot ini!",
       "greenrobo": "Buka pencapaian Emas untuk membuka robot ini!",
       "ironrobo": "Buka pencapaian Puncak dari Enam untuk membuka robot ini!",
       "cakebot": "Robo ini akan tersedia setiap tahun dari tanggal 29 April hingga 13 Mei!",
       "vectorbot": "Buka pencapaian Insinyur Mesin untuk mendapatkan robo ini!",
       "piratebot": "Jadilah Kapten Kapal untuk mendapatkan robo ini!",
+      "cashrobot": "Buka pencapaian Pengumpul XP untuk membuka robot ini!",
       "soon": "Robot ini akan segera hadir!",
       "back": "Kembali"
   }
@@ -73,7 +75,7 @@
       "speedy_starter": "Pemulai Cepat!",
       "speedy_starter_desc": "Selesaikan Hijau 1-1 dalam waktu kurang dari 4,5 detik!",
       "over_9k": "Ini di atas 9000!",
-      "over_9k_desc": "Raih skor 105.000 atau lebih di Mech 1-3!",
+      "over_9k_desc": "Raih skor 103.500 atau lebih di Mech 1-3!",
       "termvel": "Kecepatan Terminal!",
       "termvel_desc": "Selesaikan Mech 1-5 dalam waktu kurang dari 15 detik!",
       "golden": "Emas!",
@@ -95,7 +97,12 @@
     "worlds": "Pilih Dunia",
     "level_display": "PILIH LEVEL",
     "back": "Kembali",
-    "next": "Berikutnya"
+    "next": "Berikutnya",
+    "prev": "Sebelumnya",
+    "green": "Hijau",
+    "ship": "Kapal",
+    "mech": "Mech",
+    "desert": "Gurun"
   },
   "messages": {
     "you_are_in": "{level} segera hadir!",
@@ -124,6 +131,7 @@
     "death_reason_2": "",
     "press_space": "Tekan spasi untuk",
     "continue_wait": "lanjut atau tunggu {next_left}"
+    ,"more_soon": "Lebih banyak level akan segera hadir..."
   },
   "in_game": {
     "dead_message": "Kamu mati!",
@@ -139,6 +147,8 @@
     "mock_message": "Arah yang salah, bro. Nggak ada yang spesial di sini...",
     "jump_message": "Gunakan blok oranye untuk melompat jauh!",
     "saws_message": "Gergaji juga berbahaya!",
+    "saws_message2": "Beberapa gergaji berputar mengelilingi balok...",
+    "saws_message3": "... sementara yang lain bergerak ke arah tertentu.",
     "sawed_message": "Terpotong kecil-kecil!",
     "key_message": "Ambil koin dan buka blok!",
     "laser_message": "Kena laser!",
@@ -154,9 +164,12 @@
     ,"timed_coin_message": "Koin oranye terbatas waktu! Mereka membuka balok untuk waktu"
     ,"timed_coin_message_2": "terbatas. Lari sebelum mereka tertutup lagi, atau paling buruk, menghancurkanmu..."
     ,"crushed_message": "Hancur!",
-    "evilrobo1": "Hah? Apa ada orang di sana?",
-    "evilrobo2": "HEI! Pergi dari sini!",
-    "evilrobo3": "KE MANA DIA PERGI????",
+    "cacti_message": "Tertusuk!",
+    "cacti_warn": "Duri kaktus akan melesat ke arah yang mereka hadapi jika kamu melewatinya!",
+    "qsand_warn": "Awas! Perhatikan posisi kamu saat berdiri di atas pasir hisap! Jika kamu tidak",
+    "qsand2_warn": "cepat lolos, kamu akan hancur saat tersedot ke dalam!",
+    "qsand3_warn": "Karena begitu kamu mulai tersedot, akan sangat sulit untuk bertahan hidup.",
+    "qsand4_warn": "Atau jika kamu berdiri tepat di sudut-sudutnya... kamu mungkin malah terdorong keluar...",
     "temp": "Suhu: {current_temp}",
     "ice_message": "Blok es akan mencair saat diinjak! Tapi juga mendinginkanmu!",
     "freeze_message": "Ingat untuk menghangatkan diri atau kamu bisa membeku sampai mati!",

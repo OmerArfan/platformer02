@@ -57,13 +57,15 @@
       "rare": "Rare",
       "epic": "Épique",
       "legi": "Légendaire",
-      "evilrobo": "Déverrouillez le succès Vitesse terminale pour débloquer ce robot !",
+      "sunnyrobot": "Obtenez le succès Démarrage rapide pour débloquer ce robot !"
+      ,"evilrobo": "Déverrouillez le succès Vitesse terminale pour débloquer ce robot !",
       "greenrobo": "Déverrouillez le succès Doré pour débloquer ce robot !",
       "ironrobo": "Déverrouillez le succès Zénith des Six pour débloquer ce robot !",
       "cakebot": "Ce robot sera disponible chaque année du 29 avril au 13 mai !",
       "vectorbot": "Déverrouillez le succès Ingénieur mécanicien pour obtenir ce robot !",
       "piratebot": "Devenez le Capitaine du navire pour obtenir ce robot !",
-      "soon": "Ce robot sera bientôt disponible !",
+      "cashrobot": "Obtenez le succès Collecteur d'XP pour débloquer ce robot !"
+      ,"soon": "Ce robot sera bientôt disponible !",
       "back": "Retour"
   }
   ,"achieve": {
@@ -73,7 +75,7 @@
       "speedy_starter": "Démarrage rapide !",
       "speedy_starter_desc": "Terminez Vert 1-1 en moins de 4,5 secondes !",
       "over_9k": "Plus de 9000 !",
-      "over_9k_desc": "Atteignez un score de 105 000 ou plus dans Mecha 1-3 !",
+      "over_9k_desc": "Atteignez un score de 103 500 ou plus dans Mecha 1-3 !",
       "termvel": "Vitesse terminale !",
       "termvel_desc": "Terminez Mecha 1-5 en moins de 15 secondes !",
       "golden": "Doré !",
@@ -95,7 +97,12 @@
   "worlds": "Sélectionner le monde",
   "level_display": "CHOISIR UN NIVEAU",
   "back": "retour"
-  ,"next": "prochain"
+  ,"next": "prochain",
+  "prev": "Précédent",
+  "green": "Vert",
+  "ship": "Vaisseau",
+  "mech": "Mecha",
+  "desert": "Désert"
 },
   "messages": {
   "you_are_in": "Vous êtes dans {level}",
@@ -123,7 +130,8 @@
   "death_reason": "Vous êtes mort trop souvent !",
   "death_reason_2": "",
   "press_space": "Appuyez sur espace pour",
-  "continue_wait": "continuer ou attendez {next_left}"  
+  "continue_wait": "continuer ou attendez {next_left}" , 
+    "more_soon": "D'autres niveaux arrivent bientôt..."
 }
   ,"in_game": {
   "dead_message": "Vous êtes mort !",
@@ -139,7 +147,9 @@
   ,"mock_message": "Mauvais chemin mon gars rien de spécial ici...",
   "jump_message": "Utilisez des blocs orange pour sauter de grandes distances !",
   "saws_message": "Les scies sont aussi dangereuses !"
-  ,"sawed_message": "Scié en morceaux !"
+  ,"saws_message2": "Certaines scies tournent autour d'un bloc...",
+    "saws_message3": "... tandis que d'autres se déplacent dans une direction précise.",
+  "sawed_message": "Scié en morceaux !"
   ,"key_message": "Prenez la pièce et ouvrez le bloc !"
   ,"laser_message": "Tué par un laser !"
   ,"laser_warn": "Les lasers empêchent l'utilisation de raccourcis sournois !"
@@ -154,9 +164,12 @@
   ,"timed_coin_message": "Les pièces oranges sont chronométrées ! Elles ouvrent des blocs pour un temps"
   ,"timed_coin_message_2": "limité. Courez avant qu'ils ne se referment, ou pire, vous écrasent..."
   ,"crushed_message": "Écrasé !",
-  "evilrobo1": "Hein ? Il y a quelqu'un ?",
-  "evilrobo2": "HÉ ! Allez-vous-en d'ici !",
-  "evilrobo3": "OÙ EST-IL PASSÉ ????",
+  "cacti_message": "Piqué !",
+  "cacti_warn": "Les épines des cactus se lancent dans la direction face à eux si vous passez à côté !",
+  "qsand_warn": "Attention ! Faites bien attention à là où vous vous trouvez sur les sables mouvants ! Si vous ne",
+    "qsand2_warn": "vous échappez pas assez vite, vous serez écrasé en étant aspiré à l'intérieur !",
+    "qsand3_warn": "Car une fois que vous commencez à vous faire aspirer, il devient difficile de survivre.",
+    "qsand4_warn": "Ou alors, si vous restez pile sur les bords... vous risquez plutôt de vous faire éjecter...",
   "temp": "Température: {current_temp}"
   ,"ice_message": "Les blocs de glace fondent quand tu restes dessus ! Mais ils te rafraîchissent aussi !",
   "freeze_message": "Mais pense à te réchauffer un peu, ne meurs pas de froid !",

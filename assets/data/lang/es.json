@@ -57,12 +57,14 @@
       "rare": "Raro",
       "epic": "Épico",
       "legi": "Legendario",
+      "sunnyrobot": "¡Consigue el logro Inicio veloz para desbloquear este robot!",
       "evilrobo": "¡Desbloquea el logro Velocidad terminal para desbloquear este robot!",
       "greenrobo": "¡Desbloquea el logro Dorado para desbloquear este robot!",
       "ironrobo": "¡Desbloquea el logro Cénit de los Seis para desbloquear este robot!",
       "cakebot": "¡Este robot estará disponible todos los años del 29 de abril al 13 de mayo!",
       "vectorbot": "¡Desbloquea el logro Ingeniero mecánico para obtener este robot!",
       "piratebot": "¡Conviértete en el Capitán del barco para obtener este robot!",
+      "cashrobot": "¡Consigue el logro Colector de PE para desbloquear este robot!",
       "soon": "¡Este robot llegará pronto!",
       "back": "Volver"
   }    
@@ -73,7 +75,7 @@
       "speedy_starter": "¡Inicio veloz!",
       "speedy_starter_desc": "¡Completa Verde 1-1 en menos de 4.5 segundos!",
       "over_9k": "¡Es más de 9000!",
-      "over_9k_desc": "¡Consigue una puntuación de 105000 o más en Meca 1-3!",
+      "over_9k_desc": "¡Consigue una puntuación de 103500 o más en Meca 1-3!",
       "termvel": "¡Velocidad terminal!",
       "termvel_desc": "¡Completa Meca 1-5 en menos de 15 segundos!",
       "golden": "¡Dorado!",
@@ -95,7 +97,12 @@
     "worlds": "Seleccionar mundo",
   "level_display": "SELECCIONA UN NIVEL",
   "back": "volver"
-  ,"next": "casi"
+  ,"next": "casi",
+  "prev": "Anterior",
+  "green": "Verde",
+  "ship": "Nave",
+  "mech": "Meca",
+  "desert": "Desierto"
    }
   ,"messages": {
   "you_are_in": "Estás en {level}"
@@ -123,7 +130,8 @@
   "death_reason": "¡Has muerto demasiadas veces!",
   "death_reason_2": "",
   "press_space": "Presiona espacio para",
-  "continue_wait": "continuar o espera {next_left}"
+  "continue_wait": "continuar o espera {next_left}",
+  "more_soon": "¡Pronto llegarán más niveles!"
 }
   ,"in_game": {
   "dead_message": "¡Has muerto!", 
@@ -139,6 +147,8 @@
   ,"mock_message": "Camino equivocado, amigo, no hay nada especial aquí..."
   ,"jump_message": "¡Usa bloques naranjas para saltar grandes distancias!"
   ,"saws_message": "¡Las sierras también son peligrosas!"
+  ,"saws_message2": "Algunas sierras giran alrededor de un bloque...",
+    "saws_message3": "... mientras que otras se mueven en una dirección específica."
   ,"sawed_message": "¡Despedazado!"
   ,"key_message": "¡Agarrar la moneda y abrir el bloque!"
   ,"laser_message": "¡Grabado con láser!"
@@ -154,9 +164,12 @@
   ,"timed_coin_message": "¡Las monedas naranjas tienen tiempo! Abren bloques por un tiempo"
   ,"timed_coin_message_2": "limitado. Corra antes de que se cierren o, en el peor de los casos, lo aplasten..."
   ,"crushed_message": "¡Aplastado!",
-  "evilrobo1": "¿Eh? ¿Hay alguien ahí?",
-  "evilrobo2": "¡OYE! ¡Aléjate de aquí!",
-  "evilrobo3": "¿¡A DÓNDE SE FUE!???",
+  "cacti_message": "¡Pinchado!",
+  "cacti_warn": "¡Espinas de cactus se lanzan hacia la dirección a la que miran si pasas cerca!",
+  "qsand_warn": "¡Cuidado! ¡Ten en cuenta dónde estás cuando pises arenas movedizas! Si no",
+    "qsand2_warn": "escapas lo suficientemente rápido, ¡te aplastará mientras te absorbe hacia adentro!",
+    "qsand3_warn": "Porque una vez que empiezas a ser absorbido, se vuelve muy difícil sobrevivir.",
+    "qsand4_warn": "O si te quedas justo en las esquinas... puede que simplemente seas expulsado hacia afuera...",
   "temp": "Temperatura: {current_temp}"
   ,"ice_message": "¡Los bloques de hielo se derriten cuando te paras sobre ellos! ¡Pero también te enfrían!",
   "freeze_message": "¡Pero recuerda calentarte un poco o podrías congelarte!",
