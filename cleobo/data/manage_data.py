@@ -774,9 +774,9 @@ def check_for_new_gamenews(return_count):
             online_count = response.text.count('<a href="gamenews')
             
             # Get the count from our manifest
-            local_count = manifest.get("other", {}).get("last_news_count", 7)
-            if local_count < 8:
-                local_count = 8  # Default to 7 if not set, since we started counting from last update
+            local_count = manifest.get("other", {}).get("last_news_count", 9)
+            if local_count < 9:
+                local_count = 9  # Default to 9 if not set, since we started counting from last update
             
             # If online has more, we have new news!
             if online_count > local_count:
