@@ -95,7 +95,11 @@ while running:
         
         for event in events:
             if event.type == pygame.QUIT:
-                state.set_page(screen, "quit_confirm", transition)
+                if not state.is_transitioning:
+                    transition.start("quit_confirm")
+                    state.transition_time = pygame.time.get_ticks()
+                    state.is_transitioning = True
+                    state.pending_page = "quit_confirm"
 
             # Handle login screen events
             elif manage_data.current_page == "login_screen":
