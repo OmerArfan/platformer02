@@ -188,6 +188,13 @@ def level_launcher(level_name, screen, transition, world_name):
         
     quit_text = in_game.get("quit_message", "Press Q to quit")
     quit_text = menu_ui.render_text(quit_text, True, (255, 255, 255))
+    
+    cacti_text = menu_ui.render_text(in_game.get("cacti_message", "Prickled!"), True, (255, 0, 0))
+    saw_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+    laser_text = menu_ui.render_text(in_game.get("laser_message", "Lasered!"), True, (255, 0, 0))
+    hit_head_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
+    crush_text = menu_ui.render_text(in_game.get("crushed_message", "Crushed!"), True, (255, 0, 0))
+    ded_text = menu_ui.render_text(in_game.get("dead_message", "You Died!"), True, (255, 0, 0))
 
     # === MAIN GAME LOOP ===
     if not transition.active:
@@ -201,9 +208,16 @@ def level_launcher(level_name, screen, transition, world_name):
 
         # === EVENT HANDLING ===
         for event in pygame.event.get():
-            if event.type == pygame.QUIT or keys[pygame.K_q]:
+            if keys[pygame.K_q]:
                 running = False
                 state.handle_action("quit", transition, manage_data.current_page)
+            elif event.type == pygame.QUIT:
+                running = False
+                if not state.is_transitioning:
+                    transition.start("quit_confirm")
+                    state.transition_time = pygame.time.get_ticks()
+                    state.is_transitioning = True
+                    state.pending_page = "quit_confirm"
         
         # Check exit portal collision
         if player.rect.colliderect(exit_portal):
@@ -254,7 +268,7 @@ def level_launcher(level_name, screen, transition, world_name):
 
         if hazards.handle_cacti_spikes(screen, player, cacti_spikes):
             player.die()
-            manager.death_text = menu_ui.render_text(in_game.get("cacti_message", "Prickled!"), True, (255, 0, 0))
+            manager.death_text = cacti_text
             manager.wait_time = pygame.time.get_ticks()
             if not manage_data.is_mute:
                 manage_data.sounds['death'].play()
@@ -278,7 +292,7 @@ def level_launcher(level_name, screen, transition, world_name):
         # 2. Check for saw deaths
         if hazards.handle_all_saws(screen, saws, player, blocks):
             player.die()
-            manager.death_text = menu_ui.render_text(in_game.get("sawed_message", "Sawed to bits!"), True, (255, 0, 0))
+            manager.death_text = saw_text
             manager.wait_time = pygame.time.get_ticks()
             if not manage_data.is_mute:
                 manage_data.sounds['death'].play()
@@ -292,7 +306,7 @@ def level_launcher(level_name, screen, transition, world_name):
 
         if hazards.handle_lasers(screen, lasers, player):
             player.die()
-            manager.death_text = menu_ui.render_text(in_game.get("laser_message", "Lasered!"), True, (255, 0, 0))
+            manager.death_text = laser_text
             manager.wait_time = pygame.time.get_ticks()
             if not manage_data.is_mute:
                 manage_data.sounds['laser'].play()
@@ -318,7 +332,7 @@ def level_launcher(level_name, screen, transition, world_name):
         q_rects = [qsand['block'] for qsand in qsand]
         if blockmgr.handle_bottom_collisions(blocks, player) or blockmgr.handle_bottom_collisions(moving_rects, player) or blockmgr.handle_bottom_collisions(jump_blocks, player) or blockmgr.handle_bottom_collisions(q_rects, player):
             player.die()
-            manager.death_text = menu_ui.render_text(in_game.get("hit_message", "Hit on the head!"), True, (255, 0, 0))
+            manager.death_text = hit_head_text
             manager.wait_time = pygame.time.get_ticks()
             if not manage_data.is_mute:
                 manage_data.sounds['hit'].play()
@@ -333,7 +347,7 @@ def level_launcher(level_name, screen, transition, world_name):
         # Death if got inside a locked block (or if crushed in general)
         if player.crushed:
             player.die()
-            manager.death_text = menu_ui.render_text(in_game.get("crushed_message", "Crushed!"), True, (255, 0, 0))
+            manager.death_text = crush_text
             manager.wait_time = pygame.time.get_ticks()
             if not manage_data.is_mute:
                 manage_data.sounds['hit'].play()
@@ -348,7 +362,7 @@ def level_launcher(level_name, screen, transition, world_name):
         # Spike collisions
         if hazards.check_spike_collisions(spikes, player):
             player.die()
-            manager.death_text = menu_ui.render_text(in_game.get("dead_message", "You Died!"), True, (255, 0, 0))
+            manager.death_text = ded_text
             manager.wait_time = pygame.time.get_ticks()
             if not manage_data.is_mute:
                 manage_data.sounds['death'].play()
