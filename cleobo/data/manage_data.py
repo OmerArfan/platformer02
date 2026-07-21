@@ -170,6 +170,32 @@ def update_locked_levels(progress, manifest):
         else:
             progress['lvls'][world][subsection][level_key]['locked'] = True
 
+    # ===== NEW: Unlock first level of next subsection within same world =====
+    for world in progress['lvls'].keys():
+        subsections = sorted(progress['lvls'][world].keys(), key=lambda x: int(x) if x.isdigit() else x)
+        
+        for i in range(len(subsections) - 1):
+            cur_sub = subsections[i]
+            next_sub = subsections[i + 1]
+            
+            # Get last level of current subsection
+            cur_levels = [k for k in progress['lvls'][world][cur_sub].keys() if k.startswith('lvl')]
+            if not cur_levels:
+                continue
+            
+            cur_levels_sorted = sorted(cur_levels, key=lambda k: int(k.replace('lvl', '')))
+            cur_last_key = cur_levels_sorted[-1]
+            cur_last_score = progress['lvls'][world][cur_sub][cur_last_key].get('score', 0)
+            
+            # If last level of current subsection is beaten, unlock first level of next subsection
+            if cur_last_score > 0:
+                # Check if next subsection exists in default_progress
+                if world in default_progress.get('lvls', {}) and next_sub in default_progress['lvls'][world]:
+                    next_first_level = 'lvl1'
+                    if next_first_level in progress['lvls'][world][next_sub]:
+                        progress['lvls'][world][next_sub][next_first_level]['locked'] = False
+    # ===== END NEW SECTION =====
+
     # Additional rule: if the LAST level of the FIRST subsection of a world is completed
     # (score > 0), then the FIRST level of the FIRST subsection of the next world
     # should be unlocked. Also unlock if that next level already has score>0.
@@ -774,9 +800,9 @@ def check_for_new_gamenews(return_count):
             online_count = response.text.count('<a href="gamenews')
             
             # Get the count from our manifest
-            local_count = manifest.get("other", {}).get("last_news_count", 9)
-            if local_count < 9:
-                local_count = 9  # Default to 9 if not set, since we started counting from last update
+            local_count = manifest.get("other", {}).get("last_news_count", 7)
+            if local_count < 8:
+                local_count = 8  # Default to 7 if not set, since we started counting from last update
             
             # If online has more, we have new news!
             if online_count > local_count:
