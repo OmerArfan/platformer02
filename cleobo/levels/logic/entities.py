@@ -280,8 +280,9 @@ class LevelManager:
         return score, base_score, medal_score, death_score, time_score
 
     # ALgorithm for logic stuff when level is completed
-    def fin_lvl_logic(self, level_num, player, world_name, subsection='1'):
+    def fin_lvl_logic(self, level_num, player, world_name, subsection):
         level_key = f"lvl{level_num}"
+        subsection = str(subsection)
         
         # Get current level data
         level_data = manage_data.progress["lvls"][world_name][subsection][level_key]
@@ -328,8 +329,7 @@ class LevelManager:
         world_sub = manage_data.progress['lvls'][world_name][subsection]
         if next_level in world_sub:
             # Mark as unlocked since it's been played 
-            next_level_data = manage_data.progress["lvls"][world_name][subsection][next_level]
-            next_level_data['locked'] = False
+            manage_data.progress["lvls"][world_name][subsection][next_level]['locked'] = False
         
         # Trigger unlock system 
         manage_data.update_locked_levels(manage_data.progress, manage_data.manifest)

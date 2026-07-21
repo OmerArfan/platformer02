@@ -86,12 +86,12 @@ def handle_cacti_spikes(screen, player, spikes):
                 
                 player_aligned = player.rect.y + player.rect.height >= spike_y_min and player.rect.y <= spike_y_max
                 if spike['dir'] < 0:
-                    if player.rect.right >= spike_x - spike['limit'] and player.rect.right < spike_x and player_aligned:
+                    if player.rect.right >= spike_x - spike['limit'] and player.rect.right <= spike_x and player_aligned:
                         spike['activated'] = True
                         spike['cycle_complete'] = False
 
                 else:
-                    if player.rect.left <= spike_x + spike['limit'] and player.rect.left > spike_x and player_aligned:
+                    if player.rect.left <= spike_x + spike['limit'] and player.rect.left >= spike_x and player_aligned:
                         spike['activated'] = True
                         spike['cycle_complete'] = False
         
