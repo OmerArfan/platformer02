@@ -246,28 +246,28 @@ def handle_action(key, transition, current_page):
                 pending_page = "main_menu"
         elif key == "levels":
             if not is_transitioning:
-                transition.start("green")
+                transition.start("green_1")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-                pending_page = "green"
+                pending_page = "green_1"
         elif key == "mech_levels":
             if not is_transitioning:
-                transition.start("mech")
+                transition.start("mech_1")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-                pending_page = "mech"
+                pending_page = "mech_1"
         elif key == "ship_levels":
             if not is_transitioning:
-                transition.start("ship")
+                transition.start("ship_1")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-                pending_page = "ship"
+                pending_page = "ship_1"
         elif key == "desert_levels":
             if not is_transitioning:
-                transition.start("desert")
+                transition.start("desert_1")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-                pending_page = "desert"
+                pending_page = "desert_1"
     elif current_page == 'language_select':
         if key == "back":
             if not is_transitioning:
@@ -282,7 +282,7 @@ def handle_action(key, transition, current_page):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "main_menu"
-    elif current_page == 'green' or current_page == 'mech' or current_page == 'ship' or current_page == 'desert':
+    elif manage_data.current_page in ["green_1", "mech_1", 'ship_1', 'desert_1']:
         if key is None:  # Ignore clicks on locked levels
             return
         elif key == "back":
@@ -399,19 +399,19 @@ def set_page(screen, page, transition):
         acc_sys.reset_login_state()
     elif page == "registration_screen":
         acc_sys.reset_login_state()
-    elif page == 'green':
+    elif page == 'green_1':
         current_lang = manage_data.load_language().get('levels', {})
         menu_ui.green_world_buttons(screen)
         manage_data.change_ambience("green")
-    elif page == 'mech':
+    elif page == 'mech_1':
         current_lang = manage_data.load_language().get('levels', {})
         menu_ui.mech_world_buttons(screen)
         manage_data.change_ambience("mech")
-    elif page == 'ship':
+    elif page == 'ship_1':
         current_lang = manage_data.load_language().get('levels', {})
         menu_ui.ship_world_buttons(screen)
         manage_data.change_ambience("ship")
-    elif page == 'desert':
+    elif page == 'desert_1':
         current_lang = manage_data.load_language().get('levels', {})
         menu_ui.desert_world_buttons(screen)
         manage_data.change_ambience("desert")
@@ -421,9 +421,11 @@ def set_page(screen, page, transition):
     elif "lvl" in page:
         current_lang = manage_data.load_language().get('in_game', {})
         # Extract world and level from page name
-        world_name, level_name = page.split("_", 1)
-        # Call the generic level launcher
-        launcher.level_launcher(level_name, screen, transition, world_name)
+        parts = page.split("_")
+        world_name = parts[0]
+        subsection = int(parts[1])
+        level_name = "_".join(parts[2:]) if len(parts) > 2 else parts[1]
+        launcher.level_launcher(level_name, screen, transition, world_name, subsection)
 
 def muting_sfx():
     manage_data.is_mute = not manage_data.is_mute

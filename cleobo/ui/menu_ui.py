@@ -612,7 +612,10 @@ def worlds(screen):
 def green_world_buttons(screen):
     global current_lang, buttons, text_rect
     buttons.clear()
-
+    
+    parts = manage_data.current_page.split("_")
+    subsection = parts[1]
+    
     level_options = ["lvl1", "lvl2", "lvl3", "lvl4"]
     level_no = ["1", "2", "3", "4"]
     buttons_per_row = 2
@@ -622,8 +625,6 @@ def green_world_buttons(screen):
     grid_width = (buttons_per_row - 1) * spacing_x
     start_x = (manage_data.SCREEN_WIDTH - grid_width) // 2
     start_y = ((manage_data.SCREEN_HEIGHT // 2) - ((len(level_options) // buttons_per_row) * spacing_y // 2)) + 50
-
-    subsection = '1'
 
     for i, level in enumerate(level_options):
         col = i % buttons_per_row
@@ -853,7 +854,8 @@ def desert_world_buttons(screen):
 
 def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, button_hovered_last_frame):
     # 1. Dynamic Setup
-    world_type = current_page
+    parts = manage_data.current_page.split("_")
+    world_type = parts[0]
     screen.blit(manage_data.bgs[world_type], (0, 0))
     disk_img = manage_data.disks[world_type]
     current_lang = manage_data.load_language().get('levels', {})
