@@ -161,13 +161,13 @@ while running:
             button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)
         
         elif "lvl" in manage_data.current_page:
-            # Extract world and level from page name
-            world_name, level_name = manage_data.current_page.split("_", 1)
-            
-            # Call the generic level launcher
-            launcher.level_launcher(level_name, screen, transition, world_name)
+            parts = manage_data.current_page.split("_")
+            world_name = parts[0]
+            subsection = int(parts[1])
+            level_name = "_".join(parts[2:]) if len(parts) > 2 else parts[1]
+            launcher.level_launcher(level_name, screen, transition, world_name, subsection)
         
-        elif manage_data.current_page in ["green", "mech", 'ship', 'desert']:
+        elif any(manage_data.current_page.startswith(world) for world in ["green", "mech", "ship", "desert"]):
             button_hovered_last_frame = menu_ui.draw_level_select(screen, mouse_pos, manage_data.current_page, current_lang, messages, button_hovered_last_frame)
 
         elif manage_data.current_page == "settings":
