@@ -5,7 +5,7 @@ from cleobo.data import manage_data, achievements
 from cleobo.levels.logic import hazards, entities, env, mech, blockmgr
 import cleobo.ui.state as state
 
-def level_launcher(level_name, screen, transition, world_name):
+def level_launcher(level_name, screen, transition, world_name, subsection):
     """
     Generic level launcher that loads and plays a level from Lua data.
     
@@ -14,11 +14,12 @@ def level_launcher(level_name, screen, transition, world_name):
         screen: Pygame display surface
         transition: TransitionManager instance
         world_name: Name of the world/file (e.g., 'green')
+        subsection: Subsection number (default 1)
     """
     from cleobo.levels.parser import load_level_data
     
     # Load level data from Lua file
-    level_data = load_level_data(level_name, world_name)
+    level_data = load_level_data(level_name, world_name, subsection)
     
     if not screen:
         return
@@ -222,15 +223,9 @@ def level_launcher(level_name, screen, transition, world_name):
         # Check exit portal collision
         if player.rect.colliderect(exit_portal):
             level_num = int(level_name.replace('lvl', ''))
-            subsection = '1'
             
             # ✅ Added world_name and subsection parameters
-            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = manager.fin_lvl_logic(
-                level_num, 
-                player, 
-                world_name=world_name,
-                subsection=subsection
-            )
+            score, base_score, medal_score, death_score, time_score, stars, new_hs, hs = manager.fin_lvl_logic(level_num, player, world_name, subsection)
             
             menu_ui.level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, manager.medal, stars)
             
