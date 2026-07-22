@@ -5,6 +5,8 @@ import shutil
 import time
 import threading
 import sys
+import platform
+import re
 from datetime import datetime, date
 import csv
 import hashlib
@@ -106,10 +108,11 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
-def thresholds(world, thr):
+def thresholds(world, thr, subsection):
     with open(resource_path(f"assets/data/thresholds/{world}.json"), "r", encoding="utf-8") as f:
         thresh_data = json.load(f)
-        return thresh_data[thr]
+        subsection = str(subsection)
+        return thresh_data[subsection][thr]
 
 fonts = {}
 saw_cache = {}
@@ -545,6 +548,17 @@ def update_local_manifest(data):
         menu_ui.er_time = time.time()
         print(f"Error during manifest save: {e}")
 
+def delete_account(player_id):
+    """Delete an account file for the given player ID."""
+    try:
+        account_file = resource_path(f"accounts/{player_id}.json")
+        if os.path.exists(account_file):
+            os.remove(account_file)
+            return True
+    except Exception as e:
+        print(f"Error deleting account: {e}")
+        return False
+
 def sync_missing_data(data):
     global progress
 
@@ -791,31 +805,54 @@ def get_all_cloud_ids():
     
     return cloud_ids
 
-def check_for_new_gamenews(return_count):
-    url = "https://omerarfan.github.io/lilrobowebsite/gamestuff.html"
+def check_for_new_update(return_version):
+    """Check if a new update is available based on OS and build number."""
+    url = "https://omerarfan.github.io/lilrobowebsite/index.html"
+    
     try:
-        # 3 second timeout so the game doesn't hang if offline
         response = requests.get(url, timeout=3)
         if response.status_code == 200:
-            online_count = response.text.count('<a href="gamenews')
+            # Detect OS
+            current_os = platform.system()
             
-            # Get the count from our manifest
-            local_count = manifest.get("other", {}).get("last_news_count", 7)
-            if local_count < 8:
-                local_count = 8  # Default to 7 if not set, since we started counting from last update
+            # Parse based on OS
+            if current_os == "Windows":
+                # Look for Windows download link
+                pattern = r'Roboquix\s+([\d.]+)\s+\([^)]*Windows[^)]*\)'
+            elif current_os == "Linux":
+                # Look for Linux download link
+                pattern = r'Roboquix\s+([\d.]+)\s+\([^)]*Linux[^)]*\)'
+            else:
+                # Unsupported OSes
+                if return_version:
+                    return version
+                return False
             
-            # If online has more, we have new news!
-            if online_count > local_count:
-                print(local_count, online_count)
-                if return_count:
-                    return online_count
+            # Find version in HTML
+            match = re.search(pattern, response.text)
+            if match:
+                online_version = match.group(1)  # e.g., "1.4.0.0520"
+                
+                # Extract build numbers (last 4 digits after last dot)
+                local_build = int(version.split('.')[-1])
+                online_build = int(online_version.split('.')[-1])
+                print(local_build, online_build)
+                # Compare
+                if online_build > local_build:
+                    print(f"Update available: {version} → {online_version}")
+                    if return_version:
+                        return online_version
+                    else:
+                        return True
                 else:
-                    return True
-            
-    except Exception as e:
-        print(f"News check failed: {e}")
+                    if return_version:
+                        return version
+                    return False
     
-    if return_count:
-        return manifest["other"]["last_news_count"]
+    except Exception as e:
+        print(f"Update check failed: {e}")
+    
+    if return_version:
+        return version
     else:
         return False

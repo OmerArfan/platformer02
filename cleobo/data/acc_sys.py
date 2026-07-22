@@ -19,21 +19,10 @@ login_state = {
 }
 
 # Initalizing Player ID
-HEX = "0123456789ABCDEF"
+HEX = "023579cehjmortvyz"
 
 def generate_player_id():
-    roll = random.random() * 100  # 0.0 → 100.0
-
-    if roll < 0.001:        # 0.1%
-        length = 3
-    elif roll < 2.1:     # next 5%
-        length = 4
-    elif roll < 25:                 # rest
-        length = 5
-    else:
-        length = 6
-
-    return "".join(random.choices(HEX, k=length))
+    return "".join(random.choices(HEX, k=10)) # 10 character IDs
 
 def hash_password(password):
     # Convert the string to bytes, then create a SHA-256 hash
