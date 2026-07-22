@@ -264,58 +264,43 @@ def create_achieve_screen(screen):
     buttons.append((rendered_back, back_rect, "back", False))
 
 def init_profile_vars():
-    global gold_medals, diamond_medals, total_stars, ulock_ach, total_ach
+    global gold_medals, diamond_medals, total_stars, ulock_ach, total_ach, robos_unlock, robos_total, total_levels
     
-    gold_medals, diamond_medals, total_stars, ulock_ach, total_ach = 0, 0, 0, 0, 0
+    gold_medals, diamond_medals, total_stars, ulock_ach, total_ach, robos_unlock, robos_total, total_levels = 0, 0, 0, 0, 0, 0, 0, 0
 
-    for wk, world in (manage_data.progress['lvls'].items() if isinstance(manage_data.progress.get('lvls'), dict) else enumerate(manage_data.progress.get('lvls', []))):
-        if isinstance(world, dict):
-            levels = world.get("1") if "1" in world else None
-            if levels is None:
-                levels = next((v for v in world.values() if isinstance(v, list)), [])
-        else:
-            levels = world
-        if isinstance(levels, dict):
-            # keep keys so we can extract level number (e.g. 'lvl1')
-            iter_levels = levels.items()
-        elif isinstance(levels, list):
-            iter_levels = levels
-        else:
-            iter_levels = []
-
-        # iter_levels is either an iterable of (lvlkey, lvl_dict) or a list of lvl_dict
-        if isinstance(iter_levels, list):
-            for lvl in iter_levels:
-                if not isinstance(lvl, dict):
+    # Iterate through worlds
+    for world_name, world_data in manage_data.progress['lvls'].items():
+        # Iterate through subsections
+        for subsection, levels in world_data.items():
+            # Iterate through levels in this subsection
+            for level_key, level_data in levels.items():
+                if not isinstance(level_data, dict):
                     continue
-                medal = lvl.get('medal')
+                
+                # Medal tracking
+                medal = level_data.get('medal')
                 if medal == "Gold" or medal == "Diamond":
                     gold_medals += 1
                     if medal == "Diamond":
                         diamond_medals += 1
-                score = lvl.get('score', 0)
-                # LevelManager expects a level number or id; we don't have the key here — skip number parsing
-                level_star = LevelManager.get_stars(lvl, wk, score)
+                
+                # Star tracking
+                score = level_data.get('score', 0)
+                level_num = level_key.replace("lvl", "")
+                level_star = LevelManager.get_stars(level_num, world_name, score, subsection)
                 total_stars += level_star
-        else:
-            for lvlkey, lvl in iter_levels:
-                if not isinstance(lvl, dict):
-                    continue
-                medal = lvl.get('medal')
-                if medal == "Gold" or medal == "Diamond":
-                    gold_medals += 1
-                    if medal == "Diamond":
-                        diamond_medals += 1
-                score = lvl.get('score', 0)
-                lvl_no = lvlkey.replace("lvl", "")
-                level_star = LevelManager.get_stars(lvl_no, wk, score)
-                total_stars += level_star
+                total_levels += 1
 
+    # Achievement tracking
     for ach in manage_data.progress['achieved']:
         if manage_data.progress["achieved"][ach]:
             ulock_ach += 1
         total_ach += 1
-
+    
+    for robo in manage_data.progress['char']:
+        if manage_data.progress["char"][robo]:
+            robos_unlock += 1
+        robos_total += 1
 
 def draw_profile(screen):
     global current_lang, buttons
@@ -381,26 +366,25 @@ def draw_profile(screen):
     badge_x = xp_center_x - (badge.get_width() // 2)
     badge_pos = (badge_x, 185)
 
-    ach_txt = current_lang.get("main_menu", {}).get("achievements", "Achievements")
-    ach_text = render_text(f"{ach_txt}: {ulock_ach}/{total_ach}", True, (255, 255, 255))
-    ach_pos = (manage_data.SCREEN_WIDTH // 2 - (ach_text.get_width() // 2), 310)
-
-    screen.blit(manage_data.medals['Gold'], (manage_data.SCREEN_WIDTH // 2 - 350, 370))
+    screen.blit(manage_data.medals['Gold'], (manage_data.SCREEN_WIDTH // 2 - 450, 370))
     screen.blit(manage_data.medals['Diamond'], (manage_data.SCREEN_WIDTH // 2 - 50, 370))
-    screen.blit(manage_data.assets['star_normal'], (manage_data.SCREEN_WIDTH // 2 + 250, 345))
-    screen.blit(render_text(f"{gold_medals}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 - 280, 365))
-    screen.blit(render_text(f"{diamond_medals}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 + 20, 365))
-    screen.blit(render_text(f"{total_stars}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 + 340, 365))
+    screen.blit(manage_data.assets['star_normal'], (manage_data.SCREEN_WIDTH // 2 + 350, 345))
+    screen.blit(manage_data.assets['trophy'], (manage_data.SCREEN_WIDTH // 2 - 455, 495))
+    screen.blit(manage_data.robos['robot'], (manage_data.SCREEN_WIDTH // 2 - 90, 495))
+    screen.blit(render_text(f"{gold_medals}/{total_levels}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 - 370, 365))
+    screen.blit(render_text(f"{diamond_medals}/{total_levels}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 + 30, 365))
+    screen.blit(render_text(f"{total_stars}/{total_levels*3}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 + 450, 365))
+    screen.blit(render_text(f"{ulock_ach}/{total_ach}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 - 340, 500))
+    screen.blit(render_text(f"{robos_unlock}/{robos_total}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 + 30, 500))
 
     screen.blit(badge, badge_pos)
     screen.blit(XP_text, XP_pos)
     screen.blit(XP_text2, XP_pos2)
     screen.blit(ID_text, ID_pos)
     screen.blit(player_text, player_pos)
-    screen.blit(ach_text, ach_pos)
     pygame.draw.rect(screen, color, (XP_pos2[0] - 80, 240, bar, 25))
     pygame.draw.rect(screen, color, (XP_pos2[0] - 80, 240, 400, 25), 2)
-
+    
     back_text = back_data.get("back", "Back")
     rendered_back = render_text(back_text, True, (255, 255, 255))
     back_rect = rendered_back.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 100))
@@ -427,7 +411,7 @@ def draw_main_menu(screen, event, ui_states):
             ui_states['logo_click'] = True
             ui_states['new_news'] = False
             # Update news manifest
-            manage_data.manifest["other"]["last_news_count"] = manage_data.check_for_new_gamenews(True)
+            manage_data.manifest["other"]["last_news_count"] = manage_data.check_for_new_update(True)
             manage_data.update_local_manifest(manage_data.progress)
     else:
         screen.blit(manage_data.ui['studio_logo'], manage_data.ui['studio_logo_rect'].topleft)
@@ -518,29 +502,34 @@ def create_language_buttons(screen):
     buttons.append((rendered_back, back_rect, "back", False))
 
 def draw_world_stats(screen, world_name, world_key, world_rect):
-    # Helper function to render world name, medals, and stars on a world button.
-    # Calculate medals and stars
     medals = 0
     stars = 0
     
-    if world_key == "mech":
-        num_levels = 6 
-    else:
-        num_levels = 4
-    for i in range(1, num_levels + 1):
-        medal = manage_data.progress["lvls"][world_key]["1"][f"lvl{i}"]["medal"]
-        if medal == "Gold" or medal == "Diamond":
-            medals += 1
+    # Get all subsections and levels dynamically
+    world_data = manage_data.progress["lvls"].get(world_key, {})
+    
+    for subsection in sorted(world_data.keys(), key=lambda x: int(x) if x.isdigit() else x):
+        subsection_data = world_data[subsection]
         
-        score = manage_data.progress["lvls"][world_key]["1"][f"lvl{i}"]["score"]
-        stars += LevelManager.get_stars(i, world_key, score)
+        for level_key in sorted(subsection_data.keys(), key=lambda x: int(x.replace("lvl", "")) if x.startswith("lvl") else 0):
+            level_data = subsection_data[level_key]
+            
+            # Medal tracking
+            medal = level_data.get("medal")
+            if medal == "Gold" or medal == "Diamond":
+                medals += 1
+            
+            # Star tracking
+            score = level_data.get("score", 0)
+            level_num = level_key.replace("lvl", "")
+            stars += LevelManager.get_stars(level_num, world_key, score, subsection)
 
     # Render text
     title = render_text(world_name, True, (255, 255, 255))
     medals_text = render_text(f"{medals}", True, (255, 255, 0), bigfont=True)
     stars_text = render_text(f"{stars}", True, (255, 255, 0), bigfont=True)
 
-    # Position text
+    # Position text (positions stay the same)
     title_pos = (world_rect.centerx - title.get_width() // 2, world_rect.centery - 180)
     medals_pos = (world_rect.centerx - medals_text.get_width() // 2 - 35, world_rect.centery + 150)
     gold_medal_img_pos = (world_rect.centerx - medals_text.get_width() // 2 - 130, world_rect.centery + 155)
@@ -856,6 +845,7 @@ def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, b
     # 1. Dynamic Setup
     parts = manage_data.current_page.split("_")
     world_type = parts[0]
+    sub = parts[1]
     screen.blit(manage_data.bgs[world_type], (0, 0))
     disk_img = manage_data.disks[world_type]
     current_lang = manage_data.load_language().get('levels', {})
@@ -891,7 +881,7 @@ def draw_level_select(screen, mouse_pos, current_page, current_lang, messages, b
                 if medal != "None":
                     screen.blit(manage_data.medals[medal], (manage_data.SCREEN_WIDTH // 2 - 250, manage_data.SCREEN_HEIGHT - 80))
                 
-                stars = LevelManager.get_stars(int(key[3:]), world_type, score)
+                stars = LevelManager.get_stars(int(key[3:]), world_type, score, sub)
                 for i in range(stars):
                     screen.blit(manage_data.assets['star_small'], (manage_data.SCREEN_WIDTH // 2 + (i-1)*35, manage_data.SCREEN_HEIGHT - 80))
                     
