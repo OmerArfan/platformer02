@@ -48,7 +48,7 @@ while loading:
         stage, ps = next(loader)
         menu_ui.draw_loading_bar(screen, stage, ps) 
     except StopIteration:
-        new_news_available = manage_data.check_for_new_gamenews(False)
+        new_update_available = manage_data.check_for_new_update(False)
         if manage_data.is_mute_amb:
             pygame.mixer.music.stop()
         else:
@@ -129,7 +129,7 @@ while running:
                 'logo_hover': logo_hover, 
                 'logo_click': logo_click, 
                 'last_hovered': last_hovered_key, 
-                'new_news': new_news_available
+                'new_news': new_update_available
             }
             
             # One line to rule them all
@@ -139,7 +139,7 @@ while running:
             logo_hover = updated_states['logo_hover']
             logo_click = updated_states['logo_click']
             last_hovered_key = updated_states['last_hovered']
-            new_news_available = updated_states['new_news']
+            new_update_available = updated_states['new_news']
 
         if manage_data.current_page == 'profile':
             menu_ui.draw_profile(screen)
