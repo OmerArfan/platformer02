@@ -297,7 +297,7 @@ class LevelManager:
             level_data['time'] = round(self.current_time, 2)
         
         # Calculate medal based on time
-        medal = self.get_medal(level_num, world_name, self.current_time)
+        medal = self.get_medal(level_num, world_name, self.current_time, subsection)
         
         # Diamond medal if Gold with 0 deaths
         if medal == "Gold" and player.deathcount == 0:
@@ -335,7 +335,7 @@ class LevelManager:
         manage_data.update_locked_levels(manage_data.progress, manage_data.manifest)
         
         # Calculate stars
-        stars = self.get_stars(level_num, world_name, score)
+        stars = self.get_stars(level_num, world_name, score, subsection)
         return score, base_score, medal_score, death_score, time_score, stars, new_hs, hs
 
     def draw_level_ui(self, screen, deaths_text, reset_text, quit_text, timer_text):
@@ -360,8 +360,8 @@ class LevelManager:
 
     # Function to get medal based on time
     @staticmethod
-    def get_medal(level, world, time_taken):
-        thresh = manage_data.thresholds(world, "medal")
+    def get_medal(level, world, time_taken, subsection):
+        thresh = manage_data.thresholds(world, "medal", subsection)
         try:
             lvl_int = int(level)
         except Exception:
@@ -379,8 +379,8 @@ class LevelManager:
             return None
 
     @staticmethod
-    def get_stars(level, world, score):
-        thresh = manage_data.thresholds(world, "star")
+    def get_stars(level, world, score, subsection):
+        thresh = manage_data.thresholds(world, "star", subsection)
         try:
             lvl_int = int(level)
         except Exception:
