@@ -7,8 +7,8 @@ import traceback
 from random import random
 
 # Initializing Game and Engine Version
-manage_data.version = "1.4.0.0517"
-manage_data.kernel = "0.8.0.0063"
+manage_data.version = "1.4.0.0518"
+manage_data.kernel = "0.8.0.0065"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 # Random final message
@@ -224,6 +224,7 @@ def init_other_assets():
             'weak': ("ingame/button/gravity_weak.png", None),
             'speedster': ("ingame/button/speedster.png", None),
             'light': ("ingame/button/light.png", None),
+            'trophy': ("ui/trophy.png", (110, 100)),
         }
         
         for name, (file_path, size) in asset_files.items():
