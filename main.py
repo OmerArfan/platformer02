@@ -19,7 +19,6 @@ import cleobo.data.acc_sys as acc_sys
 import cleobo.ui.menu_ui as menu_ui
 import cleobo.ui.state as state
 from cleobo.levels import launcher
-import threading
 # Initialize pygame
 pygame.init()
 # Initializing screen resolution
@@ -152,6 +151,9 @@ while running:
 
         if manage_data.current_page == "language_select":
             menu_ui.create_language_buttons(screen)
+
+        if manage_data.current_page == "logout_confirm":
+            menu_ui.create_acc_del_buttons(screen)
             
         if manage_data.current_page == "quit_confirm":
             screen.blit(manage_data.bgs['plain'], (0, 0))
