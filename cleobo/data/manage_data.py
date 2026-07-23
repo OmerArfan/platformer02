@@ -548,17 +548,6 @@ def update_local_manifest(data):
         menu_ui.er_time = time.time()
         print(f"Error during manifest save: {e}")
 
-def delete_account(player_id):
-    """Delete an account file for the given player ID."""
-    try:
-        account_file = resource_path(f"accounts/{player_id}.json")
-        if os.path.exists(account_file):
-            os.remove(account_file)
-            return True
-    except Exception as e:
-        print(f"Error deleting account: {e}")
-        return False
-
 def sync_missing_data(data):
     global progress
 
@@ -697,10 +686,9 @@ def sync_missing_data(data):
     progress = data
 
 def sync_vault_to_cloud(data):
-    global is_syncing, sync_status, sync_finish_time
-    is_syncing = True
+    menu_ui.is_syncing = True
     settings = load_language()['settings']
-    sync_status = settings.get("sync_stat1", "Syncing Vault to Cloud...")
+    menu_ui.sync_status = settings.get("sync_stat1", "Syncing Vault to Cloud...")
 
     # Using the IDs from your pre-filled link
     payload = {
@@ -717,13 +705,13 @@ def sync_vault_to_cloud(data):
     try:
         response = requests.post(url, data=payload, timeout=7)
         if response.status_code == 200:
-            sync_status = settings.get("sync_stat3", "Success!")
+            menu_ui.sync_status = settings.get("sync_stat3", "Success!")
 
     except Exception as e:
-        sync_status = settings.get("sync_stat2", "Failed!")
+        menu_ui.sync_status = settings.get("sync_stat2", "Failed!")
 
     finally:
-        sync_finish_time = time.time()
+        menu_ui.sync_finish_time = time.time()
 
 def recover_account_from_cloud(target_user, target_pass):
     # This is your 'Latest Progress' CSV link
