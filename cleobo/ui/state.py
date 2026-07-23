@@ -7,6 +7,7 @@ import json
 import webbrowser
 import cleobo.data.acc_sys as acc_sys
 import time
+import threading
 from cleobo.levels import launcher
 from cleobo.data.achievements import check_achievements
 
@@ -23,6 +24,9 @@ class TransitionManager:
         self.target_page = None
         self.hold_time = 0
         self.hold_duration = 250  # milliseconds
+        self.load_thread = None
+        self.load_result = None
+        self.load_error = None
 
     def start(self, target_page):
         self.active = True
@@ -31,6 +35,15 @@ class TransitionManager:
         self.right_x = self.screen.get_width()
         self.target_page = target_page
         self.hold_time = 0
+        self.load_thread = None
+        self.load_result = None
+        self.load_error = None
+
+    def _load_progress(self):
+        try:
+            self.load_result = manage_data.load_progress()
+        except Exception as error:
+            self.load_error = error
 
     def update(self, screen, transition):
         global pending_lang_code, selected_id
@@ -64,14 +77,32 @@ class TransitionManager:
                     pending_lang_code = None
                 # Update manifest to set 'last_used' so load_progress knows which one to grab
                 if selected_id:
-                    if os.path.exists(manage_data.ACCOUNTS_FILE):
-                        with open(manage_data.ACCOUNTS_FILE, "r") as f:
-                            manifest = json.load(f)
-                        manifest["last_used"] = selected_id
-                        with open(manage_data.ACCOUNTS_FILE, "w") as f:
-                            json.dump(manifest, f, indent=4)
-                    # Load the data and move to main menu
-                    manage_data.progress = manage_data.load_progress()
+                    if self.load_thread is None:
+                        if os.path.exists(manage_data.ACCOUNTS_FILE):
+                            with open(manage_data.ACCOUNTS_FILE, "r") as f:
+                                manifest = json.load(f)
+                            manifest["last_used"] = selected_id
+                            with open(manage_data.ACCOUNTS_FILE, "w") as f:
+                                json.dump(manifest, f, indent=4)
+                        self.load_thread = threading.Thread(target=self._load_progress, daemon=True)
+                        self.load_thread.start()
+
+                    if self.load_thread.is_alive():
+                        self.screen.blit(self.left_image, (self.left_x, 0))
+                        self.screen.blit(self.right_image, (self.right_x, 0))
+                        menu_ui.draw_loading_orb(screen, manage_data.SCREEN_WIDTH - 2, manage_data.SCREEN_HEIGHT - 50, None)
+                        return
+
+                    if self.load_error is not None:
+                        error = self.load_error
+                        self.load_thread = None
+                        self.load_error = None
+                        raise error
+
+                    # Apply the loaded data and move to the target page.
+                    manage_data.progress = self.load_result
+                    self.load_thread = None
+                    self.load_result = None
                     selected_id = None
                 set_page(screen, manage_data.current_page, transition)
                 self.phase = 2
@@ -88,6 +119,9 @@ class TransitionManager:
         # Draw both images
         self.screen.blit(self.left_image, (self.left_x, 0))
         self.screen.blit(self.right_image, (self.right_x, 0))
+
+        if self.phase == 1 and pygame.time.get_ticks() - self.hold_time >= self.hold_duration:
+            menu_ui.draw_loading_orb(screen, manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT - 50, None)
 
 transition_time = None
 is_transitioning = False

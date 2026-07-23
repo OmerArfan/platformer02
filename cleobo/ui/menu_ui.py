@@ -128,27 +128,34 @@ def draw_loading_bar(screen, stage_name, percent):
     text = render_text(f"{stage_name} ({percent}%)", True, (255, 255, 255))
     text_rect = text.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 60))
     screen.blit(text, text_rect)
+    draw_loading_orb(screen, text_rect.x, text_rect.y, None)
     pygame.draw.rect(screen, (0, 0, 255), (0, manage_data.SCREEN_HEIGHT - 10, (manage_data.SCREEN_WIDTH / 100)*percent, 10))
     pygame.display.flip()
 
 def draw_loading_orb(screen, text_x, text_y, show_time):
-        # Calculate the orbit position using current time
-        angle_rad = time.time() * 8 
-        orbit_radius = 15
-        
-        # Define the center point for the circle to orbit around
-        orbit_center_x = text_x - 30
-        orbit_center_y = text_y + 15 # Adjusted to center it vertically with text
+    angle_rad = time.time() * 7
+    orbit_radius = 25  # Bigger so they space out nicely
+    
+    orbit_center_x = text_x - 30
+    orbit_center_y = text_y + 15
 
-        if show_time is None:
-          for i in range(3):
-            # offset each dot by 0.5 radians so they follow each other
-            dot_angle = angle_rad - (i * 0.5) 
+    if show_time is None:
+        colors = [
+        (237, 28, 36),
+        (255, 100, 40),
+        (255, 180, 40),
+        (150, 255, 60),
+        (34, 177, 76)
+        ]
+        
+        for i in range(5):
+            dot_angle = angle_rad - (i * 0.31)  # Adjusted offset so 5 dots still space nicely
             x = orbit_center_x + orbit_radius * math.cos(dot_angle)
             y = orbit_center_y + orbit_radius * math.sin(dot_angle)
-            # Make trailing dots smaller or dimmer
-            alpha = 255 - (i * 80) 
-            pygame.draw.circle(screen, (alpha, alpha, alpha), (int(x), int(y)), 5 - i)
+            
+            # Just size fade, full color saturation
+            size = 6 - (i * 0.6)  # Gradually shrinks
+            pygame.draw.circle(screen, colors[i], (int(x), int(y)), int(size))
 
 def draw_syncing_status(screen):
     global is_syncing, sync_status, sync_finish_time
@@ -369,13 +376,14 @@ def draw_profile(screen):
     screen.blit(manage_data.medals['Gold'], (manage_data.SCREEN_WIDTH // 2 - 450, 370))
     screen.blit(manage_data.medals['Diamond'], (manage_data.SCREEN_WIDTH // 2 - 50, 370))
     screen.blit(manage_data.assets['star_normal'], (manage_data.SCREEN_WIDTH // 2 + 350, 345))
-    screen.blit(manage_data.assets['trophy'], (manage_data.SCREEN_WIDTH // 2 - 455, 495))
-    screen.blit(manage_data.robos['robot'], (manage_data.SCREEN_WIDTH // 2 - 90, 495))
+    screen.blit(manage_data.assets['trophy'], (manage_data.SCREEN_WIDTH // 2 - 475, 495))
+    screen.blit(manage_data.robos['robot'], (manage_data.SCREEN_WIDTH // 2 - 75, 495))
+
     screen.blit(render_text(f"{gold_medals}/{total_levels}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 - 370, 365))
     screen.blit(render_text(f"{diamond_medals}/{total_levels}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 + 30, 365))
     screen.blit(render_text(f"{total_stars}/{total_levels*3}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 + 450, 365))
-    screen.blit(render_text(f"{ulock_ach}/{total_ach}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 - 340, 500))
-    screen.blit(render_text(f"{robos_unlock}/{robos_total}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 + 30, 500))
+    screen.blit(render_text(f"{ulock_ach}/{total_ach}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 - 360, 500))
+    screen.blit(render_text(f"{robos_unlock}/{robos_total}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 + 45, 500))
 
     screen.blit(badge, badge_pos)
     screen.blit(XP_text, XP_pos)
@@ -913,6 +921,8 @@ stareffects = []
 from cleobo.data import xp
 
 def level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars):
+    BG = pygame.Surface((manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT), pygame.SRCALPHA)
+    BG.fill((40, 40, 40, 220))
     messages = manage_data.load_language().get('messages', {})
     display_score = 0
     star1_p, star2_p, star3_p = False, False, False
@@ -924,13 +934,17 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
     lvl_comp = messages.get("lvl_comp", "Level Complete!")
     old_xp = manage_data.progress["player"].get("XP", 0)
     rendered_lvl_comp = render_text(lvl_comp, True, (255, 255, 255))
+    end_background = manage_data.bgs['end'].copy()
+    end_x = manage_data.SCREEN_WIDTH // 2 - end_background.get_width() // 2
+    end_shadow = pygame.Surface(end_background.get_size(), pygame.SRCALPHA)
+    end_shadow.fill((40, 40, 40, 25))
+    end_background.blit(end_shadow, (0, 0))
+    base_frame = screen.copy()
 
-    BG = pygame.Surface((manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT))
-    BG.fill((40, 40, 40)) # A dark grey color
-    BG.set_alpha(25)     # Adjust this to change how "locked" it looks
     while running:
+        screen.blit(base_frame, (0, 0))
         screen.blit(BG, (0, 0))
-        screen.blit(manage_data.bgs['end'], (manage_data.SCREEN_WIDTH // 2 - manage_data.bgs['end'].get_width() // 2, 0))
+        screen.blit(end_background, (end_x, 0))
         keys = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -1376,6 +1390,36 @@ def create_quit_confirm_buttons():
     buttons.append((rendered_no, no_rect, "no", False))
 
     return quit_text, quit_text_rect
+
+def create_acc_del_buttons(screen):
+    global current_lang, buttons
+    buttons.clear()
+
+    # Get the quit confirmation text from the current language
+    messages = manage_data.load_language().get('messages', {})
+    confirm_del = messages.get("confirm_del", "Are you sure you want to log out?")
+    confirm_del2 = messages.get("confirm_del2", "You can log back into your account anytime.")
+
+    # Store the quit confirmation text for rendering in the main loop
+    del_text = render_text(confirm_del, True, (255, 255, 255))
+    del_text_rect = del_text.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT // 2 - 25))
+
+    del_text2 = render_text(confirm_del2, True, (255, 255, 255))
+    del_text_rect2 = del_text2.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT // 2 + 25))
+
+    # Create "Yes" button
+    yes_text = messages.get("yes", "Yes")
+    rendered_yes = render_text(yes_text, True, (255, 255, 255))
+    yes_rect = rendered_yes.get_rect(center=(manage_data.SCREEN_WIDTH // 2 - 100, manage_data.SCREEN_HEIGHT // 2 + 50))
+    buttons.append((rendered_yes, yes_rect, "yes", False))
+
+    # Create "No" button
+    no_text = messages.get("no", "No")
+    rendered_no = render_text(no_text, True, (255, 255, 255))
+    no_rect = rendered_no.get_rect(center=(manage_data.SCREEN_WIDTH // 2 + 100, manage_data.SCREEN_HEIGHT // 2 + 50))
+    buttons.append((rendered_no, no_rect, "no", False))
+
+    screen.blit(del_text_rect, del_text_rect2)
 
 def new_txt():
     current_lang = manage_data.load_language().get('main_menu', {})
