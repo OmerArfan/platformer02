@@ -686,32 +686,33 @@ def sync_missing_data(data):
     progress = data
 
 def sync_vault_to_cloud(data):
-    menu_ui.is_syncing = True
-    settings = load_language()['settings']
-    menu_ui.sync_status = settings.get("sync_stat1", "Syncing Vault to Cloud...")
+    if data['player']['Username'] != "":
+        menu_ui.is_syncing = True
+        settings = load_language()['settings']
+        menu_ui.sync_status = settings.get("sync_stat1", "Syncing Vault to Cloud...")
 
-    # Using the IDs from your pre-filled link
-    payload = {
-        "entry.377726286": data["player"].get("Username", "Unknown"), # Username
-        "entry.286332773": data["player"].get("Pass", ""),             # Password Hash
-        "entry.829022223": data["player"].get("ID", ""),               # ID
-        "entry.92201882": json.dumps(data, ensure_ascii=False),       # Full Progress JSON
-        "entry.2000835960": date.today().strftime("%Y-%m-%d"),         # Current Date
-        "entry.1017947451": datetime.now().strftime("%H:%M:%S")        # Current Time
-    }
+        # Using the IDs from your pre-filled link
+        payload = {
+            "entry.377726286": data["player"].get("Username", "Unknown"), # Username
+            "entry.286332773": data["player"].get("Pass", ""),             # Password Hash
+            "entry.829022223": data["player"].get("ID", ""),               # ID
+            "entry.92201882": json.dumps(data, ensure_ascii=False),       # Full Progress JSON
+            "entry.2000835960": date.today().strftime("%Y-%m-%d"),         # Current Date
+            "entry.1017947451": datetime.now().strftime("%H:%M:%S")        # Current Time
+        }
 
-    url = "https://docs.google.com/forms/d/e/1FAIpQLSfB2alAMj3qNMm5DFw-p_4HkGyzA_U2zw9lul3HSmi15Msxjg/formResponse"
+        url = "https://docs.google.com/forms/d/e/1FAIpQLSfB2alAMj3qNMm5DFw-p_4HkGyzA_U2zw9lul3HSmi15Msxjg/formResponse"
 
-    try:
-        response = requests.post(url, data=payload, timeout=7)
-        if response.status_code == 200:
-            menu_ui.sync_status = settings.get("sync_stat3", "Success!")
+        try:
+            response = requests.post(url, data=payload, timeout=7)
+            if response.status_code == 200:
+                menu_ui.sync_status = settings.get("sync_stat3", "Success!")
 
-    except Exception as e:
-        menu_ui.sync_status = settings.get("sync_stat2", "Failed!")
+        except Exception as e:
+            menu_ui.sync_status = settings.get("sync_stat2", "Failed!")
 
-    finally:
-        menu_ui.sync_finish_time = time.time()
+        finally:
+            menu_ui.sync_finish_time = time.time()
 
 def recover_account_from_cloud(target_user, target_pass):
     # This is your 'Latest Progress' CSV link

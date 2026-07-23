@@ -359,3 +359,42 @@ def create_account_selector(screen):
     back_txt_rendered = menu_ui.render_text(back_txt, True, (255, 255, 255)) # Red color
     back_rect = back_txt_rendered.get_rect(center=((manage_data.SCREEN_WIDTH // 2), manage_data.SCREEN_HEIGHT - 50))
     menu_ui.buttons.append((back_txt_rendered, back_rect, "back", False))
+
+def delete_account(player_id):
+    """Delete an account, remove from manifest, and login to first remaining account."""
+    try:
+        # Delete the account file
+        if os.path.exists(manage_data.SAVE_FILE):
+            os.remove(manage_data.SAVE_FILE)
+        backup_file = manage_data.SAVE_FILE + ".bak"
+        if os.path.exists(backup_file):
+            os.remove(backup_file)
+        
+        # Remove from manifest
+        if player_id in manage_data.manifest.get("users", {}):
+            manage_data.manifest["users"].pop(player_id)
+        
+        # Auto-login to first remaining account (if any exist)
+        remaining_accounts = manage_data.manifest.get("users", {})
+        next_id = ""
+        if remaining_accounts:
+            next_id = list(remaining_accounts.keys())[0]
+
+        # Persist the removal and ensure last_used does not reference the deleted account.
+        manage_data.manifest.setdefault("pref", {})["last_used"] = next_id
+        with open(manage_data.ACCOUNTS_FILE, "w", encoding="utf-8") as manifest_file:
+            json.dump(manage_data.manifest, manifest_file, indent=4)
+
+        if next_id:
+            # Load the replacement only after local.json points to it.
+            manage_data.SAVE_FILE = os.path.join(manage_data.APP_DATA_DIR, f"{next_id}.json")
+            manage_data.progress = manage_data.load_progress()
+        else:
+            # With no accounts left, load_progress creates a fresh fallback
+            # using the already-persisted empty manifest.
+            manage_data.progress = manage_data.load_progress()
+
+        return True
+    except Exception as e:
+        print(f"Error deleting account: {e}")
+        return False
