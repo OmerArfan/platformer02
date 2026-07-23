@@ -390,9 +390,16 @@ def draw_profile(screen):
     screen.blit(XP_text2, XP_pos2)
     screen.blit(ID_text, ID_pos)
     screen.blit(player_text, player_pos)
+
     pygame.draw.rect(screen, color, (XP_pos2[0] - 80, 240, bar, 25))
     pygame.draw.rect(screen, color, (XP_pos2[0] - 80, 240, 400, 25), 2)
-    
+
+    if manage_data.progress['player']['Username'] != "":
+        logout_text = settings.get("logout", "Log Out")
+        rendered_logout = render_text(logout_text, True, (255, 255, 255))
+        logout_rect = rendered_logout.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 172))
+        buttons.append((rendered_logout, logout_rect, "logout", False))
+
     back_text = back_data.get("back", "Back")
     rendered_back = render_text(back_text, True, (255, 255, 255))
     back_rect = rendered_back.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT - 100))
@@ -1402,10 +1409,10 @@ def create_acc_del_buttons(screen):
 
     # Store the quit confirmation text for rendering in the main loop
     del_text = render_text(confirm_del, True, (255, 255, 255))
-    del_text_rect = del_text.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT // 2 - 25))
+    del_text_rect = del_text.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT // 2 - 75))
 
     del_text2 = render_text(confirm_del2, True, (255, 255, 255))
-    del_text_rect2 = del_text2.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT // 2 + 25))
+    del_text_rect2 = del_text2.get_rect(center=(manage_data.SCREEN_WIDTH // 2, manage_data.SCREEN_HEIGHT // 2 - 45))
 
     # Create "Yes" button
     yes_text = messages.get("yes", "Yes")
@@ -1419,14 +1426,14 @@ def create_acc_del_buttons(screen):
     no_rect = rendered_no.get_rect(center=(manage_data.SCREEN_WIDTH // 2 + 100, manage_data.SCREEN_HEIGHT // 2 + 50))
     buttons.append((rendered_no, no_rect, "no", False))
 
-    screen.blit(del_text_rect, del_text_rect2)
+    screen.blit(del_text, del_text_rect)
+    screen.blit(del_text2, del_text_rect2)
 
 def new_txt():
     current_lang = manage_data.load_language().get('main_menu', {})
     new_txt = render_text(current_lang.get("new", "Update Available!"), True, (225, 212, 31))
     return new_txt
 
-# Inside py (or similar)
 def show_resolution_limit(screen):
     countdown = 5
     clock = pygame.time.Clock()

@@ -387,6 +387,12 @@ def handle_action(key, transition, current_page):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "main_menu"
+        if key == "logout":
+            if not is_transitioning:
+                transition.start("logout_confirm")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "logout_confirm"
     elif current_page == "login_screen" or current_page == "registration_screen":
         if key == "back":
             if not is_transitioning:
@@ -401,6 +407,20 @@ def handle_action(key, transition, current_page):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "main_menu"
+    elif current_page == "logout_confirm":
+            if key == "no":
+                if not is_transitioning:
+                    transition.start("main_menu")
+                    transition_time = pygame.time.get_ticks()
+                    is_transitioning = True
+                    pending_page = "main_menu"
+            if key == "yes":
+                acc_sys.delete_account(manage_data.progress['player']['ID'])
+                if not is_transitioning:
+                    transition.start("Account")
+                    transition_time = pygame.time.get_ticks()
+                    is_transitioning = True
+                    pending_page = "Account"
 
 # Central page switcher
 def set_page(screen, page, transition):
