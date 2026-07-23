@@ -10,7 +10,7 @@ from random import random
 
 # Initializing Game and Engine Version
 manage_data.version = "1.4.0.0519"
-manage_data.kernel = "0.8.0.0066"
+manage_data.kernel = "0.8.0.0067"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 # Random final message
