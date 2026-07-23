@@ -19,7 +19,7 @@ import cleobo.data.acc_sys as acc_sys
 import cleobo.ui.menu_ui as menu_ui
 import cleobo.ui.state as state
 from cleobo.levels import launcher
-
+import threading
 # Initialize pygame
 pygame.init()
 # Initializing screen resolution
@@ -46,7 +46,7 @@ while loading:
             pygame.quit(); sys.exit()
     try:
         stage, ps = next(loader)
-        menu_ui.draw_loading_bar(screen, stage, ps) 
+        menu_ui.draw_loading_bar(screen, stage, ps)
     except StopIteration:
         new_update_available = manage_data.check_for_new_update(False)
         if manage_data.is_mute_amb:
