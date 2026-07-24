@@ -51,6 +51,7 @@
     "wrong_pass": "Falsches Passwort!",
     "account_created": "Konto erstellt!",
     "too_short": "Benutzername/Passwort zu kurz!"
+    ,"logout": "Abmelden"
   },
   "char_select": {
       "common": "Gewöhnlich",
@@ -132,6 +133,8 @@
   "press_space": "Drücke die Leertaste zum",
   "continue_wait": "Fortfahren oder warte {next_left}"
   ,"more_soon": "Weitere Level folgen bald ..."
+  ,"confirm_del": "Möchtest du dich wirklich abmelden?",
+  "confirm_del2": "Du kannst dich jederzeit wieder in dein Konto einloggen."
 }
   ,"in_game": {
   "dead_message": "Du bist tot!",

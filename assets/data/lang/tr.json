@@ -50,6 +50,7 @@
     "wrong_pass": "Yanlış Şifre!",
     "account_created": "Hesap Oluşturuldu!",
     "too_short": "Kullanıcı adı/Şifre çok kısa!"
+    ,"logout": "Çıkış Yap"
   },
   "char_select": {
       "common": "Yaygın",
@@ -131,6 +132,8 @@
     "press_space": "Devam etmek için boşluk",
     "continue_wait": "tuşuna basın veya {next_left} bekleyin"
     ,"more_soon": "Daha fazla seviye yakında gelecek..."
+    ,"confirm_del": "Çıkış yapmak istediğinizden emin misiniz?",
+    "confirm_del2": "İstediğiniz zaman hesabınıza tekrar giriş yapabilirsiniz."
   },
   "in_game": {
     "dead_message": "Öldün!",

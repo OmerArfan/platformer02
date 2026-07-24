@@ -50,6 +50,7 @@
     "wrong_pass": "パスワードが違います！",
     "account_created": "アカウントが作成されました！",
     "too_short": "ユーザー名またはパスワードが短すぎます！"
+    ,"logout": "ログアウト"
   }
   ,"achieve": {
       "unlock": "実績解除：",
@@ -131,6 +132,8 @@
     "press_space": "スペースキーで",
     "continue_wait": "続行、またはあと {next_left} 待つ",
     "more_soon": "さらなるステージがまもなく登場..."
+    ,"confirm_del": "ログアウトしてもよろしいですか？",
+    "confirm_del2": "いつでもアカウントに再ログインできます。"
   },
   "in_game": {
     "dead_message": "やられた！",

@@ -51,6 +51,7 @@
     "wrong_pass": "잘못된 비밀번호입니다!",
     "account_created": "계정이 생성되었습니다!",
     "too_short": "사용자 이름/비밀번호가 너무 짧습니다!"
+    ,"logout": "로그아웃"
   }
   ,"achieve": {
       "unlock": "업적 달성:",
@@ -132,6 +133,8 @@
     "press_space": "계속하려면 스페이스바를 누르거나",
     "continue_wait": "{next_left}초 동안 기다리세요",
     "more_soon": "더 많은 레벨이 곧 추가됩니다..."
+    ,"confirm_del": "정말로 로그아웃하시겠습니까?",
+    "confirm_del2": "언제든지 계정에 다시 로그인할 수 있습니다."
   },
   "in_game": {
     "dead_message": "사망했습니다!",

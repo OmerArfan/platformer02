@@ -51,6 +51,7 @@
     "wrong_pass": "¡Contraseña incorrecta!",
     "account_created": "¡Cuenta creada!",
     "too_short": "¡Nombre de usuario o contraseña demasiado cortos!"
+    ,"logout": "Cerrar sesión"
   },
 "char_select": {
       "common": "Común",
@@ -132,6 +133,8 @@
   "press_space": "Presiona espacio para",
   "continue_wait": "continuar o espera {next_left}",
   "more_soon": "¡Pronto llegarán más niveles!"
+  ,"confirm_del": "¿Seguro que quieres cerrar sesión?",
+  "confirm_del2": "Puedes volver a iniciar sesión en tu cuenta en cualquier momento."
 }
   ,"in_game": {
   "dead_message": "¡Has muerto!", 

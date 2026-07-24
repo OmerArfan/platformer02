@@ -66,6 +66,7 @@
     "wrong_pass": "Wrong Password!",
     "account_created": "Account Created!",
     "too_short": "Username/Password too short!"
+    ,"logout": "Log Out"
   }
   ,"achieve": {
     "unlock": "Achievement unlocked:",
@@ -131,6 +132,8 @@
   "death_reason_2": "",
   "press_space": "Press the spacebar to",
   "continue_wait": "continue or wait for {next_left}"
+  ,"confirm_del": "Are you sure you want to log out?",
+  "confirm_del2": "You can log back into your account anytime."
 }
   ,"in_game": {
   "dead_message": "You died!",

@@ -51,6 +51,7 @@
     "wrong_pass": "Mot de passe incorrect !",
     "account_created": "Compte créé !",
     "too_short": "Nom d'utilisateur ou mot de passe trop court !"
+    ,"logout": "Déconnexion"  
   },
   "char_select": {
       "common": "Commun",
@@ -131,7 +132,9 @@
   "death_reason_2": "",
   "press_space": "Appuyez sur espace pour",
   "continue_wait": "continuer ou attendez {next_left}" , 
-    "more_soon": "D'autres niveaux arrivent bientôt..."
+  "more_soon": "D'autres niveaux arrivent bientôt..."
+  ,"confirm_del": "Êtes-vous sûr de vouloir vous déconnecter ?",
+  "confirm_del2": "Vous pourrez vous reconnecter à votre compte à tout moment."
 }
   ,"in_game": {
   "dead_message": "Vous êtes mort !",

@@ -51,6 +51,7 @@
     "wrong_pass": "密码错误！",
     "account_created": "账号已创建！",
     "too_short": "用户名/密码过短！"
+    ,"logout": "退出登录"
   },
   "char_select": {
       "common": "普通",
@@ -132,6 +133,8 @@
   "press_space": "按空格键",
   "continue_wait": "继续或等待 {next_left}",
   "more_soon": "更多关卡即将推出..."
+  ,"confirm_del": "您确定要退出登录吗？",
+  "confirm_del2": "您可以随时重新登录您的账号。"  
   }
   ,"in_game": {
     "dead_message": "你死了！",
