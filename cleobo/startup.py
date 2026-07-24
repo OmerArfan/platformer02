@@ -2,18 +2,20 @@ import pygame
 import cleobo.data.manage_data as manage_data
 import os
 import json
+import threading
+import time
 from datetime import datetime
 import traceback
 from random import random
 
 # Initializing Game and Engine Version
-manage_data.version = "1.4.0.0516"
-manage_data.kernel = "0.7.2.0062"
+manage_data.version = "1.4.1.0522"
+manage_data.kernel = "0.8.0.0068"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 # Random final message
 val = random()
-if val == 0.05:
+if val <= 0.05:
     fin_message = "Cakebot is a robot, not a dessert."
 elif val <= 0.15:
     fin_message = "Back in my day, Evil Robo chased robos out of his space..."
@@ -224,6 +226,8 @@ def init_other_assets():
             'weak': ("ingame/button/gravity_weak.png", None),
             'speedster': ("ingame/button/speedster.png", None),
             'light': ("ingame/button/light.png", None),
+            'trophy': ("ui/trophy.png", (110, 100)),
+            'mega_trophy': ("ui/trophy.png", (165, 150)),
         }
         
         for name, (file_path, size) in asset_files.items():
@@ -231,7 +235,8 @@ def init_other_assets():
             verify_asset_exists(full_path, f"{name}")
             img = pygame.image.load(full_path).convert_alpha()
             assets[name] = pygame.transform.scale(img, size) if size else img
-        
+
+        assets['mega_trophy'] = pygame.transform.rotate(assets['mega_trophy'], 8)
         assets['star_small'] = pygame.transform.scale(assets['star'], (30, 26))
         assets['star_normal'] = pygame.transform.scale(assets['star'], (100, 93))
         return assets
@@ -342,26 +347,6 @@ def init_fonts():
         traceback.print_exc()
         raise
 
-def verify_initialization(manage_data):
-    """Check that all critical assets loaded properly"""
-    checks = [
-        ('sounds', manage_data.sounds, ['click', 'jump', 'death']),
-        ('fonts', manage_data.fonts, ['def', 'mega']),
-        ('ui', manage_data.ui, ['cursor', 'logo']),
-        ('bgs', manage_data.bgs, ['plain']),
-        ('assets', manage_data.assets, ['star']),
-        ('robos', manage_data.robos, ['robot']),
-    ]
-    
-    for asset_group, asset_dict, required_keys in checks:
-        if not asset_dict:
-            raise RuntimeError(f"Failed to initialize {asset_group}")
-        for key in required_keys:
-            if key not in asset_dict:
-                raise RuntimeError(f"Missing {asset_group}: {key}")
-    
-    print("All assets verified successfully!")
-
 def load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT):
     manage_data.fonts = init_fonts()
     for i in range (0, 7):
@@ -413,12 +398,31 @@ def load_game_generator(SCREEN_WIDTH, SCREEN_HEIGHT):
     
     for i in range (96, 98):
         yield "Checking for latest save...", i
-    manage_data.progress = manage_data.load_progress()
+
+    load_result = {}
+    load_error = []
+
+    def load_save_data():
+        try:
+            progress = manage_data.load_progress()
+            manage_data.update_local_manifest(progress)
+            load_result["progress"] = progress
+        except Exception as error:
+            load_error.append(error)
+
+    load_thread = threading.Thread(target=load_save_data, daemon=True)
+    load_thread.start()
+    while load_thread.is_alive():
+        yield "Checking for latest save...", 97
+        time.sleep(0.01)
+
+    load_thread.join()
+    if load_error:
+        raise load_error[0]
+    manage_data.progress = load_result["progress"]
+
     # Ensure new users are registered in the manifest immediately
     yield "Checking for latest save...", 99
-    manage_data.update_local_manifest(manage_data.progress)
 
-    
     yield fin_message, 100
-    verify_initialization(manage_data)
     return True # Just a signal that we finished

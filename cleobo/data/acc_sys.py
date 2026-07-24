@@ -19,21 +19,10 @@ login_state = {
 }
 
 # Initalizing Player ID
-HEX = "0123456789ABCDEF"
+HEX = "023579cehjmortvyz"
 
 def generate_player_id():
-    roll = random.random() * 100  # 0.0 → 100.0
-
-    if roll < 0.001:        # 0.1%
-        length = 3
-    elif roll < 2.1:     # next 5%
-        length = 4
-    elif roll < 25:                 # rest
-        length = 5
-    else:
-        length = 6
-
-    return "".join(random.choices(HEX, k=length))
+    return "".join(random.choices(HEX, k=10)) # 10 character IDs
 
 def hash_password(password):
     # Convert the string to bytes, then create a SHA-256 hash
@@ -293,6 +282,7 @@ def handle_registration_events(screen, transition, events, manifest, is_mute, so
 def create_account_selector(screen):
     menu_ui.buttons.clear()
     settings = manage_data.load_language().get('settings', {})
+    back_tl = manage_data.load_language().get('language_select', {})
 
     # 1. Load manifest
     manifest = {"users": {}}
@@ -366,7 +356,46 @@ def create_account_selector(screen):
     new_rect = new_txt_rendered.get_rect(center=((manage_data.SCREEN_WIDTH // 2) + 400, manage_data.SCREEN_HEIGHT - 50))
     menu_ui.buttons.append((new_txt_rendered, new_rect, "new_account", False))
 
-    back_txt = settings.get("back", "Back")
+    back_txt = back_tl.get("back", "Back")
     back_txt_rendered = menu_ui.render_text(back_txt, True, (255, 255, 255)) # Red color
     back_rect = back_txt_rendered.get_rect(center=((manage_data.SCREEN_WIDTH // 2), manage_data.SCREEN_HEIGHT - 50))
     menu_ui.buttons.append((back_txt_rendered, back_rect, "back", False))
+
+def delete_account(player_id):
+    """Delete an account, remove from manifest, and login to first remaining account."""
+    try:
+        # Delete the account file
+        if os.path.exists(manage_data.SAVE_FILE):
+            os.remove(manage_data.SAVE_FILE)
+        backup_file = manage_data.SAVE_FILE + ".bak"
+        if os.path.exists(backup_file):
+            os.remove(backup_file)
+        
+        # Remove from manifest
+        if player_id in manage_data.manifest.get("users", {}):
+            manage_data.manifest["users"].pop(player_id)
+        
+        # Auto-login to first remaining account (if any exist)
+        remaining_accounts = manage_data.manifest.get("users", {})
+        next_id = ""
+        if remaining_accounts:
+            next_id = list(remaining_accounts.keys())[0]
+
+        # Persist the removal and ensure last_used does not reference the deleted account.
+        manage_data.manifest.setdefault("pref", {})["last_used"] = next_id
+        with open(manage_data.ACCOUNTS_FILE, "w", encoding="utf-8") as manifest_file:
+            json.dump(manage_data.manifest, manifest_file, indent=4)
+
+        if next_id:
+            # Load the replacement only after local.json points to it.
+            manage_data.SAVE_FILE = os.path.join(manage_data.APP_DATA_DIR, f"{next_id}.json")
+            manage_data.progress = manage_data.load_progress()
+        else:
+            # With no accounts left, load_progress creates a fresh fallback
+            # using the already-persisted empty manifest.
+            manage_data.progress = manage_data.load_progress()
+
+        return True
+    except Exception as e:
+        print(f"Error deleting account: {e}")
+        return False

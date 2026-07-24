@@ -9,26 +9,57 @@ from pathlib import Path
 
 def parse_lua_level(lua_filepath):
     """
-    Parse a Lua file and extract level data.
-    Returns a dictionary with all level data keyed by level name (lvl1, lvl2, etc).
+    Parse a Lua file and extract level data organized by subsections.
+    Returns a dictionary: {1: {lvl1: {...}, lvl2: {...}}, 2: {...}, ...}
     """
     with open(lua_filepath, 'r') as f:
         content = f.read()
     
-    levels = {}
+    # Find the return statement at the end
+    # Pattern: return { [1] = sub1, [2] = sub2, ... }
+    return_pattern = r'return\s*\{(.*?)\}(?!.*return)'
+    return_match = re.search(return_pattern, content, re.DOTALL)
     
-    # Find all level definitions (local lvl1 = {...}, local lvl2 = {...}, etc)
-    level_pattern = r'local\s+(\w+)\s*=\s*\{(.*?)\n\}'
+    if not return_match:
+        raise ValueError(f"No return statement found in {lua_filepath}")
     
-    for match in re.finditer(level_pattern, content, re.DOTALL):
-        level_name = match.group(1)
-        level_content = match.group(2)
+    return_content = return_match.group(1)
+    
+    # Parse the return table to get subsection mappings
+    subsections = {}
+    
+    # Pattern: [N] = subN (where N is a number)
+    subsection_pattern = r'\[(\d+)\]\s*=\s*(\w+)'
+    
+    for match in re.finditer(subsection_pattern, return_content):
+        subsection_num = int(match.group(1))
+        subsection_var = match.group(2)  # e.g., 'sub1', 'sub2'
         
-        # Parse the level data into a Python dict
-        level_data = _parse_table(level_content)
-        levels[level_name] = level_data
+        # Find the definition of this variable: local subN = {...}
+        # This needs to handle multi-level nesting, so we manually extract with depth tracking
+        var_def_pattern = rf'local\s+{subsection_var}\s*=\s*\{{'
+        var_match = re.search(var_def_pattern, content)
+        
+        if var_match:
+            # Find the matching closing brace
+            start_pos = var_match.end() - 1  # Position of opening brace
+            depth = 0
+            end_pos = start_pos
+            
+            for i in range(start_pos, len(content)):
+                if content[i] == '{':
+                    depth += 1
+                elif content[i] == '}':
+                    depth -= 1
+                    if depth == 0:
+                        end_pos = i
+                        break
+            
+            subsection_content = content[start_pos+1:end_pos]
+            subsection_data = _parse_key_value_table(subsection_content)
+            subsections[subsection_num] = subsection_data
     
-    return levels
+    return subsections
 
 
 def _parse_table(content):
@@ -195,6 +226,9 @@ def _parse_key_value_table(content):
     """Parse a key-value table."""
     result = {}
     
+    # First, strip out comments (lines starting with --)
+    content = re.sub(r'--.*?(?=\n|$)', '', content, flags=re.MULTILINE)
+    
     # Split by top-level commas (not inside nested brackets OR quotes)
     depth = 0
     in_quotes = False
@@ -261,13 +295,14 @@ def _parse_value(value):
 
 
 # Alternative: Use mlua if available (more robust)
-def load_level_data(level_name, world_name='green'):
+def load_level_data(level_name, world_name, subsection):
     """
     Load level data from a Lua file.
     
     Args:
         level_name: Name of the level (e.g., 'lvl1', 'lvl2')
         world_name: Name of the world (e.g., 'green')
+        subsection: Subsection number (e.g., 1, 2)
     
     Returns:
         Dictionary containing level data
@@ -276,7 +311,8 @@ def load_level_data(level_name, world_name='green'):
     
     levels_data = parse_lua_level(str(lua_path))
     
-    if level_name in levels_data:
-        return levels_data[level_name]
+    # Navigate through subsection -> level_name
+    if subsection in levels_data and level_name in levels_data[subsection]:
+        return levels_data[subsection][level_name]
     else:
-        raise ValueError(f"Level '{level_name}' not found in {world_name}.lua")
+        raise ValueError(f"Level '{level_name}' not found in {world_name}.lua subsection {subsection}")

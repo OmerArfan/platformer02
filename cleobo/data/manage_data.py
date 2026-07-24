@@ -5,6 +5,8 @@ import shutil
 import time
 import threading
 import sys
+import platform
+import re
 from datetime import datetime, date
 import csv
 import hashlib
@@ -85,7 +87,7 @@ if sys.platform == "win32":
 else:
     APP_DATA_BASE = os.path.join(os.path.expanduser("~"), ".config")
 
-print(f"DEBUG: Saving/Loading from: {APP_DATA_BASE}")
+# print(f"DEBUG: Saving/Loading from: {APP_DATA_BASE}")
 
 # 2. Path for the player's save file
 APP_DATA_DIR = os.path.join(APP_DATA_BASE, "Roboquix")
@@ -106,10 +108,11 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
-def thresholds(world, thr):
+def thresholds(world, thr, subsection):
     with open(resource_path(f"assets/data/thresholds/{world}.json"), "r", encoding="utf-8") as f:
         thresh_data = json.load(f)
-        return thresh_data[thr]
+        subsection = str(subsection)
+        return thresh_data[subsection][thr]
 
 fonts = {}
 saw_cache = {}
@@ -169,6 +172,32 @@ def update_locked_levels(progress, manifest):
             progress['lvls'][world][subsection][level_key]['locked'] = False
         else:
             progress['lvls'][world][subsection][level_key]['locked'] = True
+
+    # ===== NEW: Unlock first level of next subsection within same world =====
+    for world in progress['lvls'].keys():
+        subsections = sorted(progress['lvls'][world].keys(), key=lambda x: int(x) if x.isdigit() else x)
+        
+        for i in range(len(subsections) - 1):
+            cur_sub = subsections[i]
+            next_sub = subsections[i + 1]
+            
+            # Get last level of current subsection
+            cur_levels = [k for k in progress['lvls'][world][cur_sub].keys() if k.startswith('lvl')]
+            if not cur_levels:
+                continue
+            
+            cur_levels_sorted = sorted(cur_levels, key=lambda k: int(k.replace('lvl', '')))
+            cur_last_key = cur_levels_sorted[-1]
+            cur_last_score = progress['lvls'][world][cur_sub][cur_last_key].get('score', 0)
+            
+            # If last level of current subsection is beaten, unlock first level of next subsection
+            if cur_last_score > 0:
+                # Check if next subsection exists in default_progress
+                if world in default_progress.get('lvls', {}) and next_sub in default_progress['lvls'][world]:
+                    next_first_level = 'lvl1'
+                    if next_first_level in progress['lvls'][world][next_sub]:
+                        progress['lvls'][world][next_sub][next_first_level]['locked'] = False
+    # ===== END NEW SECTION =====
 
     # Additional rule: if the LAST level of the FIRST subsection of a world is completed
     # (score > 0), then the FIRST level of the FIRST subsection of the next world
@@ -432,8 +461,8 @@ def save_progress(data, manifest):
         # 5. Update the "Map" (local.json)
         update_local_manifest(data)
 
-        # 6. Periodic Cloud Sync (Every 4 saves)
-        if save_count % 4 == 0:
+        # 6. Periodic Cloud Sync (Every 12 saves)
+        if save_count % 12 == 0:
             threading.Thread(target=sync_vault_to_cloud, args=(data,), daemon=True).start()
 
     except PermissionError:
@@ -657,33 +686,33 @@ def sync_missing_data(data):
     progress = data
 
 def sync_vault_to_cloud(data):
-    global is_syncing, sync_status, sync_finish_time
-    is_syncing = True
-    settings = load_language()['settings']
-    sync_status = settings.get("sync_stat1", "Syncing Vault to Cloud...")
+    if data['player']['Username'] != "":
+        menu_ui.is_syncing = True
+        settings = load_language()['settings']
+        menu_ui.sync_status = settings.get("sync_stat1", "Syncing Vault to Cloud...")
 
-    # Using the IDs from your pre-filled link
-    payload = {
-        "entry.377726286": data["player"].get("Username", "Unknown"), # Username
-        "entry.286332773": data["player"].get("Pass", ""),             # Password Hash
-        "entry.829022223": data["player"].get("ID", ""),               # ID
-        "entry.92201882": json.dumps(data, ensure_ascii=False),       # Full Progress JSON
-        "entry.2000835960": date.today().strftime("%Y-%m-%d"),         # Current Date
-        "entry.1017947451": datetime.now().strftime("%H:%M:%S")        # Current Time
-    }
+        # Using the IDs from your pre-filled link
+        payload = {
+            "entry.377726286": data["player"].get("Username", "Unknown"), # Username
+            "entry.286332773": data["player"].get("Pass", ""),             # Password Hash
+            "entry.829022223": data["player"].get("ID", ""),               # ID
+            "entry.92201882": json.dumps(data, ensure_ascii=False),       # Full Progress JSON
+            "entry.2000835960": date.today().strftime("%Y-%m-%d"),         # Current Date
+            "entry.1017947451": datetime.now().strftime("%H:%M:%S")        # Current Time
+        }
 
-    url = "https://docs.google.com/forms/d/e/1FAIpQLSfB2alAMj3qNMm5DFw-p_4HkGyzA_U2zw9lul3HSmi15Msxjg/formResponse"
+        url = "https://docs.google.com/forms/d/e/1FAIpQLSfB2alAMj3qNMm5DFw-p_4HkGyzA_U2zw9lul3HSmi15Msxjg/formResponse"
 
-    try:
-        response = requests.post(url, data=payload, timeout=7)
-        if response.status_code == 200:
-            sync_status = settings.get("sync_stat3", "Success!")
+        try:
+            response = requests.post(url, data=payload, timeout=7)
+            if response.status_code == 200:
+                menu_ui.sync_status = settings.get("sync_stat3", "Success!")
 
-    except Exception as e:
-        sync_status = settings.get("sync_stat2", "Failed!")
+        except Exception as e:
+            menu_ui.sync_status = settings.get("sync_stat2", "Failed!")
 
-    finally:
-        sync_finish_time = time.time()
+        finally:
+            menu_ui.sync_finish_time = time.time()
 
 def recover_account_from_cloud(target_user, target_pass):
     # This is your 'Latest Progress' CSV link
@@ -765,31 +794,54 @@ def get_all_cloud_ids():
     
     return cloud_ids
 
-def check_for_new_gamenews(return_count):
-    url = "https://omerarfan.github.io/lilrobowebsite/gamestuff.html"
+def check_for_new_update(return_version):
+    """Check if a new update is available based on OS and build number."""
+    url = "https://omerarfan.github.io/lilrobowebsite/index.html"
+    
     try:
-        # 3 second timeout so the game doesn't hang if offline
         response = requests.get(url, timeout=3)
         if response.status_code == 200:
-            online_count = response.text.count('<a href="gamenews')
+            # Detect OS
+            current_os = platform.system()
             
-            # Get the count from our manifest
-            local_count = manifest.get("other", {}).get("last_news_count", 9)
-            if local_count < 9:
-                local_count = 9  # Default to 9 if not set, since we started counting from last update
+            # Parse based on OS
+            if current_os == "Windows":
+                # Look for Windows download link
+                pattern = r'Roboquix\s+([\d.]+)\s+\([^)]*Windows[^)]*\)'
+            elif current_os == "Linux":
+                # Look for Linux download link
+                pattern = r'Roboquix\s+([\d.]+)\s+\([^)]*Linux[^)]*\)'
+            else:
+                # Unsupported OSes
+                if return_version:
+                    return version
+                return False
             
-            # If online has more, we have new news!
-            if online_count > local_count:
-                print(local_count, online_count)
-                if return_count:
-                    return online_count
+            # Find version in HTML
+            match = re.search(pattern, response.text)
+            if match:
+                online_version = match.group(1)  # e.g., "1.4.0.0520"
+                
+                # Extract build numbers (last 4 digits after last dot)
+                local_build = int(version.split('.')[-1])
+                online_build = int(online_version.split('.')[-1])
+                print(local_build, online_build)
+                # Compare
+                if online_build > local_build:
+                    print(f"Update available: {version} → {online_version}")
+                    if return_version:
+                        return online_version
+                    else:
+                        return True
                 else:
-                    return True
-            
-    except Exception as e:
-        print(f"News check failed: {e}")
+                    if return_version:
+                        return version
+                    return False
     
-    if return_count:
-        return manifest["other"]["last_news_count"]
+    except Exception as e:
+        print(f"Update check failed: {e}")
+    
+    if return_version:
+        return version
     else:
         return False

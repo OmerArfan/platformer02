@@ -7,6 +7,7 @@ import json
 import webbrowser
 import cleobo.data.acc_sys as acc_sys
 import time
+import threading
 from cleobo.levels import launcher
 from cleobo.data.achievements import check_achievements
 
@@ -23,6 +24,9 @@ class TransitionManager:
         self.target_page = None
         self.hold_time = 0
         self.hold_duration = 250  # milliseconds
+        self.load_thread = None
+        self.load_result = None
+        self.load_error = None
 
     def start(self, target_page):
         self.active = True
@@ -31,6 +35,15 @@ class TransitionManager:
         self.right_x = self.screen.get_width()
         self.target_page = target_page
         self.hold_time = 0
+        self.load_thread = None
+        self.load_result = None
+        self.load_error = None
+
+    def _load_progress(self):
+        try:
+            self.load_result = manage_data.load_progress()
+        except Exception as error:
+            self.load_error = error
 
     def update(self, screen, transition):
         global pending_lang_code, selected_id
@@ -64,14 +77,32 @@ class TransitionManager:
                     pending_lang_code = None
                 # Update manifest to set 'last_used' so load_progress knows which one to grab
                 if selected_id:
-                    if os.path.exists(manage_data.ACCOUNTS_FILE):
-                        with open(manage_data.ACCOUNTS_FILE, "r") as f:
-                            manifest = json.load(f)
-                        manifest["last_used"] = selected_id
-                        with open(manage_data.ACCOUNTS_FILE, "w") as f:
-                            json.dump(manifest, f, indent=4)
-                    # Load the data and move to main menu
-                    manage_data.progress = manage_data.load_progress()
+                    if self.load_thread is None:
+                        if os.path.exists(manage_data.ACCOUNTS_FILE):
+                            with open(manage_data.ACCOUNTS_FILE, "r") as f:
+                                manifest = json.load(f)
+                            manifest["last_used"] = selected_id
+                            with open(manage_data.ACCOUNTS_FILE, "w") as f:
+                                json.dump(manifest, f, indent=4)
+                        self.load_thread = threading.Thread(target=self._load_progress, daemon=True)
+                        self.load_thread.start()
+
+                    if self.load_thread.is_alive():
+                        self.screen.blit(self.left_image, (self.left_x, 0))
+                        self.screen.blit(self.right_image, (self.right_x, 0))
+                        menu_ui.draw_loading_orb(screen, manage_data.SCREEN_WIDTH - 2, manage_data.SCREEN_HEIGHT - 50, None)
+                        return
+
+                    if self.load_error is not None:
+                        error = self.load_error
+                        self.load_thread = None
+                        self.load_error = None
+                        raise error
+
+                    # Apply the loaded data and move to the target page.
+                    manage_data.progress = self.load_result
+                    self.load_thread = None
+                    self.load_result = None
                     selected_id = None
                 set_page(screen, manage_data.current_page, transition)
                 self.phase = 2
@@ -88,6 +119,9 @@ class TransitionManager:
         # Draw both images
         self.screen.blit(self.left_image, (self.left_x, 0))
         self.screen.blit(self.right_image, (self.right_x, 0))
+
+        if self.phase == 1 and pygame.time.get_ticks() - self.hold_time >= self.hold_duration:
+            menu_ui.draw_loading_orb(screen, manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT - 50, None)
 
 transition_time = None
 is_transitioning = False
@@ -246,28 +280,28 @@ def handle_action(key, transition, current_page):
                 pending_page = "main_menu"
         elif key == "levels":
             if not is_transitioning:
-                transition.start("green")
+                transition.start("green_1")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-                pending_page = "green"
+                pending_page = "green_1"
         elif key == "mech_levels":
             if not is_transitioning:
-                transition.start("mech")
+                transition.start("mech_1")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-                pending_page = "mech"
+                pending_page = "mech_1"
         elif key == "ship_levels":
             if not is_transitioning:
-                transition.start("ship")
+                transition.start("ship_1")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-                pending_page = "ship"
+                pending_page = "ship_1"
         elif key == "desert_levels":
             if not is_transitioning:
-                transition.start("desert")
+                transition.start("desert_1")
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
-                pending_page = "desert"
+                pending_page = "desert_1"
     elif current_page == 'language_select':
         if key == "back":
             if not is_transitioning:
@@ -282,7 +316,7 @@ def handle_action(key, transition, current_page):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "main_menu"
-    elif current_page == 'green' or current_page == 'mech' or current_page == 'ship' or current_page == 'desert':
+    elif manage_data.current_page in ["green_1", "mech_1", 'ship_1', 'desert_1']:
         if key is None:  # Ignore clicks on locked levels
             return
         elif key == "back":
@@ -353,6 +387,12 @@ def handle_action(key, transition, current_page):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "main_menu"
+        if key == "logout":
+            if not is_transitioning:
+                transition.start("logout_confirm")
+                transition_time = pygame.time.get_ticks()
+                is_transitioning = True
+                pending_page = "logout_confirm"
     elif current_page == "login_screen" or current_page == "registration_screen":
         if key == "back":
             if not is_transitioning:
@@ -367,6 +407,20 @@ def handle_action(key, transition, current_page):
                 transition_time = pygame.time.get_ticks()
                 is_transitioning = True
                 pending_page = "main_menu"
+    elif current_page == "logout_confirm":
+            if key == "no":
+                if not is_transitioning:
+                    transition.start("main_menu")
+                    transition_time = pygame.time.get_ticks()
+                    is_transitioning = True
+                    pending_page = "main_menu"
+            if key == "yes":
+                acc_sys.delete_account(manage_data.progress['player']['ID'])
+                if not is_transitioning:
+                    transition.start("Account")
+                    transition_time = pygame.time.get_ticks()
+                    is_transitioning = True
+                    pending_page = "Account"
 
 # Central page switcher
 def set_page(screen, page, transition):
@@ -399,19 +453,19 @@ def set_page(screen, page, transition):
         acc_sys.reset_login_state()
     elif page == "registration_screen":
         acc_sys.reset_login_state()
-    elif page == 'green':
+    elif page == 'green_1':
         current_lang = manage_data.load_language().get('levels', {})
         menu_ui.green_world_buttons(screen)
         manage_data.change_ambience("green")
-    elif page == 'mech':
+    elif page == 'mech_1':
         current_lang = manage_data.load_language().get('levels', {})
         menu_ui.mech_world_buttons(screen)
         manage_data.change_ambience("mech")
-    elif page == 'ship':
+    elif page == 'ship_1':
         current_lang = manage_data.load_language().get('levels', {})
         menu_ui.ship_world_buttons(screen)
         manage_data.change_ambience("ship")
-    elif page == 'desert':
+    elif page == 'desert_1':
         current_lang = manage_data.load_language().get('levels', {})
         menu_ui.desert_world_buttons(screen)
         manage_data.change_ambience("desert")
@@ -421,9 +475,11 @@ def set_page(screen, page, transition):
     elif "lvl" in page:
         current_lang = manage_data.load_language().get('in_game', {})
         # Extract world and level from page name
-        world_name, level_name = page.split("_", 1)
-        # Call the generic level launcher
-        launcher.level_launcher(level_name, screen, transition, world_name)
+        parts = page.split("_")
+        world_name = parts[0]
+        subsection = int(parts[1])
+        level_name = "_".join(parts[2:]) if len(parts) > 2 else parts[1]
+        launcher.level_launcher(level_name, screen, transition, world_name, subsection)
 
 def muting_sfx():
     manage_data.is_mute = not manage_data.is_mute

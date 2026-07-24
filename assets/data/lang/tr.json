@@ -18,6 +18,9 @@
     "logo_credit": "Logo ve Arka Plan canva.com ile yapıldı",
     "credit_credit": "Omer Arfan tarafından yapıldı",
     "version_credit": "Oyun Sürümü: {version}",
+    "kernel_credit": "Cleobo Sürümü: {kernel}",
+    "license_credit": "GNU GPL v3.0 ile lisanslanmıştır",
+    "view_license": "Lisansı Görüntüle",
     "thanks": "Oynadığınız için teşekkürler! Harikasınız!",
     "bugs": "Hata bulursanız lütfen GitHub deposu üzerinden bildirin.",
     "sorry": "Hatalardan kaynaklanan rahatsızlık için özür dileriz.",
@@ -50,6 +53,7 @@
     "wrong_pass": "Yanlış Şifre!",
     "account_created": "Hesap Oluşturuldu!",
     "too_short": "Kullanıcı adı/Şifre çok kısa!"
+    ,"logout": "Çıkış Yap"
   },
   "char_select": {
       "common": "Yaygın",
@@ -131,6 +135,8 @@
     "press_space": "Devam etmek için boşluk",
     "continue_wait": "tuşuna basın veya {next_left} bekleyin"
     ,"more_soon": "Daha fazla seviye yakında gelecek..."
+    ,"confirm_del": "Çıkış yapmak istediğinizden emin misiniz?",
+    "confirm_del2": "İstediğiniz zaman hesabınıza tekrar giriş yapabilirsiniz."
   },
   "in_game": {
     "dead_message": "Öldün!",

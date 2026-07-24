@@ -18,6 +18,9 @@
     "logo_credit": "Logo und Hintergrund erstellt mit canva.com",
     "credit_credit": "Erstellt von Omer Arfan",
     "version_credit": "Spielversion: {version}",
+    "kernel_credit": "Cleobo-Version: {kernel}",
+    "license_credit": "Lizenziert unter GNU GPL v3.0",
+    "view_license": "Lizenz anzeigen",
     "thanks": "Danke fürs Spielen! Du bist fantastisch!",
     "bugs": "Wenn Sie Fehler finden, melden Sie diese bitte im GitHub-Repository.",
     "sorry": "Entschuldigung für Unannehmlichkeiten durch Fehler.",
@@ -51,6 +54,7 @@
     "wrong_pass": "Falsches Passwort!",
     "account_created": "Konto erstellt!",
     "too_short": "Benutzername/Passwort zu kurz!"
+    ,"logout": "Abmelden"
   },
   "char_select": {
       "common": "Gewöhnlich",
@@ -132,6 +136,8 @@
   "press_space": "Drücke die Leertaste zum",
   "continue_wait": "Fortfahren oder warte {next_left}"
   ,"more_soon": "Weitere Level folgen bald ..."
+  ,"confirm_del": "Möchtest du dich wirklich abmelden?",
+  "confirm_del2": "Du kannst dich jederzeit wieder in dein Konto einloggen."
 }
   ,"in_game": {
   "dead_message": "Du bist tot!",

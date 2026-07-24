@@ -7,7 +7,7 @@ if platform.system() == "Windows":
         ctypes.windll.user32.MessageBoxW(
             0, 
             "Roboquix requires at least Windows 10 or above to function!", 
-            "Unsupported Operating System!", 
+            "Roboquix", 
             0x10
         )
         sys.exit()
@@ -19,7 +19,6 @@ import cleobo.data.acc_sys as acc_sys
 import cleobo.ui.menu_ui as menu_ui
 import cleobo.ui.state as state
 from cleobo.levels import launcher
-
 # Initialize pygame
 pygame.init()
 # Initializing screen resolution
@@ -46,15 +45,16 @@ while loading:
             pygame.quit(); sys.exit()
     try:
         stage, ps = next(loader)
-        menu_ui.draw_loading_bar(screen, stage, ps) 
+        menu_ui.draw_loading_bar(screen, stage, ps)
     except StopIteration:
-        new_news_available = manage_data.check_for_new_gamenews(False)
+        new_update_available = manage_data.check_for_new_update(False)
         if manage_data.is_mute_amb:
             pygame.mixer.music.stop()
         else:
             pygame.mixer.music.set_volume(1)
             pygame.mixer.music.play(-1)
         loading = False
+    pygame.display.flip() 
 running = True
 
 transition = state.TransitionManager(screen, manage_data.bgs['trans_left'], manage_data.bgs['trans_right'])
@@ -75,7 +75,8 @@ if not manage_data.is_mute and manage_data.SCREEN_WIDTH > MIN_WIDTH and manage_d
 while running:
     messages = manage_data.load_language().get('messages', {})
     screen.blit(manage_data.bgs['plain'], (0, 0))
-    mouse_pos = pygame.mouse.get_pos()
+    if transition.phase != 1:
+        mouse_pos = pygame.mouse.get_pos()
 
     if state.transition_time is not None and pygame.time.get_ticks() - state.transition_time > 1000:
         state.transition_time = None
@@ -92,40 +93,45 @@ while running:
         menu_ui.show_resolution_limit(screen)
     else:
         events = pygame.event.get()
-        
-        for event in events:
-            if event.type == pygame.QUIT:
-                state.set_page(screen, "quit_confirm", transition)
+        if transition.phase != 1:
+            
+            for event in events:
+                if event.type == pygame.QUIT:
+                    if not state.is_transitioning:
+                        transition.start("quit_confirm")
+                        state.transition_time = pygame.time.get_ticks()
+                        state.is_transitioning = True
+                        state.pending_page = "quit_confirm"
 
-            # Handle login screen events
-            elif manage_data.current_page == "login_screen":
-                acc_sys.handle_login_events(screen, transition, events, manage_data.manifest, manage_data.is_mute, manage_data.sounds, manage_data.progress)
-                break  # Stop processing other events for this frame
+                # Handle login screen events
+                elif manage_data.current_page == "login_screen":
+                    acc_sys.handle_login_events(screen, transition, events, manage_data.manifest, manage_data.is_mute, manage_data.sounds, manage_data.progress)
+                    break  # Stop processing other events for this frame
 
-            elif manage_data.current_page == "registration_screen":
-                acc_sys.handle_registration_events(screen, transition, events, manage_data.manifest, manage_data.is_mute, manage_data.sounds, manage_data.progress, manage_data.ACCOUNTS_FILE)
-                break  # Stop processing other events for this frame
+                elif manage_data.current_page == "registration_screen":
+                    acc_sys.handle_registration_events(screen, transition, events, manage_data.manifest, manage_data.is_mute, manage_data.sounds, manage_data.progress, manage_data.ACCOUNTS_FILE)
+                    break  # Stop processing other events for this frame
 
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if manage_data.current_page == "Account" and manage_data.current_page not in ["green", "mech", "worlds", "login_screen", "registration_screen"]:
-                    for _, rect, key, is_locked in menu_ui.buttons:
-                        if rect.collidepoint(event.pos):
-                            if key is not None and not manage_data.is_mute:
-                                manage_data.sounds['click'].play()
-                            state.handle_action(key, transition, manage_data.current_page)
-                else:
-                    for rendered, rect, key, is_locked in menu_ui.buttons:
-                        if rect.collidepoint(event.pos):
-                            if key is not None and not manage_data.is_mute:
-                                manage_data.sounds['click'].play()
-                            state.handle_action(key, transition, manage_data.current_page)
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if manage_data.current_page == "Account" and manage_data.current_page not in ["green", "mech", "worlds", "login_screen", "registration_screen"]:
+                        for _, rect, key, is_locked in menu_ui.buttons:
+                            if rect.collidepoint(event.pos):
+                                if key is not None and not manage_data.is_mute:
+                                    manage_data.sounds['click'].play()
+                                state.handle_action(key, transition, manage_data.current_page)
+                    else:
+                        for rendered, rect, key, is_locked in menu_ui.buttons:
+                            if rect.collidepoint(event.pos):
+                                if key is not None and not manage_data.is_mute:
+                                    manage_data.sounds['click'].play()
+                                state.handle_action(key, transition, manage_data.current_page)
                     
         if manage_data.current_page == "main_menu":
             ui_states = {
                 'logo_hover': logo_hover, 
                 'logo_click': logo_click, 
                 'last_hovered': last_hovered_key, 
-                'new_news': new_news_available
+                'new_news': new_update_available
             }
             
             # One line to rule them all
@@ -135,7 +141,7 @@ while running:
             logo_hover = updated_states['logo_hover']
             logo_click = updated_states['logo_click']
             last_hovered_key = updated_states['last_hovered']
-            new_news_available = updated_states['new_news']
+            new_update_available = updated_states['new_news']
 
         if manage_data.current_page == 'profile':
             menu_ui.draw_profile(screen)
@@ -148,6 +154,9 @@ while running:
 
         if manage_data.current_page == "language_select":
             menu_ui.create_language_buttons(screen)
+
+        if manage_data.current_page == "logout_confirm":
+            menu_ui.create_acc_del_buttons(screen)
             
         if manage_data.current_page == "quit_confirm":
             screen.blit(manage_data.bgs['plain'], (0, 0))
@@ -157,13 +166,13 @@ while running:
             button_hovered_last_frame = menu_ui.draw_buttons(screen, mouse_pos, button_hovered_last_frame)
         
         elif "lvl" in manage_data.current_page:
-            # Extract world and level from page name
-            world_name, level_name = manage_data.current_page.split("_", 1)
-            
-            # Call the generic level launcher
-            launcher.level_launcher(level_name, screen, transition, world_name)
+            parts = manage_data.current_page.split("_")
+            world_name = parts[0]
+            subsection = int(parts[1])
+            level_name = "_".join(parts[2:]) if len(parts) > 2 else parts[1]
+            launcher.level_launcher(level_name, screen, transition, world_name, subsection)
         
-        elif manage_data.current_page in ["green", "mech", 'ship', 'desert']:
+        elif any(manage_data.current_page.startswith(world) for world in ["green", "mech", "ship", "desert"]):
             button_hovered_last_frame = menu_ui.draw_level_select(screen, mouse_pos, manage_data.current_page, current_lang, messages, button_hovered_last_frame)
 
         elif manage_data.current_page == "settings":

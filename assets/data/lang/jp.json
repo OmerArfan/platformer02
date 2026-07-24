@@ -18,6 +18,9 @@
     "logo_credit": "canva.comでロゴと背景を作成",
     "credit_credit": "制作者：Omer Arfan",
     "version_credit": "ゲームバージョン: {version}",
+    "kernel_credit": "Cleobo バージョン: {kernel}",
+    "license_credit": "GNU GPL v3.0 に基づいてライセンスされています",
+    "view_license": "ライセンスを表示",
     "thanks": "プレイしてくれてありがとう！最高です！",
     "bugs": "バグを見つけた場合はGitHubリポジトリで報告してください。",
     "sorry": "バグによる不便をおかけして申し訳ありません。",
@@ -50,6 +53,7 @@
     "wrong_pass": "パスワードが違います！",
     "account_created": "アカウントが作成されました！",
     "too_short": "ユーザー名またはパスワードが短すぎます！"
+    ,"logout": "ログアウト"
   }
   ,"achieve": {
       "unlock": "実績解除：",
@@ -131,6 +135,8 @@
     "press_space": "スペースキーで",
     "continue_wait": "続行、またはあと {next_left} 待つ",
     "more_soon": "さらなるステージがまもなく登場..."
+    ,"confirm_del": "ログアウトしてもよろしいですか？",
+    "confirm_del2": "いつでもアカウントに再ログインできます。"
   },
   "in_game": {
     "dead_message": "やられた！",

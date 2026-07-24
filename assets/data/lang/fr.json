@@ -18,7 +18,10 @@
     "logo_credit": "Logo et arrière-plan créés avec canva.com",
     "credit_credit": "Créé par Omer Arfan",
     "version_credit": "Version du jeu : {version}",
-    "thanks": "Merci d'avoir joué ! Vous êtes génial !",
+    "kernel_credit": "Version Cleobo : {kernel}",
+    "license_credit": "Sous licence GNU GPL v3.0",
+    "view_license": "Voir la licence"
+    ,"thanks": "Merci d'avoir joué ! Vous êtes génial !",
     "bugs": "Si vous trouvez des bugs, signalez-les sur le dépôt GitHub.",
     "sorry": "Désolé pour les désagréments causés par les bugs.",
     "support": "Support / Signaler des bugs",
@@ -51,6 +54,7 @@
     "wrong_pass": "Mot de passe incorrect !",
     "account_created": "Compte créé !",
     "too_short": "Nom d'utilisateur ou mot de passe trop court !"
+    ,"logout": "Déconnexion"  
   },
   "char_select": {
       "common": "Commun",
@@ -131,7 +135,9 @@
   "death_reason_2": "",
   "press_space": "Appuyez sur espace pour",
   "continue_wait": "continuer ou attendez {next_left}" , 
-    "more_soon": "D'autres niveaux arrivent bientôt..."
+  "more_soon": "D'autres niveaux arrivent bientôt..."
+  ,"confirm_del": "Êtes-vous sûr de vouloir vous déconnecter ?",
+  "confirm_del2": "Vous pourrez vous reconnecter à votre compte à tout moment."
 }
   ,"in_game": {
   "dead_message": "Vous êtes mort !",

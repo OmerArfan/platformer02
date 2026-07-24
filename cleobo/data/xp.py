@@ -27,12 +27,12 @@ def xp():
     # XP from stars
     stars = 0
     for world_name in manage_data.default_progress['lvls']:
-        for subsection_name in manage_data.default_progress['lvls'][world_name]:
-            for level_key in manage_data.default_progress['lvls'][world_name][subsection_name]:
+        for subsection in manage_data.default_progress['lvls'][world_name]:
+            for level_key in manage_data.default_progress['lvls'][world_name][subsection]:
                 if level_key.startswith('lvl'):
                     level_num = int(level_key.replace('lvl', ''))
                     score = level_scores.get((world_name, level_num), 0)
-                    stars += LevelManager.get_stars(level_num, world_name, score)
+                    stars += LevelManager.get_stars(level_num, world_name, score, subsection)
                     
     star_xp = stars * 20  # 20 XP per star
 
