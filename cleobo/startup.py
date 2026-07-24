@@ -9,13 +9,13 @@ import traceback
 from random import random
 
 # Initializing Game and Engine Version
-manage_data.version = "1.4.0.0520"
+manage_data.version = "1.4.1.0522"
 manage_data.kernel = "0.8.0.0068"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 # Random final message
 val = random()
-if val == 0.05:
+if val <= 0.05:
     fin_message = "Cakebot is a robot, not a dessert."
 elif val <= 0.15:
     fin_message = "Back in my day, Evil Robo chased robos out of his space..."
