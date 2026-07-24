@@ -18,7 +18,10 @@
     "logo_credit": "Logo et arrière-plan créés avec canva.com",
     "credit_credit": "Créé par Omer Arfan",
     "version_credit": "Version du jeu : {version}",
-    "thanks": "Merci d'avoir joué ! Vous êtes génial !",
+    "kernel_credit": "Version Cleobo : {kernel}",
+    "license_credit": "Sous licence GNU GPL v3.0",
+    "view_license": "Voir la licence"
+    ,"thanks": "Merci d'avoir joué ! Vous êtes génial !",
     "bugs": "Si vous trouvez des bugs, signalez-les sur le dépôt GitHub.",
     "sorry": "Désolé pour les désagréments causés par les bugs.",
     "support": "Support / Signaler des bugs",
