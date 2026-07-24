@@ -383,7 +383,7 @@ def draw_profile(screen):
     screen.blit(render_text(f"{diamond_medals}/{total_levels}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 + 30, 365))
     screen.blit(render_text(f"{total_stars}/{total_levels*3}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 + 450, 365))
     screen.blit(render_text(f"{ulock_ach}/{total_ach}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 - 360, 500))
-    screen.blit(render_text(f"{robos_unlock}/{robos_total}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 + 45, 500))
+    screen.blit(render_text(f"{robos_unlock+1}/{robos_total+1}", True, (255, 255, 255), bigfont=True), (manage_data.SCREEN_WIDTH // 2 + 45, 500))
 
     screen.blit(badge, badge_pos)
     screen.blit(XP_text, XP_pos)
@@ -928,6 +928,7 @@ stareffects = []
 from cleobo.data import xp
 
 def level_complete(screen, base_score, medal_score, death_score, time_score, score, new_hs, hs, medal, stars):
+    global stareffects
     BG = pygame.Surface((manage_data.SCREEN_WIDTH, manage_data.SCREEN_HEIGHT), pygame.SRCALPHA)
     BG.fill((40, 40, 40, 220))
     messages = manage_data.load_language().get('messages', {})
@@ -1065,8 +1066,12 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
                     hs_text = messages.get("new_hs", "New High Score!")
                     new_hs_text = render_text(hs_text, True, (255, 215, 0))
                     screen.blit(new_hs_text, (manage_data.SCREEN_WIDTH // 2 - new_hs_text.get_width() // 2, 610))
-                    if not manage_data.is_mute and not notified:
-                        manage_data.sounds['hscore'].play()
+                    for _ in range(15):
+                        stareffects.append(StarParticles(manage_data.SCREEN_WIDTH // 2 - 370 + manage_data.assets['mega_trophy'].get_width() // 2, 575 + manage_data.assets['mega_trophy'].get_height() // 2)) 
+                    screen.blit(manage_data.assets['mega_trophy'], (manage_data.SCREEN_WIDTH // 2 - 370, 575))
+                    if not notified:
+                        if not manage_data.is_mute:
+                            manage_data.sounds['hscore'].play()
                         notified = True
                 else:
                     high_text = messages.get("hs_m", "Highscore: {hs}").format(hs=hs)
@@ -1075,7 +1080,8 @@ def level_complete(screen, base_score, medal_score, death_score, time_score, sco
         
         next_left = int(8 - (time.time() - star_time))
         if time.time() - star_time > 9 or keys[pygame.K_SPACE]:
-                running = False
+            running = False
+            stareffects = []
         else: 
             # Instead of hardcoded text:
             press_text = messages.get("press_space", "Press the spacebar to")
