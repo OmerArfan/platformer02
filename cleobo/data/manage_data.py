@@ -87,7 +87,7 @@ if sys.platform == "win32":
 else:
     APP_DATA_BASE = os.path.join(os.path.expanduser("~"), ".config")
 
-print(f"DEBUG: Saving/Loading from: {APP_DATA_BASE}")
+# print(f"DEBUG: Saving/Loading from: {APP_DATA_BASE}")
 
 # 2. Path for the player's save file
 APP_DATA_DIR = os.path.join(APP_DATA_BASE, "Roboquix")
@@ -461,8 +461,8 @@ def save_progress(data, manifest):
         # 5. Update the "Map" (local.json)
         update_local_manifest(data)
 
-        # 6. Periodic Cloud Sync (Every 4 saves)
-        if save_count % 4 == 0:
+        # 6. Periodic Cloud Sync (Every 12 saves)
+        if save_count % 12 == 0:
             threading.Thread(target=sync_vault_to_cloud, args=(data,), daemon=True).start()
 
     except PermissionError:

@@ -282,6 +282,7 @@ def handle_registration_events(screen, transition, events, manifest, is_mute, so
 def create_account_selector(screen):
     menu_ui.buttons.clear()
     settings = manage_data.load_language().get('settings', {})
+    back_tl = manage_data.load_language().get('language_select', {})
 
     # 1. Load manifest
     manifest = {"users": {}}
@@ -355,7 +356,7 @@ def create_account_selector(screen):
     new_rect = new_txt_rendered.get_rect(center=((manage_data.SCREEN_WIDTH // 2) + 400, manage_data.SCREEN_HEIGHT - 50))
     menu_ui.buttons.append((new_txt_rendered, new_rect, "new_account", False))
 
-    back_txt = settings.get("back", "Back")
+    back_txt = back_tl.get("back", "Back")
     back_txt_rendered = menu_ui.render_text(back_txt, True, (255, 255, 255)) # Red color
     back_rect = back_txt_rendered.get_rect(center=((manage_data.SCREEN_WIDTH // 2), manage_data.SCREEN_HEIGHT - 50))
     menu_ui.buttons.append((back_txt_rendered, back_rect, "back", False))
