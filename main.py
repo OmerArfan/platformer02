@@ -7,7 +7,7 @@ if platform.system() == "Windows":
         ctypes.windll.user32.MessageBoxW(
             0, 
             "Roboquix requires at least Windows 10 or above to function!", 
-            "Unsupported Operating System!", 
+            "Roboquix", 
             0x10
         )
         sys.exit()
@@ -54,6 +54,7 @@ while loading:
             pygame.mixer.music.set_volume(1)
             pygame.mixer.music.play(-1)
         loading = False
+    pygame.display.flip() 
 running = True
 
 transition = state.TransitionManager(screen, manage_data.bgs['trans_left'], manage_data.bgs['trans_right'])
@@ -74,7 +75,8 @@ if not manage_data.is_mute and manage_data.SCREEN_WIDTH > MIN_WIDTH and manage_d
 while running:
     messages = manage_data.load_language().get('messages', {})
     screen.blit(manage_data.bgs['plain'], (0, 0))
-    mouse_pos = pygame.mouse.get_pos()
+    if transition.phase != 1:
+        mouse_pos = pygame.mouse.get_pos()
 
     if state.transition_time is not None and pygame.time.get_ticks() - state.transition_time > 1000:
         state.transition_time = None
@@ -91,37 +93,38 @@ while running:
         menu_ui.show_resolution_limit(screen)
     else:
         events = pygame.event.get()
-        
-        for event in events:
-            if event.type == pygame.QUIT:
-                if not state.is_transitioning:
-                    transition.start("quit_confirm")
-                    state.transition_time = pygame.time.get_ticks()
-                    state.is_transitioning = True
-                    state.pending_page = "quit_confirm"
+        if transition.phase != 1:
+            
+            for event in events:
+                if event.type == pygame.QUIT:
+                    if not state.is_transitioning:
+                        transition.start("quit_confirm")
+                        state.transition_time = pygame.time.get_ticks()
+                        state.is_transitioning = True
+                        state.pending_page = "quit_confirm"
 
-            # Handle login screen events
-            elif manage_data.current_page == "login_screen":
-                acc_sys.handle_login_events(screen, transition, events, manage_data.manifest, manage_data.is_mute, manage_data.sounds, manage_data.progress)
-                break  # Stop processing other events for this frame
+                # Handle login screen events
+                elif manage_data.current_page == "login_screen":
+                    acc_sys.handle_login_events(screen, transition, events, manage_data.manifest, manage_data.is_mute, manage_data.sounds, manage_data.progress)
+                    break  # Stop processing other events for this frame
 
-            elif manage_data.current_page == "registration_screen":
-                acc_sys.handle_registration_events(screen, transition, events, manage_data.manifest, manage_data.is_mute, manage_data.sounds, manage_data.progress, manage_data.ACCOUNTS_FILE)
-                break  # Stop processing other events for this frame
+                elif manage_data.current_page == "registration_screen":
+                    acc_sys.handle_registration_events(screen, transition, events, manage_data.manifest, manage_data.is_mute, manage_data.sounds, manage_data.progress, manage_data.ACCOUNTS_FILE)
+                    break  # Stop processing other events for this frame
 
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if manage_data.current_page == "Account" and manage_data.current_page not in ["green", "mech", "worlds", "login_screen", "registration_screen"]:
-                    for _, rect, key, is_locked in menu_ui.buttons:
-                        if rect.collidepoint(event.pos):
-                            if key is not None and not manage_data.is_mute:
-                                manage_data.sounds['click'].play()
-                            state.handle_action(key, transition, manage_data.current_page)
-                else:
-                    for rendered, rect, key, is_locked in menu_ui.buttons:
-                        if rect.collidepoint(event.pos):
-                            if key is not None and not manage_data.is_mute:
-                                manage_data.sounds['click'].play()
-                            state.handle_action(key, transition, manage_data.current_page)
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if manage_data.current_page == "Account" and manage_data.current_page not in ["green", "mech", "worlds", "login_screen", "registration_screen"]:
+                        for _, rect, key, is_locked in menu_ui.buttons:
+                            if rect.collidepoint(event.pos):
+                                if key is not None and not manage_data.is_mute:
+                                    manage_data.sounds['click'].play()
+                                state.handle_action(key, transition, manage_data.current_page)
+                    else:
+                        for rendered, rect, key, is_locked in menu_ui.buttons:
+                            if rect.collidepoint(event.pos):
+                                if key is not None and not manage_data.is_mute:
+                                    manage_data.sounds['click'].play()
+                                state.handle_action(key, transition, manage_data.current_page)
                     
         if manage_data.current_page == "main_menu":
             ui_states = {
