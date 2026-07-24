@@ -9,8 +9,8 @@ import traceback
 from random import random
 
 # Initializing Game and Engine Version
-manage_data.version = "1.4.0.0519"
-manage_data.kernel = "0.8.0.0067"
+manage_data.version = "1.4.0.0520"
+manage_data.kernel = "0.8.0.0068"
 print(f"Game version {manage_data.version} (Powered by Cleobo {manage_data.kernel})")
 
 # Random final message
@@ -227,6 +227,7 @@ def init_other_assets():
             'speedster': ("ingame/button/speedster.png", None),
             'light': ("ingame/button/light.png", None),
             'trophy': ("ui/trophy.png", (110, 100)),
+            'mega_trophy': ("ui/trophy.png", (165, 150)),
         }
         
         for name, (file_path, size) in asset_files.items():
@@ -234,7 +235,8 @@ def init_other_assets():
             verify_asset_exists(full_path, f"{name}")
             img = pygame.image.load(full_path).convert_alpha()
             assets[name] = pygame.transform.scale(img, size) if size else img
-        
+
+        assets['mega_trophy'] = pygame.transform.rotate(assets['mega_trophy'], 8)
         assets['star_small'] = pygame.transform.scale(assets['star'], (30, 26))
         assets['star_normal'] = pygame.transform.scale(assets['star'], (100, 93))
         return assets
