@@ -24,8 +24,8 @@ fullscreen = 1
 android.api = 33
 # (int) Minimum API support (Android 5.0+)
 android.minapi = 21
-# (str) Android NDK version
-android.ndk = 25b
+# (str) Android NDK version (23c is more stable with libffi than 25b)
+android.ndk = 23c
 # (list) The Android archs to build for
 android.archs = arm64-v8a
 # (bool) automatically accept SDK license
