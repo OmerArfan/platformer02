@@ -1,29 +1,26 @@
 name: Build Android APK
-
 on:
   push:
     branches: [ android-messaround ]
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+      
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
+      
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-
+      
       - name: Install System Dependencies
         run: |
           sudo apt-get update
@@ -42,19 +39,60 @@ jobs:
             libtool \
             pkg-config \
             ccache
-            
+      
+      - name: Cache Gradle and Buildozer
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle
+            ~/.buildozer
+          key: ${{ runner.os }}-buildozer-${{ hashFiles('**/buildozer.spec') }}
+          restore-keys: |
+            ${{ runner.os }}-buildozer-
+      
       - name: Install Buildozer and Cython
         run: |
           pip install --upgrade pip
-          pip install "cython<3.0" buildozer
-
+          pip install "cython==0.29.36" buildozer
+      
+      - name: Set Android Environment Variables
+        run: |
+          echo "ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk" >> $GITHUB_ENV
+          echo "ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk" >> $GITHUB_ENV
+      
+      - name: Verify Buildozer Config
+        run: |
+          ls -la buildozer.spec
+          ls -la oimgs/icons/icon.png
+      
+      - name: Syntax Check
+        run: |
+          python3 -m py_compile main.py
+          python3 -c "import pygame; print('Pygame import OK')" || echo "Warning: pygame not yet installed, will be built with APK"
+      
+      - name: Clean Previous Builds
+        run: |
+          rm -rf .buildozer
+          rm -rf bin/
+      
       - name: Build APK with Buildozer
+        timeout-minutes: 60
         run: |
           # Automatically accept SDK/NDK licenses in non-interactive CI
           yes | buildozer -v android debug
-
+      
       - name: Upload APK Artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: roboquix-1.4.1-debug-apk
           path: bin/*.apk
+      
+      - name: Upload Build Logs (if failed)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: buildozer-logs
+          path: |
+            .buildozer/android/platform/build-*/build/logs/
+            .buildozer/android/platform/build-*/build/other_builds/
