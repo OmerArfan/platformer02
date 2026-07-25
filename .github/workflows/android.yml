@@ -63,7 +63,7 @@ jobs:
       - name: Verify Buildozer Config
         run: |
           ls -la buildozer.spec
-          ls -la oimgs/icons/icon.png
+          ls -la assets/imgs/icons/icon.png
       
       - name: Syntax Check
         run: |
