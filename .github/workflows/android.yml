@@ -65,17 +65,48 @@ jobs:
           echo "ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk" >> $GITHUB_ENV
           echo "ANDROID_NDK_ROOT=$HOME/.buildozer/android/platform/android-ndk-r25b" >> $GITHUB_ENV
           echo "ANDROID_NDK=$HOME/.buildozer/android/platform/android-ndk-r25b" >> $GITHUB_ENV
+          # Force libffi to skip autogen.sh and use pre-generated configure
+          echo "LIBFFI_SKIP_AUTOGEN=1" >> $GITHUB_ENV
+          echo "AUTOGEN_CONFIGURE_ARGS=--disable-shared" >> $GITHUB_ENV
       
       - name: Verify Buildozer Config
         run: |
           ls -la buildozer.spec
           ls -la assets/imgs/icons/icon.png
       
-      - name: Syntax Check
+      - name: Patch p4a libffi Recipe to Skip Autogen
         run: |
-          python3 -m py_compile main.py
-          python3 -c "import pygame; print('Pygame import OK')" || echo "Warning: pygame not yet installed, will be built with APK"
-      
+          cat > /tmp/patch_p4a_libffi.py << 'PATCH_EOF'
+          import os
+          import sys
+          
+          # Find p4a's libffi recipe
+          p4a_libffi = os.path.expanduser("~/.local/lib/python3.11/site-packages/pythonforandroid/recipes/libffi/__init__.py")
+          
+          if not os.path.exists(p4a_libffi):
+              # Try alternate location
+              p4a_libffi = os.path.expanduser("~/.buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi/__init__.py")
+          
+          if os.path.exists(p4a_libffi):
+              with open(p4a_libffi, 'r') as f:
+                  content = f.read()
+              
+              # Replace the autogen.sh call with a no-op that just checks configure exists
+              patched = content.replace(
+                  "shprint(sh.Command('./autogen.sh'), _env=env)",
+                  "# PATCHED: skip autogen.sh - use pre-generated configure\n                  # shprint(sh.Command('./autogen.sh'), _env=env)\n                  pass"
+              )
+              
+              with open(p4a_libffi, 'w') as f:
+                  f.write(patched)
+              
+              print(f"✅ Patched {p4a_libffi}")
+          else:
+              print(f"⚠️  Could not find p4a libffi recipe at {p4a_libffi}")
+              sys.exit(1)
+          PATCH_EOF
+          
+          python3 /tmp/patch_p4a_libffi.py
       - name: Clean Previous Builds
         run: |
           rm -rf .buildozer
