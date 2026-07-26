@@ -14,8 +14,8 @@ source.include_patterns = assets/*, assets/**/*, cleobo/*, cleobo/**/*
 source.exclude_dirs = bin, buildozer_env, __pycache__, .buildozer
 # (str) Application versioning
 version = 1.4.1
-# (list) Application requirements - pygame-ce handles most deps, add pure-Python packages
-requirements = python3, cython==0.29.36, pygame-ce, Pillow, requests
+# (list) Application requirements - includes Arabic text support
+requirements = python3, cython==0.29.36, pygame-ce, Pillow, arabic_reshaper, python-bidi, requests, setuptools, certifi, chardet, idna, urllib3
 # (list) Supported orientations
 orientation = landscape
 # (bool) Indicate if the application should be fullscreen or not
@@ -39,6 +39,8 @@ android.permissions = INTERNET, ACCESS_NETWORK_STATE
 #
 # (str) Bootstrap to use for android builds (Critical for Pygame)
 p4a.bootstrap = sdl2
+# (str) Local recipes directory for custom recipes (e.g., patched libffi)
+p4a.local_recipes = ./recipes
 
 [buildozer]
 # (int) Log level (2 = debug, very helpful for first-time builds)
