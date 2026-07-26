@@ -3,24 +3,25 @@ on:
   push:
     branches: [ android-messaround ]
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      
+
       - name: Install System Dependencies
         run: |
           sudo apt-get update
@@ -40,22 +41,22 @@ jobs:
             pkg-config \
             libtool-bin \
             m4
-          # NOTE: ccache intentionally NOT installed. p4a auto-detects and
-          # wraps the NDK cross-compiler with it, but ccache's cache keys
-          # don't reliably distinguish host (x86_64) vs target (aarch64)
-          # compiles here, which can serve a stale x86_64 .o/.so back out
-          # for an arm64 build - producing a "base.so is for EM_X86_64
-          # instead of EM_AARCH64" runtime crash on-device.
-          # Also purge it if some other package pulled it in as a dependency.
+          # NOTE: ccache intentionally NOT installed to prevent architecture mismatches.
           sudo apt-get remove -y ccache || true
           which ccache && sudo rm -f "$(which ccache)" || true
-      
 
-      - name: Install Buildozer and Cython
+      - name: Clean Previous Workspace Caches
         run: |
-          pip install --upgrade pip
-          pip install cython buildozer
-      
+          rm -rf .buildozer
+          rm -rf bin/
+          rm -rf ~/.ccache
+
+      - name: Install Buildozer, Cython, and Setuptools
+        run: |
+          python -m pip install --upgrade pip
+          # Pin setuptools < 70 to preserve distutils.ccompiler.spawn during p4a builds
+          pip install "setuptools<70.0.0" cython buildozer
+
       - name: Download NDK 25b
         run: |
           mkdir -p ~/.buildozer/android/platform
@@ -66,43 +67,30 @@ jobs:
             unzip -q android-ndk-r25b-linux.zip
             rm android-ndk-r25b-linux.zip
           fi
-      
+
       - name: Set Android Environment Variables
         run: |
           echo "ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk" >> $GITHUB_ENV
           echo "ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk" >> $GITHUB_ENV
           echo "ANDROID_NDK_ROOT=$HOME/.buildozer/android/platform/android-ndk-r25b" >> $GITHUB_ENV
           echo "ANDROID_NDK=$HOME/.buildozer/android/platform/android-ndk-r25b" >> $GITHUB_ENV
-      
+
       - name: Verify Buildozer Config
         run: |
           ls -la buildozer.spec
           ls -la assets/imgs/icons/icon.png
-      
-      - name: Clean Previous Builds
-        run: |
-          rm -rf .buildozer
-          rm -rf bin/
-          rm -rf ~/.ccache
-      
+
       - name: Build APK with Buildozer
         timeout-minutes: 60
+        env:
+          SETUPTOOLS_USE_DISTUTILS: "stdlib"
         run: |
           # Automatically accept SDK/NDK licenses in non-interactive CI
           yes | buildozer -v android debug
-      
+
       - name: Upload APK Artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: roboquix-1.4.1-debug-apk
           path: bin/*.apk
-      
-      - name: Upload Build Logs (if failed)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: buildozer-logs
-          path: |
-            .buildozer/android/platform/build-*/build/logs/
-            .buildozer/android/platform/build-*/build/other_builds/
