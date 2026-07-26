@@ -65,48 +65,33 @@ jobs:
           echo "ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk" >> $GITHUB_ENV
           echo "ANDROID_NDK_ROOT=$HOME/.buildozer/android/platform/android-ndk-r25b" >> $GITHUB_ENV
           echo "ANDROID_NDK=$HOME/.buildozer/android/platform/android-ndk-r25b" >> $GITHUB_ENV
-          # Force libffi to skip autogen.sh and use pre-generated configure
-          echo "LIBFFI_SKIP_AUTOGEN=1" >> $GITHUB_ENV
-          echo "AUTOGEN_CONFIGURE_ARGS=--disable-shared" >> $GITHUB_ENV
       
       - name: Verify Buildozer Config
         run: |
           ls -la buildozer.spec
           ls -la assets/imgs/icons/icon.png
       
-      - name: Patch p4a libffi Recipe to Skip Autogen
+      - name: Clone and Patch python-for-android (skip libffi autogen)
         run: |
-          cat > /tmp/patch_p4a_libffi.py << 'PATCH_EOF'
-          import os
-          import sys
+          # Clone p4a ourselves so we control the source before buildozer touches it
+          git clone --depth 1 https://github.com/kivy/python-for-android.git /home/runner/p4a-patched
           
-          # Find p4a's libffi recipe
-          p4a_libffi = os.path.expanduser("~/.local/lib/python3.11/site-packages/pythonforandroid/recipes/libffi/__init__.py")
+          RECIPE_FILE="/home/runner/p4a-patched/pythonforandroid/recipes/libffi/__init__.py"
           
-          if not os.path.exists(p4a_libffi):
-              # Try alternate location
-              p4a_libffi = os.path.expanduser("~/.buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi/__init__.py")
+          if [ -f "$RECIPE_FILE" ]; then
+            # Comment out the autogen.sh call so it uses the pre-shipped configure script
+            sed -i "s/shprint(sh.Command('.\/autogen.sh'), _env=env)/pass  # PATCHED: skip autogen.sh, use pre-generated configure/" "$RECIPE_FILE"
+            grep -n "autogen\|PATCHED" "$RECIPE_FILE" || true
+            echo "✅ Patched $RECIPE_FILE"
+          else
+            echo "❌ Could not find $RECIPE_FILE"
+            exit 1
+          fi
           
-          if os.path.exists(p4a_libffi):
-              with open(p4a_libffi, 'r') as f:
-                  content = f.read()
-              
-              # Replace the autogen.sh call with a no-op that just checks configure exists
-              patched = content.replace(
-                  "shprint(sh.Command('./autogen.sh'), _env=env)",
-                  "# PATCHED: skip autogen.sh - use pre-generated configure\n                  # shprint(sh.Command('./autogen.sh'), _env=env)\n                  pass"
-              )
-              
-              with open(p4a_libffi, 'w') as f:
-                  f.write(patched)
-              
-              print(f"✅ Patched {p4a_libffi}")
-          else:
-              print(f"⚠️  Could not find p4a libffi recipe at {p4a_libffi}")
-              sys.exit(1)
-          PATCH_EOF
-          
-          python3 /tmp/patch_p4a_libffi.py
+          # p4a needs to be pip-installed in editable mode from our patched clone too,
+          # since buildozer calls it as a library, not just via the source_dir recipes
+          pip install -e /home/runner/p4a-patched
+      
       - name: Clean Previous Builds
         run: |
           rm -rf .buildozer
