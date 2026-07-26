@@ -1,6 +1,6 @@
 [app]
 # (str) Icon of the application
-icon.filename = %(source.dir)s/assets/imgs/icons/icon.png
+icon.filename = %(source.dir)s/oimgs/icons/icon.png
 # (str) Title of your application
 title = Roboquix
 # (str) Package name
@@ -15,10 +15,15 @@ source.exclude_dirs = bin, buildozer_env, __pycache__, .buildozer
 # (str) Application versioning
 version = 1.4.1
 # (list) Application requirements - includes Arabic text support
+# Note: python3 is pinned to 3.11 to match local dev environment and avoid
+# bleeding-edge incompatibilities (p4a's python3 recipe otherwise defaults
+# to the newest CPython it supports, which caused several build failures
+# earlier - e.g. old Cython generating code incompatible with newer
+# _PyLong_AsByteArray signature).
 # Note: cython is NOT listed here - it's a build-time tool (pip-installed in CI),
 # listing it here tells p4a to build Cython itself as an Android target recipe,
 # which uses its own pinned/vendored source incompatible with modern Python headers
-requirements = python3, pygame-ce, Pillow, arabic_reshaper, python-bidi, requests, setuptools, certifi, chardet, idna, urllib3
+requirements = python3==3.11.9, hostpython3==3.11.9, pygame-ce, Pillow, arabic_reshaper, python-bidi, requests, setuptools, certifi, chardet, idna, urllib3
 # (list) Supported orientations
 orientation = landscape
 # (bool) Indicate if the application should be fullscreen or not
