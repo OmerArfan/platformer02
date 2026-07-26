@@ -39,8 +39,6 @@ android.permissions = INTERNET, ACCESS_NETWORK_STATE
 #
 # (str) Bootstrap to use for android builds (Critical for Pygame)
 p4a.bootstrap = sdl2
-# (str) Use our own pre-cloned, patched p4a instead of letting buildozer auto-clone
-p4a.source_dir = /home/runner/p4a-patched
 
 [buildozer]
 # (int) Log level (2 = debug, very helpful for first-time builds)
