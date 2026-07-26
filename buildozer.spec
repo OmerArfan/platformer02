@@ -15,7 +15,10 @@ source.exclude_dirs = bin, buildozer_env, __pycache__, .buildozer
 # (str) Application versioning
 version = 1.4.1
 # (list) Application requirements - includes Arabic text support
-requirements = python3, cython, pygame-ce, Pillow, arabic_reshaper, python-bidi, requests, setuptools, certifi, chardet, idna, urllib3
+# Note: cython is NOT listed here - it's a build-time tool (pip-installed in CI),
+# listing it here tells p4a to build Cython itself as an Android target recipe,
+# which uses its own pinned/vendored source incompatible with modern Python headers
+requirements = python3, pygame-ce, Pillow, arabic_reshaper, python-bidi, requests, setuptools, certifi, chardet, idna, urllib3
 # (list) Supported orientations
 orientation = landscape
 # (bool) Indicate if the application should be fullscreen or not
