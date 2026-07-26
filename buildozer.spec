@@ -15,7 +15,7 @@ source.exclude_dirs = bin, buildozer_env, __pycache__, .buildozer
 # (str) Application versioning
 version = 1.4.1
 # (list) Application requirements - includes Arabic text support
-requirements = python3, cython==0.29.36, pygame-ce, Pillow, arabic_reshaper, python-bidi, requests, setuptools, certifi, chardet, idna, urllib3
+requirements = python3, cython, pygame-ce, Pillow, arabic_reshaper, python-bidi, requests, setuptools, certifi, chardet, idna, urllib3
 # (list) Supported orientations
 orientation = landscape
 # (bool) Indicate if the application should be fullscreen or not
