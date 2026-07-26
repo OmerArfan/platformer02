@@ -81,11 +81,6 @@ jobs:
           rm -rf .buildozer
           rm -rf bin/
       
-      - name: Work Around libffi Autoconf Issue
-        run: |
-          # Custom p4a recipe in ./recipes/libffi/ will handle the build
-          echo "Using custom libffi recipe from ./recipes/libffi/"
-      
       - name: Build APK with Buildozer
         timeout-minutes: 60
         run: |
