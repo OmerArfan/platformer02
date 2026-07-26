@@ -39,8 +39,6 @@ android.permissions = INTERNET, ACCESS_NETWORK_STATE
 #
 # (str) Bootstrap to use for android builds (Critical for Pygame)
 p4a.bootstrap = sdl2
-# (str) Local recipes directory for custom recipes (e.g., patched libffi)
-p4a.local_recipes = ./recipes
 
 [buildozer]
 # (int) Log level (2 = debug, very helpful for first-time builds)
