@@ -42,6 +42,12 @@ android.permissions = INTERNET, ACCESS_NETWORK_STATE
 #
 # (str) Bootstrap to use for android builds (Critical for Pygame)
 p4a.bootstrap = sdl2
+# (str) Use p4a's develop branch, not the pinned stable release.
+# pygame-ce's own Android docs call this out explicitly: the stable/pinned
+# p4a release has a broken pygame_ce recipe that lets pip fall back to a
+# prebuilt x86_64 wheel instead of cross-compiling for the target arch,
+# producing "base.so is for EM_X86_64 instead of EM_AARCH64" at runtime.
+p4a.branch = develop
 
 [buildozer]
 # (int) Log level (2 = debug, very helpful for first-time builds)
