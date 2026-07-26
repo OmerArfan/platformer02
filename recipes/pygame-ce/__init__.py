@@ -55,7 +55,6 @@ class Pygame2Recipe(CythonRecipe):
 
     def prebuild_arch(self, arch):
         super().prebuild_arch(arch)
-        self.ensure_hostpython_has_cython(arch)
         with current_directory(self.get_build_dir(arch.arch)):
             setup_template = open(join("buildconfig", "Setup.Android.SDL2.in")).read()
             env = self.get_recipe_env(arch)
@@ -96,6 +95,16 @@ class Pygame2Recipe(CythonRecipe):
                 freetype_includes="",
             )
             open("Setup", "w").write(setup_file)
+
+    def build_arch(self, arch):
+        # Must run here, NOT in prebuild_arch: prebuild_arch fires during
+        # p4a's early prebuild phase, before hostpython3 itself has been
+        # compiled and written to disk, so self.ctx.hostpython doesn't
+        # exist as a file yet at that point (sh.CommandNotFound).
+        # By build_arch time, all dependencies (including hostpython3)
+        # are actually built and present.
+        self.ensure_hostpython_has_cython(arch)
+        super().build_arch(arch)
 
     def get_recipe_env(self, arch):
         env = super().get_recipe_env(arch)
