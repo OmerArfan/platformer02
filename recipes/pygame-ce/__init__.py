@@ -34,7 +34,7 @@ class Pygame2Recipe(CythonRecipe):
     call_hostpython_via_targetpython = False  # Due to setuptools
     install_in_hostpython = False
 
-    def ensure_hostpython_has_cython(self, arch):
+    def ensure_hostpython_has_build_deps(self, arch):
         """
         pygame-ce's setup.py hard-requires `import Cython` to succeed in
         whatever interpreter runs it. That interpreter is the isolated
@@ -44,13 +44,22 @@ class Pygame2Recipe(CythonRecipe):
         `pip install cython`). Without this, build fails with:
         "You need cython. https://cython.org/, pip install cython --user"
 
+        We also force-reinstall setuptools here: the copy already present
+        in this hostpython has broken/incomplete vendoring - its
+        setup.py's `from setuptools import setup` chain reaches into
+        `setuptools._vendor.jaraco.functools`, which does a real (non-
+        vendored) `import more_itertools` that isn't satisfied, raising
+        ModuleNotFoundError. Reinstalling via pip pulls in setuptools'
+        actual declared dependencies (more_itertools, jaraco.* etc.)
+        instead of relying on whatever incomplete copy is already there.
+
         NOTE: we deliberately do NOT run `pip install --upgrade pip` here.
         This hostpython's bundled pip has a broken vendored resolvelib
         (ImportError: cannot import name 'RequirementInformation'), and
         upgrading pip goes through that same broken import path and
         crashes before it can even upgrade itself. --use-deprecated=
-        legacy-resolver sidesteps resolvelib entirely for the actual
-        cython install below.
+        legacy-resolver sidesteps resolvelib entirely for the installs
+        below.
         """
         env = self.get_recipe_env(arch)
         hostpython = sh.Command(self.ctx.hostpython)
@@ -58,6 +67,14 @@ class Pygame2Recipe(CythonRecipe):
             shprint(hostpython, "-m", "ensurepip", "--upgrade", _env=env)
         except sh.ErrorReturnCode:
             pass  # pip may already be present
+        shprint(
+            hostpython,
+            "-m", "pip", "install",
+            "--use-deprecated=legacy-resolver",
+            "--upgrade", "--force-reinstall",
+            "setuptools",
+            _env=env,
+        )
         shprint(
             hostpython,
             "-m", "pip", "install",
@@ -116,7 +133,7 @@ class Pygame2Recipe(CythonRecipe):
         # exist as a file yet at that point (sh.CommandNotFound).
         # By build_arch time, all dependencies (including hostpython3)
         # are actually built and present.
-        self.ensure_hostpython_has_cython(arch)
+        self.ensure_hostpython_has_build_deps(arch)
         super().build_arch(arch)
 
     def get_recipe_env(self, arch):
