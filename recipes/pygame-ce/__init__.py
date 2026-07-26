@@ -43,6 +43,14 @@ class Pygame2Recipe(CythonRecipe):
         Python as the one on the CI/build machine (where we already
         `pip install cython`). Without this, build fails with:
         "You need cython. https://cython.org/, pip install cython --user"
+
+        NOTE: we deliberately do NOT run `pip install --upgrade pip` here.
+        This hostpython's bundled pip has a broken vendored resolvelib
+        (ImportError: cannot import name 'RequirementInformation'), and
+        upgrading pip goes through that same broken import path and
+        crashes before it can even upgrade itself. --use-deprecated=
+        legacy-resolver sidesteps resolvelib entirely for the actual
+        cython install below.
         """
         env = self.get_recipe_env(arch)
         hostpython = sh.Command(self.ctx.hostpython)
@@ -50,8 +58,13 @@ class Pygame2Recipe(CythonRecipe):
             shprint(hostpython, "-m", "ensurepip", "--upgrade", _env=env)
         except sh.ErrorReturnCode:
             pass  # pip may already be present
-        shprint(hostpython, "-m", "pip", "install", "--upgrade", "pip", _env=env)
-        shprint(hostpython, "-m", "pip", "install", "cython", _env=env)
+        shprint(
+            hostpython,
+            "-m", "pip", "install",
+            "--use-deprecated=legacy-resolver",
+            "cython",
+            _env=env,
+        )
 
     def prebuild_arch(self, arch):
         super().prebuild_arch(arch)
