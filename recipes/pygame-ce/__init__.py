@@ -1,5 +1,8 @@
 from os.path import join
 
+import sh
+
+from pythonforandroid.logger import shprint
 from pythonforandroid.recipe import CythonRecipe
 from pythonforandroid.toolchain import current_directory
 
@@ -13,7 +16,7 @@ class Pygame2Recipe(CythonRecipe):
         not part of the build. It's usable, but not complete.
     """
 
-    version = "2.5.0"
+    version = "2.5.7"
     url = "https://github.com/pygame-community/pygame-ce/archive/refs/tags/{version}.tar.gz"
 
     site_packages_name = "pygame-ce"
@@ -31,8 +34,28 @@ class Pygame2Recipe(CythonRecipe):
     call_hostpython_via_targetpython = False  # Due to setuptools
     install_in_hostpython = False
 
+    def ensure_hostpython_has_cython(self, arch):
+        """
+        pygame-ce's setup.py hard-requires `import Cython` to succeed in
+        whatever interpreter runs it. That interpreter is the isolated
+        "hostpython3 native-build" - a standalone CPython built to run
+        setup.py scripts on the host machine - which is NOT the same
+        Python as the one on the CI/build machine (where we already
+        `pip install cython`). Without this, build fails with:
+        "You need cython. https://cython.org/, pip install cython --user"
+        """
+        env = self.get_recipe_env(arch)
+        hostpython = sh.Command(self.ctx.hostpython)
+        try:
+            shprint(hostpython, "-m", "ensurepip", "--upgrade", _env=env)
+        except sh.ErrorReturnCode:
+            pass  # pip may already be present
+        shprint(hostpython, "-m", "pip", "install", "--upgrade", "pip", _env=env)
+        shprint(hostpython, "-m", "pip", "install", "cython", _env=env)
+
     def prebuild_arch(self, arch):
         super().prebuild_arch(arch)
+        self.ensure_hostpython_has_cython(arch)
         with current_directory(self.get_build_dir(arch.arch)):
             setup_template = open(join("buildconfig", "Setup.Android.SDL2.in")).read()
             env = self.get_recipe_env(arch)
