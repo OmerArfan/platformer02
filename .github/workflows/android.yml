@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -70,27 +70,6 @@ jobs:
         run: |
           ls -la buildozer.spec
           ls -la assets/imgs/icons/icon.png
-      
-      - name: Clone and Patch python-for-android (skip libffi autogen)
-        run: |
-          # Clone p4a ourselves so we control the source before buildozer touches it
-          git clone --depth 1 https://github.com/kivy/python-for-android.git /home/runner/p4a-patched
-          
-          RECIPE_FILE="/home/runner/p4a-patched/pythonforandroid/recipes/libffi/__init__.py"
-          
-          if [ -f "$RECIPE_FILE" ]; then
-            # Comment out the autogen.sh call so it uses the pre-shipped configure script
-            sed -i "s/shprint(sh.Command('.\/autogen.sh'), _env=env)/pass  # PATCHED: skip autogen.sh, use pre-generated configure/" "$RECIPE_FILE"
-            grep -n "autogen\|PATCHED" "$RECIPE_FILE" || true
-            echo "✅ Patched $RECIPE_FILE"
-          else
-            echo "❌ Could not find $RECIPE_FILE"
-            exit 1
-          fi
-          
-          # p4a needs to be pip-installed in editable mode from our patched clone too,
-          # since buildozer calls it as a library, not just via the source_dir recipes
-          pip install -e /home/runner/p4a-patched
       
       - name: Clean Previous Builds
         run: |
