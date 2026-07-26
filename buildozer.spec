@@ -1,6 +1,6 @@
 [app]
 # (str) Icon of the application
-icon.filename = %(source.dir)s/oimgs/icons/icon.png
+icon.filename = %(source.dir)s/assets/imgs/icons/icon.png
 # (str) Title of your application
 title = Roboquix
 # (str) Package name
