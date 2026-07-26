@@ -23,7 +23,7 @@ version = 1.4.1
 # Note: cython is NOT listed here - it's a build-time tool (pip-installed in CI),
 # listing it here tells p4a to build Cython itself as an Android target recipe,
 # which uses its own pinned/vendored source incompatible with modern Python headers
-requirements = python3==3.11.9, hostpython3==3.11.9, pygame-ce, Pillow, arabic_reshaper, python-bidi, requests, setuptools, certifi, chardet, idna, urllib3
+requirements = python3==3.11.9, hostpython3==3.11.9, pygame-ce, Pillow, arabic_reshaper, python-bidi, requests, setuptools<60.0.0, certifi, chardet, idna, urllib3
 # (list) Supported orientations
 orientation = landscape
 # (bool) Indicate if the application should be fullscreen or not
