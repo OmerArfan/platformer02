@@ -38,9 +38,17 @@ jobs:
             automake \
             libtool \
             pkg-config \
-            ccache \
             libtool-bin \
             m4
+          # NOTE: ccache intentionally NOT installed. p4a auto-detects and
+          # wraps the NDK cross-compiler with it, but ccache's cache keys
+          # don't reliably distinguish host (x86_64) vs target (aarch64)
+          # compiles here, which can serve a stale x86_64 .o/.so back out
+          # for an arm64 build - producing a "base.so is for EM_X86_64
+          # instead of EM_AARCH64" runtime crash on-device.
+          # Also purge it if some other package pulled it in as a dependency.
+          sudo apt-get remove -y ccache || true
+          which ccache && sudo rm -f "$(which ccache)" || true
       
 
       - name: Install Buildozer and Cython
@@ -69,12 +77,13 @@ jobs:
       - name: Verify Buildozer Config
         run: |
           ls -la buildozer.spec
-          ls -la assets/imgs/icons/icon.png
+          ls -la oimgs/icons/icon.png
       
       - name: Clean Previous Builds
         run: |
           rm -rf .buildozer
           rm -rf bin/
+          rm -rf ~/.ccache
       
       - name: Build APK with Buildozer
         timeout-minutes: 60
