@@ -1,10 +1,10 @@
 from os.path import join
 
-from pythonforandroid.recipe import CompiledComponentsPythonRecipe
+from pythonforandroid.recipe import CythonRecipe
 from pythonforandroid.toolchain import current_directory
 
 
-class Pygame2Recipe(CompiledComponentsPythonRecipe):
+class Pygame2Recipe(CythonRecipe):
     """
     Recipe to build apps based on SDL2-based pygame (pygame-ce fork).
 
