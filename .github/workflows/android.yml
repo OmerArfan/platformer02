@@ -81,6 +81,12 @@ jobs:
           rm -rf .buildozer
           rm -rf bin/
       
+      - name: Work Around libffi Autoconf Issue
+        run: |
+          # Force use of pre-compiled libffi to skip autoconf rebuild
+          export USE_PREBUILT_LIBFFI=1
+          echo "USE_PREBUILT_LIBFFI=1" >> $GITHUB_ENV
+      
       - name: Build APK with Buildozer
         timeout-minutes: 60
         run: |
