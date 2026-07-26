@@ -42,12 +42,14 @@ android.permissions = INTERNET, ACCESS_NETWORK_STATE
 #
 # (str) Bootstrap to use for android builds (Critical for Pygame)
 p4a.bootstrap = sdl2
-# (str) Use p4a's develop branch, not the pinned stable release.
-# pygame-ce's own Android docs call this out explicitly: the stable/pinned
-# p4a release has a broken pygame_ce recipe that lets pip fall back to a
-# prebuilt x86_64 wheel instead of cross-compiling for the target arch,
-# producing "base.so is for EM_X86_64 instead of EM_AARCH64" at runtime.
-p4a.branch = develop
+# (str) Local recipes directory - contains a working pygame-ce recipe.
+# Mainline p4a has NO built-in pygame-ce recipe (as of writing, it's still
+# an open, unmerged PR: kivy/python-for-android#2971), so without this,
+# "pygame-ce" isn't recognized as a compiled package and p4a silently
+# falls back to a generic pip install, which grabs the prebuilt x86_64
+# wheel from PyPI instead of cross-compiling for the target arch - that's
+# the actual cause of "base.so is for EM_X86_64 instead of EM_AARCH64".
+p4a.local_recipes = ./recipes
 
 [buildozer]
 # (int) Log level (2 = debug, very helpful for first-time builds)
