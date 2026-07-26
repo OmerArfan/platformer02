@@ -14,8 +14,8 @@ source.include_patterns = assets/*, assets/**/*, cleobo/*, cleobo/**/*
 source.exclude_dirs = bin, buildozer_env, __pycache__, .buildozer
 # (str) Application versioning
 version = 1.4.1
-# (list) Application requirements
-requirements = python3, cython==0.29.36, pygame-ce, Pillow, arabic_reshaper, python-bidi, requests, setuptools, certifi, chardet, idna, urllib3
+# (list) Application requirements - pygame-ce handles most deps, add pure-Python packages
+requirements = python3, cython==0.29.36, pygame-ce, Pillow, requests
 # (list) Supported orientations
 orientation = landscape
 # (bool) Indicate if the application should be fullscreen or not
@@ -45,3 +45,5 @@ p4a.bootstrap = sdl2
 log_level = 2
 # (int) Display warning if buildozer is run as root
 warn_on_root = 1
+# Increase android toolchain log level for better diagnostics
+android.log_level = 2
