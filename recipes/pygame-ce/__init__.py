@@ -1,4 +1,5 @@
 from os.path import join
+import os
 
 import sh
 
@@ -46,14 +47,17 @@ class Pygame2Recipe(CythonRecipe):
 
         We also reinstall setuptools here. The copy already present in
         this hostpython has broken/incomplete vendoring (missing
-        more_itertools etc). Using --force-reinstall alone isn't enough:
-        it overwrites files but doesn't reliably remove old .dist-info/
-        .egg-info directories, so pkg_resources can end up reading
-        entry-point metadata (e.g. "build = setuptools.command.build")
-        from a leftover copy while Python actually imports a different
-        version's code - causing ModuleNotFoundError for a module that
-        "should" exist per the stale metadata. Explicitly uninstalling
-        first clears that out before the fresh install.
+        more_itertools etc). `pip uninstall` + plain `pip install` wasn't
+        enough: it left an empty leftover setuptools/ directory (files
+        not tracked by pip's own RECORD, likely baked in by hostpython's
+        own build), which Python then imports as an empty PEP 420
+        namespace package - "ImportError: cannot import name 'setup'
+        from 'setuptools' (unknown location)". `--force-reinstall`
+        alone doesn't fix this either: it overwrites tracked files but
+        doesn't remove *untracked* leftovers, and a plain `pip install`
+        can see the stale directory as "already satisfied" and skip
+        writing anything. So we directly rmtree the directories in
+        site-packages first, removing any doubt, then do a real install.
 
         NOTE: we deliberately do NOT run `pip install --upgrade pip` here.
         This hostpython's bundled pip has a broken vendored resolvelib
@@ -70,20 +74,41 @@ class Pygame2Recipe(CythonRecipe):
         except sh.ErrorReturnCode:
             pass  # pip may already be present
 
-        # Best-effort: clear out any conflicting/stale setuptools install(s)
-        # before reinstalling clean. Ignore failures (nothing to uninstall
-        # is not an error we care about).
-        for pkg in ("setuptools", "pkg_resources"):
-            try:
-                shprint(hostpython, "-m", "pip", "uninstall", "-y", pkg, _env=env)
-            except sh.ErrorReturnCode:
-                pass
+        # Find the actual site-packages dir this hostpython uses, then
+        # forcibly remove any setuptools/pkg_resources remnants directly -
+        # don't trust pip's uninstall bookkeeping to catch untracked files.
+        site_packages = str(
+            hostpython(
+                "-c",
+                "import sysconfig; print(sysconfig.get_paths()['purelib'])",
+                _env=env,
+            )
+        ).strip()
+
+        import glob
+        import shutil
+
+        for pattern in (
+            "setuptools",
+            "setuptools-*",
+            "pkg_resources",
+            "pkg_resources-*",
+        ):
+            for path in glob.glob(join(site_packages, pattern)):
+                if os.path.isdir(path):
+                    shutil.rmtree(path, ignore_errors=True)
+                else:
+                    try:
+                        os.remove(path)
+                    except OSError:
+                        pass
 
         shprint(
             hostpython,
             "-m", "pip", "install",
             "--use-deprecated=legacy-resolver",
             "--no-cache-dir",
+            "--force-reinstall",
             "setuptools",
             _env=env,
         )
