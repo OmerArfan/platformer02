@@ -178,7 +178,15 @@ class Pygame2Recipe(CythonRecipe):
         env["USE_SDL2"] = "1"
         env["PYGAME_CROSS_COMPILE"] = "TRUE"
         env["PYGAME_ANDROID"] = "TRUE"
+        # p4a builds a clean, isolated env per-recipe - it does NOT inherit
+        # the outer GitHub Actions job's environment. Setting
+        # SETUPTOOLS_USE_DISTUTILS=stdlib in the workflow file has no
+        # effect on this subprocess unless it's injected here too. This
+        # tells setuptools to use the real stdlib `distutils` (which still
+        # has the old `distutils.ccompiler.spawn` free function pygame-ce's
+        # setup.py calls directly) instead of setuptools' own newer
+        # vendored/forked _distutils, which removed that function - see
+        # https://github.com/pygame/pygame/issues/4469 (open, upstream,
+        # not something we can fix in pygame-ce's own setup.py).
+        env["SETUPTOOLS_USE_DISTUTILS"] = "stdlib"
         return env
-
-
-recipe = Pygame2Recipe()
