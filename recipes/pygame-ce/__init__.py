@@ -35,6 +35,34 @@ class Pygame2Recipe(CythonRecipe):
     install_in_hostpython = False
 
     def ensure_hostpython_has_build_deps(self, arch):
+        """
+        pygame-ce's setup.py hard-requires `import Cython` to succeed in
+        whatever interpreter runs it. That interpreter is the isolated
+        "hostpython3 native-build" - a standalone CPython built to run
+        setup.py scripts on the host machine - which is NOT the same
+        Python as the one on the CI/build machine (where we already
+        `pip install cython`). Without this, build fails with:
+        "You need cython. https://cython.org/, pip install cython --user"
+
+        We also reinstall setuptools here. The copy already present in
+        this hostpython has broken/incomplete vendoring (missing
+        more_itertools etc). Using --force-reinstall alone isn't enough:
+        it overwrites files but doesn't reliably remove old .dist-info/
+        .egg-info directories, so pkg_resources can end up reading
+        entry-point metadata (e.g. "build = setuptools.command.build")
+        from a leftover copy while Python actually imports a different
+        version's code - causing ModuleNotFoundError for a module that
+        "should" exist per the stale metadata. Explicitly uninstalling
+        first clears that out before the fresh install.
+
+        NOTE: we deliberately do NOT run `pip install --upgrade pip` here.
+        This hostpython's bundled pip has a broken vendored resolvelib
+        (ImportError: cannot import name 'RequirementInformation'), and
+        upgrading pip goes through that same broken import path and
+        crashes before it can even upgrade itself. --use-deprecated=
+        legacy-resolver sidesteps resolvelib entirely for the installs
+        below.
+        """
         env = self.get_recipe_env(arch)
         hostpython = sh.Command(self.ctx.hostpython)
         try:
@@ -42,13 +70,21 @@ class Pygame2Recipe(CythonRecipe):
         except sh.ErrorReturnCode:
             pass  # pip may already be present
 
-        # Pin setuptools<60.0.0 so hostpython's distutils isn't broken during cross-compilation
+        # Best-effort: clear out any conflicting/stale setuptools install(s)
+        # before reinstalling clean. Ignore failures (nothing to uninstall
+        # is not an error we care about).
+        for pkg in ("setuptools", "pkg_resources"):
+            try:
+                shprint(hostpython, "-m", "pip", "uninstall", "-y", pkg, _env=env)
+            except sh.ErrorReturnCode:
+                pass
+
         shprint(
             hostpython,
             "-m", "pip", "install",
             "--use-deprecated=legacy-resolver",
-            "--upgrade", "--force-reinstall",
-            "setuptools<60.0.0",
+            "--no-cache-dir",
+            "setuptools",
             _env=env,
         )
         shprint(
