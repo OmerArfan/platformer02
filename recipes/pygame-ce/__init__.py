@@ -190,3 +190,5 @@ class Pygame2Recipe(CythonRecipe):
         # not something we can fix in pygame-ce's own setup.py).
         env["SETUPTOOLS_USE_DISTUTILS"] = "stdlib"
         return env
+        
+recipe = Pygame2Recipe()
