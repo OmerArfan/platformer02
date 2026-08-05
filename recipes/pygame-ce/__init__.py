@@ -70,7 +70,17 @@ class Pygame2Recipe(CythonRecipe):
         env = self.get_recipe_env(arch)
         hostpython = sh.Command(self.ctx.hostpython)
         try:
-            shprint(hostpython, "-m", "ensurepip", "--upgrade", _env=env)
+            # Deliberately NOT --upgrade: that flag makes ensurepip reach
+            # out to PyPI for whatever pip is "latest" at build time,
+            # instead of using the stable version bundled with this
+            # Python build. That made builds non-deterministic and
+            # vulnerable to upstream breakage - a pip release published
+            # between two of our CI runs (26.1.2 -> 26.2.1) shipped with
+            # its own internal bug (ImportError: cannot import name
+            # 'open_rich_spinner' from 'pip._internal.cli.spinners'),
+            # breaking the build with zero changes on our end. The
+            # bundled version is good enough for our needs here.
+            shprint(hostpython, "-m", "ensurepip", _env=env)
         except sh.ErrorReturnCode:
             pass  # pip may already be present
 
@@ -190,5 +200,6 @@ class Pygame2Recipe(CythonRecipe):
         # not something we can fix in pygame-ce's own setup.py).
         env["SETUPTOOLS_USE_DISTUTILS"] = "stdlib"
         return env
-        
+
+
 recipe = Pygame2Recipe()
